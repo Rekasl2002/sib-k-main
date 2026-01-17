@@ -1,0 +1,963 @@
+DEBUG - 2025-10-08 10:04:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 10:04:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-08 10:04:51 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/logo-mapersis31.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/logo-mapersis31.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:05:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-10-08 10:05:04 --> CSRF token verified.
+DEBUG - 2025-10-08 10:05:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-10-08 10:05:06 --> [DEPRECATED] round(): Passing null to parameter #1 ($num) of type int|float is deprecated in APPPATH\Controllers\HomeroomTeacher\DashboardController.php on line 240.
+ 1 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(240): round(null, 1)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(84): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+ERROR - 2025-10-08 10:05:06 --> mysqli_sql_exception: Unknown column 'violation_categories.severity' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `violati...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `violati...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `violati...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `violati...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(441): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(99): App\Controllers\HomeroomTeacher\DashboardController->getViolationByCategory('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+ERROR - 2025-10-08 10:05:06 --> [HOMEROOM DASHBOARD] Get violation by category error: Unknown column 'violation_categories.severity' in 'field list'
+CRITICAL - 2025-10-08 10:05:06 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:05:07 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:05:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-08 10:05:27 --> mysqli_sql_exception: Unknown column 'severity' in 'order clause' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT *\nFROM `...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *\nFROM `...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *\nFROM `...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 C:\laragon\www\sib-k\system\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\system\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+#6 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+#9 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#11 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#12 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#13 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#14 {main}
+CRITICAL - 2025-10-08 10:05:27 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'severity' in 'order clause'
+[Method: GET, Route: homeroom/violations/create]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', [], false)
+ 2 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 4 APPPATH\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:05:27 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'severity' in 'order clause'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', [], false)
+ 4 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 6 APPPATH\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:05:27 --> [Caused by] mysqli_sql_exception: Unknown column 'severity' in 'order clause'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', [], false)
+ 5 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 7 APPPATH\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+14 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:05:34 --> ErrorException: Undefined variable $message
+[Method: GET, Route: homeroom/my-class]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: homeroom/my-class\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:05:44 --> ErrorException: Undefined variable $message
+[Method: GET, Route: homeroom/students]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: homeroom/students\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:05:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-08 10:05:51 --> mysqli_sql_exception: Unknown column 'violation_categories.severity' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `violati...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `violati...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `violati...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `violati...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ViolationController.php(501): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ViolationController.php(88): App\Controllers\HomeroomTeacher\ViolationController->getViolations('1', Array)
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+ERROR - 2025-10-08 10:05:51 --> [HOMEROOM VIOLATION] Get violations error: Unknown column 'violation_categories.severity' in 'field list'
+CRITICAL - 2025-10-08 10:05:51 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:05:51 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:05:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-08 10:05:54 --> mysqli_sql_exception: Unknown column 'severity' in 'order clause' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT *\nFROM `...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *\nFROM `...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *\nFROM `...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 C:\laragon\www\sib-k\system\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\system\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+#6 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+#9 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#11 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#12 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#13 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#14 {main}
+CRITICAL - 2025-10-08 10:05:54 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'severity' in 'order clause'
+[Method: GET, Route: homeroom/violations/create]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', [], false)
+ 2 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 4 APPPATH\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:05:54 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'severity' in 'order clause'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', [], false)
+ 4 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 6 APPPATH\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:05:54 --> [Caused by] mysqli_sql_exception: Unknown column 'severity' in 'order clause'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', [], false)
+ 5 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 7 APPPATH\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+14 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:05:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-08 10:05:58 --> mysqli_sql_exception: Unknown column 'violation_categories.severity' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `violati...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `violati...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `violati...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `violati...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ClassReportController.php(557): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ClassReportController.php(328): App\Controllers\HomeroomTeacher\ClassReportController->getViolationBySeverity('1', '2025-10-01', '2025-10-31')
+#6 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ClassReportController.php(79): App\Controllers\HomeroomTeacher\ClassReportController->generateClassReport('1', '2025-10-01', '2025-10-31')
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ClassReportController->index()
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ClassReportController))
+#9 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#11 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#12 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#13 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#14 {main}
+ERROR - 2025-10-08 10:05:58 --> [HOMEROOM REPORT] Get violation by severity error: Unknown column 'violation_categories.severity' in 'field list'
+ERROR - 2025-10-08 10:05:58 --> mysqli_sql_exception: Unknown column 'violation_categories.severity' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `violati...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `violati...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `violati...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `violati...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ClassReportController.php(588): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ClassReportController.php(331): App\Controllers\HomeroomTeacher\ClassReportController->getViolationByCategory('1', '2025-10-01', '2025-10-31')
+#6 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ClassReportController.php(79): App\Controllers\HomeroomTeacher\ClassReportController->generateClassReport('1', '2025-10-01', '2025-10-31')
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ClassReportController->index()
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ClassReportController))
+#9 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#11 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#12 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#13 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#14 {main}
+ERROR - 2025-10-08 10:05:58 --> [HOMEROOM REPORT] Get violation by category error: Unknown column 'violation_categories.severity' in 'field list'
+CRITICAL - 2025-10-08 10:05:58 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "homeroom_teacher/reports/index.php"
+[Method: GET, Route: homeroom/reports]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(214): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('homeroom_teacher/reports/index.php')
+ 2 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('homeroom_teacher/reports/index', [], true)
+ 3 APPPATH\Controllers\HomeroomTeacher\ClassReportController.php(96): view('homeroom_teacher/reports/index', [...])
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ClassReportController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ClassReportController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:06:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-10-08 10:06:14 --> [DEPRECATED] round(): Passing null to parameter #1 ($num) of type int|float is deprecated in APPPATH\Controllers\HomeroomTeacher\DashboardController.php on line 240.
+ 1 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(240): round(null, 1)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(84): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+ERROR - 2025-10-08 10:06:14 --> mysqli_sql_exception: Unknown column 'violation_categories.severity' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `violati...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `violati...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `violati...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `violati...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(441): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(99): App\Controllers\HomeroomTeacher\DashboardController->getViolationByCategory('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+ERROR - 2025-10-08 10:06:14 --> [HOMEROOM DASHBOARD] Get violation by category error: Unknown column 'violation_categories.severity' in 'field list'
+CRITICAL - 2025-10-08 10:06:14 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:06:14 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:06:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 10:06:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-08 10:06:36 --> mysqli_sql_exception: Unknown column 'violation_categories.severity' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `violati...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `violati...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `violati...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `violati...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ViolationController.php(501): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ViolationController.php(88): App\Controllers\HomeroomTeacher\ViolationController->getViolations('1', Array)
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+ERROR - 2025-10-08 10:06:36 --> [HOMEROOM VIOLATION] Get violations error: Unknown column 'violation_categories.severity' in 'field list'
+CRITICAL - 2025-10-08 10:06:36 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:06:37 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:06:40 --> ErrorException: Undefined variable $message
+[Method: GET, Route: homeroom/students]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: homeroom/students\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:06:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-10-08 10:06:53 --> [DEPRECATED] round(): Passing null to parameter #1 ($num) of type int|float is deprecated in APPPATH\Controllers\HomeroomTeacher\DashboardController.php on line 240.
+ 1 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(240): round(null, 1)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(84): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+ERROR - 2025-10-08 10:06:53 --> mysqli_sql_exception: Unknown column 'violation_categories.severity' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `violati...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `violati...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `violati...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `violati...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(441): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(99): App\Controllers\HomeroomTeacher\DashboardController->getViolationByCategory('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+ERROR - 2025-10-08 10:06:53 --> [HOMEROOM DASHBOARD] Get violation by category error: Unknown column 'violation_categories.severity' in 'field list'
+CRITICAL - 2025-10-08 10:06:53 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:06:53 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:06:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-08 10:06:56 --> mysqli_sql_exception: Unknown column 'severity' in 'order clause' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT *\nFROM `...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *\nFROM `...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *\nFROM `...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *\nFROM `...', Array, false)
+#4 C:\laragon\www\sib-k\system\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\system\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+#6 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+#9 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#10 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#11 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#12 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#13 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#14 {main}
+CRITICAL - 2025-10-08 10:06:56 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'severity' in 'order clause'
+[Method: GET, Route: homeroom/violations/create]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', [], false)
+ 2 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 4 APPPATH\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:06:56 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'severity' in 'order clause'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', [], false)
+ 4 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 6 APPPATH\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:06:56 --> [Caused by] mysqli_sql_exception: Unknown column 'severity' in 'order clause'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
+FROM `violation_categories`
+WHERE `deleted_at` IS NULL
+AND `violation_categories`.`deleted_at` IS NULL
+ORDER BY `severity` ASC, `category_name` ASC', [], false)
+ 5 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 7 APPPATH\Controllers\HomeroomTeacher\ViolationController.php(148): CodeIgniter\BaseModel->findAll()
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->create()
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+14 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:37:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-08 10:37:44 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:37:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-08 10:37:46 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:38:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-08 10:38:07 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:38:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-08 10:38:09 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:38:10 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:49:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-08 10:49:49 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:49:49 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:49:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-10-08 10:49:57 --> [DEPRECATED] round(): Passing null to parameter #1 ($num) of type int|float is deprecated in APPPATH\Controllers\HomeroomTeacher\DashboardController.php on line 240.
+ 1 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(240): round(null, 1)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(84): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:49:57 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:50:01 --> ErrorException: Undefined variable $message
+[Method: GET, Route: homeroom/my-class]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: homeroom/my-class\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:50:10 --> ErrorException: Undefined variable $message
+[Method: GET, Route: homeroom/students]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: homeroom/students\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:50:13 --> ErrorException: Undefined variable $message
+[Method: GET, Route: homeroom/my-class]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: homeroom/my-class\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-08 10:51:38 --> ErrorException: Undefined variable $message
+[Method: GET, Route: homeroom/students]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: homeroom/students\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:51:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-08 10:51:43 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:51:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-08 10:51:46 --> ErrorException: Undefined variable $message
+[Method: GET, Route: assets/images/default-avatar.png]
+in APPPATH\Views\errors\html\error_404.php on line 77.
+ 1 APPPATH\Views\errors\html\error_404.php(77): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $message', 'C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php', 77)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\errors\\html\\error_404.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('errors/html/error_404', [], true)
+ 5 APPPATH\Config\Routes.php(489): view('errors/html/error_404')
+ 6 SYSTEMPATH\CodeIgniter.php(957): CodeIgniter\Router\RouteCollection->{closure}('Can\'t find a route for \'GET: assets/images/default-avatar.png\'.')
+ 7 SYSTEMPATH\CodeIgniter.php(360): CodeIgniter\CodeIgniter->display404errors(Object(CodeIgniter\Exceptions\PageNotFoundException))
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 10:58:50 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 10:58:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-08 10:58:52 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "homeroom_teacher/reports/index.php"
+[Method: GET, Route: homeroom/reports]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(214): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('homeroom_teacher/reports/index.php')
+ 2 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('homeroom_teacher/reports/index', [], true)
+ 3 APPPATH\Controllers\HomeroomTeacher\ClassReportController.php(96): view('homeroom_teacher/reports/index', [...])
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ClassReportController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ClassReportController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 11:01:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:01:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-08 11:01:35 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "homeroom_teacher/reports/index.php"
+[Method: GET, Route: homeroom/reports]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(214): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('homeroom_teacher/reports/index.php')
+ 2 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('homeroom_teacher/reports/index', [], true)
+ 3 APPPATH\Controllers\HomeroomTeacher\ClassReportController.php(96): view('homeroom_teacher/reports/index', [...])
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ClassReportController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ClassReportController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 11:01:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-08 11:01:37 --> CodeIgniter\View\Exceptions\ViewException: Invalid file: "homeroom_teacher/reports/index.php"
+[Method: GET, Route: homeroom/reports]
+in SYSTEMPATH\Exceptions\FrameworkException.php on line 39.
+ 1 SYSTEMPATH\View\View.php(214): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('homeroom_teacher/reports/index.php')
+ 2 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('homeroom_teacher/reports/index', [], true)
+ 3 APPPATH\Controllers\HomeroomTeacher\ClassReportController.php(96): view('homeroom_teacher/reports/index', [...])
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ClassReportController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ClassReportController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 11:01:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-10-08 11:01:51 --> [DEPRECATED] round(): Passing null to parameter #1 ($num) of type int|float is deprecated in APPPATH\Controllers\HomeroomTeacher\DashboardController.php on line 240.
+ 1 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(240): round(null, 1)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(84): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 11:01:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:31:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:31:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:32:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:32:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:36:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:36:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:37:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:37:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:37:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-10-08 11:37:28 --> [DEPRECATED] round(): Passing null to parameter #1 ($num) of type int|float is deprecated in APPPATH\Controllers\HomeroomTeacher\DashboardController.php on line 240.
+ 1 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(240): round(null, 1)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(84): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 11:37:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:37:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:42:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:42:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:42:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+WARNING - 2025-10-08 11:42:58 --> [DEPRECATED] round(): Passing null to parameter #1 ($num) of type int|float is deprecated in APPPATH\Controllers\HomeroomTeacher\DashboardController.php on line 240.
+ 1 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(240): round(null, 1)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(84): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-08 11:43:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:43:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-08 11:44:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.

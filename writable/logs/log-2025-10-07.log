@@ -1,0 +1,2175 @@
+DEBUG - 2025-10-07 21:13:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:13:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:13:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-10-07 21:13:51 --> CSRF token verified.
+DEBUG - 2025-10-07 21:13:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:14:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:14:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:14:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:19:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:23:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:23:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:24:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-10-07 21:24:45 --> CSRF token verified.
+DEBUG - 2025-10-07 21:25:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:25:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-10-07 21:26:15 --> CSRF token verified.
+DEBUG - 2025-10-07 21:26:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:26:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:27:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:58:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:58:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 21:58:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 21:58:17 --> mysqli_sql_exception: Unknown column 'violation_points' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT SUM(viol...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT SUM(viol...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT SUM(viol...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT SUM(viol...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(203): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(92): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+CRITICAL - 2025-10-07 21:58:17 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_points' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT SUM(violation_points) as total_points
+FROM `students`
+WHERE `class_id` = :class_id:
+AND `status` = :status:', [...], false)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(203): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(92): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 21:58:17 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT SUM(violation_points) as total_points
+FROM `students`
+WHERE `class_id` = \'1\'
+AND `status` = \'Aktif\'')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT SUM(violation_points) as total_points
+FROM `students`
+WHERE `class_id` = \'1\'
+AND `status` = \'Aktif\'')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT SUM(violation_points) as total_points
+FROM `students`
+WHERE `class_id` = :class_id:
+AND `status` = :status:', [...], false)
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(203): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(92): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 21:58:17 --> [Caused by] mysqli_sql_exception: Unknown column 'violation_points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT SUM(violation_points) as total_points
+FROM `students`
+WHERE `class_id` = \'1\'
+AND `status` = \'Aktif\'', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT SUM(violation_points) as total_points
+FROM `students`
+WHERE `class_id` = \'1\'
+AND `status` = \'Aktif\'')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT SUM(violation_points) as total_points
+FROM `students`
+WHERE `class_id` = \'1\'
+AND `status` = \'Aktif\'')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT SUM(violation_points) as total_points
+FROM `students`
+WHERE `class_id` = :class_id:
+AND `status` = :status:', [...], false)
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(203): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(92): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:04:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:04:46 --> mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+CRITICAL - 2025-10-07 22:04:46 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:04:46 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:04:46 --> [Caused by] mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:04:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:04:47 --> mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+CRITICAL - 2025-10-07 22:04:47 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:04:47 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:04:47 --> [Caused by] mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:04:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:04:51 --> mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+CRITICAL - 2025-10-07 22:04:51 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:04:51 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:04:51 --> [Caused by] mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:05:04 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:05:04 --> mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+CRITICAL - 2025-10-07 22:05:04 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:05:04 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:05:04 --> [Caused by] mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:05:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:05:05 --> mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+CRITICAL - 2025-10-07 22:05:05 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:05:05 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:05:05 --> [Caused by] mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:05:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:05:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:05:15 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:05:15 --> mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+CRITICAL - 2025-10-07 22:05:15 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:05:15 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:05:15 --> [Caused by] mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:05:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:05:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:05:16 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:05:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:05:18 --> mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+CRITICAL - 2025-10-07 22:05:18 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:05:18 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:05:18 --> [Caused by] mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:05:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:05:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:05:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:05:25 --> mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE...', Array, false)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#9 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#10 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#11 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#12 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#13 {main}
+CRITICAL - 2025-10-07 22:05:25 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 4 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 5 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 6 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 7 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 8 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 9 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+10 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:05:25 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:05:25 --> [Caused by] mysqli_sql_exception: Unknown column 'violation_categories.points' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = \'1\'
+AND `students`.`status` = \'Aktif\'
+AND `violations`.`deleted_at` IS NULL')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT COALESCE(SUM(violation_categories.points), 0) as total_points
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+WHERE `students`.`class_id` = :students.class_id:
+AND `students`.`status` = :students.status:
+AND `violations`.`deleted_at` IS NULL', [...], false)
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(208): CodeIgniter\Database\BaseBuilder->get()
+ 6 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(91): App\Controllers\HomeroomTeacher\DashboardController->getClassStatistics('1')
+ 7 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 8 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 9 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+10 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+11 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+12 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+13 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:09:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:09:27 --> mysqli_sql_exception: Unknown column 'students.full_name' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `violati...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `violati...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `violati...')
+#3 C:\laragon\www\sib-k\system\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `violati...', Array, false)
+#4 C:\laragon\www\sib-k\system\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+#5 C:\laragon\www\sib-k\system\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+#6 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(248): CodeIgniter\BaseModel->findAll()
+#7 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(92): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+#8 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#9 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#10 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#11 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#12 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#13 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#14 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#15 {main}
+CRITICAL - 2025-10-07 22:09:27 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'students.full_name' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `violations`.*, `students`.`full_name` as `student_name`, `students`.`nisn`, `violation_categories`.`category_name`, `violation_categories`.`points`, `violation_categories`.`severity_level`, `users`.`full_name` as `reported_by_name`
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+LEFT JOIN `users` ON `users`.`id` = `violations`.`reported_by`
+WHERE `students`.`class_id` = :students.class_id.1:
+AND `violations`.`deleted_at` IS NULL
+ORDER BY `violations`.`violation_date` DESC, `violations`.`created_at` DESC
+ LIMIT 5', [...], false)
+ 2 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 3 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(248): CodeIgniter\BaseModel->findAll()
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(92): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:09:27 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 'students.full_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `violations`.*, `students`.`full_name` as `student_name`, `students`.`nisn`, `violation_categories`.`category_name`, `violation_categories`.`points`, `violation_categories`.`severity_level`, `users`.`full_name` as `reported_by_name`
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+LEFT JOIN `users` ON `users`.`id` = `violations`.`reported_by`
+WHERE `students`.`class_id` = \'1\'
+AND `violations`.`deleted_at` IS NULL
+ORDER BY `violations`.`violation_date` DESC, `violations`.`created_at` DESC
+ LIMIT 5')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `violations`.*, `students`.`full_name` as `student_name`, `students`.`nisn`, `violation_categories`.`category_name`, `violation_categories`.`points`, `violation_categories`.`severity_level`, `users`.`full_name` as `reported_by_name`
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+LEFT JOIN `users` ON `users`.`id` = `violations`.`reported_by`
+WHERE `students`.`class_id` = \'1\'
+AND `violations`.`deleted_at` IS NULL
+ORDER BY `violations`.`violation_date` DESC, `violations`.`created_at` DESC
+ LIMIT 5')
+ 3 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `violations`.*, `students`.`full_name` as `student_name`, `students`.`nisn`, `violation_categories`.`category_name`, `violation_categories`.`points`, `violation_categories`.`severity_level`, `users`.`full_name` as `reported_by_name`
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+LEFT JOIN `users` ON `users`.`id` = `violations`.`reported_by`
+WHERE `students`.`class_id` = :students.class_id.1:
+AND `violations`.`deleted_at` IS NULL
+ORDER BY `violations`.`violation_date` DESC, `violations`.`created_at` DESC
+ LIMIT 5', [...], false)
+ 4 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 5 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 6 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(248): CodeIgniter\BaseModel->findAll()
+ 7 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(92): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 8 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 9 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+10 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+11 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+12 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+13 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+14 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:09:27 --> [Caused by] mysqli_sql_exception: Unknown column 'students.full_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('SELECT `violations`.*, `students`.`full_name` as `student_name`, `students`.`nisn`, `violation_categories`.`category_name`, `violation_categories`.`points`, `violation_categories`.`severity_level`, `users`.`full_name` as `reported_by_name`
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+LEFT JOIN `users` ON `users`.`id` = `violations`.`reported_by`
+WHERE `students`.`class_id` = \'1\'
+AND `violations`.`deleted_at` IS NULL
+ORDER BY `violations`.`violation_date` DESC, `violations`.`created_at` DESC
+ LIMIT 5', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('SELECT `violations`.*, `students`.`full_name` as `student_name`, `students`.`nisn`, `violation_categories`.`category_name`, `violation_categories`.`points`, `violation_categories`.`severity_level`, `users`.`full_name` as `reported_by_name`
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+LEFT JOIN `users` ON `users`.`id` = `violations`.`reported_by`
+WHERE `students`.`class_id` = \'1\'
+AND `violations`.`deleted_at` IS NULL
+ORDER BY `violations`.`violation_date` DESC, `violations`.`created_at` DESC
+ LIMIT 5')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT `violations`.*, `students`.`full_name` as `student_name`, `students`.`nisn`, `violation_categories`.`category_name`, `violation_categories`.`points`, `violation_categories`.`severity_level`, `users`.`full_name` as `reported_by_name`
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+LEFT JOIN `users` ON `users`.`id` = `violations`.`reported_by`
+WHERE `students`.`class_id` = \'1\'
+AND `violations`.`deleted_at` IS NULL
+ORDER BY `violations`.`violation_date` DESC, `violations`.`created_at` DESC
+ LIMIT 5')
+ 4 SYSTEMPATH\Database\BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT `violations`.*, `students`.`full_name` as `student_name`, `students`.`nisn`, `violation_categories`.`category_name`, `violation_categories`.`points`, `violation_categories`.`severity_level`, `users`.`full_name` as `reported_by_name`
+FROM `violations`
+JOIN `students` ON `students`.`id` = `violations`.`student_id`
+JOIN `violation_categories` ON `violation_categories`.`id` = `violations`.`category_id`
+LEFT JOIN `users` ON `users`.`id` = `violations`.`reported_by`
+WHERE `students`.`class_id` = :students.class_id.1:
+AND `violations`.`deleted_at` IS NULL
+ORDER BY `violations`.`violation_date` DESC, `violations`.`created_at` DESC
+ LIMIT 5', [...], false)
+ 5 SYSTEMPATH\Model.php(286): CodeIgniter\Database\BaseBuilder->get()
+ 6 SYSTEMPATH\BaseModel.php(677): CodeIgniter\Model->doFindAll(0, 0)
+ 7 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(248): CodeIgniter\BaseModel->findAll()
+ 8 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(92): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 9 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+10 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+11 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+12 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+13 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+14 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+15 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:12:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:12:52 --> mysqli_sql_exception: Unknown column 's.full_name' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('\r\n            S...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('\r\n            S...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('\r\n            S...')
+#3 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('\r\n            S...', Array)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+#5 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#12 {main}
+CRITICAL - 2025-10-07 22:12:52 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 's.full_name' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:12:52 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 's.full_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:12:52 --> [Caused by] mysqli_sql_exception: Unknown column 's.full_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:12:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:12:53 --> mysqli_sql_exception: Unknown column 's.full_name' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('\r\n            S...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('\r\n            S...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('\r\n            S...')
+#3 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('\r\n            S...', Array)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+#5 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#12 {main}
+CRITICAL - 2025-10-07 22:12:53 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 's.full_name' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:12:53 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 's.full_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:12:53 --> [Caused by] mysqli_sql_exception: Unknown column 's.full_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:12:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:12:53 --> mysqli_sql_exception: Unknown column 's.full_name' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('\r\n            S...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('\r\n            S...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('\r\n            S...')
+#3 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('\r\n            S...', Array)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+#5 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#12 {main}
+CRITICAL - 2025-10-07 22:12:53 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 's.full_name' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:12:53 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 's.full_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:12:53 --> [Caused by] mysqli_sql_exception: Unknown column 's.full_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:12:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+ERROR - 2025-10-07 22:12:54 --> mysqli_sql_exception: Unknown column 's.full_name' in 'field list' in C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php:327
+Stack trace:
+#0 C:\laragon\www\sib-k\system\Database\MySQLi\Connection.php(327): mysqli->query('\r\n            S...', 0)
+#1 C:\laragon\www\sib-k\system\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('\r\n            S...')
+#2 C:\laragon\www\sib-k\system\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('\r\n            S...')
+#3 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('\r\n            S...', Array)
+#4 C:\laragon\www\sib-k\app\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+#5 C:\laragon\www\sib-k\system\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+#6 C:\laragon\www\sib-k\system\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+#7 C:\laragon\www\sib-k\system\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 C:\laragon\www\sib-k\system\Boot.php(363): CodeIgniter\CodeIgniter->run()
+#9 C:\laragon\www\sib-k\system\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+#10 C:\laragon\www\sib-k\public\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+#11 C:\laragon\www\sib-k\system\rewrite.php(44): require_once('C:\\laragon\\www\\...')
+#12 {main}
+CRITICAL - 2025-10-07 22:12:54 --> CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 's.full_name' in 'field list'
+[Method: GET, Route: homeroom/dashboard]
+in SYSTEMPATH\Database\BaseConnection.php on line 684.
+ 1 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 2 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 3 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 4 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 5 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 6 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 7 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+ 8 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+ 9 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:12:54 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Unknown column 's.full_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 332.
+ 1 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 2 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 3 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 5 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 6 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 7 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 8 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+ 9 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+10 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+11 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+CRITICAL - 2025-10-07 22:12:54 --> [Caused by] mysqli_sql_exception: Unknown column 's.full_name' in 'field list'
+in SYSTEMPATH\Database\MySQLi\Connection.php on line 327.
+ 1 SYSTEMPATH\Database\MySQLi\Connection.php(327): mysqli->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ', 0)
+ 2 SYSTEMPATH\Database\BaseConnection.php(729): CodeIgniter\Database\MySQLi\Connection->execute('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 3 SYSTEMPATH\Database\BaseConnection.php(646): CodeIgniter\Database\BaseConnection->simpleQuery('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = \'1\'
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT 5
+        ')
+ 4 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(221): CodeIgniter\Database\BaseConnection->query('
+            SELECT 
+                v.*,
+                s.full_name as student_name,
+                s.nisn,
+                vc.category_name,
+                vc.points,
+                vc.severity_level,
+                u.full_name as reported_by_name
+            FROM violations v
+            INNER JOIN students s ON s.id = v.student_id
+            INNER JOIN violation_categories vc ON vc.id = v.category_id
+            LEFT JOIN users u ON u.id = v.reported_by
+            WHERE s.class_id = ?
+              AND v.deleted_at IS NULL
+            ORDER BY v.violation_date DESC, v.created_at DESC
+            LIMIT ?
+        ', [...])
+ 5 APPPATH\Controllers\HomeroomTeacher\DashboardController.php(81): App\Controllers\HomeroomTeacher\DashboardController->getRecentViolations('1', 5)
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\DashboardController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\DashboardController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:19:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:19:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:19:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-07 22:19:33 --> ErrorException: Undefined variable $statistics
+[Method: GET, Route: homeroom/violations]
+in APPPATH\Views\homeroom_teacher\violations\index.php on line 78.
+ 1 APPPATH\Views\homeroom_teacher\violations\index.php(78): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $statistics', 'C:\\laragon\\www\\sib-k\\app\\Views\\homeroom_teacher\\violations\\index.php', 78)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\homeroom_teacher\\violations\\index.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('homeroom_teacher/violations/index', [], true)
+ 5 APPPATH\Controllers\HomeroomTeacher\ViolationController.php(121): view('homeroom_teacher/violations/index', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:19:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:20:03 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-07 22:20:03 --> ErrorException: Undefined variable $statistics
+[Method: GET, Route: homeroom/violations]
+in APPPATH\Views\homeroom_teacher\violations\index.php on line 78.
+ 1 APPPATH\Views\homeroom_teacher\violations\index.php(78): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $statistics', 'C:\\laragon\\www\\sib-k\\app\\Views\\homeroom_teacher\\violations\\index.php', 78)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\homeroom_teacher\\violations\\index.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('homeroom_teacher/violations/index', [], true)
+ 5 APPPATH\Controllers\HomeroomTeacher\ViolationController.php(121): view('homeroom_teacher/violations/index', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ViolationController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ViolationController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:20:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:20:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:20:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:41:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:41:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:41:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:41:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:42:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-07 22:42:08 --> ErrorException: Undefined variable $class
+[Method: GET, Route: homeroom/reports]
+in APPPATH\Views\homeroom_teacher\reports\class_summary.php on line 55.
+ 1 APPPATH\Views\homeroom_teacher\reports\class_summary.php(55): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined variable $class', 'C:\\laragon\\www\\sib-k\\app\\Views\\homeroom_teacher\\reports\\class_summary.php', 55)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\homeroom_teacher\\reports\\class_summary.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('homeroom_teacher/reports/class_summary', [], true)
+ 5 APPPATH\Controllers\HomeroomTeacher\ClassReportController.php(85): view('homeroom_teacher/reports/class_summary', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\HomeroomTeacher\ClassReportController->index()
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\HomeroomTeacher\ClassReportController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:42:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:42:17 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:42:20 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:42:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:43:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:43:55 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:44:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:44:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:44:21 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+INFO - 2025-10-07 22:44:21 --> CSRF token verified.
+DEBUG - 2025-10-07 22:44:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:44:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:44:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:44:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:44:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:45:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:45:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:45:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:45:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:45:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:45:25 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:45:28 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:45:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:45:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:46:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-07 22:46:00 --> ErrorException: Undefined array key "name"
+[Method: GET, Route: admin/classes/detail/2]
+in APPPATH\Views\admin\classes\detail.php on line 26.
+ 1 APPPATH\Views\admin\classes\detail.php(26): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "name"', 'C:\\laragon\\www\\sib-k\\app\\Views\\admin\\classes\\detail.php', 26)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\admin\\classes\\detail.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('admin/classes/detail', [], true)
+ 5 APPPATH\Controllers\Admin\ClassController.php(297): view('admin/classes/detail', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin\ClassController->detail('2')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\ClassController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:46:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:48:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-07 22:48:32 --> ErrorException: Undefined array key "name"
+[Method: GET, Route: admin/classes/detail/1]
+in APPPATH\Views\admin\classes\detail.php on line 26.
+ 1 APPPATH\Views\admin\classes\detail.php(26): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "name"', 'C:\\laragon\\www\\sib-k\\app\\Views\\admin\\classes\\detail.php', 26)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\admin\\classes\\detail.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('admin/classes/detail', [], true)
+ 5 APPPATH\Controllers\Admin\ClassController.php(297): view('admin/classes/detail', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin\ClassController->detail('1')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\ClassController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:49:38 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-07 22:49:38 --> ErrorException: Undefined array key "homeroom"
+[Method: GET, Route: admin/classes/detail/1]
+in APPPATH\Views\admin\classes\detail.php on line 29.
+ 1 APPPATH\Views\admin\classes\detail.php(29): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "homeroom"', 'C:\\laragon\\www\\sib-k\\app\\Views\\admin\\classes\\detail.php', 29)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\admin\\classes\\detail.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('admin/classes/detail', [], true)
+ 5 APPPATH\Controllers\Admin\ClassController.php(297): view('admin/classes/detail', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin\ClassController->detail('1')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\ClassController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:51:18 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+CRITICAL - 2025-10-07 22:51:18 --> ErrorException: Undefined array key "name"
+[Method: GET, Route: admin/classes/detail/1]
+in APPPATH\Views\admin\classes\detail.php on line 56.
+ 1 APPPATH\Views\admin\classes\detail.php(56): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array key "name"', 'C:\\laragon\\www\\sib-k\\app\\Views\\admin\\classes\\detail.php', 56)
+ 2 SYSTEMPATH\View\View.php(226): include('C:\\laragon\\www\\sib-k\\app\\Views\\admin\\classes\\detail.php')
+ 3 SYSTEMPATH\View\View.php(229): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+ 4 SYSTEMPATH\Common.php(1167): CodeIgniter\View\View->render('admin/classes/detail', [], true)
+ 5 APPPATH\Controllers\Admin\ClassController.php(297): view('admin/classes/detail', [...])
+ 6 SYSTEMPATH\CodeIgniter.php(933): App\Controllers\Admin\ClassController->detail('1')
+ 7 SYSTEMPATH\CodeIgniter.php(507): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\Admin\ClassController))
+ 8 SYSTEMPATH\CodeIgniter.php(354): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
+ 9 SYSTEMPATH\Boot.php(363): CodeIgniter\CodeIgniter->run()
+10 SYSTEMPATH\Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
+11 FCPATH\index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
+12 SYSTEMPATH\rewrite.php(44): require_once('C:\\laragon\\www\\sib-k\\public\\index.php')
+DEBUG - 2025-10-07 22:52:10 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:52:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:52:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:52:26 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:52:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:52:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:52:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:53:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:53:30 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:53:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:53:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:53:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:53:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:53:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:53:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:54:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:54:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:54:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2025-10-07 22:54:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.

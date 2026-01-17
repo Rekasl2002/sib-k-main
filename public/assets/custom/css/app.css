@@ -1,0 +1,1477 @@
+/**
+ * File Path: public/assets/custom/css/app.css
+ *
+ * SIB-K Custom Application Stylesheet
+ * Template: Qovex Admin Template
+ * Framework: Bootstrap 5
+ *
+ * Consolidate semua custom CSS di sini untuk mengurangi inline styles
+ *
+ * @package    SIB-K
+ * @category   Stylesheet
+ * @author     Development Team
+ * @created    2025-01-07
+ * @version    1.0.0
+ */
+
+/* ==========================================================================
+   TABLE OF CONTENTS
+   ========================================================================== */
+
+/*
+ * 1. CSS Variables & Theme Colors
+ * 2. Base & Typography
+ * 3. Layout & Structure
+ * 4. Navigation & Sidebar
+ * 5. Cards & Panels
+ * 6. Forms & Inputs
+ * 7. Buttons & Actions
+ * 8. Tables & DataTables
+ * 9. Badges & Labels
+ * 10. Alerts & Notifications
+ * 11. Modals & Dialogs
+ * 12. Avatar & Profile
+ * 13. Role-Specific Styles
+ * 14. Dashboard Components
+ * 15. Assessment Module
+ * 16. Session Module
+ * 17. Violation Module
+ * 18. Utilities & Helpers
+ * 19. Animation & Transitions
+ * 20. Responsive Overrides
+ * 21. Print Styles
+ * 22. SIBK Theme Overrides (Mapersis-like)
+ */
+
+/* ==========================================================================
+   1. CSS VARIABLES & THEME COLORS
+   ========================================================================== */
+
+:root {
+  /* ------------------------------------------------------------------------
+     SIBK Theme (Mapersis-like)
+     ------------------------------------------------------------------------ */
+  --sibk-primary: #1f6f54;            /* hijau utama */
+  --sibk-primary-rgb: 31, 111, 84;
+  --sibk-accent: #d1a545;             /* aksen emas */
+  --sibk-bg: #f6f8f7;                 /* background lembut */
+  --sibk-surface: #ffffff;            /* card/surface */
+  --sibk-text: #0f172a;
+  --sibk-muted: #64748b;
+  --sibk-border: rgba(15, 23, 42, 0.10);
+  --sibk-radius: 14px;
+  --sibk-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+  --topbar-height: 64px;
+
+  /* dipakai untuk offset sidebar mobile (dipakai juga oleh JS) */
+  --sibk-header-height: var(--topbar-height, 64px);
+
+  /* Bootstrap 5 variables (runtime) */
+  --bs-primary: var(--sibk-primary);
+  --bs-primary-rgb: var(--sibk-primary-rgb);
+  --bs-link-color: var(--sibk-primary);
+  --bs-link-hover-color: #165a45;
+  --bs-body-bg: var(--sibk-bg);
+  --bs-body-color: var(--sibk-text);
+  --bs-border-color: var(--sibk-border);
+  --bs-font-sans-serif: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* ------------------------------------------------------------------------
+     Existing App Variables (dipertahankan)
+     ------------------------------------------------------------------------ */
+
+  /* Primary Colors */
+  --primary-color: var(--sibk-primary);
+  --secondary-color: #6b7280;
+  --success-color: #22c55e;
+  --danger-color: #ef4444;
+  --warning-color: #f59e0b;
+  --info-color: #3b82f6;
+  --dark-color: #0f172a;
+  --light-color: #f8fafc;
+
+  /* Role Colors */
+  --admin-color: #556ee6;
+  --koordinator-color: #f1b44c;
+  --counselor-color: #34c38f;
+  --homeroom-color: #50a5f1;
+  --student-color: #74788d;
+  --parent-color: #f46a6a;
+
+  /* Grays */
+  --gray-100: #f8f9fa;
+  --gray-200: #eff2f7;
+  --gray-300: #f6f6f6;
+  --gray-400: #ced4da;
+  --gray-500: #adb5bd;
+  --gray-600: #74788d;
+  --gray-700: #495057;
+  --gray-800: #343a40;
+  --gray-900: #212529;
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+
+  /* Border */
+  --border-radius: 0.25rem;
+  --border-radius-lg: 0.5rem;
+  --border-color: #eff2f7;
+
+  /* Shadow */
+  --box-shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  --box-shadow: 0 0.75rem 1.5rem rgba(18, 38, 63, 0.03);
+  --box-shadow-lg: 0 1rem 3rem rgba(0, 0, 0, 0.175);
+
+  /* Transition */
+  --transition-base: all 0.3s ease-in-out;
+  --transition-fast: all 0.15s ease-in-out;
+}
+
+/* ==========================================================================
+   2. BASE & TYPOGRAPHY
+   ========================================================================== */
+
+body {
+  font-family: var(--bs-font-sans-serif);
+  font-size: 0.875rem;
+  color: var(--gray-700);
+  background-color: var(--gray-200);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.page-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: var(--spacing-md);
+}
+
+.text-muted { color: var(--gray-600) !important; }
+
+.font-size-10 { font-size: 10px !important; }
+.font-size-11 { font-size: 11px !important; }
+.font-size-12 { font-size: 12px !important; }
+.font-size-13 { font-size: 13px !important; }
+.font-size-14 { font-size: 14px !important; }
+.font-size-15 { font-size: 15px !important; }
+.font-size-16 { font-size: 16px !important; }
+.font-size-18 { font-size: 18px !important; }
+.font-size-20 { font-size: 20px !important; }
+.font-size-24 { font-size: 24px !important; }
+
+/* ==========================================================================
+   3. LAYOUT & STRUCTURE
+   ========================================================================== */
+
+.main-content {
+  margin-left: 250px;
+  min-height: 100vh;
+  /* mengikuti topbar-height supaya tidak “ngawang” */
+  padding: calc(var(--topbar-height) + 12px) 12px 60px;
+  background-color: var(--gray-200);
+}
+
+.page-content { padding: var(--spacing-lg); }
+
+.container-fluid {
+  padding-left: var(--spacing-lg);
+  padding-right: var(--spacing-lg);
+}
+
+/* Breadcrumb */
+.breadcrumb {
+  background-color: transparent;
+  padding: 0;
+  margin-bottom: var(--spacing-md);
+}
+
+.breadcrumb-item { font-size: 0.8125rem; }
+
+.breadcrumb-item + .breadcrumb-item::before {
+  content: "\f142";
+  font-family: "Material Design Icons";
+  color: var(--gray-500);
+}
+
+/* ==========================================================================
+   4. NAVIGATION & SIDEBAR
+   ========================================================================== */
+
+.vertical-menu {
+  width: 250px;
+  background-color: #fff;
+  box-shadow: var(--box-shadow);
+}
+
+#sidebar-menu ul li a {
+  display: block;
+  padding: 0.75rem 1.5rem;
+  color: var(--gray-700);
+  font-size: 0.875rem;
+  transition: var(--transition-fast);
+}
+
+#sidebar-menu ul li a:hover {
+  color: var(--primary-color);
+  background-color: var(--gray-100);
+}
+
+#sidebar-menu ul li a.active {
+  color: var(--primary-color);
+  background-color: rgba(var(--sibk-primary-rgb), 0.10);
+  font-weight: 600;
+}
+
+#sidebar-menu ul li a i {
+  min-width: 2rem;
+  font-size: 1.125rem;
+  vertical-align: middle;
+}
+
+/* ==========================================================================
+   5. CARDS & PANELS
+   ========================================================================== */
+
+.card {
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--box-shadow);
+  border-radius: var(--border-radius-lg);
+  transition: var(--transition-base);
+}
+
+.card:hover { box-shadow: var(--box-shadow-lg); }
+
+.card-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--gray-800);
+  margin-bottom: var(--spacing-md);
+}
+
+.card-header {
+  background-color: transparent;
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 1.25rem;
+}
+
+.card-body { padding: 1.25rem; }
+
+.card-footer {
+  background-color: var(--gray-100);
+  border-top: 1px solid var(--border-color);
+  padding: 0.75rem 1.25rem;
+}
+
+/* Mini Cards / Stat Cards */
+.mini-stats-wid .mini-stat-icon {
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-lg);
+}
+
+.mini-stats-wid h6 {
+  font-size: 0.8125rem;
+  color: var(--gray-600);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+
+.mini-stats-wid .counter {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gray-800);
+}
+
+/* ==========================================================================
+   6. FORMS & INPUTS
+   ========================================================================== */
+
+.form-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  margin-bottom: 0.5rem;
+}
+
+.form-label.required::after { content: " *"; color: var(--danger-color); }
+
+.form-control,
+.form-select {
+  font-size: 0.875rem;
+  padding: 0.47rem 0.75rem;
+  border-color: var(--border-color);
+  border-radius: var(--border-radius);
+  transition: var(--transition-fast);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 0.2rem rgba(31, 111, 84, 0.25);
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid { border-color: var(--danger-color); }
+
+.invalid-feedback {
+  font-size: 0.75rem;
+  color: var(--danger-color);
+  margin-top: 0.25rem;
+}
+
+.form-text { font-size: 0.75rem; color: var(--gray-600); }
+
+/* Custom File Input */
+.custom-file-input { cursor: pointer; }
+.custom-file-label { font-size: 0.875rem; }
+
+/* Search Box */
+.search-box { position: relative; }
+.search-box .form-control { padding-left: 2.5rem; }
+.search-box i {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--gray-500);
+}
+
+/* ==========================================================================
+   7. BUTTONS & ACTIONS
+   ========================================================================== */
+
+.btn {
+  font-size: 0.875rem;
+  padding: 0.47rem 0.75rem;
+  border-radius: var(--border-radius);
+  font-weight: 500;
+  transition: var(--transition-fast);
+}
+
+.btn-sm { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+.btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
+
+.btn-primary { background-color: var(--primary-color); border-color: var(--primary-color); }
+.btn-primary:hover { background-color: #165a45; border-color: #165a45; }
+
+.btn-success { background-color: var(--success-color); border-color: var(--success-color); }
+.btn-danger { background-color: var(--danger-color); border-color: var(--danger-color); }
+.btn-warning { background-color: var(--warning-color); border-color: var(--warning-color); }
+.btn-info { background-color: var(--info-color); border-color: var(--info-color); }
+
+.btn-light {
+  background-color: var(--light-color);
+  border-color: var(--border-color);
+  color: var(--gray-700);
+}
+.btn-light:hover {
+  background-color: var(--gray-300);
+  border-color: var(--gray-400);
+  color: var(--gray-800);
+}
+
+/* Icon Buttons */
+.btn-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-icon-sm { width: 2rem; height: 2rem; }
+
+/* Action Buttons Group */
+.action-buttons { display: flex; gap: 0.5rem; }
+.action-buttons .btn { margin: 0; }
+
+/* ==========================================================================
+   8. TABLES & DATATABLES
+   ========================================================================== */
+
+.table { font-size: 0.875rem; color: var(--gray-700); }
+
+.table thead th {
+  background-color: var(--gray-100);
+  border-bottom: 2px solid var(--border-color);
+  font-weight: 600;
+  color: var(--gray-800);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  padding: 0.75rem 0.5rem;
+}
+
+.table tbody td { padding: 0.75rem 0.5rem; vertical-align: middle; }
+
+.table-hover tbody tr:hover { background-color: rgba(31, 111, 84, 0.05); }
+.table-striped tbody tr:nth-of-type(odd) { background-color: rgba(0, 0, 0, 0.02); }
+
+/* DataTables Customization */
+.dataTables_wrapper .dataTables_length select {
+  padding: 0.25rem 2rem 0.25rem 0.5rem;
+  font-size: 0.875rem;
+}
+.dataTables_wrapper .dataTables_filter input {
+  padding: 0.47rem 0.75rem;
+  font-size: 0.875rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+}
+.dataTables_wrapper .dataTables_info { font-size: 0.8125rem; color: var(--gray-600); }
+.dataTables_wrapper .dataTables_paginate .paginate_button { padding: 0.375rem 0.75rem; font-size: 0.875rem; }
+
+/* ==========================================================================
+   9. BADGES & LABELS
+   ========================================================================== */
+
+.badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--border-radius);
+}
+
+.badge-soft-primary { color: var(--primary-color); background-color: rgba(31, 111, 84, 0.18); }
+.badge-soft-success { color: var(--success-color); background-color: rgba(34, 197, 94, 0.18); }
+.badge-soft-danger { color: var(--danger-color); background-color: rgba(239, 68, 68, 0.18); }
+.badge-soft-warning { color: var(--warning-color); background-color: rgba(245, 158, 11, 0.18); }
+.badge-soft-info { color: var(--info-color); background-color: rgba(59, 130, 246, 0.18); }
+.badge-soft-secondary { color: var(--secondary-color); background-color: rgba(107, 114, 128, 0.18); }
+
+/* Status Badges */
+.status-active { background-color: rgba(34, 197, 94, 0.18); color: #15803d; }
+.status-inactive { background-color: rgba(107, 114, 128, 0.18); color: var(--secondary-color); }
+.status-pending { background-color: rgba(245, 158, 11, 0.18); color: #92400e; }
+.status-completed { background-color: rgba(34, 197, 94, 0.18); color: #15803d; }
+.status-cancelled { background-color: rgba(239, 68, 68, 0.18); color: #991b1b; }
+
+/* ==========================================================================
+   10. ALERTS & NOTIFICATIONS
+   ========================================================================== */
+
+.alert {
+  font-size: 0.875rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
+  border: none;
+  margin-bottom: var(--spacing-md);
+}
+
+.alert-dismissible .btn-close { padding: 0.5rem; opacity: 0.5; }
+.alert-dismissible .btn-close:hover { opacity: 1; }
+
+.alert-success { background-color: rgba(34, 197, 94, 0.15); color: #0f6848; }
+.alert-danger { background-color: rgba(239, 68, 68, 0.15); color: #8b2e2e; }
+.alert-warning { background-color: rgba(245, 158, 11, 0.15); color: #7a5c1f; }
+.alert-info { background-color: rgba(59, 130, 246, 0.15); color: #1d5687; }
+
+/* Notification Dropdown */
+.notification-list { max-height: 300px; overflow-y: auto; }
+.notification-item {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  transition: var(--transition-fast);
+}
+.notification-item:hover { background-color: var(--gray-100); }
+.notification-item.unread { background-color: rgba(31, 111, 84, 0.06); }
+
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==========================================================================
+   11. MODALS & DIALOGS
+   ========================================================================== */
+
+.modal-header {
+  background-color: var(--gray-100);
+  border-bottom: 1px solid var(--border-color);
+  padding: 1rem 1.25rem;
+}
+.modal-title { font-size: 1rem; font-weight: 600; color: var(--gray-800); }
+.modal-body { padding: 1.25rem; }
+.modal-footer {
+  background-color: var(--gray-100);
+  border-top: 1px solid var(--border-color);
+  padding: 0.75rem 1.25rem;
+}
+
+/* ==========================================================================
+   12. AVATAR & PROFILE
+   ========================================================================== */
+
+.avatar-xs { width: 2rem; height: 2rem; }
+.avatar-sm { width: 2.5rem; height: 2.5rem; }
+.avatar-md { width: 3rem; height: 3rem; }
+.avatar-lg { width: 4rem; height: 4rem; }
+.avatar-xl { width: 5rem; height: 5rem; }
+
+.avatar-title {
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.avatar-xs .avatar-title { font-size: 0.75rem; }
+.avatar-sm .avatar-title { font-size: 0.875rem; }
+.avatar-md .avatar-title { font-size: 1rem; }
+.avatar-lg .avatar-title { font-size: 1.25rem; }
+.avatar-xl .avatar-title { font-size: 1.5rem; }
+
+/* ==========================================================================
+   13. ROLE-SPECIFIC STYLES
+   ========================================================================== */
+
+.role-admin { color: var(--admin-color) !important; }
+.role-koordinator { color: var(--koordinator-color) !important; }
+.role-counselor { color: var(--counselor-color) !important; }
+.role-homeroom { color: var(--homeroom-color) !important; }
+.role-student { color: var(--student-color) !important; }
+.role-parent { color: var(--parent-color) !important; }
+
+.bg-role-admin { background-color: rgba(85, 110, 230, 0.1) !important; }
+.bg-role-koordinator { background-color: rgba(241, 180, 76, 0.1) !important; }
+.bg-role-counselor { background-color: rgba(52, 195, 143, 0.1) !important; }
+.bg-role-homeroom { background-color: rgba(80, 165, 241, 0.1) !important; }
+.bg-role-student { background-color: rgba(116, 120, 141, 0.1) !important; }
+.bg-role-parent { background-color: rgba(244, 106, 106, 0.1) !important; }
+
+/* ==========================================================================
+   14. DASHBOARD COMPONENTS
+   ========================================================================== */
+
+.welcome-card {
+  background: linear-gradient(135deg, var(--primary-color) 0%, #165a45 100%);
+  color: #fff;
+  border: none;
+}
+.welcome-card h4, .welcome-card p { color: #fff; }
+
+.chart-container { position: relative; height: 300px; }
+
+.activity-item {
+  position: relative;
+  padding-left: 2.5rem;
+  padding-bottom: 1.5rem;
+}
+.activity-item::before {
+  content: "";
+  position: absolute;
+  left: 0.625rem;
+  top: 0;
+  bottom: -1.5rem;
+  width: 2px;
+  background-color: var(--border-color);
+}
+.activity-item:last-child::before { display: none; }
+
+.activity-icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  background-color: #fff;
+  border: 2px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* ==========================================================================
+   15. ASSESSMENT MODULE
+   ========================================================================== */
+
+.assessment-card {
+  border-left: 3px solid var(--primary-color);
+  transition: var(--transition-base);
+}
+.assessment-card:hover { transform: translateY(-2px); box-shadow: var(--box-shadow-lg); }
+
+.assessment-type-badge { font-size: 0.7rem; padding: 0.25rem 0.5rem; }
+
+.question-card { border-left: 3px solid var(--info-color); margin-bottom: var(--spacing-md); }
+
+.question-number {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.answer-option {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: var(--transition-fast);
+  margin-bottom: 0.5rem;
+}
+.answer-option:hover { border-color: var(--primary-color); background-color: rgba(31, 111, 84, 0.05); }
+.answer-option.selected { border-color: var(--primary-color); background-color: rgba(31, 111, 84, 0.1); font-weight: 600; }
+.answer-option.correct { border-color: var(--success-color); background-color: rgba(34, 197, 94, 0.1); }
+.answer-option.incorrect { border-color: var(--danger-color); background-color: rgba(239, 68, 68, 0.1); }
+
+/* ==========================================================================
+   16. SESSION MODULE
+   ========================================================================== */
+
+.session-card { border-left: 3px solid var(--success-color); }
+.session-type-individual { border-left-color: var(--info-color); }
+.session-type-group { border-left-color: var(--warning-color); }
+.session-type-klasikal { border-left-color: var(--success-color); }
+
+.session-timeline { position: relative; padding-left: 2rem; }
+
+.session-timeline-item { position: relative; padding-bottom: 1.5rem; }
+.session-timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -1.5rem;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: var(--border-color);
+}
+
+.session-timeline-dot {
+  position: absolute;
+  left: -1.875rem;
+  top: 0;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+}
+
+/* ==========================================================================
+   17. VIOLATION MODULE
+   ========================================================================== */
+
+.violation-card { border-left: 3px solid var(--danger-color); }
+
+.violation-severity-low { color: var(--warning-color); }
+.violation-severity-medium { color: var(--info-color); }
+.violation-severity-high { color: var(--danger-color); }
+
+.point-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.875rem;
+}
+.point-indicator.low { background-color: rgba(245, 158, 11, 0.15); color: var(--warning-color); }
+.point-indicator.medium { background-color: rgba(59, 130, 246, 0.15); color: var(--info-color); }
+.point-indicator.high { background-color: rgba(239, 68, 68, 0.15); color: var(--danger-color); }
+
+/* ==========================================================================
+   18. UTILITIES & HELPERS
+   ========================================================================== */
+
+.mb-0 { margin-bottom: 0 !important; }
+.mb-1 { margin-bottom: 0.25rem !important; }
+.mb-2 { margin-bottom: 0.5rem !important; }
+.mb-3 { margin-bottom: 1rem !important; }
+.mb-4 { margin-bottom: 1.5rem !important; }
+.mb-5 { margin-bottom: 3rem !important; }
+
+.mt-0 { margin-top: 0 !important; }
+.mt-1 { margin-top: 0.25rem !important; }
+.mt-2 { margin-top: 0.5rem !important; }
+.mt-3 { margin-top: 1rem !important; }
+.mt-4 { margin-top: 1.5rem !important; }
+.mt-5 { margin-top: 3rem !important; }
+
+.p-0 { padding: 0 !important; }
+.p-1 { padding: 0.25rem !important; }
+.p-2 { padding: 0.5rem !important; }
+.p-3 { padding: 1rem !important; }
+.p-4 { padding: 1.5rem !important; }
+.p-5 { padding: 3rem !important; }
+
+.text-truncate-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.text-truncate-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cursor-pointer { cursor: pointer; }
+.cursor-not-allowed { cursor: not-allowed; }
+
+.d-inline-flex { display: inline-flex !important; }
+.align-items-center { align-items: center !important; }
+.justify-content-between { justify-content: space-between !important; }
+.justify-content-center { justify-content: center !important; }
+
+.border-top { border-top: 1px solid var(--border-color) !important; }
+.border-bottom { border-bottom: 1px solid var(--border-color) !important; }
+.border-left { border-left: 1px solid var(--border-color) !important; }
+.border-right { border-right: 1px solid var(--border-color) !important; }
+
+.rounded { border-radius: var(--border-radius) !important; }
+.rounded-lg { border-radius: var(--border-radius-lg) !important; }
+.rounded-circle { border-radius: 50% !important; }
+
+.shadow-sm { box-shadow: var(--box-shadow-sm) !important; }
+.shadow { box-shadow: var(--box-shadow) !important; }
+.shadow-lg { box-shadow: var(--box-shadow-lg) !important; }
+.shadow-none { box-shadow: none !important; }
+
+/* ==========================================================================
+   19. ANIMATION & TRANSITIONS
+   ========================================================================== */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.fade-in { animation: fadeIn 0.3s ease-in-out; }
+.slide-in-right { animation: slideInRight 0.3s ease-in-out; }
+.pulse-animation { animation: pulse 2s infinite; }
+
+/* Loading Spinner */
+.spinner-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.spinner-border-custom {
+  width: 3rem;
+  height: 3rem;
+  border: 0.25rem solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ==========================================================================
+   20. RESPONSIVE OVERRIDES
+   ========================================================================== */
+
+@media (max-width: 991.98px) {
+  .main-content { margin-left: 0; }
+
+  /* Offcanvas default (umum, kompatibel Qovex): sidebar masuk jika punya .show */
+  .vertical-menu {
+    position: fixed;
+    top: var(--sibk-header-height, 64px);
+    left: -250px;
+    height: calc(100vh - var(--sibk-header-height, 64px));
+    transition: left 0.2s ease;
+    z-index: 1055;
+  }
+
+  .vertical-menu.show { left: 0; }
+}
+
+@media (max-width: 767.98px) {
+  .page-content { padding: var(--spacing-md); }
+
+  .container-fluid {
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+  }
+
+  .card-body { padding: 1rem; }
+  .table { font-size: 0.8125rem; }
+
+  .btn {
+    font-size: 0.8125rem;
+    padding: 0.4rem 0.65rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .page-title { font-size: 1.125rem; }
+  .section-title { font-size: 1rem; }
+
+  .card { margin-bottom: var(--spacing-md); }
+  .mini-stats-wid .counter { font-size: 1.25rem; }
+}
+
+/* ==========================================================================
+   21. PRINT STYLES
+   ========================================================================== */
+
+@media print {
+  body { background-color: #fff; color: #000; }
+
+  .main-content { margin-left: 0; padding: 0; }
+
+  .navbar,
+  .vertical-menu,
+  .breadcrumb,
+  .btn,
+  .page-title-box,
+  .action-buttons,
+  .no-print { display: none !important; }
+
+  .card {
+    border: 1px solid #ddd;
+    box-shadow: none;
+    page-break-inside: avoid;
+  }
+
+  .card-title { color: #000; font-weight: bold; }
+
+  .table { border: 1px solid #ddd; }
+
+  .table thead th {
+    background-color: #f5f5f5;
+    color: #000;
+    border: 1px solid #ddd;
+  }
+
+  .table tbody td { border: 1px solid #ddd; }
+
+  @page { margin: 1.5cm; }
+}
+
+/* ==========================================================================
+   CUSTOM SCROLLBAR
+   ========================================================================== */
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--gray-200); }
+::-webkit-scrollbar-thumb { background: var(--gray-400); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-500); }
+
+/* ==========================================================================
+   22. SIBK THEME OVERRIDES (Mapersis-like)
+   Fokus: topbar, sidebar, spacing, cards, badge 0, container.
+   ========================================================================== */
+
+body.sibk-theme {
+  background: var(--sibk-bg);
+  color: var(--sibk-text);
+}
+
+/* Topbar */
+body.sibk-theme #page-topbar {
+  background: var(--sibk-surface) !important;
+  border-bottom: 1px solid var(--sibk-border);
+}
+
+body.sibk-theme .navbar-header {
+  height: var(--topbar-height);
+  padding: 0 0.75rem;
+}
+
+/* Topbar layout */
+body.sibk-theme .sibk-topbar-wrap {
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+body.sibk-theme .sibk-topbar-left,
+body.sibk-theme .sibk-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+body.sibk-theme .header-item { border-radius: 12px; }
+body.sibk-theme .header-item:hover { background: rgba(var(--sibk-primary-rgb), 0.08); }
+
+/* Hide notif badge when 0 (topbar.php set data-zero="1") */
+body.sibk-theme #notification-badge[data-zero="1"] { display: none !important; }
+
+/* =========================================================
+   Sidebar (GRADIENT) + Brand header rapi
+   ========================================================= */
+
+/* Fallback untuk vertical-menu yang BUKAN sibk-sidebar */
+body.sibk-theme .vertical-menu:not(.sibk-sidebar) {
+  background: #0f2f24;
+  border-right: 1px solid rgba(255, 255, 255, 0.10);
+  box-shadow: none;
+}
+
+/* Sidebar gradient ala Mapersis */
+body.sibk-theme .vertical-menu.sibk-sidebar {
+  background:
+    radial-gradient(1200px 420px at -10% -10%, rgba(255,255,255,.10), transparent 60%),
+    linear-gradient(180deg, #1f6f54 0%, #0f3b2c 52%, #082318 100%) !important;
+  border-right: 1px solid rgba(255,255,255,.10);
+  box-shadow: none !important;
+}
+
+/* Sidebar head brand */
+body.sibk-theme .sibk-sidebar-head {
+  padding: 14px 14px 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.12);
+}
+
+body.sibk-theme .sibk-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: rgba(255,255,255,.92);
+  min-height: 44px;
+}
+
+body.sibk-theme .sibk-sidebar-brand img {
+  width: 42px !important;
+  height: 42px !important;
+  max-width: 42px;
+  max-height: 42px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.92);
+  object-fit: contain;
+  padding: 4px;
+}
+
+/* Text stack rapi */
+body.sibk-theme .sibk-brand-stack {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.1;
+}
+
+body.sibk-theme .sibk-brand-name {
+  font-weight: 800;
+  font-size: .98rem;
+  letter-spacing: .2px;
+  color: rgba(255,255,255,.96) !important;
+}
+
+body.sibk-theme .sibk-brand-sub {
+  font-size: .78rem;
+  color: rgba(255,255,255,.75) !important;
+  white-space: normal;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;       /* maksimal 2 baris */
+  -webkit-box-orient: vertical;
+}
+
+/* User widget */
+body.sibk-theme .vertical-menu.sibk-sidebar .user-wid {
+  padding: 14px 16px 10px 16px !important;
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+
+body.sibk-theme .vertical-menu.sibk-sidebar .user-wid .avatar-md {
+  width: 120px !important;
+  height: 120px !important;
+  border: 2px solid rgba(255,255,255,.25);
+  object-fit: cover;
+}
+
+body.sibk-theme .vertical-menu.sibk-sidebar .user-wid a,
+body.sibk-theme .vertical-menu.sibk-sidebar .user-wid p {
+  color: rgba(255,255,255,.88) !important;
+}
+body.sibk-theme .vertical-menu.sibk-sidebar .user-wid p {
+  color: rgba(255,255,255,.65) !important;
+}
+
+/* Sidebar menu links */
+body.sibk-theme #sidebar-menu .menu-title {
+  color: rgba(255,255,255,.55) !important;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-top: 14px;
+}
+
+body.sibk-theme #sidebar-menu ul li a {
+  color: rgba(255,255,255,.86) !important;
+  border-radius: 12px;
+  margin: 2px 10px;
+  padding: 0.62rem 0.85rem;
+}
+
+body.sibk-theme #sidebar-menu ul li a i {
+  color: rgba(255,255,255,.80) !important;
+}
+
+body.sibk-theme #sidebar-menu ul li a:hover {
+  background: rgba(255,255,255,.10);
+}
+
+body.sibk-theme #sidebar-menu ul li a.active,
+body.sibk-theme #sidebar-menu ul li.mm-active > a {
+  background: rgba(255,255,255,.14);
+  color: #fff !important;
+  border-left: 3px solid var(--sibk-accent);
+  padding-left: calc(0.85rem - 3px);
+}
+
+body.sibk-theme #sidebar-menu ul li.mm-active > a i { color: #fff !important; }
+
+body.sibk-theme #sidebar-menu ul li ul.sub-menu {
+  padding-left: 0;
+  margin: 0 10px 8px 10px;
+  border-left: 1px dashed rgba(255,255,255,.20);
+}
+
+body.sibk-theme #sidebar-menu ul li ul.sub-menu a {
+  margin: 2px 0 2px 12px;
+  padding: 0.52rem 0.75rem;
+  border-radius: 10px;
+  color: rgba(255,255,255,.78) !important;
+}
+
+/* Content */
+body.sibk-theme .main-content {
+  background-color: var(--sibk-bg) !important;
+}
+
+/* Card surfaces */
+body.sibk-theme .card,
+body.sibk-theme .modal-content {
+  border-radius: var(--sibk-radius) !important;
+}
+
+body.sibk-theme .card {
+  border: 1px solid var(--sibk-border) !important;
+  box-shadow: var(--sibk-shadow);
+}
+
+/* Page title default box netral */
+body.sibk-theme .page-title-box {
+  background: transparent !important;
+  padding: 8px 0 12px 0 !important;
+}
+
+/* =========================================================
+   Pagehead Card
+   ========================================================= */
+
+body.sibk-theme .sibk-pagehead {
+  border: 1px solid var(--sibk-border) !important;
+  border-radius: var(--sibk-radius) !important;
+  box-shadow: var(--sibk-shadow);
+  background: var(--sibk-surface);
+}
+
+body.sibk-theme .sibk-pagehead h4 {
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: var(--sibk-text);
+}
+
+body.sibk-theme .sibk-pagehead .breadcrumb {
+  margin: 0 !important;
+  font-size: .78rem;
+}
+
+body.sibk-theme .sibk-pagehead .breadcrumb a {
+  color: rgba(var(--sibk-primary-rgb), .95);
+  text-decoration: none;
+}
+
+body.sibk-theme .sibk-pagehead .breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+/* Anti-geser container */
+body.sibk-theme .main-content .container-fluid,
+body.sibk-theme .main-content .container-fluid.sibk-container {
+  margin-top: 0 !important;
+}
+
+/* Container width */
+body.sibk-theme .container-fluid.sibk-container {
+  max-width: 1220px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+/* Page content */
+body.sibk-theme .page-content {
+  padding-top: 14px !important;
+}
+
+/* ==========================================================================
+   SIBK Header Bar (Mapersis-like)
+   ========================================================================== */
+
+body.sibk-theme #page-topbar{
+  background: var(--sibk-surface) !important;
+  border-top: 3px solid var(--sibk-accent) !important;
+  border-bottom: 1px solid var(--sibk-border) !important;
+  box-shadow: none !important;
+}
+
+body.sibk-theme #page-topbar .navbar-header{
+  height: var(--topbar-height) !important;
+  padding: 0 14px !important;
+}
+
+body.sibk-theme .sibk-topbar-wrap{
+  height: var(--topbar-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .75rem;
+  width: 100%;
+}
+
+body.sibk-theme .sibk-topbar-left,
+body.sibk-theme .sibk-topbar-right{
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+body.sibk-theme .sibk-topbar-center{
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+body.sibk-theme .sibk-topbar-breadcrumb{
+  max-width: 100%;
+  overflow: hidden;
+}
+
+body.sibk-theme .sibk-topbar-breadcrumb .breadcrumb{
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.sibk-theme .sibk-topbar-breadcrumb .breadcrumb-item{
+  font-size: .82rem;
+  color: var(--sibk-muted);
+}
+
+body.sibk-theme .sibk-topbar-breadcrumb .breadcrumb-item.active{
+  color: var(--sibk-text);
+  font-weight: 600;
+}
+
+body.sibk-theme .sibk-header-brand{
+  display: inline-flex;
+  align-items: center;
+  gap: .55rem;
+  text-decoration: none;
+  padding: 6px 8px;
+  border-radius: 12px;
+}
+
+body.sibk-theme .sibk-header-brand:hover{
+  background: rgba(var(--sibk-primary-rgb), 0.06);
+}
+
+body.sibk-theme .sibk-header-logo{
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: rgba(255,255,255,.9);
+  padding: 3px;
+  border: 1px solid var(--sibk-border);
+}
+
+body.sibk-theme .sibk-header-logo-fallback{
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  color: #fff;
+  background: var(--sibk-primary);
+}
+
+body.sibk-theme .sibk-header-brandtext{
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1.05;
+}
+
+body.sibk-theme .sibk-header-title{
+  font-weight: 800;
+  letter-spacing: .2px;
+  color: var(--sibk-primary);
+}
+
+body.sibk-theme .sibk-header-subtitle{
+  font-size: .74rem;
+  color: var(--sibk-muted);
+}
+
+body.sibk-theme .header-item{
+  border-radius: 12px;
+}
+
+body.sibk-theme .header-item:hover{
+  background: rgba(var(--sibk-primary-rgb), 0.08);
+}
+
+/* ==========================================================================
+   Sidebar Toggle (Desktop hide total) + Mobile Offcanvas (SIBK)
+   - Diselaraskan dengan JS: body.sibk-sidebar-hidden (desktop), body.sibk-sidebar-open (mobile)
+   - Hindari konflik transform vs left: mobile memakai left, desktop memakai transform
+   ========================================================================== */
+
+:root{
+  --sibk-sidebar-width: 250px;
+}
+
+/* Hindari horizontal scroll saat sidebar slide */
+body.sibk-theme,
+body.sibk-theme #layout-wrapper{
+  overflow-x: hidden !important;
+}
+
+/* Animasi halus */
+body.sibk-theme .vertical-menu{
+  will-change: transform, left;
+  transition: transform .25s ease, left .20s ease;
+}
+body.sibk-theme .main-content{
+  transition: margin-left .25s ease;
+}
+
+/* Desktop: default open */
+@media (min-width: 992px){
+  body.sibk-theme:not(.sibk-sidebar-hidden) .vertical-menu.sibk-sidebar{
+    width: var(--sibk-sidebar-width) !important;
+    transform: none !important;
+  }
+  body.sibk-theme:not(.sibk-sidebar-hidden) .main-content{
+    margin-left: var(--sibk-sidebar-width) !important;
+  }
+}
+
+/* Desktop: hide total */
+@media (min-width: 992px){
+  body.sibk-theme.sibk-sidebar-hidden .vertical-menu.sibk-sidebar{
+    transform: translateX(-100%) !important;
+    pointer-events: none;
+  }
+  body.sibk-theme.sibk-sidebar-hidden .main-content{
+    margin-left: 0 !important;
+  }
+}
+
+/* Backdrop (dipakai oleh JS; selalu ada, tapi transparan saat closed) */
+body.sibk-theme .sibk-sidebar-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1050;
+  transition: opacity .2s ease;
+}
+
+/* Mobile: offcanvas sidebar */
+@media (max-width: 991.98px){
+  /* mobile konten selalu full */
+  body.sibk-theme .main-content{
+    margin-left: 0 !important;
+  }
+
+  /* sidebar jadi offcanvas */
+  body.sibk-theme .vertical-menu.sibk-sidebar{
+    position: fixed !important;
+    top: var(--sibk-header-height, 64px) !important;
+    left: calc(-1 * (var(--sibk-sidebar-width) + 10px)) !important; /* default tertutup */
+    height: calc(100vh - var(--sibk-header-height, 64px)) !important;
+    width: var(--sibk-sidebar-width) !important;
+    z-index: 1055 !important;
+    transform: none !important; /* penting: cegah kasus "abu-abu doang" */
+    transition: left .2s ease !important;
+    box-shadow: 0 12px 30px rgba(0,0,0,.18);
+  }
+
+  /* Saat open (JS menambahkan body.sibk-sidebar-open dan juga sidebar.show) */
+  body.sibk-theme.sibk-sidebar-open .vertical-menu.sibk-sidebar,
+  body.sibk-theme .vertical-menu.sibk-sidebar.show{
+    left: 0 !important;
+  }
+
+  /* Backdrop aktif */
+  body.sibk-theme.sibk-sidebar-open .sibk-sidebar-backdrop{
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* kunci scroll ketika offcanvas terbuka */
+  body.sibk-theme.sibk-sidebar-open{
+    overflow: hidden;
+  }
+}
+
+/* =========================================================
+   HOTFIX: Mobile sidebar muncul (di atas overlay)
+   Tempel paling bawah app.css
+   ========================================================= */
+
+@media (max-width: 991.98px){
+
+  /* pastikan sidebar tidak ketimpa overlay */
+  #page-topbar{ z-index: 1060 !important; }
+  .vertical-menu.sibk-sidebar{ z-index: 1055 !important; }
+  .sibk-sidebar-backdrop,
+  .vertical-overlay{ z-index: 1050 !important; }
+
+  /* default mobile: sidebar offcanvas di kiri */
+  .vertical-menu.sibk-sidebar{
+    position: fixed !important;
+    top: var(--sibk-header-height, 64px) !important;
+    left: calc(-1 * (var(--sibk-sidebar-width, 250px) + 10px)) !important;
+    width: var(--sibk-sidebar-width, 250px) !important;
+    height: calc(100vh - var(--sibk-header-height, 64px)) !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: none !important; /* penting: jangan pakai transform di mobile */
+  }
+
+  /* state OPEN: dukung 2 class (custom + bawaan template) */
+  body.sibk-sidebar-open .vertical-menu.sibk-sidebar,
+  body.sidebar-enable .vertical-menu.sibk-sidebar,
+  .vertical-menu.sibk-sidebar.show{
+    left: 0 !important;
+  }
+
+  /* backdrop custom */
+  .sibk-sidebar-backdrop{
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.45);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease;
+  }
+  body.sibk-sidebar-open .sibk-sidebar-backdrop{
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* =========================================================
+   FIX: Avatar sidebar lebih tajam (anti blur/pixelated)
+   Tempel paling bawah app.css
+   ========================================================= */
+
+body.sibk-theme .vertical-menu.sibk-sidebar .user-wid .user-img img.avatar-md{
+  width: 64px !important;
+  height: 64px !important;
+  object-fit: cover !important;
+  display: block !important;
+
+  /* ini sering membantu saat browser downscale gambar kecil */
+  image-rendering: auto;
+  image-rendering: -webkit-optimize-contrast;
+
+  /* hindari efek “soft” */
+  filter: none !important;
+  -webkit-filter: none !important;
+}
+
+/* =========================================================
+   FIX: Hindari blur akibat transform layer pada sidebar
+   ========================================================= */
+
+/* Saat sidebar tampil normal, jangan jadikan layer transform permanen */
+@media (min-width: 992px){
+  body.sibk-theme:not(.sibk-sidebar-hidden) .vertical-menu.sibk-sidebar{
+    transform: none !important;
+    will-change: auto !important;
+  }
+}
+
+/* Saat mobile OFFCANVAS dibuka */
+@media (max-width: 991.98px){
+  body.sibk-theme.sibk-sidebar-open .vertical-menu.sibk-sidebar,
+  body.sibk-theme.sidebar-enable .vertical-menu.sibk-sidebar{
+    transform: none !important;
+    will-change: auto !important;
+  }
+}
+
+
+
+/* ==========================================================================
+   END OF STYLESHEET
+   ========================================================================== */
