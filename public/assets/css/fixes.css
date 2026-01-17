@@ -1,0 +1,162 @@
+/* ==========================================================================
+   File Path: public/assets/css/fixes.css
+
+   Global Fixes (SIB-K)
+   - Topbar overlap/click issues
+   - Modal & offcanvas z-index layering
+   - Prevent decorative pseudo elements from blocking clicks
+   - Avoid double spacing caused by applying margin-top to container-fluid
+
+   NOTE:
+   fixes.css dimuat setelah head-css, jadi cocok untuk override.
+   ========================================================================== */
+
+/* 0) Tinggi header: pakai variabel theme bila ada */
+:root{
+  --sibk-header-height: var(--topbar-height, 64px);
+}
+
+/* ========== TOPBAR: Paksa jadi header “nempel atas”, bukan floating card/pill ========== */
+/* Kunci #page-topbar agar benar-benar header normal (fixed di top:0, tinggi pas) */
+#page-topbar{
+  position: fixed !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+  z-index: 1045 !important;
+
+  height: var(--sibk-header-height) !important;
+  min-height: var(--sibk-header-height) !important;
+
+  /* hilangkan efek “detached” */
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+
+  /* biar tampil seperti header (bukan kotak kecil rounded) */
+  background-color: var(--bs-header-bg) !important;
+  box-shadow: 0 1px 2px rgba(0,0,0,.075) !important;
+
+  /* cegah ruang putih tinggi aneh */
+  display: block !important;
+}
+
+/* Banyak template “detached header” memindahkan .navbar-header jadi kotak rounded turun ke bawah.
+   Kita reset total agar baris navigasi nempel di atas. */
+#page-topbar .navbar-header{
+  position: relative !important;
+  top: 0 !important;
+  right: 0 !important;
+  left: 0 !important;
+
+  height: var(--sibk-header-height) !important;
+  min-height: var(--sibk-header-height) !important;
+
+  margin: 0 !important;
+  padding: 0 calc(1.5rem / 2) !important;
+
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+
+  /* pastikan isi sejajar vertikal */
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+
+/* Jika ada wrapper custom yang membuat topbar terlihat seperti card/pill,
+   netralisir tanpa perlu tahu nama class-nya secara pasti. */
+#page-topbar .card,
+#page-topbar .rounded,
+#page-topbar .rounded-pill,
+#page-topbar .shadow,
+#page-topbar .shadow-sm,
+#page-topbar .bg-white{
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Beberapa implementasi bikin “kotak putih” dengan element wrapper khusus.
+   Kita buat aman: apa pun container langsung di dalam navbar-header jangan absolut & jangan turun. */
+#page-topbar .navbar-header > .container-fluid,
+#page-topbar .navbar-header > .container,
+#page-topbar .navbar-header > .row{
+  position: static !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+/* Hilangkan pseudo element dekoratif yang bisa bikin garis/area aneh di atas */
+#page-topbar::before,
+#page-topbar::after,
+#page-topbar .navbar-header::before,
+#page-topbar .navbar-header::after,
+.navbar-custom::before,
+.navbar-custom::after,
+.topbar::before,
+.topbar::after,
+.page-title-box::before,
+.page-title-box::after{
+  content: none !important;
+  pointer-events: none !important;
+}
+
+/* ========== Sidebar agar tidak ketiban header ========== */
+/* Pastikan sidebar mulai tepat di bawah header */
+.vertical-menu{
+  top: var(--sibk-header-height) !important;
+}
+
+/* Jika ada layout lain yang “mengunci” topbar/area header */
+#topnav,
+.navbar-custom,
+.topbar{
+  z-index: 1045 !important;
+}
+
+/* ========== Layering: modal, dropdown, offcanvas ========== */
+.modal{ z-index: 1065 !important; }
+.modal-backdrop{ z-index: 1060 !important; }
+
+/* Dropdown jangan ketiban header */
+.dropdown-menu{ z-index: 1066 !important; }
+
+/* Offcanvas (right-sidebar/settings) */
+.offcanvas{ z-index: 1090 !important; }
+.offcanvas-backdrop{ z-index: 1085 !important; }
+
+/* Netralisir stacking context ekstra saat modal terbuka (menghindari modal “terpotong”) */
+.modal-open .content,
+.modal-open .content-page,
+.modal-open .content-wrapper,
+.modal-open main.container,
+.modal-open .page-content,
+.modal-open .main-content{
+  transform: none !important;
+  perspective: none !important;
+  filter: none !important;
+}
+
+/* ========== Logo safety ========== */
+#page-topbar .logo-sm img,
+#page-topbar .logo-lg img{
+  max-height: 24px;
+  width: auto;
+}
+
+.vertical-menu .user-wid img{
+  max-width: 100%;
+  height: auto;
+}
+
+/* Optional: cegah elemen overlay template menangkap klik */
+#layout-wrapper,
+.main-content,
+.page-content{
+  pointer-events: auto;
+}

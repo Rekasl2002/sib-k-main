@@ -1,0 +1,15 @@
+{
+  "php.validate.executablePath": "D:\\Proyek-KP\\laragon\\bin\\php\\php-8.4.13-Win32-vs17-x64\\php.exe",
+  "intelephense.environment.phpVersion": "8.3",
+  "intelephense.files.exclude": [
+    "**/vendor/**",
+    "**/system/**"
+  ],
+
+  "intelephense.environment.includePaths": [
+    "D:/Proyek-KP/laragon/www/sib-k-main/system",
+    "D:/Proyek-KP/laragon/www/sib-k-main/vendor"
+  ],
+  
+  "intelephense.diagnostics.undefinedMethods": false
+}
