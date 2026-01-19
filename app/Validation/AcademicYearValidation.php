@@ -7,16 +7,10 @@
  * Validation rules dan helper methods untuk Academic Year management
  *
  * Catatan penting (update):
- * - year_name TIDAK lagi dibuat unik, karena sekolah butuh 1 year_name untuk 2 semester (Ganjil & Genap).
- * - Untuk pembatasan keamanan (opsional): maksimal 2 data untuk year_name yang sama dan
- *   kombinasi (year_name + semester) tidak boleh duplikat, gunakan helper validateYearSemesterPolicy()
- *   dari Service/Controller (bukan rule string bawaan CI).
- *
- * @package    SIB-K
- * @subpackage Validation
- * @category   Academic Year Management
- * @author     Development Team
- * @created    2025-01-06
+ * - year_name TIDAK lagi dibuat unik, karena sekolah butuh 1 year_name untuk 2 semester (Ganjil & Genap)
+ *   atau 1 record gabungan (Ganjil-Genap).
+ * - Kebijakan duplikasi year_name + semester lebih aman dijaga di Service (guardYearNameSemester).
+ * - validateYearSemesterPolicy() di sini tetap disediakan sebagai helper manual (opsional).
  */
 
 namespace App\Validation;
@@ -33,12 +27,12 @@ class AcademicYearValidation
         return [
             'year_name' => [
                 'label' => 'Nama Tahun Ajaran',
-                // is_unique DIHAPUS agar bisa buat Ganjil & Genap dengan year_name sama
+                // is_unique DIHAPUS agar bisa buat Ganjil & Genap / atau gabungan
                 'rules' => 'required|min_length[7]|max_length[50]|regex_match[/^\d{4}\/\d{4}$/]',
                 'errors' => [
-                    'required' => 'Nama tahun ajaran harus diisi',
-                    'min_length' => 'Format tahun ajaran: YYYY/YYYY (contoh: 2024/2025)',
-                    'max_length' => 'Nama tahun ajaran maksimal 50 karakter',
+                    'required'    => 'Nama tahun ajaran harus diisi',
+                    'min_length'  => 'Format tahun ajaran: YYYY/YYYY (contoh: 2024/2025)',
+                    'max_length'  => 'Nama tahun ajaran maksimal 50 karakter',
                     'regex_match' => 'Format tahun ajaran harus YYYY/YYYY (contoh: 2024/2025)',
                 ]
             ],
@@ -46,7 +40,7 @@ class AcademicYearValidation
                 'label' => 'Tanggal Mulai',
                 'rules' => 'required|valid_date[Y-m-d]',
                 'errors' => [
-                    'required' => 'Tanggal mulai harus diisi',
+                    'required'   => 'Tanggal mulai harus diisi',
                     'valid_date' => 'Format tanggal tidak valid (YYYY-MM-DD)',
                 ]
             ],
@@ -54,16 +48,16 @@ class AcademicYearValidation
                 'label' => 'Tanggal Selesai',
                 'rules' => 'required|valid_date[Y-m-d]',
                 'errors' => [
-                    'required' => 'Tanggal selesai harus diisi',
+                    'required'   => 'Tanggal selesai harus diisi',
                     'valid_date' => 'Format tanggal tidak valid (YYYY-MM-DD)',
                 ]
             ],
             'semester' => [
                 'label' => 'Semester',
-                'rules' => 'required|in_list[Ganjil,Genap]',
+                'rules' => 'required|in_list[Ganjil,Genap,Ganjil-Genap]',
                 'errors' => [
                     'required' => 'Semester harus dipilih',
-                    'in_list' => 'Semester harus Ganjil atau Genap',
+                    'in_list'  => 'Semester harus Ganjil, Genap, atau Ganjil-Genap',
                 ]
             ],
             'is_active' => [
@@ -87,12 +81,12 @@ class AcademicYearValidation
         return [
             'year_name' => [
                 'label' => 'Nama Tahun Ajaran',
-                // is_unique DIHAPUS agar year_name boleh duplikat (Ganjil/Genap)
+                // is_unique DIHAPUS agar year_name boleh duplikat
                 'rules' => 'required|min_length[7]|max_length[50]|regex_match[/^\d{4}\/\d{4}$/]',
                 'errors' => [
-                    'required' => 'Nama tahun ajaran harus diisi',
-                    'min_length' => 'Format tahun ajaran: YYYY/YYYY (contoh: 2024/2025)',
-                    'max_length' => 'Nama tahun ajaran maksimal 50 karakter',
+                    'required'    => 'Nama tahun ajaran harus diisi',
+                    'min_length'  => 'Format tahun ajaran: YYYY/YYYY (contoh: 2024/2025)',
+                    'max_length'  => 'Nama tahun ajaran maksimal 50 karakter',
                     'regex_match' => 'Format tahun ajaran harus YYYY/YYYY (contoh: 2024/2025)',
                 ]
             ],
@@ -100,7 +94,7 @@ class AcademicYearValidation
                 'label' => 'Tanggal Mulai',
                 'rules' => 'required|valid_date[Y-m-d]',
                 'errors' => [
-                    'required' => 'Tanggal mulai harus diisi',
+                    'required'   => 'Tanggal mulai harus diisi',
                     'valid_date' => 'Format tanggal tidak valid (YYYY-MM-DD)',
                 ]
             ],
@@ -108,16 +102,17 @@ class AcademicYearValidation
                 'label' => 'Tanggal Selesai',
                 'rules' => 'required|valid_date[Y-m-d]',
                 'errors' => [
-                    'required' => 'Tanggal selesai harus diisi',
+                    'required'   => 'Tanggal selesai harus diisi',
                     'valid_date' => 'Format tanggal tidak valid (YYYY-MM-DD)',
                 ]
             ],
             'semester' => [
                 'label' => 'Semester',
-                'rules' => 'required|in_list[Ganjil,Genap]',
+                // ✅ FIX: harus sama dengan createRules (3 opsi)
+                'rules' => 'required|in_list[Ganjil,Genap,Ganjil-Genap]',
                 'errors' => [
                     'required' => 'Semester harus dipilih',
-                    'in_list' => 'Semester harus Ganjil atau Genap',
+                    'in_list'  => 'Semester harus Ganjil, Genap, atau Ganjil-Genap',
                 ]
             ],
             'is_active' => [
@@ -131,37 +126,74 @@ class AcademicYearValidation
     }
 
     /**
-     * (Opsional) Validasi kebijakan year_name untuk kasus semester:
-     * - year_name boleh duplikat, tapi maksimal 2 data (Ganjil & Genap)
-     * - kombinasi (year_name + semester) tidak boleh dobel
+     * (Opsional) Validasi kebijakan year_name + semester:
+     * - Jika ada semester "Ganjil-Genap" untuk year_name tsb, maka tidak boleh ada record lain untuk year_name itu.
+     * - Jika split (Ganjil/Genap), maksimal 2 record per year_name dan tidak boleh duplikat semester.
      *
      * Ini bukan rule string CI bawaan, jadi panggil manual dari Service/Controller.
      *
      * @param string   $yearName
-     * @param string   $semester ('Ganjil' atau 'Genap')
+     * @param string   $semester ('Ganjil'/'Genap'/'Ganjil-Genap')
      * @param int|null $excludeId (pakai saat update agar record sendiri tidak dihitung)
      * @return array ['valid' => bool, 'message' => string]
      */
     public static function validateYearSemesterPolicy(string $yearName, string $semester, ?int $excludeId = null): array
     {
+        $yearName = trim($yearName);
+        $semester = trim($semester);
+
+        $allowed = ['Ganjil', 'Genap', 'Ganjil-Genap'];
+        if ($yearName === '' || $semester === '' || !in_array($semester, $allowed, true)) {
+            return [
+                'valid' => false,
+                'message' => 'Nama Tahun Ajaran dan Semester wajib diisi (Semester: Ganjil/Genap/Ganjil-Genap).',
+            ];
+        }
+
         try {
             $model = new \App\Models\AcademicYearModel();
 
-            // kalau ada soft delete, kita filter deleted_at null
-            $query = $model->where('year_name', $yearName);
-
-            // best-effort: kalau model/tabel punya kolom deleted_at
-            // (kalau tidak ada, CI biasanya akan abaikan pada query builder tertentu,
-            // tapi untuk aman kita pakai try/catch dan cek field tidak dilakukan di sini)
-            $query->where('deleted_at', null);
+            $query = $model
+                ->where('year_name', $yearName)
+                ->where('deleted_at', null);
 
             if ($excludeId) {
                 $query->where('id !=', $excludeId);
             }
 
-            $rows = $query->findAll();
+            $rows  = $query->findAll();
             $count = is_array($rows) ? count($rows) : 0;
 
+            // Deteksi jika sudah ada record gabungan
+            $hasCombined = false;
+            foreach ($rows as $r) {
+                $rowSemester = is_array($r) ? ($r['semester'] ?? '') : ($r->semester ?? '');
+                if (strcasecmp((string)$rowSemester, 'Ganjil-Genap') === 0) {
+                    $hasCombined = true;
+                    break;
+                }
+            }
+
+            // Jika sudah ada gabungan, tidak boleh tambah semester lain
+            if ($hasCombined) {
+                return [
+                    'valid' => false,
+                    'message' => "Nama Tahun Ajaran \"{$yearName}\" sudah memakai semester \"Ganjil-Genap\" (gabungan). Tidak bisa menambah semester lain.",
+                ];
+            }
+
+            // Jika memilih gabungan, harus single record
+            if ($semester === 'Ganjil-Genap') {
+                if ($count > 0) {
+                    return [
+                        'valid' => false,
+                        'message' => "Nama Tahun Ajaran \"{$yearName}\" sudah memiliki data semester (Ganjil/Genap). Tidak bisa memilih \"Ganjil-Genap\" untuk tahun ajaran yang sudah dipisah.",
+                    ];
+                }
+                return ['valid' => true, 'message' => 'OK'];
+            }
+
+            // Mode split: maksimal 2 record (Ganjil & Genap) dan tidak boleh duplikat semester
             if ($count >= 2) {
                 return [
                     'valid' => false,
@@ -171,7 +203,7 @@ class AcademicYearValidation
 
             foreach ($rows as $r) {
                 $rowSemester = is_array($r) ? ($r['semester'] ?? '') : ($r->semester ?? '');
-                if (strcasecmp((string) $rowSemester, (string) $semester) === 0) {
+                if (strcasecmp((string)$rowSemester, (string)$semester) === 0) {
                     return [
                         'valid' => false,
                         'message' => "Nama Tahun Ajaran \"{$yearName}\" untuk semester \"{$semester}\" sudah ada. Pilih semester yang lain.",
@@ -197,8 +229,9 @@ class AcademicYearValidation
     public static function getSemesterOptions()
     {
         return [
-            'Ganjil' => 'Semester Ganjil (Juli - Desember)',
-            'Genap' => 'Semester Genap (Januari - Juni)',
+            'Ganjil'       => 'Semester Ganjil (Juli - Desember)',
+            'Genap'        => 'Semester Genap (Januari - Juni)',
+            'Ganjil-Genap' => 'Ganjil-Genap (1 Tahun)',
         ];
     }
 
@@ -225,7 +258,7 @@ class AcademicYearValidation
     public static function validateDateRange($startDate, $endDate)
     {
         $start = strtotime($startDate);
-        $end = strtotime($endDate);
+        $end   = strtotime($endDate);
 
         if ($start === false || $end === false) {
             return [
@@ -241,7 +274,7 @@ class AcademicYearValidation
             ];
         }
 
-        // Check if duration is reasonable (minimal 3 months, maksimal 1 year)
+        // Check if duration is reasonable (minimal 3 months, maksimal 13 bulan)
         $diffDays = ($end - $start) / (60 * 60 * 24);
 
         if ($diffDays < 90) {
@@ -281,7 +314,7 @@ class AcademicYearValidation
         }
 
         // Extract years
-        list($year1, $year2) = explode('/', $yearName);
+        [$year1, $year2] = explode('/', $yearName);
 
         // Check if second year = first year + 1
         if ((int)$year2 !== ((int)$year1 + 1)) {
@@ -321,16 +354,14 @@ class AcademicYearValidation
             return $year . '/' . ($year + 1);
         }
 
-        $year = (int)date('Y', $ts);
+        $year  = (int)date('Y', $ts);
         $month = (int)date('m', $ts);
 
         // If start in July or later, it's year/year+1
         // If start in January-June, it's year-1/year
-        if ($month >= 7) {
-            return $year . '/' . ($year + 1);
-        } else {
-            return ($year - 1) . '/' . $year;
-        }
+        return ($month >= 7)
+            ? ($year . '/' . ($year + 1))
+            : (($year - 1) . '/' . $year);
     }
 
     /**
@@ -341,7 +372,8 @@ class AcademicYearValidation
      */
     public static function suggestSemester($startDate)
     {
-        $month = (int)date('m', strtotime($startDate));
+        $ts = strtotime($startDate);
+        $month = (int)date('m', $ts ?: time());
 
         // July-December = Ganjil
         // January-June = Genap
@@ -358,20 +390,23 @@ class AcademicYearValidation
     {
         $classModel = new \App\Models\ClassModel();
 
-        // Check if has classes
-        $classCount = $classModel->where('academic_year_id', $yearId)->countAllResults();
+        // ✅ Filter soft delete classes (agar konsisten)
+        $classCount = $classModel
+            ->where('academic_year_id', $yearId)
+            ->where('deleted_at', null)
+            ->countAllResults();
 
         if ($classCount > 0) {
             return [
-                'can_delete' => false,
-                'message' => "Tidak dapat menghapus tahun ajaran yang memiliki {$classCount} kelas. Hapus kelas terlebih dahulu.",
+                'can_delete'  => false,
+                'message'     => "Tidak dapat menghapus tahun ajaran yang memiliki {$classCount} kelas. Hapus kelas terlebih dahulu.",
                 'class_count' => $classCount,
             ];
         }
 
         return [
-            'can_delete' => true,
-            'message' => 'Tahun ajaran dapat dihapus',
+            'can_delete'  => true,
+            'message'     => 'Tahun ajaran dapat dihapus',
             'class_count' => 0,
         ];
     }
@@ -387,7 +422,9 @@ class AcademicYearValidation
     {
         $academicYearModel = new \App\Models\AcademicYearModel();
 
-        $query = $academicYearModel->where('is_active', 1);
+        $query = $academicYearModel
+            ->where('deleted_at', null)
+            ->where('is_active', 1);
 
         if ($excludeYearId) {
             $query->where('id !=', $excludeYearId);
@@ -396,7 +433,7 @@ class AcademicYearValidation
         $currentActive = $query->first();
 
         return [
-            'can_activate' => true, // Always can activate, will deactivate others
+            'can_activate'  => true, // Always can activate, will deactivate others
             'current_active' => $currentActive,
         ];
     }
@@ -413,11 +450,7 @@ class AcademicYearValidation
 
         // Trim all string values
         foreach ($data as $key => $value) {
-            if (is_string($value)) {
-                $sanitized[$key] = trim($value);
-            } else {
-                $sanitized[$key] = $value;
-            }
+            $sanitized[$key] = is_string($value) ? trim($value) : $value;
         }
 
         // Set default value for is_active
@@ -447,37 +480,46 @@ class AcademicYearValidation
      * Get default date range for new academic year
      * Based on current date and semester
      *
-     * @param string $semester ('Ganjil' or 'Genap')
+     * @param string $semester ('Ganjil'/'Genap'/'Ganjil-Genap')
      * @return array ['start_date' => string, 'end_date' => string]
      */
     public static function getDefaultDateRange($semester = 'Ganjil')
     {
-        $currentYear = (int)date('Y');
+        $currentYear  = (int)date('Y');
         $currentMonth = (int)date('m');
+
+        // ✅ Tambahan: Ganjil-Genap (1 Tahun: Juli - Juni)
+        if ($semester === 'Ganjil-Genap') {
+            $base = ($currentMonth >= 7) ? $currentYear : ($currentYear - 1);
+            return [
+                'start_date' => $base . '-07-01',
+                'end_date'   => ($base + 1) . '-06-30',
+            ];
+        }
 
         if ($semester === 'Ganjil') {
             // Ganjil: July - December
             if ($currentMonth >= 7) {
                 $startDate = $currentYear . '-07-01';
-                $endDate = $currentYear . '-12-31';
+                $endDate   = $currentYear . '-12-31';
             } else {
                 $startDate = ($currentYear - 1) . '-07-01';
-                $endDate = ($currentYear - 1) . '-12-31';
+                $endDate   = ($currentYear - 1) . '-12-31';
             }
         } else {
             // Genap: January - June
             if ($currentMonth >= 1 && $currentMonth <= 6) {
                 $startDate = $currentYear . '-01-01';
-                $endDate = $currentYear . '-06-30';
+                $endDate   = $currentYear . '-06-30';
             } else {
                 $startDate = ($currentYear + 1) . '-01-01';
-                $endDate = ($currentYear + 1) . '-06-30';
+                $endDate   = ($currentYear + 1) . '-06-30';
             }
         }
 
         return [
             'start_date' => $startDate,
-            'end_date' => $endDate,
+            'end_date'   => $endDate,
         ];
     }
 
@@ -493,7 +535,7 @@ class AcademicYearValidation
             return ['year1' => 0, 'year2' => 0];
         }
 
-        list($year1, $year2) = explode('/', $yearName);
+        [$year1, $year2] = explode('/', $yearName);
 
         return [
             'year1' => (int)$year1,
@@ -511,9 +553,9 @@ class AcademicYearValidation
      */
     public static function isDateInRange($date, $startDate, $endDate)
     {
-        $dateTimestamp = strtotime($date);
+        $dateTimestamp  = strtotime($date);
         $startTimestamp = strtotime($startDate);
-        $endTimestamp = strtotime($endDate);
+        $endTimestamp   = strtotime($endDate);
 
         if ($dateTimestamp === false || $startTimestamp === false || $endTimestamp === false) {
             return false;
@@ -532,7 +574,7 @@ class AcademicYearValidation
     public static function getDuration($startDate, $endDate)
     {
         $start = strtotime($startDate);
-        $end = strtotime($endDate);
+        $end   = strtotime($endDate);
 
         if ($start === false || $end === false) {
             return 0;
