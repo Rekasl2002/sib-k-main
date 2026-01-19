@@ -11,13 +11,16 @@
  * - Filter card dibuat konsisten dengan counselor/sessions.
  * - Repeat offender tetap didukung (checkbox is_repeat_offender=1).
  * - Menampilkan badge "Pelanggar Berulang" pada baris yang relevan.
- * - Kompatibel dengan $stats berbentuk $stats['overall'][key] atau $stats[key].
+ * - Kompatibel dengan $stats berbentuk:
+ *   - $stats['overall'][key] (hasil ViolationService::getViolationStats)
+ *   - ATAU format dari getDashboardStats (overall + pending_notifications, dll)
+ * - Kompatibel dengan $violations berbentuk:
+ *   - array list rows
+ *   - ATAU array dengan key ['violations' => [...], 'pager' => ...]
  *
- * @package    SIB-K
- * @subpackage Views/Counselor/Cases
- * @category   View
- * @created    2025-01-06
- * @updated    2026-01-07
+ * Revisi KP:
+ * - Tambah filter "Tahun Ajaran" (year_name). Jika dipilih dan date_from/date_to kosong,
+ *   service akan mengisi otomatis range tahun ajaran (gabungan ganjil+genap).
  */
 
 $this->extend('layouts/main');
@@ -25,20 +28,101 @@ $this->section('content');
 ?>
 
 <?php
+// --------------------------
+// Helpers kecil (tahan banting)
+// --------------------------
 if (!function_exists('val')) {
     function val($row, $key) {
         return esc(is_array($row) ? ($row[$key] ?? '') : ($row->$key ?? ''));
     }
 }
 
+/**
+ * Ambil angka statistik dari beberapa kemungkinan struktur.
+ */
 if (!function_exists('statv')) {
-    function statv($stats, $key) {
-        if (is_array($stats) && isset($stats['overall']) && is_array($stats['overall']) && array_key_exists($key, $stats['overall'])) {
-            return (int) ($stats['overall'][$key] ?? 0);
+    function statv($stats, $key, $fallbackKey = null) {
+        // 1) stats['overall'][key]
+        if (is_array($stats) && isset($stats['overall']) && is_array($stats['overall'])) {
+            if (array_key_exists($key, $stats['overall'])) {
+                return (int) ($stats['overall'][$key] ?? 0);
+            }
+            if ($fallbackKey !== null && array_key_exists($fallbackKey, $stats['overall'])) {
+                return (int) ($stats['overall'][$fallbackKey] ?? 0);
+            }
         }
-        return (int) ($stats[$key] ?? 0);
+
+        // 2) stats[key] di root
+        if (is_array($stats) && array_key_exists($key, $stats)) {
+            return (int) ($stats[$key] ?? 0);
+        }
+        if (is_array($stats) && $fallbackKey !== null && array_key_exists($fallbackKey, $stats)) {
+            return (int) ($stats[$fallbackKey] ?? 0);
+        }
+
+        return 0;
     }
 }
+
+// --------------------------
+// Normalisasi data $violations (bisa list atau wrapper)
+// --------------------------
+$violationsRaw = $violations ?? [];
+$violationRows = $violationsRaw;
+$pager         = null;
+
+if (is_array($violationsRaw) && array_key_exists('violations', $violationsRaw)) {
+    $violationRows = $violationsRaw['violations'] ?? [];
+    $pager         = $violationsRaw['pager'] ?? null;
+}
+
+if (!is_array($violationRows)) {
+    $violationRows = [];
+}
+
+// --------------------------
+// Academic Year options (year_name)
+// - Disarankan controller mengirim $academic_year_options dari service
+// - Fallback: ambil langsung dari DB kalau belum dikirim
+// --------------------------
+$academicYearOptions = $academic_year_options ?? [];
+if (!is_array($academicYearOptions)) {
+    $academicYearOptions = [];
+}
+if (empty($academicYearOptions)) {
+    try {
+        $db = \Config\Database::connect();
+        $rows = $db->table('academic_years')
+            ->select('DISTINCT year_name')
+            ->where('deleted_at', null)
+            ->orderBy('year_name', 'DESC')
+            ->get()
+            ->getResultArray();
+
+        foreach ($rows as $r) {
+            $yn = trim((string)($r['year_name'] ?? ''));
+            if ($yn !== '') $academicYearOptions[] = $yn;
+        }
+    } catch (\Throwable $e) {
+        $academicYearOptions = [];
+    }
+}
+
+$selectedAcademicYear = trim((string)($filters['academic_year'] ?? ''));
+
+// Statistik cards: mapping aman
+$totalViolations = statv($stats ?? [], 'total_violations', 'total');
+$inProcess       = statv($stats ?? [], 'in_process', 'in_progress');
+$completed       = statv($stats ?? [], 'completed', 'done');
+
+// Pending Notifikasi: kadang ada di overall['parents_not_notified'], kadang ada root['pending_notifications']
+$pendingNotif = statv($stats ?? [], 'parents_not_notified');
+if ($pendingNotif <= 0) {
+    $pendingNotif = statv($stats ?? [], 'pending_notifications');
+}
+
+// Repeat offenders: tergantung model/service
+$repeatOffenders = statv($stats ?? [], 'repeat_offenders', 'repeat_offender_count');
 ?>
 
 <!-- Page Title -->
@@ -65,7 +149,7 @@ if (!function_exists('statv')) {
         <i class="mdi mdi-alert-circle me-2"></i>
         <strong>Terdapat kesalahan pada input:</strong>
         <ul class="mb-0 mt-2">
-            <?php foreach (session()->getFlashdata('errors') as $error): ?>
+            <?php foreach ((array) session()->getFlashdata('errors') as $error): ?>
                 <li><?= esc($error) ?></li>
             <?php endforeach; ?>
         </ul>
@@ -81,7 +165,7 @@ if (!function_exists('statv')) {
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <span class="text-muted mb-3 lh-1 d-block">Total Pelanggaran</span>
-                        <h4 class="mb-3"><?= statv($stats ?? [], 'total_violations') ?></h4>
+                        <h4 class="mb-3"><?= (int)$totalViolations ?></h4>
                     </div>
                     <div class="flex-shrink-0 text-end">
                         <div class="avatar-sm rounded-circle bg-soft-primary">
@@ -101,7 +185,7 @@ if (!function_exists('statv')) {
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <span class="text-muted mb-3 lh-1 d-block">Dalam Proses</span>
-                        <h4 class="mb-3"><span class="text-warning"><?= statv($stats ?? [], 'in_process') ?></span></h4>
+                        <h4 class="mb-3"><span class="text-warning"><?= (int)$inProcess ?></span></h4>
                     </div>
                     <div class="flex-shrink-0 text-end">
                         <div class="avatar-sm rounded-circle bg-soft-warning">
@@ -121,7 +205,7 @@ if (!function_exists('statv')) {
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <span class="text-muted mb-3 lh-1 d-block">Selesai</span>
-                        <h4 class="mb-3"><span class="text-success"><?= statv($stats ?? [], 'completed') ?></span></h4>
+                        <h4 class="mb-3"><span class="text-success"><?= (int)$completed ?></span></h4>
                     </div>
                     <div class="flex-shrink-0 text-end">
                         <div class="avatar-sm rounded-circle bg-soft-success">
@@ -135,13 +219,13 @@ if (!function_exists('statv')) {
         </div>
     </div>
 
-    <div class="col-xl-3 col-md-6">
+    <!--<div class="col-xl-3 col-md-6">
         <div class="card card-h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <span class="text-muted mb-3 lh-1 d-block">Pending Notifikasi</span>
-                        <h4 class="mb-3"><span class="text-danger"><?= statv($stats ?? [], 'parents_not_notified') ?></span></h4>
+                        <h4 class="mb-3"><span class="text-danger"><?= (int)$pendingNotif ?></span></h4>
                     </div>
                     <div class="flex-shrink-0 text-end">
                         <div class="avatar-sm rounded-circle bg-soft-danger">
@@ -152,19 +236,19 @@ if (!function_exists('statv')) {
                     </div>
                 </div>
 
-                <?php if (statv($stats ?? [], 'repeat_offenders') > 0): ?>
+                <?php if ((int)$repeatOffenders > 0): ?>
                     <div class="mt-2">
                         <span class="badge bg-danger">
-                            <i class="mdi mdi-repeat"></i> Repeat Offenders: <?= statv($stats ?? [], 'repeat_offenders') ?>
+                            <i class="mdi mdi-repeat"></i> Repeat Offenders: <?= (int)$repeatOffenders ?>
                         </span>
                     </div>
                 <?php endif; ?>
             </div>
         </div>
-    </div>
+    </div>-->
 </div>
 
-<!-- Filter Card (konsisten dengan sessions) -->
+<!-- Filter Card -->
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -175,8 +259,9 @@ if (!function_exists('statv')) {
             </div>
             <div class="card-body">
                 <form action="<?= base_url('counselor/cases') ?>" method="get" id="filterForm">
+
                     <div class="row g-3">
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label">Status</label>
                             <select name="status" class="form-select">
                                 <option value="">Semua Status</option>
@@ -187,7 +272,7 @@ if (!function_exists('statv')) {
                             </select>
                         </div>
 
-                        <div class="col-md-3">
+                        <div class="col-md-2">
                             <label class="form-label">Tingkat Keparahan</label>
                             <select name="severity_level" class="form-select">
                                 <option value="">Semua Tingkat</option>
@@ -195,6 +280,21 @@ if (!function_exists('statv')) {
                                 <option value="Sedang" <?= ($filters['severity_level'] ?? '') === 'Sedang' ? 'selected' : '' ?>>Sedang</option>
                                 <option value="Berat"  <?= ($filters['severity_level'] ?? '') === 'Berat'  ? 'selected' : '' ?>>Berat</option>
                             </select>
+                        </div>
+
+                        <div class="col-md-2">
+                            <label class="form-label">Tahun Ajaran</label>
+                            <select name="academic_year" class="form-select" id="academicYearFilter">
+                                <option value="">Tahun Ajaran Aktif</option>
+                                <?php foreach (($academicYearOptions ?? []) as $yn): ?>
+                                    <option value="<?= esc($yn) ?>" <?= $selectedAcademicYear === (string)$yn ? 'selected' : '' ?>>
+                                        <?= esc($yn) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <small class="text-muted d-block mt-1">
+                                Kosongkan Tanggal jika ingin menggunakan filter Tahun Ajaran.
+                            </small>
                         </div>
 
                         <div class="col-md-2">
@@ -241,11 +341,11 @@ if (!function_exists('statv')) {
                         </div>
 
                         <div class="col-md-2">
-                            <label class="form-label">Notifikasi Ortu</label>
+                            <!--<label class="form-label">Notifikasi Ortu</label>
                             <select name="parent_notified" class="form-select">
                                 <option value="">Semua</option>
                                 <option value="no" <?= ($filters['parent_notified'] ?? '') === 'no' ? 'selected' : '' ?>>Belum Dinotifikasi</option>
-                            </select>
+                            </select>-->
 
                             <div class="form-check mt-2">
                                 <input class="form-check-input" type="checkbox" name="is_repeat_offender" value="1"
@@ -268,7 +368,7 @@ if (!function_exists('statv')) {
     </div>
 </div>
 
-<!-- Data Table (DataTables seperti sessions) -->
+<!-- Data Table -->
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -278,7 +378,7 @@ if (!function_exists('statv')) {
                     <small class="text-muted">Pagination dan pencarian tabel memakai DataTables.</small>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
-                    <span class="badge bg-primary">Total: <?= (int) (is_countable($violations ?? []) ? count($violations) : 0) ?> data</span>
+                    <span class="badge bg-primary">Total: <?= (int) (is_countable($violationRows) ? count($violationRows) : 0) ?> data</span>
                     <a href="<?= base_url('counselor/cases/create') ?>" class="btn btn-success">
                         <i class="mdi mdi-plus me-1"></i> Tambah Pelanggaran
                     </a>
@@ -286,7 +386,7 @@ if (!function_exists('statv')) {
             </div>
 
             <div class="card-body">
-                <?php if (!empty($violations) && is_array($violations)): ?>
+                <?php if (!empty($violationRows) && is_array($violationRows)): ?>
                     <div class="table-responsive">
                         <table id="casesTable" class="table table-hover table-bordered nowrap w-100">
                             <thead class="table-light">
@@ -303,33 +403,40 @@ if (!function_exists('statv')) {
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($violations as $violation): ?>
+                                <?php foreach ($violationRows as $violation): ?>
                                     <?php
-                                        $severity = $violation['severity_level'] ?? '';
-                                        $severityBadge = match ($severity) {
-                                            'Ringan' => 'bg-info',
-                                            'Sedang' => 'bg-warning',
-                                            'Berat'  => 'bg-danger',
-                                            default  => 'bg-secondary'
-                                        };
+                                        $severity = (string)($violation['severity_level'] ?? '');
+                                        $severityBadge = 'bg-secondary';
+                                        if ($severity === 'Ringan') $severityBadge = 'bg-info';
+                                        elseif ($severity === 'Sedang') $severityBadge = 'bg-warning';
+                                        elseif ($severity === 'Berat') $severityBadge = 'bg-danger';
 
-                                        $status = $violation['status'] ?? '-';
-                                        $statusBadge = match ($status) {
-                                            'Dilaporkan'   => 'bg-info',
-                                            'Dalam Proses' => 'bg-warning',
-                                            'Selesai'      => 'bg-success',
-                                            'Dibatalkan'   => 'bg-secondary',
-                                            default        => 'bg-secondary'
-                                        };
+                                        $status = (string)($violation['status'] ?? '-');
+                                        $statusBadge = 'bg-secondary';
+                                        if ($status === 'Dilaporkan') $statusBadge = 'bg-info';
+                                        elseif ($status === 'Dalam Proses') $statusBadge = 'bg-warning';
+                                        elseif ($status === 'Selesai') $statusBadge = 'bg-success';
+                                        elseif ($status === 'Dibatalkan') $statusBadge = 'bg-secondary';
+
+                                        $vDate = $violation['violation_date'] ?? '';
+                                        $vTime = $violation['violation_time'] ?? '';
                                     ?>
                                     <tr>
                                         <!-- No diisi oleh DataTables -->
                                         <td class="text-center"></td>
 
-                                        <td data-order="<?= esc($violation['violation_date'] ?? '') ?>">
-                                            <strong><?= !empty($violation['violation_date']) ? date('d/m/Y', strtotime($violation['violation_date'])) : '-' ?></strong>
-                                            <?php if (!empty($violation['violation_time'])): ?>
-                                                <br><small class="text-muted"><?= date('H:i', strtotime($violation['violation_time'])) ?></small>
+                                        <td data-order="<?= esc($vDate) ?>">
+                                            <strong>
+                                                <?php
+                                                if (!empty($vDate) && strtotime($vDate) !== false) {
+                                                    echo esc(date('d/m/Y', strtotime($vDate)));
+                                                } else {
+                                                    echo '-';
+                                                }
+                                                ?>
+                                            </strong>
+                                            <?php if (!empty($vTime) && strtotime($vTime) !== false): ?>
+                                                <br><small class="text-muted"><?= esc(date('H:i', strtotime($vTime))) ?></small>
                                             <?php endif; ?>
                                         </td>
 
@@ -351,15 +458,15 @@ if (!function_exists('statv')) {
                                         <td><?= esc($violation['category_name'] ?? '-') ?></td>
 
                                         <td>
-                                            <span class="badge <?= $severityBadge ?>">
-                                                <?= esc($severity ?: '-') ?>
+                                            <span class="badge <?= esc($severityBadge) ?>">
+                                                <?= esc($severity !== '' ? $severity : '-') ?>
                                             </span>
                                         </td>
 
                                         <td><strong class="text-danger">-<?= (int)($violation['point_deduction'] ?? 0) ?></strong></td>
 
                                         <td>
-                                            <span class="badge <?= $statusBadge ?>"><?= esc($status) ?></span>
+                                            <span class="badge <?= esc($statusBadge) ?>"><?= esc($status) ?></span>
                                             <?php if (isset($violation['parent_notified']) && !$violation['parent_notified']): ?>
                                                 <br><span class="badge bg-danger mt-1">
                                                     <i class="mdi mdi-bell-off"></i> Belum Notifikasi
@@ -377,7 +484,7 @@ if (!function_exists('statv')) {
 
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
-                                                <a href="<?= base_url('counselor/cases/detail/' . (int)$violation['id']) ?>" class="btn btn-sm btn-info" title="Detail">
+                                                <a href="<?= base_url('counselor/cases/detail/' . (int)($violation['id'] ?? 0)) ?>" class="btn btn-sm btn-info" title="Detail">
                                                     <i class="mdi mdi-eye"></i>
                                                 </a>
 
@@ -389,10 +496,10 @@ if (!function_exists('statv')) {
                                                             || ((int)($violation['reported_by'] ?? 0) === $uid);
                                                     ?>
                                                     <?php if ($canEditDelete): ?>
-                                                        <a href="<?= base_url('counselor/cases/edit/' . (int)$violation['id']) ?>" class="btn btn-sm btn-warning" title="Ubah">
+                                                        <a href="<?= base_url('counselor/cases/edit/' . (int)($violation['id'] ?? 0)) ?>" class="btn btn-sm btn-warning" title="Ubah">
                                                             <i class="mdi mdi-pencil"></i>
                                                         </a>
-                                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteViolation(<?= (int)$violation['id'] ?>)" title="Hapus">
+                                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteViolation(<?= (int)($violation['id'] ?? 0) ?>)" title="Hapus">
                                                             <i class="mdi mdi-delete"></i>
                                                         </button>
                                                     <?php endif; ?>
@@ -404,6 +511,7 @@ if (!function_exists('statv')) {
                             </tbody>
                         </table>
                     </div>
+
                 <?php else: ?>
                     <div class="text-center py-5">
                         <div class="avatar-lg mx-auto mb-3">
@@ -439,6 +547,8 @@ if (!function_exists('statv')) {
 <script>
     // Delete Violation with Confirmation (POST + CSRF)
     function deleteViolation(id) {
+        if (!id) return;
+
         if (confirm('Apakah Anda yakin ingin menghapus data pelanggaran ini?\n\nData yang terhapus tidak dapat dikembalikan!')) {
             const form = document.createElement('form');
             form.method = 'POST';
@@ -456,13 +566,14 @@ if (!function_exists('statv')) {
     }
 
     $(document).ready(function() {
-        // Select2 untuk dropdown agar konsisten dengan sessions
+        // Select2 untuk dropdown agar konsisten
         $('#studentFilter').select2({
             theme: 'bootstrap-5',
             placeholder: 'Pilih Siswa',
             allowClear: true,
             width: '100%'
         });
+
         $('#categoryFilter').select2({
             theme: 'bootstrap-5',
             placeholder: 'Pilih Kategori',
@@ -470,7 +581,14 @@ if (!function_exists('statv')) {
             width: '100%'
         });
 
-        <?php if (!empty($violations) && is_array($violations)): ?>
+        $('#academicYearFilter').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Pilih Tahun Ajaran',
+            allowClear: true,
+            width: '100%'
+        });
+
+        <?php if (!empty($violationRows) && is_array($violationRows)): ?>
             var table;
 
             if (window.SIBK && typeof SIBK.initDataTable === 'function') {
@@ -508,18 +626,21 @@ if (!function_exists('statv')) {
                 });
             }
 
-            // Nomor urut (mulai 1) konsisten seperti sessions
+            // Nomor urut (mulai 1)
             function renumber() {
+                if (!table) return;
                 var info = table.page.info();
                 table.column(0, { page: 'current' }).nodes().each(function(cell, i) {
                     cell.innerHTML = info.start + i + 1;
                 });
             }
-            table.on('order.dt search.dt draw.dt', renumber);
-            renumber();
+            if (table) {
+                table.on('order.dt search.dt draw.dt', renumber);
+                renumber();
+            }
         <?php endif; ?>
 
-        // Auto-hide alerts after 5 seconds
+        // Auto-hide alerts
         setTimeout(function() {
             $('.alert').fadeOut('slow');
         }, 5000);

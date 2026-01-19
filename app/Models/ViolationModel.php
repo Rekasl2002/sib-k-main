@@ -38,7 +38,7 @@ class ViolationModel extends Model
         'violation_time',
         'location',
         'description',
-        'witness',              // tambahan
+        'witness',
         'evidence',
         'reported_by',
         'handled_by',
@@ -60,15 +60,15 @@ class ViolationModel extends Model
 
     // Validation
     protected $validationRules = [
-        'student_id'      => 'required|integer',
-        'category_id'     => 'required|integer',
-        'violation_date'  => 'required|valid_date',
-         'violation_time'  => 'permit_empty|regex_match[/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/]',
-        'location'        => 'permit_empty|max_length[200]',
-        'description'     => 'required|min_length[10]',
-        'witness'         => 'permit_empty|max_length[200]',
-        'reported_by'     => 'required|integer',
-        'status'          => 'permit_empty|in_list[Dilaporkan,Dalam Proses,Selesai,Dibatalkan]',
+        'student_id'     => 'required|integer',
+        'category_id'    => 'required|integer',
+        'violation_date' => 'required|valid_date',
+        'violation_time' => 'permit_empty|regex_match[/^(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d)?$/]',
+        'location'       => 'permit_empty|max_length[200]',
+        'description'    => 'required|min_length[10]',
+        'witness'        => 'permit_empty|max_length[200]',
+        'reported_by'    => 'required|integer',
+        'status'         => 'permit_empty|in_list[Dilaporkan,Dalam Proses,Selesai,Dibatalkan]',
     ];
 
     protected $validationMessages = [
@@ -81,12 +81,12 @@ class ViolationModel extends Model
             'integer'  => 'ID kategori tidak valid',
         ],
         'violation_date' => [
-            'required'  => 'Tanggal pelanggaran harus diisi',
-            'valid_date'=> 'Format tanggal tidak valid',
+            'required'   => 'Tanggal pelanggaran harus diisi',
+            'valid_date' => 'Format tanggal tidak valid',
         ],
         'description' => [
-            'required'  => 'Deskripsi pelanggaran harus diisi',
-            'min_length'=> 'Deskripsi minimal 10 karakter',
+            'required'   => 'Deskripsi pelanggaran harus diisi',
+            'min_length' => 'Deskripsi minimal 10 karakter',
         ],
         'reported_by' => [
             'required' => 'Pelapor harus diisi',
@@ -108,13 +108,57 @@ class ViolationModel extends Model
     protected $afterDelete    = [];
 
     /**
+     * Helper: apply date_from/date_to ke builder dengan prefix table/alias.
+     * @param mixed $builder
+     */
+    private function applyDateRange($builder, array $filters = [], string $dateColumn = 'violations.violation_date')
+    {
+        if (!empty($filters['date_from'])) {
+            $builder->where($dateColumn . ' >=', $filters['date_from']);
+        }
+        if (!empty($filters['date_to'])) {
+            $builder->where($dateColumn . ' <=', $filters['date_to']);
+        }
+        return $builder;
+    }
+
+    /**
+     * Helper: filter "belum notifikasi" yang aman (0 atau NULL).
+     * @param mixed $builder
+     */
+    private function applyParentNotifiedFilter($builder, $value, string $column = 'violations.parent_notified')
+    {
+        if ($value === 'no') {
+            // treat NULL as not notified
+            $builder->groupStart()
+                ->where($column, 0)
+                ->orWhere($column, null)
+                ->groupEnd();
+        } elseif ($value === 'yes') {
+            $builder->where($column, 1);
+        }
+        return $builder;
+    }
+
+    /**
      * Hitung & set flag repeat offender otomatis.
      * Aturan: ≥ REPEAT_THRESHOLD pelanggaran dalam REPEAT_WINDOW_DAYS terakhir (termasuk record ini).
      * Berjalan pada beforeInsert & beforeUpdate.
+     *
+     * Perbaikan:
+     * - Jika status record yang sedang disimpan adalah "Dibatalkan", paksa is_repeat_offender=0.
+     * - Abaikan pelanggaran yang "Dibatalkan" saat menghitung histori.
      */
     protected function checkRepeatOffender(array $data): array
     {
         if (empty($data['data']['student_id']) || empty($data['data']['violation_date'])) {
+            return $data;
+        }
+
+        // Jika record ini dibatalkan, jangan pernah dianggap repeat offender.
+        $currentStatus = (string)($data['data']['status'] ?? '');
+        if ($currentStatus === 'Dibatalkan') {
+            $data['data']['is_repeat_offender'] = 0;
             return $data;
         }
 
@@ -131,13 +175,16 @@ class ViolationModel extends Model
         $from = (clone $date)->modify('-' . self::REPEAT_WINDOW_DAYS . ' days')->format('Y-m-d');
         $to   = $date->format('Y-m-d');
 
-        $db = \Config\Database::connect();
+        // Pakai koneksi DB bawaan model (lebih hemat daripada connect ulang).
+        $db = $this->db ?? \Config\Database::connect();
         $qb = $db->table($this->table);
+
         $qb->select('COUNT(*) AS c')
             ->where('student_id', $studentId)
             ->where('deleted_at', null)
             ->where('violation_date >=', $from)
-            ->where('violation_date <=', $to);
+            ->where('violation_date <=', $to)
+            ->where('status !=', 'Dibatalkan');
 
         // Jika update, jangan hitung record ini dua kali:
         // $data['id'] pada beforeUpdate bisa berupa int ATAU array id.
@@ -148,8 +195,11 @@ class ViolationModel extends Model
             }
         }
 
-        $countPrev = (int) ($qb->get()->getRow()->c ?? 0);
-        $predicted = $countPrev + 1; // termasuk record yang sedang disimpan
+        $row = $qb->get()->getRowArray();
+        $countPrev = (int) ($row['c'] ?? 0);
+
+        // termasuk record yang sedang disimpan
+        $predicted = $countPrev + 1;
 
         $data['data']['is_repeat_offender'] = ($predicted >= self::REPEAT_THRESHOLD) ? 1 : 0;
         return $data;
@@ -194,6 +244,7 @@ class ViolationModel extends Model
             ->join('users as reporter_users', 'reporter_users.id = violations.reported_by')
             ->join('users as handler_users', 'handler_users.id = violations.handled_by', 'left')
             ->where('violations.id', $id)
+            ->where('violations.deleted_at', null)
             ->first();
     }
 
@@ -207,6 +258,7 @@ class ViolationModel extends Model
     {
         $builder = $this->select('violations.*,
                                   students.nisn,
+                                  students.nis,
                                   student_users.full_name as student_name,
                                   classes.class_name,
                                   violation_categories.category_name,
@@ -219,7 +271,8 @@ class ViolationModel extends Model
             ->join('classes', 'classes.id = students.class_id', 'left')
             ->join('violation_categories', 'violation_categories.id = violations.category_id')
             ->join('users as reporter_users', 'reporter_users.id = violations.reported_by')
-            ->join('users as handler_users', 'handler_users.id = violations.handled_by', 'left');
+            ->join('users as handler_users', 'handler_users.id = violations.handled_by', 'left')
+            ->where('violations.deleted_at', null);
 
         // Apply filters
         if (!empty($filters['status'])) {
@@ -231,38 +284,52 @@ class ViolationModel extends Model
         }
 
         if (!empty($filters['student_id'])) {
-            $builder->where('violations.student_id', $filters['student_id']);
+            $builder->where('violations.student_id', (int) $filters['student_id']);
         }
 
         if (!empty($filters['category_id'])) {
-            $builder->where('violations.category_id', $filters['category_id']);
+            $builder->where('violations.category_id', (int) $filters['category_id']);
         }
 
-        if (!empty($filters['date_from'])) {
-            $builder->where('violations.violation_date >=', $filters['date_from']);
+        // (Opsional) filter per kelas, membantu wali kelas/rekap kelas
+        if (!empty($filters['class_id'])) {
+            $builder->where('students.class_id', (int) $filters['class_id']);
         }
 
-        if (!empty($filters['date_to'])) {
-            $builder->where('violations.violation_date <=', $filters['date_to']);
-        }
+        // Date range
+        $builder = $this->applyDateRange($builder, (array) $filters, 'violations.violation_date');
 
         if (!empty($filters['handled_by'])) {
-            $builder->where('violations.handled_by', $filters['handled_by']);
+            $builder->where('violations.handled_by', (int) $filters['handled_by']);
+        }
+
+        // (Opsional) filter pelapor
+        if (!empty($filters['reported_by'])) {
+            $builder->where('violations.reported_by', (int) $filters['reported_by']);
         }
 
         if (!empty($filters['is_repeat_offender'])) {
             $builder->where('violations.is_repeat_offender', 1);
         }
 
-        if (!empty($filters['parent_notified']) && $filters['parent_notified'] === 'no') {
-            $builder->where('violations.parent_notified', 0);
+        if (!empty($filters['parent_notified'])) {
+            $builder = $this->applyParentNotifiedFilter($builder, $filters['parent_notified'], 'violations.parent_notified');
+        }
+
+        // (Opsional) exclude cancelled tanpa mengubah default perilaku lama
+        if (!empty($filters['exclude_cancelled'])) {
+            $builder->where('violations.status !=', 'Dibatalkan');
         }
 
         if (!empty($filters['search'])) {
+            $q = trim((string) $filters['search']);
             $builder->groupStart()
-                ->like('student_users.full_name', $filters['search'])
-                ->orLike('students.nisn', $filters['search'])
-                ->orLike('violations.description', $filters['search'])
+                ->like('student_users.full_name', $q)
+                ->orLike('students.nisn', $q)
+                ->orLike('students.nis', $q)
+                ->orLike('violations.description', $q)
+                ->orLike('violations.location', $q)
+                ->orLike('violation_categories.category_name', $q)
                 ->groupEnd();
         }
 
@@ -276,22 +343,43 @@ class ViolationModel extends Model
     /**
      * Get violations by student
      *
+     * Revisi:
+     * - Tambah parameter $filters (opsional) untuk mendukung date_from/date_to
+     *   (dipakai oleh ViolationService untuk hitung per Tahun Ajaran).
+     * - Tetap kompatibel dengan pemanggilan lama: getByStudent($studentId, $limit)
+     *
      * @param int $studentId
      * @param int|null $limit
+     * @param array $filters
      * @return array
      */
-    public function getByStudent($studentId, $limit = null)
+    public function getByStudent($studentId, $limit = null, array $filters = [])
     {
+        $studentId = (int) $studentId;
+
         $builder = $this->select('violations.*,
                                   violation_categories.category_name,
                                   violation_categories.severity_level,
                                   violation_categories.point_deduction')
             ->join('violation_categories', 'violation_categories.id = violations.category_id')
             ->where('violations.student_id', $studentId)
-            ->orderBy('violations.violation_date', 'DESC');
+            ->where('violations.deleted_at', null)
+            ->orderBy('violations.violation_date', 'DESC')
+            ->orderBy('violations.created_at', 'DESC');
+
+        // Date range filter (opsional)
+        $builder = $this->applyDateRange($builder, $filters, 'violations.violation_date');
+
+        // Optional filters tambahan (tidak memaksa, biar tidak merusak perilaku lama)
+        if (!empty($filters['status'])) {
+            $builder->where('violations.status', $filters['status']);
+        }
+        if (!empty($filters['exclude_cancelled'])) {
+            $builder->where('violations.status !=', 'Dibatalkan');
+        }
 
         if ($limit) {
-            $builder->limit($limit);
+            $builder->limit((int) $limit);
         }
 
         return $builder->findAll();
@@ -300,30 +388,88 @@ class ViolationModel extends Model
     /**
      * Get statistics for violations
      *
+     * Revisi:
+     * - Tambah dukungan filter yang lebih lengkap agar kartu dashboard konsisten
+     *   dengan tabel (status, student_id, category_id, handled_by, parent_notified, search, severity_level).
+     *
      * @param array $filters
      * @return array
      */
     public function getStatistics($filters = [])
     {
-        $db = \Config\Database::connect();
+        $db = $this->db ?? \Config\Database::connect();
 
-        $builder = $db->table('violations')
+        $builder = $db->table('violations v')
             ->select('COUNT(*) as total_violations,
-                      SUM(CASE WHEN status = "Dilaporkan" THEN 1 ELSE 0 END) as reported,
-                      SUM(CASE WHEN status = "Dalam Proses" THEN 1 ELSE 0 END) as in_process,
-                      SUM(CASE WHEN status = "Selesai" THEN 1 ELSE 0 END) as completed,
-                      SUM(CASE WHEN status = "Dibatalkan" THEN 1 ELSE 0 END) as cancelled,
-                      SUM(CASE WHEN is_repeat_offender = 1 THEN 1 ELSE 0 END) as repeat_offenders,
-                      SUM(CASE WHEN parent_notified = 0 THEN 1 ELSE 0 END) as parents_not_notified')
-            ->where('deleted_at', null);
+                      SUM(CASE WHEN v.status = "Dilaporkan" THEN 1 ELSE 0 END) as reported,
+                      SUM(CASE WHEN v.status = "Dalam Proses" THEN 1 ELSE 0 END) as in_process,
+                      SUM(CASE WHEN v.status = "Selesai" THEN 1 ELSE 0 END) as completed,
+                      SUM(CASE WHEN v.status = "Dibatalkan" THEN 1 ELSE 0 END) as cancelled,
+                      SUM(CASE WHEN v.is_repeat_offender = 1 THEN 1 ELSE 0 END) as repeat_offenders,
+                      SUM(CASE WHEN COALESCE(v.parent_notified,0) = 0 THEN 1 ELSE 0 END) as parents_not_notified')
+            ->where('v.deleted_at', null);
+
+        // Join opsional untuk filter severity/search
+        $needJoinCat = !empty($filters['severity_level']);
+        if ($needJoinCat) {
+            $builder->join('violation_categories vc', 'vc.id = v.category_id', 'left');
+        }
+
+        $needJoinStudent = !empty($filters['search']) || !empty($filters['class_id']);
+        if ($needJoinStudent) {
+            $builder->join('students s', 's.id = v.student_id', 'left')
+                    ->join('users su', 'su.id = s.user_id', 'left');
+        }
+
+        // Apply filters (opsional)
+        if (!empty($filters['status'])) {
+            $builder->where('v.status', $filters['status']);
+        }
+        if (!empty($filters['student_id'])) {
+            $builder->where('v.student_id', (int) $filters['student_id']);
+        }
+        if (!empty($filters['category_id'])) {
+            $builder->where('v.category_id', (int) $filters['category_id']);
+        }
+        if (!empty($filters['handled_by'])) {
+            $builder->where('v.handled_by', (int) $filters['handled_by']);
+        }
+        if (!empty($filters['reported_by'])) {
+            $builder->where('v.reported_by', (int) $filters['reported_by']);
+        }
+        if (!empty($filters['is_repeat_offender'])) {
+            $builder->where('v.is_repeat_offender', 1);
+        }
+        if (!empty($filters['parent_notified']) && $filters['parent_notified'] === 'no') {
+            $builder->groupStart()
+                ->where('v.parent_notified', 0)
+                ->orWhere('v.parent_notified', null)
+                ->groupEnd();
+        }
+        if (!empty($filters['class_id'])) {
+            $builder->where('s.class_id', (int) $filters['class_id']);
+        }
+        if (!empty($filters['severity_level'])) {
+            $builder->where('vc.severity_level', $filters['severity_level']);
+        }
 
         // Apply date filter
         if (!empty($filters['date_from'])) {
-            $builder->where('violation_date >=', $filters['date_from']);
+            $builder->where('v.violation_date >=', $filters['date_from']);
+        }
+        if (!empty($filters['date_to'])) {
+            $builder->where('v.violation_date <=', $filters['date_to']);
         }
 
-        if (!empty($filters['date_to'])) {
-            $builder->where('violation_date <=', $filters['date_to']);
+        if (!empty($filters['search'])) {
+            $q = trim((string) $filters['search']);
+            $builder->groupStart()
+                ->like('su.full_name', $q)
+                ->orLike('s.nisn', $q)
+                ->orLike('s.nis', $q)
+                ->orLike('v.description', $q)
+                ->orLike('v.location', $q)
+                ->groupEnd();
         }
 
         return $builder->get()->getRowArray();
@@ -332,28 +478,85 @@ class ViolationModel extends Model
     /**
      * Get violations by severity level (statistics)
      *
+     * Revisi:
+     * - total_points sebaiknya tidak menghitung pelanggaran Dibatalkan,
+     *   agar selaras dengan getStudentTotalPoints().
+     * - Tambah dukungan filter lain agar chart/rekap konsisten dengan tabel.
+     *
      * @param array $filters
      * @return array
      */
     public function getStatsBySeverity($filters = [])
     {
-        $db = \Config\Database::connect();
+        $db = $this->db ?? \Config\Database::connect();
 
-        $builder = $db->table('violations')
-            ->select('violation_categories.severity_level,
-                      COUNT(violations.id) as violation_count,
-                      SUM(violation_categories.point_deduction) as total_points')
-            ->join('violation_categories', 'violation_categories.id = violations.category_id')
-            ->where('violations.deleted_at', null)
-            ->groupBy('violation_categories.severity_level');
+        $builder = $db->table('violations v')
+            ->select('vc.severity_level,
+                      COUNT(v.id) as violation_count,
+                      SUM(vc.point_deduction) as total_points')
+            ->join('violation_categories vc', 'vc.id = v.category_id')
+            ->where('v.deleted_at', null)
+            ->where('v.status !=', 'Dibatalkan')
+            ->groupBy('vc.severity_level');
+
+        // Join opsional untuk filter search/class
+        $needJoinStudent = !empty($filters['search']) || !empty($filters['class_id']);
+        if ($needJoinStudent) {
+            $builder->join('students s', 's.id = v.student_id', 'left')
+                    ->join('users su', 'su.id = s.user_id', 'left');
+        }
+
+        // Apply filters
+        if (!empty($filters['status'])) {
+            // jika user minta status spesifik, hormati (tetap di atas sudah exclude Dibatalkan)
+            $builder->where('v.status', $filters['status']);
+        }
+        if (!empty($filters['student_id'])) {
+            $builder->where('v.student_id', (int) $filters['student_id']);
+        }
+        if (!empty($filters['category_id'])) {
+            $builder->where('v.category_id', (int) $filters['category_id']);
+        }
+        if (!empty($filters['handled_by'])) {
+            $builder->where('v.handled_by', (int) $filters['handled_by']);
+        }
+        if (!empty($filters['reported_by'])) {
+            $builder->where('v.reported_by', (int) $filters['reported_by']);
+        }
+        if (!empty($filters['is_repeat_offender'])) {
+            $builder->where('v.is_repeat_offender', 1);
+        }
+        if (!empty($filters['parent_notified']) && $filters['parent_notified'] === 'no') {
+            $builder->groupStart()
+                ->where('v.parent_notified', 0)
+                ->orWhere('v.parent_notified', null)
+                ->groupEnd();
+        }
+        if (!empty($filters['class_id'])) {
+            $builder->where('s.class_id', (int) $filters['class_id']);
+        }
+        if (!empty($filters['severity_level'])) {
+            // kalau user filter severity tertentu, maka hasil hanya 1 grup
+            $builder->where('vc.severity_level', $filters['severity_level']);
+        }
 
         // Apply date filter
         if (!empty($filters['date_from'])) {
-            $builder->where('violations.violation_date >=', $filters['date_from']);
+            $builder->where('v.violation_date >=', $filters['date_from']);
+        }
+        if (!empty($filters['date_to'])) {
+            $builder->where('v.violation_date <=', $filters['date_to']);
         }
 
-        if (!empty($filters['date_to'])) {
-            $builder->where('violations.violation_date <=', $filters['date_to']);
+        if (!empty($filters['search'])) {
+            $q = trim((string) $filters['search']);
+            $builder->groupStart()
+                ->like('su.full_name', $q)
+                ->orLike('s.nisn', $q)
+                ->orLike('s.nis', $q)
+                ->orLike('v.description', $q)
+                ->orLike('v.location', $q)
+                ->groupEnd();
         }
 
         return $builder->get()->getResultArray();
@@ -362,39 +565,85 @@ class ViolationModel extends Model
     /**
      * Get top violators (students with most violations)
      *
+     * Revisi:
+     * - Tambah dukungan filter lain (class_id, handled_by, category_id, severity_level, search, date range)
+     *   agar rekap konsisten dengan tabel.
+     *
      * @param int $limit
      * @param array $filters
      * @return array
      */
     public function getTopViolators($limit = 10, $filters = [])
     {
-        $db = \Config\Database::connect();
+        $db = $this->db ?? \Config\Database::connect();
 
-        $builder = $db->table('violations')
-            ->select('students.id,
-                      students.nisn,
-                      users.full_name as student_name,
-                      classes.class_name,
-                      COUNT(violations.id) as violation_count,
-                      SUM(violation_categories.point_deduction) as total_points,
-                      MAX(violations.violation_date) as last_violation_date')
-            ->join('students', 'students.id = violations.student_id')
-            ->join('users', 'users.id = students.user_id')
-            ->join('classes', 'classes.id = students.class_id', 'left')
-            ->join('violation_categories', 'violation_categories.id = violations.category_id')
-            ->where('violations.deleted_at', null)
-            ->where('violations.status !=', 'Dibatalkan')
-            ->groupBy('students.id')
+        $builder = $db->table('violations v')
+            ->select('s.id,
+                      s.nisn,
+                      s.nis,
+                      u.full_name as student_name,
+                      c.class_name,
+                      COUNT(v.id) as violation_count,
+                      SUM(vc.point_deduction) as total_points,
+                      MAX(v.violation_date) as last_violation_date')
+            ->join('students s', 's.id = v.student_id')
+            ->join('users u', 'u.id = s.user_id')
+            ->join('classes c', 'c.id = s.class_id', 'left')
+            ->join('violation_categories vc', 'vc.id = v.category_id')
+            ->where('v.deleted_at', null)
+            ->where('v.status !=', 'Dibatalkan')
+            ->groupBy('s.id')
             ->orderBy('violation_count', 'DESC')
-            ->limit($limit);
+            ->limit((int) $limit);
+
+        // Apply filters
+        if (!empty($filters['status'])) {
+            // tetap sudah exclude Dibatalkan, tapi hormati status spesifik
+            $builder->where('v.status', $filters['status']);
+        }
+        if (!empty($filters['student_id'])) {
+            $builder->where('v.student_id', (int) $filters['student_id']);
+        }
+        if (!empty($filters['category_id'])) {
+            $builder->where('v.category_id', (int) $filters['category_id']);
+        }
+        if (!empty($filters['handled_by'])) {
+            $builder->where('v.handled_by', (int) $filters['handled_by']);
+        }
+        if (!empty($filters['reported_by'])) {
+            $builder->where('v.reported_by', (int) $filters['reported_by']);
+        }
+        if (!empty($filters['is_repeat_offender'])) {
+            $builder->where('v.is_repeat_offender', 1);
+        }
+        if (!empty($filters['parent_notified']) && $filters['parent_notified'] === 'no') {
+            $builder->groupStart()
+                ->where('v.parent_notified', 0)
+                ->orWhere('v.parent_notified', null)
+                ->groupEnd();
+        }
+        if (!empty($filters['class_id'])) {
+            $builder->where('s.class_id', (int) $filters['class_id']);
+        }
+        if (!empty($filters['severity_level'])) {
+            $builder->where('vc.severity_level', $filters['severity_level']);
+        }
 
         // Apply date filter
         if (!empty($filters['date_from'])) {
-            $builder->where('violations.violation_date >=', $filters['date_from']);
+            $builder->where('v.violation_date >=', $filters['date_from']);
+        }
+        if (!empty($filters['date_to'])) {
+            $builder->where('v.violation_date <=', $filters['date_to']);
         }
 
-        if (!empty($filters['date_to'])) {
-            $builder->where('violations.violation_date <=', $filters['date_to']);
+        if (!empty($filters['search'])) {
+            $q = trim((string) $filters['search']);
+            $builder->groupStart()
+                ->like('u.full_name', $q)
+                ->orLike('s.nisn', $q)
+                ->orLike('s.nis', $q)
+                ->groupEnd();
         }
 
         return $builder->get()->getResultArray();
@@ -422,8 +671,9 @@ class ViolationModel extends Model
      */
     public function getPendingNotifications($limit = 20)
     {
-        return $this->select('violations.*,
+        $builder = $this->select('violations.*,
                               students.nisn,
+                              students.nis,
                               student_users.full_name as student_name,
                               student_users.email as student_email,
                               classes.class_name,
@@ -433,10 +683,18 @@ class ViolationModel extends Model
             ->join('users as student_users', 'student_users.id = students.user_id')
             ->join('classes', 'classes.id = students.class_id', 'left')
             ->join('violation_categories', 'violation_categories.id = violations.category_id')
-            ->where('violations.parent_notified', 0)
             ->where('violations.status !=', 'Dibatalkan')
+            ->where('violations.deleted_at', null);
+
+        // parent_notified 0 atau NULL
+        $builder->groupStart()
+            ->where('violations.parent_notified', 0)
+            ->orWhere('violations.parent_notified', null)
+            ->groupEnd();
+
+        return $builder
             ->orderBy('violations.violation_date', 'DESC')
-            ->limit($limit)
+            ->limit((int) $limit)
             ->findAll();
     }
 
@@ -449,12 +707,12 @@ class ViolationModel extends Model
      */
     public function getStudentTotalPoints($studentId, $filters = [])
     {
-        $db = \Config\Database::connect();
+        $db = $this->db ?? \Config\Database::connect();
 
         $builder = $db->table('violations')
             ->select('SUM(violation_categories.point_deduction) as total_points')
             ->join('violation_categories', 'violation_categories.id = violations.category_id')
-            ->where('violations.student_id', $studentId)
+            ->where('violations.student_id', (int) $studentId)
             ->where('violations.deleted_at', null)
             ->where('violations.status !=', 'Dibatalkan');
 
@@ -462,7 +720,6 @@ class ViolationModel extends Model
         if (!empty($filters['date_from'])) {
             $builder->where('violations.violation_date >=', $filters['date_from']);
         }
-
         if (!empty($filters['date_to'])) {
             $builder->where('violations.violation_date <=', $filters['date_to']);
         }

@@ -51,6 +51,136 @@ class CaseController extends BaseController
     }
 
     /**
+     * Ambil year_name Tahun Ajaran aktif (untuk default filter).
+     */
+    private function getActiveAcademicYearName(): ?string
+    {
+        try {
+            $row = $this->db->table('academic_years')
+                ->select('year_name')
+                ->where('deleted_at', null)
+                ->where('is_active', 1)
+                ->orderBy('updated_at', 'DESC')
+                ->get(1)
+                ->getRowArray();
+
+            $yn = trim((string)($row['year_name'] ?? ''));
+            return $yn !== '' ? $yn : null;
+        } catch (\Throwable $e) {
+            log_message('error', 'CaseController::getActiveAcademicYearName - ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Normalisasi filter TA:
+     * - Kalau user tidak isi date_from/date_to dan tidak pilih academic_year,
+     *   default diarahkan ke Tahun Ajaran aktif (agar konsisten dengan poin/cache).
+     * - Lalu panggil ViolationService::normalizeAcademicYearFilter() supaya date_from/date_to terisi otomatis.
+     */
+    private function normalizeYearFilterForUI(array $filters): array
+    {
+        $ay = trim((string)($filters['academic_year'] ?? ''));
+        $df = trim((string)($filters['date_from'] ?? ''));
+        $dt = trim((string)($filters['date_to'] ?? ''));
+
+        // opsi "all" (kalau suatu saat kamu pakai di UI)
+        if (strcasecmp($ay, 'all') === 0) {
+            $filters['academic_year'] = '';
+            $ay = '';
+        }
+
+        // default ke TA aktif jika tidak ada range tanggal dan tidak pilih TA
+        if ($ay === '' && $df === '' && $dt === '') {
+            $active = $this->getActiveAcademicYearName();
+            if ($active) {
+                $filters['academic_year'] = $active;
+            }
+        }
+
+        // isi date_from/date_to otomatis jika academic_year dipilih
+        try {
+            $filters = $this->violationService->normalizeAcademicYearFilter($filters);
+        } catch (\Throwable $e) {
+            // jangan bikin halaman crash hanya karena normalisasi gagal
+            log_message('error', 'CaseController::normalizeYearFilterForUI - ' . $e->getMessage());
+        }
+
+        return $filters;
+    }
+
+    /**
+     * Safe wrapper untuk history siswa agar detail page tidak crash
+     * jika ViolationService/ViolationModel belum sinkron.
+     *
+     * @return array{violations:array,statistics:array,filters_applied:array}
+     */
+    private function getStudentHistorySafe(int $studentId, array $filters = []): array
+    {
+        try {
+            // Jika service sudah benar, ini yang dipakai
+            return (array) $this->violationService->getStudentViolationHistory($studentId, $filters);
+        } catch (\Throwable $e) {
+            // Fallback: hitung manual memakai model yang ada
+            log_message('error', 'CaseController::getStudentHistorySafe fallback - ' . $e->getMessage());
+
+            // Default filter: TA aktif
+            $filters = $this->normalizeYearFilterForUI($filters);
+
+            $dateFrom = $filters['date_from'] ?? null;
+            $dateTo   = $filters['date_to'] ?? null;
+
+            // Ambil violations terfilter (pakai getViolationsWithFilters agar mendukung date range)
+            $violations = $this->violationModel->getViolationsWithFilters([
+                'student_id' => $studentId,
+                'date_from'  => $dateFrom,
+                'date_to'    => $dateTo,
+            ]);
+
+            // Total poin terfilter
+            $totalPoints = (int) $this->violationModel->getStudentTotalPoints($studentId, [
+                'date_from' => $dateFrom,
+                'date_to'   => $dateTo,
+            ]);
+
+            $stats = [
+                'total_violations'    => is_array($violations) ? count($violations) : 0,
+                'total_points'        => $totalPoints,
+                'by_severity'         => ['Ringan' => 0, 'Sedang' => 0, 'Berat' => 0],
+                'by_status'           => ['Dilaporkan' => 0, 'Dalam Proses' => 0, 'Selesai' => 0, 'Dibatalkan' => 0],
+                'is_repeat_offender'  => false,
+                'last_violation_date' => null,
+            ];
+
+            foreach ((array)$violations as $v) {
+                $sev = (string)($v['severity_level'] ?? '');
+                $st  = (string)($v['status'] ?? '');
+
+                if (isset($stats['by_severity'][$sev])) {
+                    $stats['by_severity'][$sev]++;
+                }
+                if (isset($stats['by_status'][$st])) {
+                    $stats['by_status'][$st]++;
+                }
+                if (!empty($v['is_repeat_offender'])) {
+                    $stats['is_repeat_offender'] = true;
+                }
+                if (!empty($v['violation_date'])) {
+                    if (empty($stats['last_violation_date']) || $v['violation_date'] > $stats['last_violation_date']) {
+                        $stats['last_violation_date'] = $v['violation_date'];
+                    }
+                }
+            }
+
+            return [
+                'violations'      => (array) $violations,
+                'statistics'      => $stats,
+                'filters_applied' => $filters,
+            ];
+        }
+    }
+
+    /**
      * List Kasus & Pelanggaran
      * @return string|ResponseInterface
      */
@@ -60,6 +190,10 @@ class CaseController extends BaseController
         if (!is_guru_bk() && !is_koordinator()) return redirect()->to('/')->with('error', 'Akses ditolak');
 
         $filters = [
+            // ✅ Tambahan: filter Tahun Ajaran (year_name) / semester id
+            'academic_year'      => $this->request->getGet('academic_year'),
+            'academic_year_id'   => $this->request->getGet('academic_year_id'),
+
             'status'             => $this->request->getGet('status'),
             'severity_level'     => $this->request->getGet('severity_level'),
             'student_id'         => $this->request->getGet('student_id'),
@@ -75,11 +209,20 @@ class CaseController extends BaseController
             $filters['handled_by'] = auth_id();
         }
 
+        // ✅ Normalisasi: default TA aktif + isi date range dari academic_year
+        $filters = $this->normalizeYearFilterForUI($filters);
+
         $data['violations'] = $this->violationService->getViolations($filters);
         $data['students']   = $this->getActiveStudents();
         $data['categories'] = $this->violationService->getActiveCategories();
         $data['filters']    = $filters;
+
+        // ✅ Stats ikut filter TA/range yang sama
         $data['stats']      = $this->violationService->getDashboardStats($filters);
+
+        // ✅ Dropdown TA untuk UI
+        $data['academic_year_options'] = $this->violationService->getAcademicYearOptions();
+        $data['active_academic_year']  = $this->getActiveAcademicYearName();
 
         // Meta title untuk tab browser (title-meta.php membaca: page_title -> pageTitle -> title)
         $data['title']      = 'Kasus & Pelanggaran';
@@ -104,6 +247,10 @@ class CaseController extends BaseController
         if (!is_guru_bk() && !is_koordinator()) return redirect()->to('/')->with('error', 'Akses ditolak');
 
         $filters = [
+            // ✅ Tambahan: filter Tahun Ajaran (year_name) / semester id
+            'academic_year'      => $this->request->getGet('academic_year'),
+            'academic_year_id'   => $this->request->getGet('academic_year_id'),
+
             'status'          => $this->request->getGet('status'),
             'severity_level'  => $this->request->getGet('severity_level'),
             'student_id'      => $this->request->getGet('student_id'),
@@ -119,11 +266,18 @@ class CaseController extends BaseController
             $filters['handled_by'] = auth_id();
         }
 
+        // ✅ Normalisasi: default TA aktif + isi date range dari academic_year
+        $filters = $this->normalizeYearFilterForUI($filters);
+
         $data['violations'] = $this->violationService->getViolations($filters);
         $data['students']   = $this->getActiveStudents();
         $data['categories'] = $this->violationService->getActiveCategories();
         $data['filters']    = $filters;
         $data['stats']      = $this->violationService->getDashboardStats($filters);
+
+        // ✅ Dropdown TA untuk UI
+        $data['academic_year_options'] = $this->violationService->getAcademicYearOptions();
+        $data['active_academic_year']  = $this->getActiveAcademicYearName();
 
         // Meta title untuk tab browser
         $data['title']      = 'Pelanggaran Siswa';
@@ -253,12 +407,15 @@ class CaseController extends BaseController
             }
         }
 
-        $data['violation']       = $violation;
-        $data['student_history'] = $this->violationService->getStudentViolationHistory($violation['student_id']);
-        $data['sanction_types']  = $this->sanctionModel->getCommonSanctionTypes();
+        $data['violation'] = $violation;
 
-        $cat = trim((string)($violation['category_name'] ?? ''));
-        $page = $cat !== '' ? ('Detail Kasus: ' . $cat) : 'Detail Kasus';
+        // ✅ Student history default ikut TA aktif (agar nyambung dengan sistem poin per TA)
+        $historyFilters = [
+            'academic_year' => $this->getActiveAcademicYearName(),
+        ];
+        $data['student_history'] = $this->getStudentHistorySafe((int)$violation['student_id'], $historyFilters);
+
+        $data['sanction_types'] = $this->sanctionModel->getCommonSanctionTypes();
 
         // Meta title untuk tab browser
         $data['title']      = 'Detail Kasus & Pelanggaran';
@@ -284,13 +441,14 @@ class CaseController extends BaseController
         if (!is_logged_in()) return redirect()->to('/login')->with('error','Silakan login terlebih dahulu');
         if (!is_guru_bk() && !is_koordinator()) return redirect()->to('/')->with('error','Akses ditolak');
 
-        // Perbaikan: join users u untuk ambil full_name
+        // Perbaikan: join users u untuk ambil full_name + hardening soft delete
         $violation = $this->db->table('violations v')
             ->select('v.*, u.full_name AS student_name, s.nisn, vc.category_name, vc.severity_level, vc.point_deduction')
-            ->join('students s', 's.id = v.student_id')
-            ->join('users u', 'u.id = s.user_id')
-            ->join('violation_categories vc', 'vc.id = v.category_id')
-            ->where('v.id', $id)
+            ->join('students s', 's.id = v.student_id AND s.deleted_at IS NULL', 'inner')
+            ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'inner')
+            ->join('violation_categories vc', 'vc.id = v.category_id AND vc.deleted_at IS NULL', 'inner')
+            ->where('v.id', (int)$id)
+            ->where('v.deleted_at', null)
             ->get()->getRowArray();
 
         if (!$violation) return redirect()->to('counselor/cases')->with('error','Data tidak ditemukan');
@@ -308,9 +466,7 @@ class CaseController extends BaseController
             if (is_array($arr)) $violation['evidence_files'] = $arr;
         }
 
-        $cat = trim((string)($violation['category_name'] ?? ''));
-
-        // Tambahkan meta title + breadcrumbs (sebelumnya hanya compact('violation'))
+        // Tambahkan meta title + breadcrumbs
         $data = [
             'violation'   => $violation,
 
@@ -367,7 +523,7 @@ class CaseController extends BaseController
 
             // opsional: hapus file fisik
             foreach ($toRemove as $rel) {
-                $full = FCPATH . $rel;
+                $full = rtrim(FCPATH, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $rel;
                 if (is_file($full)) { @unlink($full); }
             }
         }
@@ -624,8 +780,9 @@ class CaseController extends BaseController
     {
         return $this->studentModel
             ->select('students.id, students.nisn, students.nis, users.full_name, classes.class_name')
-            ->join('users', 'users.id = students.user_id')
-            ->join('classes', 'classes.id = students.class_id', 'left')
+            ->join('users', 'users.id = students.user_id AND users.deleted_at IS NULL', 'inner')
+            ->join('classes', 'classes.id = students.class_id AND classes.deleted_at IS NULL', 'left')
+            ->where('students.deleted_at', null)
             ->where('students.status', 'Aktif')
             ->orderBy('users.full_name', 'ASC')
             ->findAll();
@@ -638,6 +795,7 @@ class CaseController extends BaseController
     private function getActiveClasses(): array
     {
         return $this->classModel
+            ->where('deleted_at', null)
             ->where('is_active', 1)
             ->orderBy('class_name', 'ASC')
             ->findAll();
