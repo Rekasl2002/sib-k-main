@@ -15,15 +15,18 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
 use App\Services\AcademicYearService;
+use App\Services\ViolationService;
 use App\Validation\AcademicYearValidation;
 
 class AcademicYearController extends BaseController
 {
     protected AcademicYearService $academicYearService;
+    protected ViolationService $violationService;
 
     public function __construct()
     {
         $this->academicYearService = new AcademicYearService();
+        $this->violationService    = new ViolationService();
     }
 
     /**
@@ -33,6 +36,37 @@ class AcademicYearController extends BaseController
     {
         // Pastikan helper/func ini memang ada di proyek kamu (kamu sudah pakai di index())
         require_permission('manage_academic_years');
+    }
+
+    /**
+     * Resync cache poin pelanggaran setelah Tahun Ajaran aktif berubah.
+     * Ini penting agar semua role langsung melihat angka yang benar (TA aktif).
+     *
+     * @return array{success:bool,message:string}
+     */
+    private function resyncViolationPointsCache(): array
+    {
+        try {
+            if (!isset($this->violationService) || !method_exists($this->violationService, 'syncAllStudentsViolationPoints')) {
+                return [
+                    'success' => false,
+                    'message' => 'ViolationService tidak tersedia untuk sinkronisasi poin.',
+                ];
+            }
+
+            $r = $this->violationService->syncAllStudentsViolationPoints();
+
+            return [
+                'success' => (bool)($r['success'] ?? false),
+                'message' => (string)($r['message'] ?? 'Sinkronisasi selesai.'),
+            ];
+        } catch (\Throwable $e) {
+            log_message('error', 'AcademicYearController::resyncViolationPointsCache - ' . $e->getMessage());
+            return [
+                'success' => false,
+                'message' => 'Gagal sinkronisasi poin pelanggaran: ' . $e->getMessage(),
+            ];
+        }
     }
 
     /**
@@ -184,6 +218,27 @@ class AcademicYearController extends BaseController
                 ->with('error', $result['message'] ?? 'Gagal menyimpan data');
         }
 
+        /**
+         * ✅ Penting:
+         * Jika create langsung set is_active=1, pastikan setting default_academic_year_id ikut terset,
+         * dan cache total_violation_points ikut di-resync agar semua role langsung benar.
+         */
+        $yearId = (int)($result['year_id'] ?? 0);
+        $isActiveRequested = (int)($data['is_active'] ?? 0) === 1;
+
+        if ($isActiveRequested && $yearId > 0) {
+            // Pastikan setting terset (beberapa flow aktivasi via create tidak lewat setActive)
+            helper('settings');
+            set_setting('academic', 'default_academic_year_id', $yearId, 'int');
+
+            $sync = $this->resyncViolationPointsCache();
+            if (!$sync['success']) {
+                return redirect()->to(base_url('admin/academic-years'))
+                    ->with('success', ($result['message'] ?? 'Berhasil') . ' (TA aktif diset)')
+                    ->with('warning', $sync['message']);
+            }
+        }
+
         return redirect()->to(base_url('admin/academic-years'))
             ->with('success', $result['message'] ?? 'Berhasil');
     }
@@ -308,6 +363,23 @@ class AcademicYearController extends BaseController
                 ->with('error', $result['message'] ?? 'Gagal menyimpan perubahan');
         }
 
+        /**
+         * ✅ Penting:
+         * Jika update menjadikan TA ini aktif, pastikan setting & cache poin ikut konsisten.
+         */
+        $isActiveRequested = (int)($data['is_active'] ?? 0) === 1;
+        if ($isActiveRequested) {
+            helper('settings');
+            set_setting('academic', 'default_academic_year_id', (int)$id, 'int');
+
+            $sync = $this->resyncViolationPointsCache();
+            if (!$sync['success']) {
+                return redirect()->to(base_url('admin/academic-years'))
+                    ->with('success', ($result['message'] ?? 'Berhasil'))
+                    ->with('warning', $sync['message']);
+            }
+        }
+
         return redirect()->to(base_url('admin/academic-years'))
             ->with('success', $result['message'] ?? 'Berhasil');
     }
@@ -354,8 +426,22 @@ class AcademicYearController extends BaseController
                 ->with('error', $result['message'] ?? 'Gagal mengaktifkan data');
         }
 
+        /**
+         * ✅ KUNCI REVISI:
+         * Begitu TA aktif berubah, resync cache poin pelanggaran (students.total_violation_points)
+         * supaya semua role langsung melihat angka sesuai TA aktif.
+         */
+        $sync = $this->resyncViolationPointsCache();
+
+        if (!$sync['success']) {
+            // TA tetap berhasil aktif, tapi beri warning kalau resync gagal
+            return redirect()->to(base_url('admin/academic-years'))
+                ->with('success', $result['message'] ?? 'Berhasil')
+                ->with('warning', $sync['message']);
+        }
+
         return redirect()->to(base_url('admin/academic-years'))
-            ->with('success', $result['message'] ?? 'Berhasil');
+            ->with('success', ($result['message'] ?? 'Berhasil') . ' • ' . ($sync['message'] ?? 'Poin disinkronkan.'));
     }
 
     /**

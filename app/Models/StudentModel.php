@@ -12,6 +12,12 @@
  * - Model ini menjaga kompatibilitas dengan banyak view/controller dengan menyediakan key "full_name"
  *   dari users.full_name pada query-query detail/list.
  *
+ * Catatan (Revisi Poin Pelanggaran):
+ * - Kolom students.total_violation_points diperlakukan sebagai CACHE untuk Tahun Ajaran AKTIF
+ *   (gabung ganjil+genap via academic_years.year_name).
+ * - Perhitungan/refresh idealnya dilakukan oleh ViolationService, tetapi model ini juga menyediakan
+ *   helper resync agar pemanggilan lama (updateViolationPoints) tidak membuat cache menjadi salah.
+ *
  * @package    SIB-K
  * @subpackage Models
  * @category   Academic Data
@@ -117,6 +123,100 @@ class StudentModel extends Model
     protected $beforeDelete   = [];
     protected $afterDelete    = [];
 
+    // ==========================================================
+    // Helper internal: resolve range Tahun Ajaran aktif (year_name)
+    // Menggabungkan ganjil+genap: MIN(start_date) s/d MAX(end_date)
+    // ==========================================================
+
+    /**
+     * @return array{year_name:?string,date_from:?string,date_to:?string}
+     */
+    private function resolveActiveSchoolYearRange(): array
+    {
+        $db = \Config\Database::connect();
+
+        // 1) Prefer is_active=1
+        $row = $db->table('academic_years')
+            ->select('year_name')
+            ->where('deleted_at', null)
+            ->where('is_active', 1)
+            ->orderBy('updated_at', 'DESC')
+            ->get(1)
+            ->getRowArray();
+
+        $yearName = trim((string) ($row['year_name'] ?? ''));
+
+        // 2) Fallback: berdasarkan tanggal hari ini
+        if ($yearName === '') {
+            $today = date('Y-m-d');
+            $row = $db->table('academic_years')
+                ->select('year_name')
+                ->where('deleted_at', null)
+                ->where('start_date <=', $today)
+                ->where('end_date >=', $today)
+                ->orderBy('start_date', 'DESC')
+                ->get(1)
+                ->getRowArray();
+
+            $yearName = trim((string) ($row['year_name'] ?? ''));
+        }
+
+        if ($yearName === '') {
+            return ['year_name' => null, 'date_from' => null, 'date_to' => null];
+        }
+
+        $range = $db->table('academic_years')
+            ->select('MIN(start_date) as date_from, MAX(end_date) as date_to')
+            ->where('deleted_at', null)
+            ->where('year_name', $yearName)
+            ->get()
+            ->getRowArray();
+
+        return [
+            'year_name' => $yearName,
+            'date_from' => ($range['date_from'] ?? null) ?: null,
+            'date_to'   => ($range['date_to'] ?? null) ?: null,
+        ];
+    }
+
+    /**
+     * Resync cache total_violation_points untuk siswa tertentu
+     * berdasarkan Tahun Ajaran aktif (gabung ganjil+genap).
+     *
+     * NOTE: Idealnya dipanggil dari ViolationService, tapi disediakan di sini
+     * agar pemanggilan lama (updateViolationPoints) tetap aman.
+     */
+    public function resyncViolationPointsForActiveYear(int $studentId): bool
+    {
+        $studentId = (int) $studentId;
+        if ($studentId <= 0) return false;
+
+        $range = $this->resolveActiveSchoolYearRange();
+
+        // Jika range tidak ditemukan, fallback ke 0 (cache aman)
+        if (empty($range['date_from']) || empty($range['date_to'])) {
+            return (bool) $this->update($studentId, ['total_violation_points' => 0]);
+        }
+
+        $db = \Config\Database::connect();
+
+        $row = $db->table('violations')
+            ->select('SUM(vc.point_deduction) as total_points')
+            ->join('violation_categories vc', 'vc.id = violations.category_id')
+            ->where('violations.deleted_at', null)
+            ->where('violations.status !=', 'Dibatalkan')
+            ->where('violations.student_id', $studentId)
+            ->where('violations.violation_date >=', $range['date_from'])
+            ->where('violations.violation_date <=', $range['date_to'])
+            ->get()
+            ->getRowArray();
+
+        $total = (int) ($row['total_points'] ?? 0);
+        if ($total < 0) $total = 0;
+
+        return (bool) $this->update($studentId, ['total_violation_points' => $total]);
+    }
+
     /**
      * Get student with complete details
      */
@@ -136,6 +236,7 @@ class StudentModel extends Model
             ->join('classes', 'classes.id = students.class_id', 'left')
             ->join('academic_years', 'academic_years.id = classes.academic_year_id', 'left')
             ->join('users AS parent', 'parent.id = students.parent_id', 'left')
+            ->where('students.deleted_at', null)
             ->where('students.id', $studentId)
             ->first();
     }
@@ -148,6 +249,7 @@ class StudentModel extends Model
     {
         return $this->select('students.*, users.full_name AS full_name, users.email, users.phone, users.username')
             ->join('users', 'users.id = students.user_id', 'left')
+            ->where('students.deleted_at', null)
             ->where('students.user_id', $userId)
             ->first();
     }
@@ -156,6 +258,7 @@ class StudentModel extends Model
     {
         return $this->select('students.*, users.full_name AS full_name, users.email, users.phone, users.username')
             ->join('users', 'users.id = students.user_id', 'left')
+            ->where('students.deleted_at', null)
             ->where('students.nisn', $nisn)
             ->first();
     }
@@ -164,6 +267,7 @@ class StudentModel extends Model
     {
         return $this->select('students.*, users.full_name AS full_name, users.email, users.phone, users.username')
             ->join('users', 'users.id = students.user_id', 'left')
+            ->where('students.deleted_at', null)
             ->where('students.nis', $nis)
             ->first();
     }
@@ -191,6 +295,7 @@ class StudentModel extends Model
     {
         return $this->select('students.*, users.full_name AS full_name, users.email, users.phone, users.profile_photo')
             ->join('users', 'users.id = students.user_id', 'left')
+            ->where('students.deleted_at', null)
             ->where('students.class_id', $classId)
             ->where('students.status', 'Aktif')
             ->orderBy('users.full_name', 'ASC')
@@ -202,6 +307,7 @@ class StudentModel extends Model
         return $this->select('students.*, users.full_name AS full_name, classes.class_name')
             ->join('users', 'users.id = students.user_id', 'left')
             ->join('classes', 'classes.id = students.class_id', 'left')
+            ->where('students.deleted_at', null)
             ->where('classes.grade_level', $gradeLevel)
             ->where('students.status', 'Aktif')
             ->orderBy('classes.class_name', 'ASC')
@@ -214,6 +320,7 @@ class StudentModel extends Model
         return $this->select('students.*, users.full_name AS full_name, users.email, classes.class_name, classes.grade_level')
             ->join('users', 'users.id = students.user_id', 'left')
             ->join('classes', 'classes.id = students.class_id', 'left')
+            ->where('students.deleted_at', null)
             ->where('students.parent_id', $parentId)
             ->where('students.status', 'Aktif')
             ->findAll();
@@ -235,8 +342,30 @@ class StudentModel extends Model
             ->findAll();
     }
 
-    public function updateViolationPoints($studentId, $points, $isAddition = true)
+    /**
+     * Update poin pelanggaran siswa.
+     *
+     * Revisi penting:
+     * - Karena total_violation_points adalah CACHE untuk Tahun Ajaran aktif,
+     *   metode ini secara default akan melakukan RESYNC (menghitung ulang) agar nilainya akurat.
+     * - Untuk mempertahankan perilaku lama (delta), set $forceResyncActiveYear = false.
+     *
+     * @param int  $studentId
+     * @param int  $points
+     * @param bool $isAddition
+     * @param bool $forceResyncActiveYear
+     * @return bool
+     */
+    public function updateViolationPoints($studentId, $points, $isAddition = true, $forceResyncActiveYear = true)
     {
+        $studentId = (int) $studentId;
+
+        // Default: aman untuk skema per Tahun Ajaran (hitung ulang sesuai TA aktif)
+        if ($forceResyncActiveYear) {
+            return $this->resyncViolationPointsForActiveYear($studentId);
+        }
+
+        // Legacy: delta update (HATI-HATI, bisa stale saat TA berubah)
         $student = $this->find($studentId);
         if (! $student) {
             return false;
@@ -246,22 +375,22 @@ class StudentModel extends Model
         $new     = $isAddition ? ($current + (int) $points) : ($current - (int) $points);
         $new     = max(0, $new);
 
-        return $this->update($studentId, ['total_violation_points' => $new]);
+        return (bool) $this->update($studentId, ['total_violation_points' => $new]);
     }
 
     public function changeStatus($studentId, $status)
     {
-        return $this->update($studentId, ['status' => $status]);
+        return (bool) $this->update($studentId, ['status' => $status]);
     }
 
     public function assignParent($studentId, $parentId)
     {
-        return $this->update($studentId, ['parent_id' => $parentId]);
+        return (bool) $this->update($studentId, ['parent_id' => $parentId]);
     }
 
     public function moveToClass($studentId, $newClassId)
     {
-        return $this->update($studentId, ['class_id' => $newClassId]);
+        return (bool) $this->update($studentId, ['class_id' => $newClassId]);
     }
 
     /**
@@ -315,6 +444,7 @@ class StudentModel extends Model
         return $this->select('students.*, users.full_name AS full_name, classes.class_name')
             ->join('users', 'users.id = students.user_id', 'left')
             ->join('classes', 'classes.id = students.class_id', 'left')
+            ->where('students.deleted_at', null)
             ->where('students.total_violation_points >=', (int) $threshold)
             ->where('students.status', 'Aktif')
             ->orderBy('students.total_violation_points', 'DESC')
@@ -330,6 +460,7 @@ class StudentModel extends Model
         return $this->select('students.*, users.full_name AS full_name, classes.class_name')
             ->join('users', 'users.id = students.user_id', 'left')
             ->join('classes', 'classes.id = students.class_id', 'left')
+            ->where('students.deleted_at', null)
             ->where('classes.counselor_id', $counselorId);
     }
 }

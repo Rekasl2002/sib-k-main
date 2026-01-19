@@ -14,6 +14,11 @@
  * - Jika ada semester "Ganjil-Genap" untuk suatu year_name, maka tidak boleh ada record lain untuk year_name tsb.
  * - Jika mode split (Ganjil/Genap), maksimal 2 record per year_name dan tidak boleh dobel kombinasi (year_name + semester).
  *
+ * Revisi (Poin Pelanggaran per Tahun Ajaran):
+ * - Saat Tahun Ajaran aktif berubah, cache students.total_violation_points wajib disinkronkan
+ *   berdasarkan rentang tanggal gabungan untuk year_name aktif (Ganjil + Genap).
+ * - Ini memastikan: ganti 2025/2026 -> 2026/2027 (0 jika belum ada data), lalu balik ke 2025/2026 -> angka kembali.
+ *
  * @package    SIB-K
  * @subpackage Services
  * @category   Business Logic
@@ -23,6 +28,7 @@ namespace App\Services;
 
 use App\Models\AcademicYearModel;
 use App\Models\ClassModel;
+use App\Models\StudentModel;
 use App\Validation\AcademicYearValidation;
 use CodeIgniter\Database\BaseConnection;
 
@@ -30,6 +36,7 @@ class AcademicYearService
 {
     protected AcademicYearModel $academicYearModel;
     protected ClassModel $classModel;
+    protected StudentModel $studentModel;
     protected BaseConnection $db;
 
     /**
@@ -38,10 +45,23 @@ class AcademicYearService
      */
     protected bool $enforceOverlapCheck = false;
 
+    /**
+     * Auto-sync cache poin pelanggaran saat TA aktif berubah.
+     * Default: true karena requirement bisnis baru butuh konsistensi lintas role.
+     */
+    protected bool $autoSyncViolationPointsOnActiveChange = true;
+
+    /**
+     * Sinkronisasi hanya untuk siswa Aktif (lebih ringan).
+     * Jika ingin semua siswa (termasuk Alumni) ikut cache, set false.
+     */
+    protected bool $syncOnlyActiveStudents = true;
+
     public function __construct()
     {
         $this->academicYearModel = new AcademicYearModel();
         $this->classModel        = new ClassModel();
+        $this->studentModel      = new StudentModel();
         $this->db                = \Config\Database::connect();
     }
 
@@ -57,7 +77,6 @@ class AcademicYearService
             if (method_exists($row, 'toArray')) {
                 return $row->toArray();
             }
-            // Fallback aman untuk CI4 entity/stdClass
             $arr = json_decode(json_encode($row), true);
             return is_array($arr) ? $arr : [];
         }
@@ -99,11 +118,6 @@ class AcademicYearService
      * - year_name boleh duplikat, tapi:
      *   - Jika ada "Ganjil-Genap" => harus single record untuk year_name itu.
      *   - Jika split => maksimal 2 record (Ganjil & Genap) dan tidak boleh dobel semester.
-     *
-     * @param string   $yearName
-     * @param string   $semester
-     * @param int|null $excludeId (untuk update, agar record sendiri tidak dihitung)
-     * @return array ['ok' => bool, 'message' => string]
      */
     private function guardYearNameSemester(string $yearName, string $semester, ?int $excludeId = null): array
     {
@@ -130,7 +144,6 @@ class AcademicYearService
 
         $rows = $builder->get()->getResultArray();
 
-        // Deteksi apakah year_name ini sudah "mode gabungan"
         $hasCombined = false;
         foreach ($rows as $r) {
             if (strcasecmp((string)($r['semester'] ?? ''), 'Ganjil-Genap') === 0) {
@@ -139,7 +152,6 @@ class AcademicYearService
             }
         }
 
-        // Kalau sudah ada Ganjil-Genap, tidak boleh tambah semester lain
         if ($hasCombined) {
             return [
                 'ok' => false,
@@ -147,7 +159,6 @@ class AcademicYearService
             ];
         }
 
-        // Kalau user memilih Ganjil-Genap, harus benar-benar single record (tidak boleh ada Ganjil/Genap)
         if ($semester === 'Ganjil-Genap') {
             if (!empty($rows)) {
                 return [
@@ -158,9 +169,7 @@ class AcademicYearService
             return ['ok' => true, 'message' => 'OK'];
         }
 
-        // Di sini berarti semester Ganjil / Genap (mode split)
         $count = is_array($rows) ? count($rows) : 0;
-
         if ($count >= 2) {
             return [
                 'ok' => false,
@@ -180,14 +189,187 @@ class AcademicYearService
         return ['ok' => true, 'message' => 'OK'];
     }
 
+    // ==========================================================
+    // REVISI: helper tahun ajaran gabungan (year_name) untuk poin
+    // ==========================================================
+
     /**
-     * Get all academic years with filter and pagination
+     * Fallback range dari format year_name (mis. 2025/2026 -> 2025-07-01 s/d 2026-06-30).
+     * Dipakai jika DB belum lengkap (mis. baru ada 1 record semester).
      *
-     * @param array $filters
-     * @param int $perPage
-     * @param bool $paginate
-     * @return array
+     * @return array{date_from:?string,date_to:?string}
      */
+    private function deriveRangeFromYearName(string $yearName): array
+    {
+        $parsed = AcademicYearValidation::parseYearName($yearName);
+        $y1 = (int)($parsed['year1'] ?? 0);
+        $y2 = (int)($parsed['year2'] ?? 0);
+
+        if ($y1 <= 0 || $y2 <= 0) {
+            return ['date_from' => null, 'date_to' => null];
+        }
+
+        // Default akademik umum: Jul 1 -> Jun 30
+        return [
+            'date_from' => sprintf('%04d-07-01', $y1),
+            'date_to'   => sprintf('%04d-06-30', $y2),
+        ];
+    }
+
+    /**
+     * Ambil rentang gabungan (MIN start_date, MAX end_date) berdasarkan year_name.
+     * Jika DB belum lengkap, gunakan fallback dari year_name.
+     *
+     * @return array{year_name:string,date_from:?string,date_to:?string}
+     */
+    private function getYearNameRange(string $yearName): array
+    {
+        $yearName = trim($yearName);
+        if ($yearName === '') {
+            return ['year_name' => '', 'date_from' => null, 'date_to' => null];
+        }
+
+        $row = $this->db->table('academic_years')
+            ->select('MIN(start_date) as date_from, MAX(end_date) as date_to')
+            ->where('deleted_at', null)
+            ->where('year_name', $yearName)
+            ->get()
+            ->getRowArray();
+
+        $dbFrom = ($row['date_from'] ?? null) ?: null;
+        $dbTo   = ($row['date_to'] ?? null) ?: null;
+
+        $fallback = $this->deriveRangeFromYearName($yearName);
+
+        return [
+            'year_name' => $yearName,
+            'date_from' => $dbFrom ?: ($fallback['date_from'] ?? null),
+            'date_to'   => $dbTo   ?: ($fallback['date_to'] ?? null),
+        ];
+    }
+
+    /**
+     * Public helper (dipakai oleh Controller/Service lain untuk filter report/cases).
+     *
+     * @return array{year_name:string,date_from:?string,date_to:?string}
+     */
+    public function getCombinedRangeByYearName(string $yearName): array
+    {
+        return $this->getYearNameRange($yearName);
+    }
+
+    /**
+     * Sinkronisasi cache students.total_violation_points untuk year_name tertentu.
+     * Ini yang membuat angka otomatis "0 lalu balik lagi" saat TA aktif diganti/dikembalikan.
+     *
+     * @return array{success:bool,updated:int,message:string}
+     */
+    private function syncStudentsViolationPointsForYearName(string $yearName): array
+    {
+        try {
+            $range = $this->getYearNameRange($yearName);
+
+            $dateFrom = (string)($range['date_from'] ?? '');
+            $dateTo   = (string)($range['date_to'] ?? '');
+
+            // Jika range tidak valid => set 0 (aman)
+            if ($dateFrom === '' || $dateTo === '') {
+                $qb = $this->db->table('students')
+                    ->set('total_violation_points', 0)
+                    ->where('deleted_at', null);
+
+                if ($this->syncOnlyActiveStudents) {
+                    $qb->where('status', 'Aktif');
+                }
+
+                $qb->update();
+                $affected = (int)($this->db->affectedRows() ?? 0);
+
+                return [
+                    'success' => true,
+                    'updated' => $affected,
+                    'message' => 'Range tahun ajaran tidak valid, cache poin diset 0.',
+                ];
+            }
+
+            // Ambil semua siswa target
+            $studentsQb = $this->db->table('students')
+                ->select('id')
+                ->where('deleted_at', null);
+
+            if ($this->syncOnlyActiveStudents) {
+                $studentsQb->where('status', 'Aktif');
+            }
+
+            $students = $studentsQb->get()->getResultArray();
+            $studentIds = [];
+            foreach ($students as $s) {
+                $sid = (int)($s['id'] ?? 0);
+                if ($sid > 0) $studentIds[] = $sid;
+            }
+
+            if (empty($studentIds)) {
+                return ['success' => true, 'updated' => 0, 'message' => 'Tidak ada siswa target untuk disinkronkan.'];
+            }
+
+            // Total poin per siswa dalam range (gabungan semester via year_name range)
+            // - LEFT JOIN categories supaya kalau ada category missing, tidak membuat row hilang total (fallback 0).
+            $totals = $this->db->table('violations v')
+                ->select('v.student_id, SUM(COALESCE(vc.point_deduction,0)) as total_points')
+                ->join('violation_categories vc', 'vc.id = v.category_id', 'left')
+                ->where('v.deleted_at', null)
+                ->where('v.status !=', 'Dibatalkan')
+                ->where('v.violation_date >=', $dateFrom)
+                ->where('v.violation_date <=', $dateTo)
+                ->groupBy('v.student_id')
+                ->get()
+                ->getResultArray();
+
+            $map = [];
+            foreach ($totals as $t) {
+                $sid = (int)($t['student_id'] ?? 0);
+                $pts = (int)($t['total_points'] ?? 0);
+                if ($sid > 0) $map[$sid] = max(0, $pts);
+            }
+
+            // Update batch semua siswa (yang tidak ada di map => 0)
+            $batch = [];
+            foreach ($studentIds as $sid) {
+                $batch[] = [
+                    'id' => $sid,
+                    'total_violation_points' => (int)($map[$sid] ?? 0),
+                ];
+            }
+
+            // Chunk updateBatch biar aman untuk MySQL (cPanel) jika data besar
+            $updated = 0;
+            foreach (array_chunk($batch, 500) as $chunk) {
+                $ok = $this->studentModel->updateBatch($chunk, 'id');
+                // updateBatch CI4 bisa return bool/int (tergantung versi), kita hitung conservatively
+                if ($ok !== false) {
+                    $updated += count($chunk);
+                }
+            }
+
+            return [
+                'success' => true,
+                'updated' => $updated,
+                'message' => 'Cache poin pelanggaran berhasil disinkronkan untuk year_name ' . $yearName,
+            ];
+        } catch (\Throwable $e) {
+            log_message('error', 'AcademicYearService::syncStudentsViolationPointsForYearName - ' . $e->getMessage());
+            return [
+                'success' => false,
+                'updated' => 0,
+                'message' => 'Gagal sinkron cache poin pelanggaran: ' . $e->getMessage(),
+            ];
+        }
+    }
+
+    // ==========================================================
+    // CRUD/listing existing
+    // ==========================================================
+
     public function getAllAcademicYears($filters = [], $perPage = 10, bool $paginate = true)
     {
         $builder = $this->academicYearModel
@@ -196,7 +378,6 @@ class AcademicYearService
                     WHERE classes.academic_year_id = academic_years.id
                         AND classes.deleted_at IS NULL) as class_count');
 
-        // Apply filters
         if (isset($filters['is_active']) && $filters['is_active'] !== '') {
             $builder->where('academic_years.is_active', $filters['is_active']);
         }
@@ -209,11 +390,9 @@ class AcademicYearService
             $builder->like('academic_years.year_name', $filters['search']);
         }
 
-        // Order by (sanitize)
         [$orderBy, $orderDir] = $this->sanitizeOrder($filters);
         $builder->orderBy($orderBy, $orderDir);
 
-        // ✅ Mode tanpa paginate (untuk DataTables di View)
         if ($paginate === false) {
             $rows = $builder->findAll();
 
@@ -227,7 +406,6 @@ class AcademicYearService
             ];
         }
 
-        // Mode paginate CI4
         $academicYears = $builder->paginate($perPage);
         $pager         = $this->academicYearModel->pager;
 
@@ -241,12 +419,6 @@ class AcademicYearService
         ];
     }
 
-    /**
-     * Get academic year by ID with details
-     *
-     * @param int $id
-     * @return array|null
-     */
     public function getAcademicYearById($id)
     {
         $year = $this->academicYearModel->find($id);
@@ -254,16 +426,13 @@ class AcademicYearService
             return null;
         }
 
-        // Normalisasi ke array
         $year = $this->asArray($year);
 
-        // class_count (konsisten dengan list: filter soft delete)
         $year['class_count'] = $this->classModel
             ->where('academic_year_id', $id)
             ->where('deleted_at', null)
             ->countAllResults();
 
-        // classes (filter soft delete classes)
         $year['classes'] = $this->classModel
             ->select('classes.*, COUNT(students.id) AS student_count')
             ->join(
@@ -276,74 +445,54 @@ class AcademicYearService
             ->groupBy('classes.id')
             ->findAll();
 
-        // duration_days
         $year['duration_days'] = AcademicYearValidation::getDuration(
             $year['start_date'] ?? '',
             $year['end_date'] ?? ''
         );
 
+        // Bonus: range gabungan per year_name (berguna untuk UI/filter)
+        $range = $this->getYearNameRange((string)($year['year_name'] ?? ''));
+        $year['year_range'] = [
+            'date_from' => $range['date_from'],
+            'date_to'   => $range['date_to'],
+        ];
+
         return $year;
     }
 
-    /**
-     * Create new academic year
-     *
-     * @param array $data
-     * @return array ['success' => bool, 'message' => string, 'year_id' => int|null]
-     */
     public function createAcademicYear($data)
     {
         try {
-            // Sanitize input
             $data = AcademicYearValidation::sanitizeInput($data);
 
-            // Validate year name format
             $yearNameCheck = AcademicYearValidation::validateYearName($data['year_name'] ?? '');
             if (!$yearNameCheck['valid']) {
-                return [
-                    'success' => false,
-                    'message' => $yearNameCheck['message'],
-                ];
+                return ['success' => false, 'message' => $yearNameCheck['message']];
             }
 
-            // Validate date range
             $dateRangeCheck = AcademicYearValidation::validateDateRange($data['start_date'] ?? '', $data['end_date'] ?? '');
             if (!$dateRangeCheck['valid']) {
-                return [
-                    'success' => false,
-                    'message' => $dateRangeCheck['message'],
-                ];
+                return ['success' => false, 'message' => $dateRangeCheck['message']];
             }
 
-            // (Opsional) Cek overlap tanggal jika suatu saat ingin diaktifkan
             if ($this->enforceOverlapCheck) {
                 $ov = $this->checkOverlap($data['start_date'] ?? '', $data['end_date'] ?? '');
                 if (!empty($ov['overlaps'])) {
-                    return [
-                        'success' => false,
-                        'message' => 'Rentang tanggal tahun ajaran bentrok dengan data tahun ajaran lain.',
-                    ];
+                    return ['success' => false, 'message' => 'Rentang tanggal tahun ajaran bentrok dengan data tahun ajaran lain.'];
                 }
             }
 
-            // ✅ Guard: fleksibel semester (split vs gabungan)
             $guard = $this->guardYearNameSemester($data['year_name'] ?? '', $data['semester'] ?? '');
             if (!$guard['ok']) {
-                return [
-                    'success' => false,
-                    'message' => $guard['message'],
-                ];
+                return ['success' => false, 'message' => $guard['message']];
             }
 
-            // Start transaction
             $this->db->transStart();
 
-            // If set as active, deactivate others first
             if (!empty($data['is_active']) && (int)$data['is_active'] === 1) {
                 $this->deactivateAllAcademicYears();
             }
 
-            // Insert academic year
             if (!$this->academicYearModel->insert($data)) {
                 $this->db->transRollback();
                 return [
@@ -354,110 +503,86 @@ class AcademicYearService
 
             $yearId = $this->academicYearModel->getInsertID();
 
-            // Commit transaction
             $this->db->transComplete();
-
             if ($this->db->transStatus() === false) {
-                return [
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan saat menyimpan data',
-                ];
+                return ['success' => false, 'message' => 'Terjadi kesalahan saat menyimpan data'];
             }
 
-            // Log activity
+            helper('settings');
+            if (!empty($data['is_active']) && (int)$data['is_active'] === 1) {
+                set_setting('academic', 'default_academic_year_id', (int) $yearId, 'int');
+            }
+
             $this->logActivity('create', $yearId, "Tahun ajaran {$data['year_name']} berhasil dibuat");
 
-            return [
-                'success' => true,
-                'message' => 'Tahun ajaran berhasil dibuat',
-                'year_id' => $yearId,
-            ];
-        } catch (\Throwable $e) {
-            // Aman walau transaksi belum dimulai, CI4 handle
-            $this->db->transRollback();
-            log_message('error', 'Error creating academic year: ' . $e->getMessage());
-
-            $detail = (defined('ENVIRONMENT') && ENVIRONMENT !== 'production')
-                ? (': ' . $e->getMessage())
-                : '';
-
-            return [
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem' . $detail,
-            ];
-        }
-    }
-
-    /**
-     * Update academic year
-     *
-     * @param int $id
-     * @param array $data
-     * @return array ['success' => bool, 'message' => string]
-     */
-    public function updateAcademicYear($id, $data)
-    {
-        try {
-            // Check if academic year exists
-            $year = $this->academicYearModel->find($id);
-            if (!$year) {
-                return [
-                    'success' => false,
-                    'message' => 'Tahun ajaran tidak ditemukan',
-                ];
-            }
-            $year = $this->asArray($year);
-
-            // Sanitize input
-            $data = AcademicYearValidation::sanitizeInput($data);
-
-            // Validate year name format
-            $yearNameCheck = AcademicYearValidation::validateYearName($data['year_name'] ?? '');
-            if (!$yearNameCheck['valid']) {
-                return [
-                    'success' => false,
-                    'message' => $yearNameCheck['message'],
-                ];
-            }
-
-            // Validate date range
-            $dateRangeCheck = AcademicYearValidation::validateDateRange($data['start_date'] ?? '', $data['end_date'] ?? '');
-            if (!$dateRangeCheck['valid']) {
-                return [
-                    'success' => false,
-                    'message' => $dateRangeCheck['message'],
-                ];
-            }
-
-            // (Opsional) Cek overlap tanggal jika suatu saat ingin diaktifkan
-            if ($this->enforceOverlapCheck) {
-                $ov = $this->checkOverlap($data['start_date'] ?? '', $data['end_date'] ?? '', (int)$id);
-                if (!empty($ov['overlaps'])) {
-                    return [
-                        'success' => false,
-                        'message' => 'Rentang tanggal tahun ajaran bentrok dengan data tahun ajaran lain.',
-                    ];
+            // Revisi: auto-sync poin setelah TA aktif berubah (jika record baru aktif)
+            $syncWarn = null;
+            if ($this->autoSyncViolationPointsOnActiveChange && !empty($data['is_active']) && (int)$data['is_active'] === 1) {
+                $sync = $this->syncStudentsViolationPointsForYearName((string)($data['year_name'] ?? ''));
+                if (!$sync['success']) {
+                    $syncWarn = $sync['message'];
                 }
             }
 
-            // ✅ Guard: fleksibel semester (exclude current)
-            $guard = $this->guardYearNameSemester($data['year_name'] ?? '', $data['semester'] ?? '', (int)$id);
-            if (!$guard['ok']) {
-                return [
-                    'success' => false,
-                    'message' => $guard['message'],
-                ];
+            return [
+                'success' => true,
+                'message' => $syncWarn ? ('Tahun ajaran berhasil dibuat, namun: ' . $syncWarn) : 'Tahun ajaran berhasil dibuat',
+                'year_id' => $yearId,
+            ];
+        } catch (\Throwable $e) {
+            $this->db->transRollback();
+            log_message('error', 'Error creating academic year: ' . $e->getMessage());
+
+            $detail = (defined('ENVIRONMENT') && ENVIRONMENT !== 'production') ? (': ' . $e->getMessage()) : '';
+            return ['success' => false, 'message' => 'Terjadi kesalahan sistem' . $detail];
+        }
+    }
+
+    public function updateAcademicYear($id, $data)
+    {
+        try {
+            $year = $this->academicYearModel->find($id);
+            if (!$year) {
+                return ['success' => false, 'message' => 'Tahun ajaran tidak ditemukan'];
+            }
+            $year = $this->asArray($year);
+
+            $data = AcademicYearValidation::sanitizeInput($data);
+
+            $yearNameCheck = AcademicYearValidation::validateYearName($data['year_name'] ?? '');
+            if (!$yearNameCheck['valid']) {
+                return ['success' => false, 'message' => $yearNameCheck['message']];
             }
 
-            // Start transaction
+            $dateRangeCheck = AcademicYearValidation::validateDateRange($data['start_date'] ?? '', $data['end_date'] ?? '');
+            if (!$dateRangeCheck['valid']) {
+                return ['success' => false, 'message' => $dateRangeCheck['message']];
+            }
+
+            if ($this->enforceOverlapCheck) {
+                $ov = $this->checkOverlap($data['start_date'] ?? '', $data['end_date'] ?? '', (int)$id);
+                if (!empty($ov['overlaps'])) {
+                    return ['success' => false, 'message' => 'Rentang tanggal tahun ajaran bentrok dengan data tahun ajaran lain.'];
+                }
+            }
+
+            $guard = $this->guardYearNameSemester($data['year_name'] ?? '', $data['semester'] ?? '', (int)$id);
+            if (!$guard['ok']) {
+                return ['success' => false, 'message' => $guard['message']];
+            }
+
             $this->db->transStart();
 
-            // If set as active, deactivate others first
-            if (!empty($data['is_active']) && (int)$data['is_active'] === 1 && ((int)($year['is_active'] ?? 0)) !== 1) {
+            $willBeActive = !empty($data['is_active'])
+                ? (int)$data['is_active'] === 1
+                : (int)($year['is_active'] ?? 0) === 1;
+
+            $wasActive = (int)($year['is_active'] ?? 0) === 1;
+
+            if ($willBeActive && !$wasActive) {
                 $this->deactivateAllAcademicYears($id);
             }
 
-            // Update academic year
             if (!$this->academicYearModel->update($id, $data)) {
                 $this->db->transRollback();
                 return [
@@ -466,191 +591,149 @@ class AcademicYearService
                 ];
             }
 
-            // Commit transaction
             $this->db->transComplete();
-
             if ($this->db->transStatus() === false) {
-                return [
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan saat menyimpan data',
-                ];
+                return ['success' => false, 'message' => 'Terjadi kesalahan saat menyimpan data'];
             }
 
-            // Log activity
+            helper('settings');
+            if ($willBeActive) {
+                set_setting('academic', 'default_academic_year_id', (int) $id, 'int');
+            }
+
             $this->logActivity('update', $id, "Tahun ajaran {$data['year_name']} berhasil diupdate");
+
+            // Revisi: jika year aktif (atau menjadi aktif), resync cache poin
+            $syncWarn = null;
+            if ($this->autoSyncViolationPointsOnActiveChange && $willBeActive) {
+                $sync = $this->syncStudentsViolationPointsForYearName((string)($data['year_name'] ?? $year['year_name'] ?? ''));
+                if (!$sync['success']) {
+                    $syncWarn = $sync['message'];
+                }
+            }
 
             return [
                 'success' => true,
-                'message' => 'Tahun ajaran berhasil diupdate',
+                'message' => $syncWarn ? ('Tahun ajaran berhasil diupdate, namun: ' . $syncWarn) : 'Tahun ajaran berhasil diupdate',
             ];
         } catch (\Throwable $e) {
             $this->db->transRollback();
             log_message('error', 'Error updating academic year: ' . $e->getMessage());
 
-            $detail = (defined('ENVIRONMENT') && ENVIRONMENT !== 'production')
-                ? (': ' . $e->getMessage())
-                : '';
-
-            return [
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem' . $detail,
-            ];
+            $detail = (defined('ENVIRONMENT') && ENVIRONMENT !== 'production') ? (': ' . $e->getMessage()) : '';
+            return ['success' => false, 'message' => 'Terjadi kesalahan sistem' . $detail];
         }
     }
 
-    /**
-     * Delete academic year
-     *
-     * @param int $id
-     * @return array ['success' => bool, 'message' => string]
-     */
     public function deleteAcademicYear($id)
     {
         try {
-            // Check if academic year exists
             $year = $this->academicYearModel->find($id);
             if (!$year) {
-                return [
-                    'success' => false,
-                    'message' => 'Tahun ajaran tidak ditemukan',
-                ];
+                return ['success' => false, 'message' => 'Tahun ajaran tidak ditemukan'];
             }
             $year = $this->asArray($year);
 
-            // Check if can be deleted
             $canDeleteCheck = AcademicYearValidation::canDelete($id);
             if (!$canDeleteCheck['can_delete']) {
-                return [
-                    'success' => false,
-                    'message' => $canDeleteCheck['message'],
-                ];
+                return ['success' => false, 'message' => $canDeleteCheck['message']];
             }
 
-            // Start transaction
             $this->db->transStart();
 
-            // Soft delete academic year
             if (!$this->academicYearModel->delete($id)) {
                 $this->db->transRollback();
-                return [
-                    'success' => false,
-                    'message' => 'Gagal menghapus tahun ajaran',
-                ];
+                return ['success' => false, 'message' => 'Gagal menghapus tahun ajaran'];
             }
 
-            // Commit transaction
             $this->db->transComplete();
-
             if ($this->db->transStatus() === false) {
-                return [
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan saat menghapus data',
-                ];
+                return ['success' => false, 'message' => 'Terjadi kesalahan saat menghapus data'];
             }
 
-            // Log activity
             $this->logActivity('delete', $id, "Tahun ajaran {$year['year_name']} berhasil dihapus");
 
-            return [
-                'success' => true,
-                'message' => 'Tahun ajaran berhasil dihapus',
-            ];
+            return ['success' => true, 'message' => 'Tahun ajaran berhasil dihapus'];
         } catch (\Throwable $e) {
             $this->db->transRollback();
             log_message('error', 'Error deleting academic year: ' . $e->getMessage());
 
-            $detail = (defined('ENVIRONMENT') && ENVIRONMENT !== 'production')
-                ? (': ' . $e->getMessage())
-                : '';
-
-            return [
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem' . $detail,
-            ];
+            $detail = (defined('ENVIRONMENT') && ENVIRONMENT !== 'production') ? (': ' . $e->getMessage()) : '';
+            return ['success' => false, 'message' => 'Terjadi kesalahan sistem' . $detail];
         }
     }
 
     /**
      * Set academic year as active (deactivate others)
-     *
-     * @param int $id
-     * @return array ['success' => bool, 'message' => string]
      */
     public function setActiveAcademicYear($id)
     {
         try {
-            // Check if academic year exists
             $year = $this->academicYearModel->find($id);
             if (!$year) {
-                return [
-                    'success' => false,
-                    'message' => 'Tahun ajaran tidak ditemukan',
-                ];
+                return ['success' => false, 'message' => 'Tahun ajaran tidak ditemukan'];
             }
             $year = $this->asArray($year);
 
             if ((int)($year['is_active'] ?? 0) === 1) {
+                // Tetap boleh resync jika ingin memastikan cache benar (mis. sebelumnya stale)
+                $syncWarn = null;
+                if ($this->autoSyncViolationPointsOnActiveChange) {
+                    $sync = $this->syncStudentsViolationPointsForYearName((string)($year['year_name'] ?? ''));
+                    if (!$sync['success']) $syncWarn = $sync['message'];
+                }
+
                 return [
                     'success' => true,
-                    'message' => "Tahun ajaran {$year['year_name']} sudah aktif",
+                    'message' => $syncWarn
+                        ? ("Tahun ajaran {$year['year_name']} sudah aktif, namun: " . $syncWarn)
+                        : "Tahun ajaran {$year['year_name']} sudah aktif",
                 ];
             }
 
-            // Start transaction
             $this->db->transStart();
 
-            // Deactivate all academic years
             $this->deactivateAllAcademicYears();
 
-            // Activate this academic year
             if (!$this->academicYearModel->update($id, ['is_active' => 1])) {
                 $this->db->transRollback();
-                return [
-                    'success' => false,
-                    'message' => 'Gagal mengaktifkan tahun ajaran',
-                ];
+                return ['success' => false, 'message' => 'Gagal mengaktifkan tahun ajaran'];
             }
 
-            // Commit transaction
             $this->db->transComplete();
-
             if ($this->db->transStatus() === false) {
-                return [
-                    'success' => false,
-                    'message' => 'Terjadi kesalahan saat menyimpan data',
-                ];
+                return ['success' => false, 'message' => 'Terjadi kesalahan saat menyimpan data'];
             }
 
             helper('settings');
             set_setting('academic', 'default_academic_year_id', (int) $id, 'int');
 
-            // Log activity
             $this->logActivity('set_active', $id, "Tahun ajaran {$year['year_name']} diset sebagai aktif");
+
+            // Revisi: resync cache poin pelanggaran berdasarkan year_name aktif (gabungan semester)
+            $syncWarn = null;
+            if ($this->autoSyncViolationPointsOnActiveChange) {
+                $sync = $this->syncStudentsViolationPointsForYearName((string)($year['year_name'] ?? ''));
+                if (!$sync['success']) {
+                    $syncWarn = $sync['message'];
+                }
+            }
 
             return [
                 'success' => true,
-                'message' => "Tahun ajaran {$year['year_name']} berhasil diaktifkan",
+                'message' => $syncWarn
+                    ? ("Tahun ajaran {$year['year_name']} berhasil diaktifkan, namun: " . $syncWarn)
+                    : "Tahun ajaran {$year['year_name']} berhasil diaktifkan",
             ];
         } catch (\Throwable $e) {
             $this->db->transRollback();
             log_message('error', 'Error setting active academic year: ' . $e->getMessage());
 
-            $detail = (defined('ENVIRONMENT') && ENVIRONMENT !== 'production')
-                ? (': ' . $e->getMessage())
-                : '';
-
-            return [
-                'success' => false,
-                'message' => 'Terjadi kesalahan sistem' . $detail,
-            ];
+            $detail = (defined('ENVIRONMENT') && ENVIRONMENT !== 'production') ? (': ' . $e->getMessage()) : '';
+            return ['success' => false, 'message' => 'Terjadi kesalahan sistem' . $detail];
         }
     }
 
-    /**
-     * Get active academic year
-     *
-     * @return array|null
-     */
     public function getActiveAcademicYear()
     {
         $year = $this->academicYearModel
@@ -664,23 +747,23 @@ class AcademicYearService
 
         $year = $this->asArray($year);
 
-        // Get class count
         $year['class_count'] = $this->classModel
             ->where('academic_year_id', $year['id'])
             ->where('deleted_at', null)
             ->countAllResults();
 
+        // Bonus: range gabungan year_name untuk kebutuhan filter/report
+        $range = $this->getYearNameRange((string)($year['year_name'] ?? ''));
+        $year['year_range'] = [
+            'date_from' => $range['date_from'],
+            'date_to'   => $range['date_to'],
+        ];
+
         return $year;
     }
 
-    /**
-     * Get academic year statistics
-     *
-     * @return array
-     */
     public function getAcademicYearStatistics()
     {
-        // Pakai table builder biar tidak “ketularan” state query model sebelumnya
         $total  = $this->db->table('academic_years')->where('deleted_at', null)->countAllResults();
         $active = $this->db->table('academic_years')->where('deleted_at', null)->where('is_active', 1)->countAllResults();
 
@@ -690,7 +773,6 @@ class AcademicYearService
             'by_semester' => [],
         ];
 
-        // Get count by semester
         $semesterStats = $this->db->table('academic_years')
             ->select('semester, COUNT(id) as total')
             ->where('deleted_at', null)
@@ -705,12 +787,6 @@ class AcademicYearService
         return $stats;
     }
 
-    /**
-     * Deactivate all academic years
-     *
-     * @param int|null $excludeId Exclude this ID from deactivation
-     * @return bool
-     */
     protected function deactivateAllAcademicYears($excludeId = null)
     {
         $builder = $this->db->table('academic_years')
@@ -724,14 +800,6 @@ class AcademicYearService
         return (bool) $builder->update();
     }
 
-    /**
-     * Check if academic year overlaps with existing years
-     *
-     * @param string $startDate
-     * @param string $endDate
-     * @param int|null $excludeId
-     * @return array ['overlaps' => bool, 'conflicting_years' => array]
-     */
     public function checkOverlap($startDate, $endDate, $excludeId = null)
     {
         $builder = $this->academicYearModel
@@ -763,14 +831,8 @@ class AcademicYearService
         ];
     }
 
-    /**
-     * Get suggested academic year based on latest
-     *
-     * @return array ['year_name' => string, 'semester' => string, 'start_date' => string, 'end_date' => string]
-     */
     public function getSuggestedAcademicYear()
     {
-        // Lebih stabil: ambil terbaru dari end_date
         $latest = $this->academicYearModel
             ->where('deleted_at', null)
             ->orderBy('end_date', 'DESC')
@@ -778,7 +840,6 @@ class AcademicYearService
             ->first();
 
         if (!$latest) {
-            // No previous data, suggest current academic year
             $currentMonth = (int)date('m');
             $semester     = ($currentMonth >= 7) ? 'Ganjil' : 'Genap';
             $yearName     = AcademicYearValidation::generateYearName(date('Y-m-d'));
@@ -793,11 +854,9 @@ class AcademicYearService
         }
 
         $latest = $this->asArray($latest);
-
         $latestSemester = (string)($latest['semester'] ?? '');
 
         if ($latestSemester === 'Ganjil') {
-            // Next is Genap with same year
             $semester  = 'Genap';
             $yearName  = $latest['year_name'];
             $dateRange = AcademicYearValidation::getDefaultDateRange('Genap');
@@ -807,7 +866,6 @@ class AcademicYearService
             $dateRange['end_date']   = ($parsed['year2'] ?: (int)date('Y')) . '-06-30';
 
         } elseif ($latestSemester === 'Genap') {
-            // Next is Ganjil with next year
             $parsed   = AcademicYearValidation::parseYearName($latest['year_name'] ?? '');
             $nextBase = $parsed['year2'] ?: (int)date('Y');
 
@@ -819,7 +877,6 @@ class AcademicYearService
             ];
 
         } elseif ($latestSemester === 'Ganjil-Genap') {
-            // Next is Ganjil-Genap with next year
             $parsed   = AcademicYearValidation::parseYearName($latest['year_name'] ?? '');
             $nextBase = $parsed['year2'] ?: (int)date('Y');
 
@@ -831,7 +888,6 @@ class AcademicYearService
             ];
 
         } else {
-            // fallback aman
             $semester  = 'Ganjil';
             $yearName  = AcademicYearValidation::generateYearName(date('Y-m-d'));
             $dateRange = AcademicYearValidation::getDefaultDateRange('Ganjil');
@@ -845,20 +901,15 @@ class AcademicYearService
         ];
     }
 
-    /**
-     * Dropdown opsi year_name (gabungan data existing + generate range)
-     */
     public function getYearNameOptions(int $yearsBack = 10, int $yearsForward = 5): array
     {
         $current = (int) date('Y');
 
-        // Generate range
         $generated = [];
         for ($y = $current - $yearsBack; $y <= $current + $yearsForward; $y++) {
             $generated[] = $y . '/' . ($y + 1);
         }
 
-        // Ambil year_name existing dari DB
         $existingRows = $this->academicYearModel
             ->select('year_name')
             ->where('deleted_at', null)
@@ -876,7 +927,6 @@ class AcademicYearService
 
         $all = array_values(array_unique(array_merge($existing, $generated)));
 
-        // Sort DESC berdasarkan tahun pertama
         usort($all, function ($a, $b) {
             $ay = (int) substr((string)$a, 0, 4);
             $by = (int) substr((string)$b, 0, 4);
@@ -886,14 +936,6 @@ class AcademicYearService
         return $all;
     }
 
-    /**
-     * Log academic year activity
-     *
-     * @param string $action
-     * @param int $yearId
-     * @param string $description
-     * @return void
-     */
     private function logActivity($action, $yearId, $description)
     {
         log_message('info', "[AcademicYearService] Action: {$action}, Year ID: {$yearId}, Description: {$description}");
