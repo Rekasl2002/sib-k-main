@@ -8,15 +8,15 @@
  *
  * Update penting:
  * - year_name boleh duplikat untuk kebutuhan Ganjil & Genap (mis. 2024/2025)
- * - Service akan membatasi:
- *   1) maksimal 2 data dengan year_name yang sama (Ganjil & Genap)
- *   2) kombinasi (year_name + semester) tidak boleh dobel
+ * - Mendukung 3 semester: Ganjil, Genap, Ganjil-Genap
+ *
+ * Rule bisnis:
+ * - Jika ada semester "Ganjil-Genap" untuk suatu year_name, maka tidak boleh ada record lain untuk year_name tsb.
+ * - Jika mode split (Ganjil/Genap), maksimal 2 record per year_name dan tidak boleh dobel kombinasi (year_name + semester).
  *
  * @package    SIB-K
  * @subpackage Services
  * @category   Business Logic
- * @author     Development Team
- * @created    2025-01-06
  */
 
 namespace App\Services;
@@ -24,12 +24,19 @@ namespace App\Services;
 use App\Models\AcademicYearModel;
 use App\Models\ClassModel;
 use App\Validation\AcademicYearValidation;
+use CodeIgniter\Database\BaseConnection;
 
 class AcademicYearService
 {
-    protected $academicYearModel;
-    protected $classModel;
-    protected $db;
+    protected AcademicYearModel $academicYearModel;
+    protected ClassModel $classModel;
+    protected BaseConnection $db;
+
+    /**
+     * Opsional: aktifkan jika ingin mencegah bentrok rentang tanggal antar academic year.
+     * Default: false (agar perilaku existing tidak berubah).
+     */
+    protected bool $enforceOverlapCheck = false;
 
     public function __construct()
     {
@@ -89,8 +96,9 @@ class AcademicYearService
 
     /**
      * Rule bisnis:
-     * - year_name boleh duplikat, tapi maksimal 2 (Ganjil & Genap)
-     * - kombinasi year_name + semester tidak boleh dobel
+     * - year_name boleh duplikat, tapi:
+     *   - Jika ada "Ganjil-Genap" => harus single record untuk year_name itu.
+     *   - Jika split => maksimal 2 record (Ganjil & Genap) dan tidak boleh dobel semester.
      *
      * @param string   $yearName
      * @param string   $semester
@@ -106,9 +114,9 @@ class AcademicYearService
             return ['ok' => false, 'message' => 'Nama Tahun Ajaran dan Semester wajib diisi.'];
         }
 
-        // semester harus sesuai pilihan
-        if (!in_array($semester, ['Ganjil', 'Genap'], true)) {
-            return ['ok' => false, 'message' => 'Semester harus Ganjil atau Genap.'];
+        $allowed = ['Ganjil', 'Genap', 'Ganjil-Genap'];
+        if (!in_array($semester, $allowed, true)) {
+            return ['ok' => false, 'message' => 'Semester harus Ganjil, Genap, atau Ganjil-Genap.'];
         }
 
         $builder = $this->db->table('academic_years')
@@ -120,22 +128,50 @@ class AcademicYearService
             $builder->where('id !=', $excludeId);
         }
 
-        $rows  = $builder->get()->getResultArray();
+        $rows = $builder->get()->getResultArray();
+
+        // Deteksi apakah year_name ini sudah "mode gabungan"
+        $hasCombined = false;
+        foreach ($rows as $r) {
+            if (strcasecmp((string)($r['semester'] ?? ''), 'Ganjil-Genap') === 0) {
+                $hasCombined = true;
+                break;
+            }
+        }
+
+        // Kalau sudah ada Ganjil-Genap, tidak boleh tambah semester lain
+        if ($hasCombined) {
+            return [
+                'ok' => false,
+                'message' => "Nama Tahun Ajaran \"{$yearName}\" sudah memakai semester \"Ganjil-Genap\" (gabungan). Tidak bisa menambah semester lain.",
+            ];
+        }
+
+        // Kalau user memilih Ganjil-Genap, harus benar-benar single record (tidak boleh ada Ganjil/Genap)
+        if ($semester === 'Ganjil-Genap') {
+            if (!empty($rows)) {
+                return [
+                    'ok' => false,
+                    'message' => "Nama Tahun Ajaran \"{$yearName}\" sudah memiliki data semester (Ganjil/Genap). Tidak bisa memilih \"Ganjil-Genap\" untuk tahun ajaran yang sudah dipisah.",
+                ];
+            }
+            return ['ok' => true, 'message' => 'OK'];
+        }
+
+        // Di sini berarti semester Ganjil / Genap (mode split)
         $count = is_array($rows) ? count($rows) : 0;
 
-        // Maksimal 2 record per year_name
         if ($count >= 2) {
             return [
-                'ok'      => false,
+                'ok' => false,
                 'message' => "Nama Tahun Ajaran \"{$yearName}\" sudah dipakai untuk 2 semester (Ganjil & Genap).",
             ];
         }
 
-        // Tidak boleh dobel kombinasi year_name + semester
         foreach ($rows as $r) {
-            if (strcasecmp($r['semester'] ?? '', $semester) === 0) {
+            if (strcasecmp((string)($r['semester'] ?? ''), $semester) === 0) {
                 return [
-                    'ok'      => false,
+                    'ok' => false,
                     'message' => "Nama Tahun Ajaran \"{$yearName}\" untuk semester \"{$semester}\" sudah ada. Pilih semester yang lain.",
                 ];
             }
@@ -221,12 +257,13 @@ class AcademicYearService
         // Normalisasi ke array
         $year = $this->asArray($year);
 
-        // class_count
+        // class_count (konsisten dengan list: filter soft delete)
         $year['class_count'] = $this->classModel
             ->where('academic_year_id', $id)
+            ->where('deleted_at', null)
             ->countAllResults();
 
-        // classes
+        // classes (filter soft delete classes)
         $year['classes'] = $this->classModel
             ->select('classes.*, COUNT(students.id) AS student_count')
             ->join(
@@ -235,6 +272,7 @@ class AcademicYearService
                 'left'
             )
             ->where('classes.academic_year_id', $id)
+            ->where('classes.deleted_at', null)
             ->groupBy('classes.id')
             ->findAll();
 
@@ -277,7 +315,18 @@ class AcademicYearService
                 ];
             }
 
-            // ✅ Guard: max 2 same year_name + no duplicate year_name+semester
+            // (Opsional) Cek overlap tanggal jika suatu saat ingin diaktifkan
+            if ($this->enforceOverlapCheck) {
+                $ov = $this->checkOverlap($data['start_date'] ?? '', $data['end_date'] ?? '');
+                if (!empty($ov['overlaps'])) {
+                    return [
+                        'success' => false,
+                        'message' => 'Rentang tanggal tahun ajaran bentrok dengan data tahun ajaran lain.',
+                    ];
+                }
+            }
+
+            // ✅ Guard: fleksibel semester (split vs gabungan)
             $guard = $this->guardYearNameSemester($data['year_name'] ?? '', $data['semester'] ?? '');
             if (!$guard['ok']) {
                 return [
@@ -324,6 +373,7 @@ class AcademicYearService
                 'year_id' => $yearId,
             ];
         } catch (\Throwable $e) {
+            // Aman walau transaksi belum dimulai, CI4 handle
             $this->db->transRollback();
             log_message('error', 'Error creating academic year: ' . $e->getMessage());
 
@@ -356,7 +406,7 @@ class AcademicYearService
                     'message' => 'Tahun ajaran tidak ditemukan',
                 ];
             }
-            $year = $this->asArray($year); // ✅ normalisasi
+            $year = $this->asArray($year);
 
             // Sanitize input
             $data = AcademicYearValidation::sanitizeInput($data);
@@ -379,7 +429,18 @@ class AcademicYearService
                 ];
             }
 
-            // ✅ Guard: max 2 same year_name + no duplicate year_name+semester (exclude current)
+            // (Opsional) Cek overlap tanggal jika suatu saat ingin diaktifkan
+            if ($this->enforceOverlapCheck) {
+                $ov = $this->checkOverlap($data['start_date'] ?? '', $data['end_date'] ?? '', (int)$id);
+                if (!empty($ov['overlaps'])) {
+                    return [
+                        'success' => false,
+                        'message' => 'Rentang tanggal tahun ajaran bentrok dengan data tahun ajaran lain.',
+                    ];
+                }
+            }
+
+            // ✅ Guard: fleksibel semester (exclude current)
             $guard = $this->guardYearNameSemester($data['year_name'] ?? '', $data['semester'] ?? '', (int)$id);
             if (!$guard['ok']) {
                 return [
@@ -593,6 +654,7 @@ class AcademicYearService
     public function getActiveAcademicYear()
     {
         $year = $this->academicYearModel
+            ->where('deleted_at', null)
             ->where('is_active', 1)
             ->first();
 
@@ -605,6 +667,7 @@ class AcademicYearService
         // Get class count
         $year['class_count'] = $this->classModel
             ->where('academic_year_id', $year['id'])
+            ->where('deleted_at', null)
             ->countAllResults();
 
         return $year;
@@ -636,7 +699,7 @@ class AcademicYearService
             ->getResultArray();
 
         foreach ($semesterStats as $stat) {
-            $stats['by_semester'][$stat['semester']] = (int)$stat['total'];
+            $stats['by_semester'][$stat['semester']] = (int)($stat['total'] ?? 0);
         }
 
         return $stats;
@@ -651,13 +714,14 @@ class AcademicYearService
     protected function deactivateAllAcademicYears($excludeId = null)
     {
         $builder = $this->db->table('academic_years')
-            ->set('is_active', 0);
+            ->set('is_active', 0)
+            ->where('deleted_at', null);
 
         if ($excludeId) {
             $builder->where('id !=', $excludeId);
         }
 
-        return $builder->update();
+        return (bool) $builder->update();
     }
 
     /**
@@ -730,27 +794,47 @@ class AcademicYearService
 
         $latest = $this->asArray($latest);
 
-        // Suggest next semester
-        $parsed = AcademicYearValidation::parseYearName($latest['year_name'] ?? '');
+        $latestSemester = (string)($latest['semester'] ?? '');
 
-        if (($latest['semester'] ?? '') === 'Ganjil') {
+        if ($latestSemester === 'Ganjil') {
             // Next is Genap with same year
             $semester  = 'Genap';
             $yearName  = $latest['year_name'];
             $dateRange = AcademicYearValidation::getDefaultDateRange('Genap');
 
-            // Adjust year for Genap
+            $parsed = AcademicYearValidation::parseYearName($latest['year_name'] ?? '');
             $dateRange['start_date'] = ($parsed['year2'] ?: (int)date('Y')) . '-01-01';
             $dateRange['end_date']   = ($parsed['year2'] ?: (int)date('Y')) . '-06-30';
-        } else {
+
+        } elseif ($latestSemester === 'Genap') {
             // Next is Ganjil with next year
+            $parsed   = AcademicYearValidation::parseYearName($latest['year_name'] ?? '');
+            $nextBase = $parsed['year2'] ?: (int)date('Y');
+
             $semester  = 'Ganjil';
-            $nextBase  = $parsed['year2'] ?: (int)date('Y');
             $yearName  = $nextBase . '/' . ($nextBase + 1);
             $dateRange = [
                 'start_date' => $nextBase . '-07-01',
                 'end_date'   => $nextBase . '-12-31',
             ];
+
+        } elseif ($latestSemester === 'Ganjil-Genap') {
+            // Next is Ganjil-Genap with next year
+            $parsed   = AcademicYearValidation::parseYearName($latest['year_name'] ?? '');
+            $nextBase = $parsed['year2'] ?: (int)date('Y');
+
+            $semester  = 'Ganjil-Genap';
+            $yearName  = $nextBase . '/' . ($nextBase + 1);
+            $dateRange = [
+                'start_date' => $nextBase . '-07-01',
+                'end_date'   => ($nextBase + 1) . '-06-30',
+            ];
+
+        } else {
+            // fallback aman
+            $semester  = 'Ganjil';
+            $yearName  = AcademicYearValidation::generateYearName(date('Y-m-d'));
+            $dateRange = AcademicYearValidation::getDefaultDateRange('Ganjil');
         }
 
         return [
@@ -759,6 +843,47 @@ class AcademicYearService
             'start_date' => $dateRange['start_date'],
             'end_date'   => $dateRange['end_date'],
         ];
+    }
+
+    /**
+     * Dropdown opsi year_name (gabungan data existing + generate range)
+     */
+    public function getYearNameOptions(int $yearsBack = 10, int $yearsForward = 5): array
+    {
+        $current = (int) date('Y');
+
+        // Generate range
+        $generated = [];
+        for ($y = $current - $yearsBack; $y <= $current + $yearsForward; $y++) {
+            $generated[] = $y . '/' . ($y + 1);
+        }
+
+        // Ambil year_name existing dari DB
+        $existingRows = $this->academicYearModel
+            ->select('year_name')
+            ->where('deleted_at', null)
+            ->groupBy('year_name')
+            ->orderBy('year_name', 'DESC')
+            ->findAll();
+
+        $existing = [];
+        foreach ((array)$existingRows as $r) {
+            $yn = trim((string)($r['year_name'] ?? ''));
+            if ($yn !== '') {
+                $existing[] = $yn;
+            }
+        }
+
+        $all = array_values(array_unique(array_merge($existing, $generated)));
+
+        // Sort DESC berdasarkan tahun pertama
+        usort($all, function ($a, $b) {
+            $ay = (int) substr((string)$a, 0, 4);
+            $by = (int) substr((string)$b, 0, 4);
+            return $by <=> $ay;
+        });
+
+        return $all;
     }
 
     /**
