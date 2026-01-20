@@ -258,6 +258,15 @@ $repeatOffenders = statv($stats ?? [], 'repeat_offenders', 'repeat_offender_coun
                 </h4>
             </div>
             <div class="card-body">
+
+                <div class="card mb-2"> 
+                    <div class="card-body">Filter akan mencari data sesuai kelas-kelas yang dibina/ditugaskan.
+                            Data diluar kelas binaan tidak akan muncul.
+                            Misalnya, jika ditugaskan pada kelas <b>X-Mualimin-Ganjil-2025/2026</b>,
+                            maka saat dipindahkan ke kelas <b>X-Mualimin-Genap-2025/2026</b>, sehingga data kelas sebelumnya tidak akan muncul.
+                    </div>
+                </div>
+
                 <form action="<?= base_url('counselor/cases') ?>" method="get" id="filterForm">
 
                     <div class="row g-3">
