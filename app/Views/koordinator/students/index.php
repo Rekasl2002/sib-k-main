@@ -9,13 +9,14 @@
  * Students List View (Koordinator BK)
  * - Pagination hanya di View (DataTables) agar konsisten dengan counselor/sessions
  * - Filter UI mengikuti layout counselor/sessions (Filter Card)
+ * - Tambahan: Tombol sinkron poin pelanggaran (seperti Guru BK)
  *
  * @package    SIB-K
  * @subpackage Views/Koordinator/Students
  * @category   Student Management
  * @author     Development Team
  * @created    2025-12-16
- * @updated    2026-01-07
+ * @updated    2026-01-20
  */
 
 helper(['permission', 'url']); // has_permission(), base_url()
@@ -28,6 +29,19 @@ $defaultAvatar    = base_url($defaultAvatarRel);
 $dtPageLength = (int)($perPage ?? 10);
 if ($dtPageLength <= 0) $dtPageLength = 10;
 if ($dtPageLength > 200) $dtPageLength = 200;
+
+// Opsi tahun ajaran untuk modal sinkron (controller Koordinator mengirim: academic_year_options + active_academic_year)
+$academicYearOptions = $academic_year_options ?? ($academicYears ?? ($academic_years ?? ($year_options ?? [])));
+if (!is_array($academicYearOptions)) $academicYearOptions = [];
+$activeAcademicYear = $active_academic_year ?? ($active_academic_year ?? null);
+$activeAcademicYear = is_string($activeAcademicYear) ? trim($activeAcademicYear) : null;
+
+// Permission untuk menampilkan tombol sinkron
+$canSync = false;
+if (function_exists('has_permission')) {
+    // controller sync memakai guard: manage_students ATAU manage_academic_data (lihat requireManageStudentsPermission)
+    $canSync = has_permission('manage_academic_data') || has_permission('manage_students');
+}
 
 // Small helper untuk nama tampil
 if (!function_exists('student_name')) {
@@ -92,7 +106,7 @@ if (!function_exists('safe_avatar_src')) {
 <?php if (session()->getFlashdata('success')): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="mdi mdi-check-circle me-2"></i>
-        <?= session()->getFlashdata('success') ?>
+        <?= esc(session()->getFlashdata('success')) ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
@@ -100,7 +114,7 @@ if (!function_exists('safe_avatar_src')) {
 <?php if (session()->getFlashdata('warning')): ?>
     <div class="alert alert-warning alert-dismissible fade show" role="alert">
         <i class="mdi mdi-alert me-2"></i>
-        <?= session()->getFlashdata('warning') ?>
+        <?= esc(session()->getFlashdata('warning')) ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
@@ -108,7 +122,7 @@ if (!function_exists('safe_avatar_src')) {
 <?php if (session()->getFlashdata('error')): ?>
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <i class="mdi mdi-alert-circle me-2"></i>
-        <?= session()->getFlashdata('error') ?>
+        <?= esc(session()->getFlashdata('error')) ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
@@ -324,14 +338,45 @@ $importWarnings = session()->getFlashdata('import_warnings');
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title mb-0">Daftar Siswa</h4>
+                <div>
+                    <h4 class="card-title mb-0">
+                        <i class="mdi mdi-account-group me-2"></i>Daftar Siswa
+                    </h4>
+                    <small class="text-muted">
+                        Jika poin pelanggaran tidak sesuai, gunakan sinkronisasi untuk menghitung ulang berdasarkan Tahun Ajaran/periode.
+                    </small>
+                </div>
 
-                <div class="text-end">
+                <div class="text-end d-flex gap-2 align-items-center flex-wrap">
+                    <?php if ($canSync): ?>
+                        <!-- Quick Sync (default: Tahun Ajaran aktif) -->
+                        <form action="<?= base_url('koordinator/students/sync-violation-points') ?>"
+                              method="post"
+                              class="d-inline">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="sync_mode" value="active">
+                            <button type="submit"
+                                    class="btn btn-outline-warning btn-rounded waves-effect waves-light"
+                                    onclick="return confirm('Hitung ulang poin pelanggaran berdasarkan Tahun Ajaran AKTIF?\n\nTips: klik tombol Opsi Sinkron untuk memilih Tahun Ajaran/periode lain.');">
+                                <i class="mdi mdi-refresh me-1"></i> Sinkron (Aktif)
+                            </button>
+                        </form>
+
+                        <!-- Sync Options -->
+                        <button type="button"
+                                class="btn btn-warning btn-rounded waves-effect waves-light"
+                                data-bs-toggle="modal"
+                                data-bs-target="#syncModal">
+                            <i class="mdi mdi-tune-vertical me-1"></i> Opsi Sinkron
+                        </button>
+                    <?php endif; ?>
+
                     <?php if (has_permission('import_export_data')): ?>
                         <!--<a href="<?= base_url('koordinator/students/import') ?>" class="btn btn-info">
                             <i class="mdi mdi-upload me-1"></i> Impor
                         </a>-->
-                        <a href="<?= base_url('koordinator/students/export') . '?' . http_build_query($filters ?? []) ?>" class="btn btn-primary ms-1">
+                        <a href="<?= base_url('koordinator/students/export') . '?' . http_build_query($filters ?? []) ?>"
+                           class="btn btn-primary">
                             <i class="mdi mdi-download me-1"></i> Ekspor CSV
                         </a>
                     <?php endif; ?>
@@ -434,21 +479,24 @@ $importWarnings = session()->getFlashdata('import_warnings');
                                             <div class="btn-group" role="group">
                                                 <a href="<?= base_url('koordinator/students/profile/' . (int)($student['id'] ?? 0)) ?>"
                                                     class="btn btn-sm btn-info"
-                                                    title="Profil">
+                                                    title="Profil"
+                                                    data-bs-toggle="tooltip">
                                                     <i class="mdi mdi-eye"></i>
                                                 </a>
 
                                                 <?php if (has_permission('manage_academic_data')): ?>
                                                     <a href="<?= base_url('koordinator/students/edit/' . (int)($student['id'] ?? 0)) ?>"
                                                         class="btn btn-sm btn-primary"
-                                                        title="Edit">
+                                                        title="Edit"
+                                                        data-bs-toggle="tooltip">
                                                         <i class="mdi mdi-pencil"></i>
                                                     </a>
                                                 <?php else: ?>
                                                     <button type="button"
                                                         class="btn btn-sm btn-primary"
                                                         disabled
-                                                        title="Tidak punya izin untuk edit">
+                                                        title="Tidak punya izin untuk edit"
+                                                        data-bs-toggle="tooltip">
                                                         <i class="mdi mdi-pencil-off"></i>
                                                     </button>
                                                 <?php endif; ?>
@@ -473,6 +521,119 @@ $importWarnings = session()->getFlashdata('import_warnings');
         </div>
     </div>
 </div>
+
+<?php if ($canSync): ?>
+<!-- Modal: Opsi Sinkron -->
+<div class="modal fade" id="syncModal" tabindex="-1" aria-labelledby="syncModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <form action="<?= base_url('koordinator/students/sync-violation-points') ?>" method="post" id="syncForm">
+                <?= csrf_field() ?>
+
+                <div class="modal-header">
+                    <h5 class="modal-title" id="syncModalLabel">
+                        <i class="mdi mdi-refresh me-1"></i> Opsi Sinkron Poin Pelanggaran
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="mdi mdi-information-outline me-1"></i>
+                        Default sinkron mengikuti <b>Tahun Ajaran aktif</b>. Anda juga bisa memilih <b>Tahun Ajaran</b> tertentu atau <b>periode tanggal</b>.
+                        <div class="mt-1">
+                            <small>
+                                Poin tersinkron akan tersimpan sebagai cache di database (kolom <code>students.total_violation_points</code>).
+                                Pastikan mode sinkron sesuai kebutuhan.
+                            </small>
+                        </div>
+                        <?php if (!empty($activeAcademicYear)): ?>
+                            <div class="mt-1">
+                                <small class="text-muted">Tahun Ajaran aktif: <b><?= esc($activeAcademicYear) ?></b></small>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Mode Sinkron</label>
+
+                            <div class="d-flex flex-column gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sync_mode" id="sync_mode_active" value="active" checked>
+                                    <label class="form-check-label" for="sync_mode_active">
+                                        Sesuai Tahun Ajaran aktif (bawaan)
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sync_mode" id="sync_mode_year" value="year" <?= empty($academicYearOptions) ? 'disabled' : '' ?>>
+                                    <label class="form-check-label" for="sync_mode_year">
+                                        Sesuai Tahun Ajaran yang Dipilih
+                                        <?php if (empty($academicYearOptions)): ?>
+                                            <span class="text-muted">- opsi tahun ajaran belum tersedia</span>
+                                        <?php endif; ?>
+                                    </label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="sync_mode" id="sync_mode_range" value="range">
+                                    <label class="form-check-label" for="sync_mode_range">
+                                        Sesuai Periode/Tanggal yang Dipilih
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Tahun Ajaran</label>
+                            <select name="academic_year" class="form-select" id="syncAcademicYear" <?= empty($academicYearOptions) ? 'disabled' : '' ?>>
+                                <option value="">- Pilih Tahun Ajaran -</option>
+                                <?php foreach ($academicYearOptions as $yn): ?>
+                                    <?php $yn = trim((string)$yn); ?>
+                                    <?php if ($yn === '') continue; ?>
+                                    <option value="<?= esc($yn) ?>"><?= esc($yn) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                            <small class="text-muted">Dipakai jika memilih: "Tahun Ajaran tertentu".</small>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Dari Tanggal</label>
+                            <input type="date" class="form-control" name="date_from" id="syncDateFrom" value="">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label">Sampai Tanggal</label>
+                            <input type="date" class="form-control" name="date_to" id="syncDateTo" value="">
+                        </div>
+
+                        <div class="col-12">
+                            <hr>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="syncConfirm" name="sync_confirm" value="1" required>
+                                <label class="form-check-label" for="syncConfirm">
+                                    Saya paham sinkronisasi akan menghitung ulang poin dan memperbarui cache poin siswa.
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn btn-warning" id="syncSubmitBtn">
+                        <i class="mdi mdi-refresh me-1"></i> Jalankan Sinkron
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <?= $this->endSection() ?>
 
@@ -561,6 +722,67 @@ $importWarnings = session()->getFlashdata('import_warnings');
         setTimeout(function() {
             $('.alert').fadeOut('slow');
         }, 5000);
+
+        // Sync modal: enable/disable + required sesuai mode (radio)
+        function applySyncMode() {
+            var mode = document.querySelector('input[name="sync_mode"]:checked')?.value || 'active';
+            var yearSel = document.getElementById('syncAcademicYear');
+            var dFrom   = document.getElementById('syncDateFrom');
+            var dTo     = document.getElementById('syncDateTo');
+
+            if (!yearSel || !dFrom || !dTo) return;
+
+            // Reset required
+            yearSel.required = false;
+            dFrom.required = false;
+            dTo.required = false;
+
+            if (mode === 'active') {
+                yearSel.disabled = true;
+                dFrom.disabled = true;
+                dTo.disabled = true;
+            } else if (mode === 'year') {
+                yearSel.disabled = false;
+                yearSel.required = true;
+                dFrom.disabled = true;
+                dTo.disabled = true;
+            } else { // range
+                yearSel.disabled = true;
+                dFrom.disabled = false;
+                dTo.disabled = false;
+
+                // minimal salah satu (biar tidak memaksa dua-duanya kalau user hanya ingin from/to)
+                // controller sudah handle: minimal salah satu harus terisi.
+                // kalau kamu ingin mewajibkan dua-duanya, uncomment 2 baris di bawah:
+                // dFrom.required = true;
+                // dTo.required = true;
+            }
+        }
+
+        document.querySelectorAll('input[name="sync_mode"]').forEach(function(r){
+            r.addEventListener('change', applySyncMode);
+        });
+        applySyncMode();
+
+        // Konfirmasi submit + anti double klik
+        document.getElementById('syncForm')?.addEventListener('submit', function(e){
+            var mode = document.querySelector('input[name="sync_mode"]:checked')?.value || 'active';
+            var msg = 'Jalankan sinkronisasi poin pelanggaran?\n\n';
+            if (mode === 'active') msg += 'Mode: Tahun Ajaran AKTIF';
+            if (mode === 'year') msg += 'Mode: Tahun Ajaran tertentu';
+            if (mode === 'range') msg += 'Mode: Periode custom';
+
+            if (!confirm(msg)) {
+                e.preventDefault();
+                return false;
+            }
+
+            var btn = document.getElementById('syncSubmitBtn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Memproses...';
+            }
+        });
     });
 </script>
 <?= $this->endSection() ?>

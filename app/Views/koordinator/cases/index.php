@@ -14,6 +14,10 @@
  * - Akses tombol mengikuti permission:
  *   - Default Koordinator (tanpa manage_violations): R + U (Detail + Edit)
  *   - Jika manage_violations dicentang: Tambah + Hapus juga boleh (CRUD ekstra)
+ *
+ * Revisi KP:
+ * - Tambah filter "Tahun Ajaran" (year_name). Jika dipilih dan date_from/date_to kosong,
+ *   service akan mengisi otomatis range tahun ajaran (gabungan ganjil+genap).
  */
 
 $this->extend('layouts/main');
@@ -33,30 +37,104 @@ $students   = $students   ?? [];
 $categories = $categories ?? [];
 $violations = $violations ?? [];
 
-// helper kecil agar aman dipakai untuk array/objek
+// --------------------------
+// Helpers kecil (tahan banting)
+// --------------------------
 if (!function_exists('val')) {
     function val($row, $key) {
         return esc(is_array($row) ? ($row[$key] ?? '') : ($row->$key ?? ''));
     }
 }
 
-// helper statistik yang fleksibel (mendukung $stats['overall'] atau flat)
+/**
+ * Ambil angka statistik dari beberapa kemungkinan struktur.
+ */
 if (!function_exists('statv')) {
-    function statv($stats, $key) {
-        if (is_array($stats) && isset($stats['overall']) && is_array($stats['overall']) && array_key_exists($key, $stats['overall'])) {
-            return (int) ($stats['overall'][$key] ?? 0);
+    function statv($stats, $key, $fallbackKey = null) {
+        // 1) stats['overall'][key]
+        if (is_array($stats) && isset($stats['overall']) && is_array($stats['overall'])) {
+            if (array_key_exists($key, $stats['overall'])) {
+                return (int) ($stats['overall'][$key] ?? 0);
+            }
+            if ($fallbackKey !== null && array_key_exists($fallbackKey, $stats['overall'])) {
+                return (int) ($stats['overall'][$fallbackKey] ?? 0);
+            }
         }
-        return (int) ($stats[$key] ?? 0);
+
+        // 2) stats[key] di root
+        if (is_array($stats) && array_key_exists($key, $stats)) {
+            return (int) ($stats[$key] ?? 0);
+        }
+        if (is_array($stats) && $fallbackKey !== null && array_key_exists($fallbackKey, $stats)) {
+            return (int) ($stats[$fallbackKey] ?? 0);
+        }
+
+        return 0;
     }
 }
+
+// --------------------------
+// Normalisasi data $violations (bisa list atau wrapper)
+// --------------------------
+$violationsRaw = $violations ?? [];
+$violationRows = $violationsRaw;
+$pager         = null;
+
+if (is_array($violationsRaw) && array_key_exists('violations', $violationsRaw)) {
+    $violationRows = $violationsRaw['violations'] ?? [];
+    $pager         = $violationsRaw['pager'] ?? null; // tidak dipakai, tapi disimpan kalau perlu
+}
+if (!is_array($violationRows)) {
+    $violationRows = [];
+}
+
+// --------------------------
+// Academic Year options (year_name)
+// - Disarankan controller mengirim $academic_year_options dari service
+// - Fallback: ambil langsung dari DB kalau belum dikirim
+// --------------------------
+$academicYearOptions = $academic_year_options ?? [];
+if (!is_array($academicYearOptions)) {
+    $academicYearOptions = [];
+}
+if (empty($academicYearOptions)) {
+    try {
+        $db = \Config\Database::connect();
+        $rows = $db->table('academic_years')
+            ->select('DISTINCT year_name')
+            ->where('deleted_at', null)
+            ->orderBy('year_name', 'DESC')
+            ->get()
+            ->getResultArray();
+
+        foreach ($rows as $r) {
+            $yn = trim((string)($r['year_name'] ?? ''));
+            if ($yn !== '') $academicYearOptions[] = $yn;
+        }
+    } catch (\Throwable $e) {
+        $academicYearOptions = [];
+    }
+}
+
+$selectedAcademicYear = trim((string)($filters['academic_year'] ?? ''));
+
+// Statistik cards: mapping aman
+$totalViolations = statv($stats ?? [], 'total_violations', 'total');
+$inProcess       = statv($stats ?? [], 'in_process', 'in_progress');
+$completed       = statv($stats ?? [], 'completed', 'done');
+
+$pendingNotif = statv($stats ?? [], 'parents_not_notified');
+if ($pendingNotif <= 0) {
+    $pendingNotif = statv($stats ?? [], 'pending_notifications');
+}
+$repeatOffenders = statv($stats ?? [], 'repeat_offenders', 'repeat_offender_count');
 
 // Permission helper (robust)
 $can = function (string $perm): bool {
     if (function_exists('has_permission')) return (bool) has_permission($perm);
-    // fallback: jangan blok UI jika helper permission tidak tersedia (controller tetap jadi guard utama)
+    // fallback: jangan blok UI jika helper permission tidak tersedia (controller tetap guard utama)
     return true;
 };
-
 $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/Hapus)
 ?>
 
@@ -85,7 +163,7 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
         <i class="mdi mdi-alert-circle me-2"></i>
         <strong>Terdapat kesalahan pada input:</strong>
         <ul class="mb-0 mt-2">
-            <?php foreach (session()->getFlashdata('errors') as $error): ?>
+            <?php foreach ((array) session()->getFlashdata('errors') as $error): ?>
                 <li><?= esc($error) ?></li>
             <?php endforeach; ?>
         </ul>
@@ -101,7 +179,7 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <span class="text-muted mb-3 lh-1 d-block">Total Pelanggaran</span>
-                        <h4 class="mb-3"><?= statv($stats ?? [], 'total_violations') ?></h4>
+                        <h4 class="mb-3"><?= (int)$totalViolations ?></h4>
                     </div>
                     <div class="flex-shrink-0 text-end">
                         <div class="avatar-sm rounded-circle bg-soft-primary">
@@ -121,7 +199,7 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <span class="text-muted mb-3 lh-1 d-block">Dalam Proses</span>
-                        <h4 class="mb-3"><span class="text-warning"><?= statv($stats ?? [], 'in_process') ?></span></h4>
+                        <h4 class="mb-3"><span class="text-warning"><?= (int)$inProcess ?></span></h4>
                     </div>
                     <div class="flex-shrink-0 text-end">
                         <div class="avatar-sm rounded-circle bg-soft-warning">
@@ -141,7 +219,7 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <span class="text-muted mb-3 lh-1 d-block">Selesai</span>
-                        <h4 class="mb-3"><span class="text-success"><?= statv($stats ?? [], 'completed') ?></span></h4>
+                        <h4 class="mb-3"><span class="text-success"><?= (int)$completed ?></span></h4>
                     </div>
                     <div class="flex-shrink-0 text-end">
                         <div class="avatar-sm rounded-circle bg-soft-success">
@@ -161,7 +239,7 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                 <div class="d-flex align-items-center">
                     <div class="flex-grow-1">
                         <span class="text-muted mb-3 lh-1 d-block">Pending Notifikasi</span>
-                        <h4 class="mb-3"><span class="text-danger"><?= statv($stats ?? [], 'parents_not_notified') ?></span></h4>
+                        <h4 class="mb-3"><span class="text-danger"><?= (int)$pendingNotif ?></span></h4>
                     </div>
                     <div class="flex-shrink-0 text-end">
                         <div class="avatar-sm rounded-circle bg-soft-danger">
@@ -171,10 +249,11 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                         </div>
                     </div>
                 </div>
-                <?php if (statv($stats ?? [], 'repeat_offenders') > 0): ?>
+
+                <?php if ((int)$repeatOffenders > 0): ?>
                     <div class="mt-2">
                         <span class="badge bg-danger">
-                            <i class="mdi mdi-repeat"></i> Repeat Offenders: <?= statv($stats ?? [], 'repeat_offenders') ?>
+                            <i class="mdi mdi-repeat"></i> Repeat Offenders: <?= (int)$repeatOffenders ?>
                         </span>
                     </div>
                 <?php endif; ?>
@@ -183,7 +262,7 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
     </div>
 </div>
 
-<!-- Filter Card (konsisten dengan counselor/sessions) -->
+<!-- Filter Card -->
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -193,10 +272,18 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                 </h4>
             </div>
             <div class="card-body">
+
+                <div class="card mb-2">
+                    <div class="card-body">
+                        Sebagai <b>Koordinator BK</b>, Anda dapat melihat data lintas kelas dan lintas penugasan.
+                        Gunakan <b>filter Tahun Ajaran</b> atau <b>rentang tanggal</b> untuk memfokuskan perhitungan dan tampilan.
+                    </div>
+                </div>
+
                 <form action="<?= base_url('koordinator/cases') ?>" method="get" id="filterForm">
                     <div class="row g-3">
-                        <!-- Status Filter -->
-                        <div class="col-md-3">
+                        <!-- Status -->
+                        <div class="col-md-2">
                             <label class="form-label">Status</label>
                             <select name="status" class="form-select">
                                 <option value="">Semua Status</option>
@@ -207,8 +294,8 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                             </select>
                         </div>
 
-                        <!-- Severity Level Filter -->
-                        <div class="col-md-3">
+                        <!-- Severity -->
+                        <div class="col-md-2">
                             <label class="form-label">Tingkat Keparahan</label>
                             <select name="severity_level" class="form-select">
                                 <option value="">Semua Tingkat</option>
@@ -218,8 +305,46 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                             </select>
                         </div>
 
-                        <!-- Student Filter -->
-                        <div class="col-md-3">
+                        <!-- Academic Year -->
+                        <div class="col-md-2">
+                            <label class="form-label">Tahun Ajaran</label>
+                            <select name="academic_year" class="form-select" id="academicYearFilter">
+                                <option value="">Tahun Ajaran Aktif</option>
+                                <?php foreach (($academicYearOptions ?? []) as $yn): ?>
+                                    <option value="<?= esc($yn) ?>" <?= $selectedAcademicYear === (string)$yn ? 'selected' : '' ?>>
+                                        <?= esc($yn) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                            <small class="text-muted d-block mt-1">
+                                Kosongkan Tanggal jika ingin menggunakan filter Tahun Ajaran.
+                            </small>
+                        </div>
+
+                        <!-- Date From -->
+                        <div class="col-md-2">
+                            <label class="form-label">Dari Tanggal</label>
+                            <input type="date" name="date_from" class="form-control" value="<?= esc($filters['date_from'] ?? '') ?>">
+                        </div>
+
+                        <!-- Date To -->
+                        <div class="col-md-2">
+                            <label class="form-label">Sampai Tanggal</label>
+                            <input type="date" name="date_to" class="form-control" value="<?= esc($filters['date_to'] ?? '') ?>">
+                        </div>
+
+                        <!-- Submit -->
+                        <div class="col-md-2">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="mdi mdi-magnify me-1"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row mt-2 g-3">
+                        <!-- Student -->
+                        <div class="col-md-4">
                             <label class="form-label">Siswa</label>
                             <select name="student_id" class="form-select" id="studentFilter">
                                 <option value="">Semua Siswa</option>
@@ -231,8 +356,8 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                             </select>
                         </div>
 
-                        <!-- Category Filter -->
-                        <div class="col-md-3">
+                        <!-- Category -->
+                        <div class="col-md-4">
                             <label class="form-label">Kategori</label>
                             <select name="category_id" class="form-select" id="categoryFilter">
                                 <option value="">Semua Kategori</option>
@@ -244,55 +369,21 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                             </select>
                         </div>
 
-                        <!-- Date From -->
-                        <div class="col-md-3">
-                            <label class="form-label">Tanggal Dari</label>
-                            <input type="date" name="date_from" class="form-control" value="<?= esc($filters['date_from'] ?? '') ?>">
-                        </div>
-
-                        <!-- Date To -->
-                        <div class="col-md-3">
-                            <label class="form-label">Tanggal Sampai</label>
-                            <input type="date" name="date_to" class="form-control" value="<?= esc($filters['date_to'] ?? '') ?>">
-                        </div>
-
-                        <!-- Repeat Offender -->
-                        <div class="col-md-3">
-                            <label class="form-label d-block">
-                                Pelanggar Berulang
-                                <i class="mdi mdi-information-outline" title="Tampilkan hanya pelanggaran yang ditandai sebagai pelanggar berulang"></i>
-                            </label>
-                            <div class="form-check">
+                        <!-- Repeat offender + Reset + Add -->
+                        <div class="col-md-2">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <div class="form-check mt-2">
                                 <input class="form-check-input" type="checkbox" name="is_repeat_offender" value="1"
                                        <?= !empty($filters['is_repeat_offender']) ? 'checked' : '' ?>>
-                                <label class="form-check-label">Tampilkan pelanggar berulang</label>
+                                <label class="form-check-label">Pelanggar berulang</label>
                             </div>
                         </div>
 
-                        <!-- Parent Notified 
-                        <div class="col-md-3">
-                            <label class="form-label">Notifikasi Ortu</label>
-                            <select name="parent_notified" class="form-select">
-                                <option value="">Semua</option>
-                                <option value="no" <?= ($filters['parent_notified'] ?? '') === 'no' ? 'selected' : '' ?>>Belum Dinotifikasi</option>
-                            </select>
-                        </div>-->
-
-                        <!-- Buttons -->
-                        <div class="col-md-6">
+                        <div class="col-md-2">
                             <label class="form-label d-block">&nbsp;</label>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="mdi mdi-magnify me-1"></i> Filter
-                            </button>
-                            <a href="<?= base_url('koordinator/cases') ?>" class="btn btn-secondary">
+                            <a href="<?= base_url('koordinator/cases') ?>" class="btn btn-secondary w-100">
                                 <i class="mdi mdi-refresh me-1"></i> Reset
                             </a>
-
-                            <?php if ($canManageViolations): ?>
-                                <a href="<?= base_url('koordinator/cases/create') ?>" class="btn btn-success">
-                                    <i class="mdi mdi-plus me-1"></i> Tambah Pelanggaran
-                                </a>
-                            <?php endif; ?>
                         </div>
                     </div>
                 </form>
@@ -301,19 +392,29 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
     </div>
 </div>
 
-<!-- Data Table (pagination via DataTables di View) -->
+<!-- Data Table -->
 <div class="row">
     <div class="col-12">
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="card-title mb-0">Daftar Pelanggaran</h4>
-                <span class="badge bg-primary">
-                    Total: <?= (int)(is_countable($violations ?? []) ? count($violations) : 0) ?> data
-                </span>
+                <div>
+                    <h4 class="card-title mb-0">Daftar Pelanggaran</h4>
+                    <small class="text-muted">Pagination dan pencarian tabel memakai DataTables.</small>
+                </div>
+                <div class="d-flex gap-2 align-items-center">
+                    <span class="badge bg-primary">
+                        Total: <?= (int) (is_countable($violationRows) ? count($violationRows) : 0) ?> data
+                    </span>
+                    <?php if ($canManageViolations): ?>
+                        <a href="<?= base_url('koordinator/cases/create') ?>" class="btn btn-success">
+                            <i class="mdi mdi-plus me-1"></i> Tambah Pelanggaran
+                        </a>
+                    <?php endif; ?>
+                </div>
             </div>
 
             <div class="card-body">
-                <?php if (!empty($violations) && is_array($violations)): ?>
+                <?php if (!empty($violationRows) && is_array($violationRows)): ?>
                     <div class="table-responsive">
                         <table id="casesTable" class="table table-hover table-bordered nowrap w-100">
                             <thead class="table-light">
@@ -330,7 +431,7 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                                 </tr>
                             </thead>
                             <tbody>
-                                <?php foreach ($violations as $violation): ?>
+                                <?php foreach ($violationRows as $violation): ?>
                                     <?php
                                         $vDate = $violation['violation_date'] ?? '';
                                         $vTime = $violation['violation_time'] ?? '';
@@ -341,9 +442,17 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                                         <td class="text-center"></td>
 
                                         <td data-order="<?= esc($orderDate) ?>">
-                                            <strong><?= !empty($vDate) ? date('d/m/Y', strtotime($vDate)) : '-' ?></strong>
-                                            <?php if (!empty($vTime)): ?>
-                                                <br><small class="text-muted"><?= date('H:i', strtotime($vTime)) ?></small>
+                                            <strong>
+                                                <?php
+                                                if (!empty($vDate) && strtotime($vDate) !== false) {
+                                                    echo esc(date('d/m/Y', strtotime($vDate)));
+                                                } else {
+                                                    echo '-';
+                                                }
+                                                ?>
+                                            </strong>
+                                            <?php if (!empty($vTime) && strtotime($vTime) !== false): ?>
+                                                <br><small class="text-muted"><?= esc(date('H:i', strtotime($vTime))) ?></small>
                                             <?php endif; ?>
                                         </td>
 
@@ -357,7 +466,7 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                                                 <?php endif; ?>
                                             </small>
                                             <?php if (!empty($violation['is_repeat_offender'])): ?>
-                                                <br><span class="badge bg-danger"><i class="mdi mdi-repeat"></i> Pelanggar Berulang</span>
+                                                <br><span class="badge bg-danger mt-1"><i class="mdi mdi-repeat"></i> Pelanggar Berulang</span>
                                             <?php endif; ?>
                                         </td>
 
@@ -373,7 +482,7 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                                                 default  => 'bg-secondary'
                                             };
                                             ?>
-                                            <span class="badge <?= $severityBadge ?>">
+                                            <span class="badge <?= esc($severityBadge) ?>">
                                                 <?= esc($severity ?: '-') ?>
                                             </span>
                                         </td>
@@ -391,7 +500,7 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
                                                 default        => 'bg-secondary'
                                             };
                                             ?>
-                                            <span class="badge <?= $statusBadge ?>"><?= esc($status) ?></span>
+                                            <span class="badge <?= esc($statusBadge) ?>"><?= esc($status) ?></span>
                                             <?php if (isset($violation['parent_notified']) && !$violation['parent_notified']): ?>
                                                 <br><span class="badge bg-danger mt-1"><i class="mdi mdi-bell-off"></i> Belum Notifikasi</span>
                                             <?php endif; ?>
@@ -460,7 +569,7 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
 <?php $this->endSection(); ?>
 
 <?php $this->section('scripts'); ?>
-<!-- DataTables (konsisten dengan counselor/sessions) -->
+<!-- DataTables (konsisten) -->
 <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
@@ -473,6 +582,8 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
 <script>
     // Delete Violation with Confirmation (POST + CSRF)
     function deleteViolation(id) {
+        if (!id) return;
+
         if (confirm('Apakah Anda yakin ingin menghapus data pelanggaran ini?\n\nData yang terhapus tidak dapat dikembalikan!')) {
             const form = document.createElement('form');
             form.method = 'POST';
@@ -491,8 +602,29 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
     }
 
     $(document).ready(function() {
-        // DataTables pagination di VIEW (10 per halaman, konsisten)
-        <?php if (!empty($violations) && is_array($violations)): ?>
+        // Select2 (biar nyaman cari siswa/kategori/tahun ajaran)
+        $('#studentFilter').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Pilih Siswa',
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('#categoryFilter').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Pilih Kategori',
+            allowClear: true,
+            width: '100%'
+        });
+
+        $('#academicYearFilter').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'Pilih Tahun Ajaran',
+            allowClear: true,
+            width: '100%'
+        });
+
+        <?php if (!empty($violationRows) && is_array($violationRows)): ?>
             var table;
 
             if (window.SIBK && typeof SIBK.initDataTable === 'function') {
@@ -532,29 +664,17 @@ $canManageViolations = $can('manage_violations'); // untuk CRUD ekstra (Tambah/H
 
             // Nomor urut selalu benar (mulai 1) walau sort/search/paging
             function renumber() {
+                if (!table) return;
                 var info = table.page.info();
                 table.column(0, { page: 'current' }).nodes().each(function(cell, i) {
                     cell.innerHTML = info.start + i + 1;
                 });
             }
-            table.on('order.dt search.dt draw.dt', renumber);
-            renumber();
+            if (table) {
+                table.on('order.dt search.dt draw.dt', renumber);
+                renumber();
+            }
         <?php endif; ?>
-
-        // Select2 (biar nyaman cari siswa/kategori)
-        $('#studentFilter').select2({
-            theme: 'bootstrap-5',
-            placeholder: 'Pilih Siswa',
-            allowClear: true,
-            width: '100%'
-        });
-
-        $('#categoryFilter').select2({
-            theme: 'bootstrap-5',
-            placeholder: 'Pilih Kategori',
-            allowClear: true,
-            width: '100%'
-        });
 
         // Auto-hide alerts after 5 seconds
         setTimeout(function() {

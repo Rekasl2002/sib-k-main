@@ -8,32 +8,40 @@
  * - Boleh: view list/detail, edit/update data akademik, import/export
  * - Tidak boleh: create/store manual, delete, changeClass (diblock di controller)
  *
+ * Tambahan (2026-01-21):
+ * - Fitur sinkron poin pelanggaran (mirip akun Guru BK):
+ *   - Quick Sync: Tahun Ajaran aktif
+ *   - Opsi Sync: pilih Tahun Ajaran (year_name) / periode tanggal
+ *   - Bisa (opsional) mengikuti filter list saat ini (class/grade/status/gender/search)
+ *
  * @package    SIB-K
  * @subpackage Controllers/Koordinator
  * @category   Student Management
- * @author     Development Team
- * @created    2025-01-05
- * @updated    2025-12-16
  */
 
 namespace App\Controllers\Koordinator;
 
 use App\Services\StudentService;
+use App\Services\ViolationService;
 use App\Validation\StudentValidation;
 use App\Libraries\ExcelImporter;
 use App\Models\StudentModel;
 
 class StudentController extends BaseKoordinatorController
 {
-    protected $studentService;
-    protected $excelImporter;
-    protected $studentModel;
+    protected StudentService $studentService;
+    protected ExcelImporter $excelImporter;
+    protected StudentModel $studentModel;
+    protected ViolationService $violationService;
+    protected $db;
 
     public function __construct()
     {
-        $this->studentService = new StudentService();
-        $this->excelImporter  = new ExcelImporter();
-        $this->studentModel   = new StudentModel();
+        $this->studentService   = new StudentService();
+        $this->excelImporter    = new ExcelImporter();
+        $this->studentModel     = new StudentModel();
+        $this->violationService = new ViolationService();
+        $this->db               = \Config\Database::connect();
     }
 
     /**
@@ -47,14 +55,16 @@ class StudentController extends BaseKoordinatorController
 
     /**
      * Helper: Permission untuk edit/update siswa.
-     * Mengakomodasi perbedaan setup permission (manage_students vs manage_academic_data)
-     * tanpa bikin fatal error kalau helper tertentu tidak ada.
+     * Mengakomodasi perbedaan setup permission (manage_students vs manage_academic_data).
      */
     private function requireManageStudentsPermission()
     {
-        helper('permission');
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // ignore
+        }
 
-        // Jika project punya helper has_permission(), izinkan salah satu dari dua izin.
         if (function_exists('has_permission')) {
             if (!has_permission('manage_students') && !has_permission('manage_academic_data')) {
                 return redirect()->to(base_url('koordinator/students'))
@@ -63,8 +73,43 @@ class StudentController extends BaseKoordinatorController
             return null;
         }
 
-        // Fallback: gunakan require_permission standar.
-        require_permission('manage_students');
+        // Fallback: gunakan require_permission jika tersedia
+        if (function_exists('require_permission')) {
+            require_permission('manage_students');
+        }
+
+        return null;
+    }
+
+    /**
+     * Permission khusus untuk sinkron poin.
+     * (umumnya ini selevel update data, tapi kita izinkan juga jika punya manage_violations).
+     */
+    private function requireSyncPermission()
+    {
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if (function_exists('has_permission')) {
+            if (
+                !has_permission('manage_students') &&
+                !has_permission('manage_academic_data') &&
+                !has_permission('manage_violations')
+            ) {
+                return redirect()->to(base_url('koordinator/students'))
+                    ->with('error', 'Anda tidak memiliki izin untuk sinkronisasi poin pelanggaran.');
+            }
+            return null;
+        }
+
+        if (function_exists('require_permission')) {
+            // fallback paling aman: treat as student update privilege
+            require_permission('manage_students');
+        }
+
         return null;
     }
 
@@ -73,8 +118,15 @@ class StudentController extends BaseKoordinatorController
      */
     public function index()
     {
-        helper('permission');
-        require_permission('view_all_students');
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if (function_exists('require_permission')) {
+            require_permission('view_all_students');
+        }
 
         $filters = [
             'class_id'    => $this->request->getGet('class_id'),
@@ -86,25 +138,53 @@ class StudentController extends BaseKoordinatorController
             'order_dir'   => $this->request->getGet('order_dir') ?? 'DESC',
         ];
 
-        $perPage      = 15;
-        $studentsData = $this->studentService->getAllStudents($filters, $perPage);
+        // DataTables pageLength (untuk view), bukan untuk DB pagination.
+        $dtPageLength = (int) ($this->request->getGet('per_page') ?? 10);
+        if ($dtPageLength <= 0) $dtPageLength = 10;
+        if ($dtPageLength > 200) $dtPageLength = 200;
+
+        // ✅ Mode DataTables: ambil semua (perPage <= 0)
+        $studentsData = $this->studentService->getAllStudents($filters, 0);
         $classes      = $this->studentService->getAvailableClasses();
         $stats        = $this->studentService->getStudentStatistics();
 
+        // Opsi Tahun Ajaran untuk modal sinkron
+        $academicYearOptions = [];
+        try {
+            if (method_exists($this->violationService, 'getAcademicYearOptions')) {
+                $academicYearOptions = (array) $this->violationService->getAcademicYearOptions();
+            }
+        } catch (\Throwable $e) {
+            $academicYearOptions = [];
+        }
+
         $data = [
-            'title'           => 'Manajemen Siswa',
-            'page_title'      => 'Manajemen Siswa',
-            'breadcrumb'      => [
+            'title'          => 'Manajemen Siswa',
+            'page_title'     => 'Manajemen Siswa',
+            'breadcrumb'     => [
                 ['title' => 'Koordinator', 'link' => base_url('koordinator/dashboard')],
                 ['title' => 'Siswa', 'link' => null],
             ],
-            'students'        => $studentsData['students'],
-            'pager'           => $studentsData['pager'],
-            'classes'         => $classes,
-            'stats'           => $stats,
-            'filters'         => $filters,
-            'gender_options'  => StudentValidation::getGenderOptions(),
-            'status_options'  => StudentValidation::getStatusOptions(),
+
+            // data utama
+            'students'       => $studentsData['students'],
+            'pager'          => $studentsData['pager'], // null pada mode DataTables
+            'classes'        => $classes,
+            'stats'          => $stats,
+            'filters'        => $filters,
+
+            // options
+            'gender_options' => StudentValidation::getGenderOptions(),
+            'status_options' => StudentValidation::getStatusOptions(),
+
+            // DataTables
+            'perPage'        => $dtPageLength,
+
+            // dropdown TA (samakan key dengan counselor view yang fleksibel)
+            'academicYears'           => $academicYearOptions,
+            'academic_years'          => $academicYearOptions,
+            'year_options'            => $academicYearOptions,
+            'academic_year_options'   => $academicYearOptions,
         ];
 
         return view('koordinator/students/index', $data);
@@ -131,12 +211,19 @@ class StudentController extends BaseKoordinatorController
      */
     public function profile($id)
     {
-        helper('permission');
-        require_permission('view_all_students');
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if (function_exists('require_permission')) {
+            require_permission('view_all_students');
+        }
 
         $student = $this->studentService->getStudentById((int) $id);
 
-        if (! $student) {
+        if (!$student) {
             return redirect()->to(base_url('koordinator/students'))
                 ->with('error', 'Data siswa tidak ditemukan');
         }
@@ -160,13 +247,12 @@ class StudentController extends BaseKoordinatorController
      */
     public function edit($id)
     {
-        // Permission fleksibel (manage_students atau manage_academic_data)
         $deny = $this->requireManageStudentsPermission();
         if ($deny) return $deny;
 
         $student = $this->studentService->getStudentById((int) $id);
 
-        if (! $student) {
+        if (!$student) {
             return redirect()->to(base_url('koordinator/students'))
                 ->with('error', 'Data siswa tidak ditemukan');
         }
@@ -199,7 +285,6 @@ class StudentController extends BaseKoordinatorController
      */
     public function update(int $id)
     {
-        // Permission fleksibel (manage_students atau manage_academic_data)
         $deny = $this->requireManageStudentsPermission();
         if ($deny) return $deny;
 
@@ -207,12 +292,10 @@ class StudentController extends BaseKoordinatorController
 
         $result = $this->studentService->updateStudent($id, $postData);
 
-        if (! ($result['success'] ?? false)) {
-            // Konsisten dengan view edit: pakai flashdata 'errors' bila tersedia
+        if (!($result['success'] ?? false)) {
             $errors = $result['errors'] ?? $result['validation_errors'] ?? null;
 
             $redir = redirect()->back()->withInput();
-
             if (is_array($errors) && !empty($errors)) {
                 $redir = $redir->with('errors', $errors);
             }
@@ -245,8 +328,15 @@ class StudentController extends BaseKoordinatorController
      */
     public function export()
     {
-        helper('permission');
-        require_permission('import_export_data');
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if (function_exists('require_permission')) {
+            require_permission('import_export_data');
+        }
 
         $filters = [
             'class_id'    => $this->request->getGet('class_id'),
@@ -256,7 +346,7 @@ class StudentController extends BaseKoordinatorController
             'search'      => $this->request->getGet('search'),
         ];
 
-        $studentsData = $this->studentService->getAllStudents($filters, 10000);
+        $studentsData = $this->studentService->getAllStudents($filters, 0);
 
         $exportData = [];
         foreach ($studentsData['students'] as $student) {
@@ -267,18 +357,18 @@ class StudentController extends BaseKoordinatorController
                 'Nama Lengkap'      => $student['full_name'],
                 'Username'          => $student['username'],
                 'Email'             => $student['email'],
-                'Jenis Kelamin'     => $student['gender'] == 'L' ? 'Laki-laki' : 'Perempuan',
+                'Jenis Kelamin'     => ($student['gender'] ?? '') == 'L' ? 'Laki-laki' : 'Perempuan',
                 'Kelas'             => $student['class_name'] ?? '-',
                 'Tingkat'           => $student['grade_level'] ?? '-',
                 'Tempat Lahir'      => $student['birth_place'] ?? '-',
-                'Tanggal Lahir'     => $student['birth_date'] ? date('d/m/Y', strtotime($student['birth_date'])) : '-',
+                'Tanggal Lahir'     => !empty($student['birth_date']) ? date('d/m/Y', strtotime($student['birth_date'])) : '-',
                 'Agama'             => $student['religion'] ?? '-',
                 'Alamat'            => $student['address'] ?? '-',
                 'Telepon'           => $student['phone'] ?? '-',
-                'Status'            => $student['status'],
-                'Poin Pelanggaran'  => $student['total_violation_points'],
-                'Tanggal Masuk'     => $student['admission_date'] ? date('d/m/Y', strtotime($student['admission_date'])) : '-',
-                'Terdaftar'         => date('d/m/Y H:i', strtotime($student['created_at'])),
+                'Status'            => $student['status'] ?? '-',
+                'Poin Pelanggaran'  => (int) ($student['total_violation_points'] ?? 0),
+                'Tanggal Masuk'     => !empty($student['admission_date']) ? date('d/m/Y', strtotime($student['admission_date'])) : '-',
+                'Terdaftar'         => !empty($student['created_at']) ? date('d/m/Y H:i', strtotime($student['created_at'])) : '-',
             ];
         }
 
@@ -292,7 +382,7 @@ class StudentController extends BaseKoordinatorController
         // BOM untuk Excel UTF-8
         fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-        if (! empty($exportData)) {
+        if (!empty($exportData)) {
             fputcsv($output, array_keys($exportData[0]));
         }
 
@@ -309,27 +399,33 @@ class StudentController extends BaseKoordinatorController
      */
     public function search()
     {
-        helper('permission');
-        require_permission('view_all_students');
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if (function_exists('require_permission')) {
+            require_permission('view_all_students');
+        }
 
         $keyword = $this->request->getGet('q');
-
         if (empty($keyword)) {
             return $this->response->setJSON(['results' => []]);
         }
 
         $filters      = ['search' => $keyword];
-        $studentsData = $this->studentService->getAllStudents($filters, 10);
+        $studentsData = $this->studentService->getAllStudents($filters, 0);
 
         $results = [];
-        foreach ($studentsData['students'] as $student) {
+        foreach (array_slice($studentsData['students'], 0, 10) as $student) {
             $results[] = [
                 'id'     => $student['id'],
-                'text'   => $student['full_name'] . ' (' . $student['nisn'] . ')',
-                'nisn'   => $student['nisn'],
-                'nis'    => $student['nis'],
+                'text'   => ($student['full_name'] ?? '-') . ' (' . ($student['nisn'] ?? '-') . ')',
+                'nisn'   => $student['nisn'] ?? '-',
+                'nis'    => $student['nis'] ?? '-',
                 'class'  => $student['class_name'] ?? '-',
-                'status' => $student['status'],
+                'status' => $student['status'] ?? '-',
             ];
         }
 
@@ -341,15 +437,22 @@ class StudentController extends BaseKoordinatorController
      */
     public function getByClass($classId)
     {
-        helper('permission');
-        require_permission('view_all_students');
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if (function_exists('require_permission')) {
+            require_permission('view_all_students');
+        }
 
         $filters = [
             'class_id' => (int) $classId,
             'status'   => 'Aktif',
         ];
 
-        $studentsData = $this->studentService->getAllStudents($filters, 100);
+        $studentsData = $this->studentService->getAllStudents($filters, 0);
 
         $students = [];
         foreach ($studentsData['students'] as $student) {
@@ -374,8 +477,15 @@ class StudentController extends BaseKoordinatorController
      */
     public function import()
     {
-        helper('permission');
-        require_permission('import_export_data');
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if (function_exists('require_permission')) {
+            require_permission('import_export_data');
+        }
 
         $classes = $this->studentService->getAvailableClasses();
 
@@ -398,8 +508,15 @@ class StudentController extends BaseKoordinatorController
      */
     public function downloadTemplate()
     {
-        helper('permission');
-        require_permission('import_export_data');
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if (function_exists('require_permission')) {
+            require_permission('import_export_data');
+        }
 
         try {
             $filename = 'template_import_siswa_' . date('Y-m-d') . '.xlsx';
@@ -407,7 +524,7 @@ class StudentController extends BaseKoordinatorController
 
             $this->excelImporter->generateTemplate($savePath);
 
-            if (! file_exists($savePath)) {
+            if (!file_exists($savePath)) {
                 return redirect()->back()->with('error', 'Gagal membuat template. File tidak ditemukan.');
             }
 
@@ -427,12 +544,19 @@ class StudentController extends BaseKoordinatorController
      */
     public function doImport()
     {
-        helper('permission');
-        require_permission('import_export_data');
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if (function_exists('require_permission')) {
+            require_permission('import_export_data');
+        }
 
         $rules = StudentValidation::importRules();
 
-        if (! $this->validate($rules)) {
+        if (!$this->validate($rules)) {
             return redirect()->back()
                 ->withInput()
                 ->with('errors', $this->validator->getErrors());
@@ -440,19 +564,19 @@ class StudentController extends BaseKoordinatorController
 
         $file = $this->request->getFile('import_file');
 
-        if (! $file || ! $file->isValid()) {
+        if (!$file || !$file->isValid()) {
             return redirect()->back()->with('error', 'File yang diupload tidak valid.');
         }
 
         try {
             $uploadPath = WRITEPATH . 'uploads/imports/';
-            if (! is_dir($uploadPath)) {
+            if (!is_dir($uploadPath)) {
                 mkdir($uploadPath, 0755, true);
             }
 
             $newFileName = 'import_' . date('YmdHis') . '_' . uniqid() . '.' . $file->getExtension();
 
-            if (! $file->move($uploadPath, $newFileName)) {
+            if (!$file->move($uploadPath, $newFileName)) {
                 throw new \Exception('Gagal memindahkan file upload.');
             }
 
@@ -475,7 +599,6 @@ class StudentController extends BaseKoordinatorController
                 $failed
             );
 
-            // Simpan detail jika ada kegagalan
             if ($failed > 0) {
                 session()->setFlashdata('import_errors', $results['errors'] ?? []);
 
@@ -488,12 +611,11 @@ class StudentController extends BaseKoordinatorController
                 session()->setFlashdata('success', $message);
             }
 
-            if (! empty($results['warnings'])) {
+            if (!empty($results['warnings'])) {
                 session()->setFlashdata('import_warnings', $results['warnings']);
             }
 
-            // Penting: jika ada gagal atau warnings, arahkan kembali ke halaman import agar detail terlihat.
-            if ($failed > 0 || ! empty($results['warnings'])) {
+            if ($failed > 0 || !empty($results['warnings'])) {
                 return redirect()->to(base_url('koordinator/students/import'));
             }
 
@@ -515,8 +637,15 @@ class StudentController extends BaseKoordinatorController
      */
     public function getStats()
     {
-        helper('permission');
-        require_permission('view_all_students');
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if (function_exists('require_permission')) {
+            require_permission('view_all_students');
+        }
 
         $stats = $this->studentService->getStudentStatistics();
 
@@ -524,5 +653,172 @@ class StudentController extends BaseKoordinatorController
             'success' => true,
             'data'    => $stats,
         ]);
+    }
+
+    // ==========================================================
+    // Sinkron poin pelanggaran (mirip Counselor)
+    // ==========================================================
+
+    private function normalizeDate($date): ?string
+    {
+        $date = trim((string) ($date ?? ''));
+        if ($date === '') return null;
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) return null;
+        return $date;
+    }
+
+    /**
+     * Ambil daftar student_id untuk sync.
+     * Default: semua siswa sesuai filter (class/grade/status/gender/search).
+     */
+    private function getStudentIdsForSync(array $filters = []): array
+    {
+        $qb = $this->db->table('students s')
+            ->select('s.id')
+            ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'inner')
+            ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
+            ->where('s.deleted_at', null);
+
+        $classId    = trim((string) ($filters['class_id'] ?? ''));
+        $gradeLevel = trim((string) ($filters['grade_level'] ?? ''));
+        $status     = trim((string) ($filters['status'] ?? ''));
+        $gender     = trim((string) ($filters['gender'] ?? ''));
+        $search     = trim((string) ($filters['search'] ?? ''));
+
+        if ($classId !== '') {
+            $qb->where('s.class_id', (int) $classId);
+        }
+        if ($gradeLevel !== '') {
+            $qb->where('c.grade_level', $gradeLevel);
+        }
+        if ($status !== '') {
+            $qb->where('s.status', $status);
+        }
+        if ($gender !== '') {
+            $qb->where('s.gender', $gender);
+        }
+        if ($search !== '') {
+            $qb->groupStart()
+                ->like('u.full_name', $search)
+                ->orLike('u.email', $search)
+                ->orLike('s.nis', $search)
+                ->orLike('s.nisn', $search)
+            ->groupEnd();
+        }
+
+        $rows = $qb->get()->getResultArray();
+
+        $ids = [];
+        foreach ($rows as $r) {
+            $id = (int) ($r['id'] ?? 0);
+            if ($id > 0) $ids[] = $id;
+        }
+        return $ids;
+    }
+
+    /**
+     * POST /koordinator/students/sync-violation-points
+     * Mode:
+     * - active: Tahun Ajaran aktif (default)
+     * - year: Tahun Ajaran dipilih (year_name)
+     * - range: periode custom date_from/date_to
+     */
+    public function syncViolationPoints()
+    {
+        // Permission
+        if (function_exists('require_permission')) {
+            require_permission('view_all_students');
+        }
+        $deny = $this->requireSyncPermission();
+        if ($deny) return $deny;
+
+        $syncMode = trim((string) ($this->request->getPost('sync_mode') ?? 'active'));
+        if ($syncMode === '') $syncMode = 'active';
+
+        $yearName = trim((string) ($this->request->getPost('academic_year') ?? ''));
+
+        $dateFrom = $this->normalizeDate($this->request->getPost('date_from'));
+        $dateTo   = $this->normalizeDate($this->request->getPost('date_to'));
+
+        // Optional: sync mengikuti filter list (kita ambil dari hidden input)
+        $studentFilters = [
+            'class_id'    => $this->request->getPost('class_id'),
+            'grade_level' => $this->request->getPost('grade_level'),
+            'status'      => $this->request->getPost('status'),
+            'gender'      => $this->request->getPost('gender'),
+            'search'      => $this->request->getPost('search'),
+        ];
+
+        $studentIds = $this->getStudentIdsForSync($studentFilters);
+        if (empty($studentIds)) {
+            return redirect()->back()->with('error', 'Tidak ada siswa yang bisa disinkronkan (sesuai filter saat ini).');
+        }
+
+        // Build compute filters untuk StudentService
+        $computeFilters = [
+            'include_cancelled' => false,
+        ];
+
+        $label = '';
+
+        if ($syncMode === 'range') {
+            if (!$dateFrom || !$dateTo) {
+                return redirect()->back()->with('error', 'Mode periode dipilih, tapi tanggal belum lengkap.');
+            }
+            if ($dateFrom > $dateTo) {
+                [$dateFrom, $dateTo] = [$dateTo, $dateFrom];
+            }
+            $computeFilters['date_from'] = $dateFrom;
+            $computeFilters['date_to']   = $dateTo;
+            $label = "Periode {$dateFrom} s/d {$dateTo}";
+        } elseif ($syncMode === 'year') {
+            if ($yearName === '') {
+                return redirect()->back()->with('error', 'Mode Tahun Ajaran dipilih, tapi Tahun Ajaran belum dipilih.');
+            }
+            $computeFilters['year_name'] = $yearName;
+            $label = "Tahun Ajaran {$yearName}";
+        } else {
+            // active
+            $activeYear = $this->studentService->getActiveAcademicYearName();
+            $label = $activeYear ? "Tahun Ajaran Aktif ({$activeYear})" : "Tahun Ajaran Aktif";
+        }
+
+        $payload = [];
+        $updated = 0;
+
+        try {
+            $chunkSize = 500;
+
+            foreach ($studentIds as $sid) {
+                $sid = (int) $sid;
+                if ($sid <= 0) continue;
+
+                $points = (int) $this->studentService->computeViolationPointsByRange($sid, $computeFilters);
+
+                $payload[] = [
+                    'id'                    => $sid,
+                    'total_violation_points' => max(0, $points),
+                ];
+
+                if (count($payload) >= $chunkSize) {
+                    $this->db->table('students')->updateBatch($payload, 'id');
+                    $updated += count($payload);
+                    $payload = [];
+                }
+            }
+
+            if (!empty($payload)) {
+                $this->db->table('students')->updateBatch($payload, 'id');
+                $updated += count($payload);
+            }
+
+            return redirect()->back()->with(
+                'success',
+                "Sinkronisasi poin pelanggaran berhasil untuk {$updated} siswa. ({$label})"
+            );
+        } catch (\Throwable $e) {
+            log_message('error', 'Koordinator StudentController::syncViolationPoints - ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal sinkronisasi poin: ' . $e->getMessage());
+        }
     }
 }

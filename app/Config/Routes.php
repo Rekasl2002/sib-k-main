@@ -20,6 +20,16 @@ if (!isset($routes) || !($routes instanceof RouteCollection)) {
 }
 
 /**
+ * ✅ OPSIONAL (standar CI4):
+ * Muat Routes sistem terlebih dahulu (kalau ada).
+ * Ini membantu menjaga default behavior CI4 tetap konsisten.
+ */
+$systemRoutes = SYSTEMPATH . 'Config/Routes.php';
+if (is_file($systemRoutes)) {
+    require $systemRoutes;
+}
+
+/**
  * --------------------------------------------------------------------
  * Router Setup (standar CI4)
  * --------------------------------------------------------------------
@@ -351,6 +361,13 @@ $routes->group('koordinator', [
                 'as'     => 'koordinator.students.update'
             ]);
 
+            // ✅ TAMBAHAN: Sinkron poin pelanggaran (Koordinator)
+            // Filter minimal: view_all_students (detail permission/guard tambahan sudah ada di controller)
+            $routes->post('sync-violation-points', 'StudentController::syncViolationPoints', [
+                'filter' => 'permission:view_all_students',
+                'as'     => 'koordinator.students.syncViolationPoints'
+            ]);
+
             $routes->get('export', 'StudentController::export', [
                 'filter' => 'permission:import_export_data',
                 'as'     => 'koordinator.students.export'
@@ -517,6 +534,7 @@ $routes->group('koordinator', [
             $routes->post('review/(:num)', 'AssessmentController::reviewSave/$1', ['as' => 'koordinator.assessments.review.save']);
             $routes->post('(:num)/results/(:num)/ungrade', 'AssessmentController::ungradeResult/$1/$2', ['as' => 'koordinator.assessments.results.ungrade']);
             $routes->post('(:num)/results/(:num)/delete', 'AssessmentController::deleteResult/$1/$2', ['as' => 'koordinator.assessments.results.delete']);
+            $routes->post('(:num)/results/(:num)/delete', 'AssessmentController::deleteResult/$1/$2', ['as' => 'koordinator.assessments.results.delete']);
         });
 
         // Reports (izin: view_reports + generate_reports untuk download)
@@ -646,9 +664,10 @@ $routes->group('counselor', [
             $routes->post('(:num)', 'StudentController::update/$1', ['as' => 'counselor.students.update']);
             $routes->get('detail/(:num)', 'StudentController::detail/$1', ['as' => 'counselor.students.detail']);
 
+            // ✅ Sinkron poin pelanggaran (Guru BK) - biarkan akses mengikuti group filter view_all_students
+            // (guard tambahan tetap bisa dilakukan di controller bila diperlukan)
             $routes->post('sync-violation-points', 'StudentController::syncViolationPoints', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.students.syncViolationPoints'
+                'as' => 'counselor.students.syncViolationPoints'
             ]);
         });
 
@@ -709,7 +728,7 @@ $routes->group('counselor', [
                 'filter' => 'permission:manage_sanctions'
             ]);
             $routes->post('delete/(:num)', 'SanctionController::delete/$1', [
-                'filter' => 'permission:manage_sanctions'
+                'filter' => 'permission:manage_violations,manage_sanctions'
             ]);
             $routes->post('complete/(:num)', 'SanctionController::complete/$1', [
                 'filter' => 'permission:manage_sanctions'
@@ -859,7 +878,6 @@ $routes->group('counselor', [
 // ===============================
 // HOMEROOM (Wali Kelas) (role locked)
 // ===============================
-// PERBAIKAN: hindari 'auth,role:wali kelas' -> nested group
 $routes->group('homeroom', [
     'filter'    => 'auth',
     'namespace' => 'App\Controllers\HomeroomTeacher',
@@ -969,7 +987,6 @@ $routes->group('homeroom', [
 // ===============================
 // STUDENT (Siswa) (role locked)
 // ===============================
-// PERBAIKAN: hindari 'auth,role:siswa' -> nested group
 $routes->group('student', [
     'filter'    => 'auth',
     'namespace' => 'App\Controllers\Student'
@@ -1056,7 +1073,6 @@ $routes->group('student', [
 // ===============================
 // PARENT (Orang Tua) (role locked)
 // ===============================
-// PERBAIKAN: hindari 'auth,role:orang tua' -> nested group
 $routes->group('parent', [
     'filter'    => 'auth',
     'namespace' => 'App\Controllers\Parents'
@@ -1074,7 +1090,8 @@ $routes->group('parent', [
             'as'     => 'parent.profile.edit'
         ]);
 
-        $routes->post('profile', 'App\Controllers\ProfileController::update', [
+        // ✅ FIX: gunakan FQN dengan leading backslash agar tidak kena prefix namespace group
+        $routes->post('profile', '\App\Controllers\ProfileController::update', [
             'filter' => 'permission:view_dashboard',
             'as'     => 'parent.profile.update'
         ]);
@@ -1164,7 +1181,6 @@ $routes->group('parent', [
 // ===============================
 // Messages & Notifications
 // ===============================
-// PERBAIKAN: hindari 'auth,permission:...' -> nested group
 $routes->group('messages', ['filter' => 'auth'], function ($routes) {
     $routes->group('', ['filter' => 'permission:send_messages'], function ($routes) {
         $routes->get('/', 'MessageController::index', ['as' => 'messages.index']);
