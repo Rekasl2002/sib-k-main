@@ -16,7 +16,7 @@ $this->section('content');
 
 // helper optional: jangan fatal kalau helper tidak ada
 try {
-    helper(['app', 'permission']);
+    helper(['app', 'permission', 'auth']);
 } catch (\Throwable $e) {
     // ignore
 }
@@ -73,6 +73,38 @@ $sanctionUiPrefix = $hasKoordSanctionViews ? 'koordinator' : 'counselor';
 // URL yang mungkin dipakai oleh partial modal add_sanction (biar fleksibel)
 $sanction_store_url_case = base_url('koordinator/cases/addSanction/' . $violationId);
 $sanction_store_url_ctrl = base_url('koordinator/sanctions/store/' . $violationId);
+
+// ===== NEW: helper kecil di view (tahan banting)
+$session = function_exists('session') ? session() : null;
+$myId = 0;
+try {
+    $myId = function_exists('auth_id') ? (int) auth_id() : (int) ($session ? ($session->get('user_id') ?? 0) : 0);
+} catch (\Throwable $e) {
+    $myId = (int) ($session ? ($session->get('user_id') ?? 0) : 0);
+}
+$myName = (string) ($session ? ($session->get('full_name') ?? $session->get('name') ?? $session->get('user_full_name') ?? '') : '');
+if (trim($myName) === '') {
+    $myName = 'Saya (Koordinator)';
+}
+
+$currentHandledBy = (int)($violation['handled_by'] ?? 0);
+
+// Buat map handler dari list counselors agar "Ditangani Oleh" bisa fallback walau handler_name belum di-join
+$handlerMap = [];
+if (!empty($counselors) && is_array($counselors)) {
+    foreach ($counselors as $c) {
+        if (!is_array($c) || empty($c['id'])) continue;
+        $cid = (int) $c['id'];
+        $handlerMap[$cid] = [
+            'name'  => (string)($c['name'] ?? $c['full_name'] ?? $c['email'] ?? ('User#' . $cid)),
+            'email' => (string)($c['email'] ?? ''),
+        ];
+    }
+}
+// Pastikan "saya" ikut map (untuk fallback tampilan)
+if ($myId > 0 && !isset($handlerMap[$myId])) {
+    $handlerMap[$myId] = ['name' => $myName, 'email' => ''];
+}
 ?>
 
 <!-- Alert Messages -->
@@ -319,11 +351,23 @@ $sanction_store_url_ctrl = base_url('koordinator/sanctions/store/' . $violationI
                             <p class="mb-0"><strong><?= esc($violation['reporter_name'] ?? '-') ?></strong></p>
                             <small class="text-muted"><?= esc($violation['reporter_email'] ?? '-') ?></small>
                         </div>
+
                         <div class="col-md-6">
                             <label class="text-muted mb-1">Ditangani Oleh:</label>
-                            <?php if (!empty($violation['handler_name'])): ?>
-                                <p class="mb-0"><strong><?= esc($violation['handler_name']) ?></strong></p>
-                                <small class="text-muted"><?= esc($violation['handler_email'] ?? '-') ?></small>
+                            <?php
+                                $handlerName = (string)($violation['handler_name'] ?? '');
+                                $handlerEmail = (string)($violation['handler_email'] ?? '');
+
+                                // fallback jika tidak ada handler_name tapi ada handled_by
+                                if (trim($handlerName) === '' && $currentHandledBy > 0 && isset($handlerMap[$currentHandledBy])) {
+                                    $handlerName  = (string)($handlerMap[$currentHandledBy]['name'] ?? '');
+                                    $handlerEmail = (string)($handlerMap[$currentHandledBy]['email'] ?? '');
+                                }
+                            ?>
+
+                            <?php if (trim($handlerName) !== ''): ?>
+                                <p class="mb-0"><strong><?= esc($handlerName) ?></strong></p>
+                                <small class="text-muted"><?= esc($handlerEmail !== '' ? $handlerEmail : '-') ?></small>
                             <?php else: ?>
                                 <p class="mb-0 text-muted">Belum ditugaskan</p>
                             <?php endif; ?>
@@ -534,22 +578,45 @@ $sanction_store_url_ctrl = base_url('koordinator/sanctions/store/' . $violationI
                 </div>
 
                 <!-- ✅ Assign BK: boleh walau hanya R/U (tidak wajib manage_violations) -->
-                <?php if (!empty($counselors) && is_array($counselors) && $canAssignCounselor): ?>
+                <?php if ($canAssignCounselor): ?>
                     <hr>
                     <form action="<?= base_url('koordinator/cases/assignCounselor/' . $violationId) ?>" method="post">
                         <?= csrf_field() ?>
-                        <label class="form-label">Tugaskan ke Guru BK</label>
+
+                        <label class="form-label">Penangan BK (Ditangani Oleh)</label>
                         <select name="handled_by" class="form-select" required>
-                            <option value="">-- Pilih Guru BK --</option>
-                            <?php foreach ($counselors as $c): ?>
-                                <option value="<?= (int)$c['id'] ?>"
-                                    <?= ((int)($violation['handled_by'] ?? 0) === (int)$c['id']) ? 'selected' : '' ?>>
-                                    <?= esc($c['name'] ?? $c['full_name'] ?? $c['email'] ?? ('User#'.$c['id'])) ?>
+                            <option value="">-- Pilih Penangan --</option>
+
+                            <!-- ✅ NEW: opsi kembalikan ke diri sendiri (Koordinator) -->
+                            <?php if ($myId > 0): ?>
+                                <option value="<?= (int)$myId ?>" <?= ($currentHandledBy === (int)$myId) ? 'selected' : '' ?>>
+                                    Saya (Koordinator): <?= esc($myName) ?>
                                 </option>
-                            <?php endforeach; ?>
+                            <?php endif; ?>
+
+                            <?php if (!empty($counselors) && is_array($counselors)): ?>
+                                <?php foreach ($counselors as $c): ?>
+                                    <?php
+                                        if (!is_array($c) || empty($c['id'])) continue;
+                                        $cid = (int)$c['id'];
+                                        $cname = (string)($c['name'] ?? $c['full_name'] ?? $c['email'] ?? ('User#'.$cid));
+
+                                        // Hindari duplikasi kalau ternyata "saya" juga muncul di list
+                                        if ($myId > 0 && $cid === (int)$myId) continue;
+                                    ?>
+                                    <option value="<?= $cid ?>" <?= ($currentHandledBy === $cid) ? 'selected' : '' ?>>
+                                        <?= esc($cname) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </select>
+
+                        <small class="text-muted d-block mt-2">
+                            Tips: pilih <strong>Saya (Koordinator)</strong> untuk mengembalikan penanganan kasus ke koordinator.
+                        </small>
+
                         <button class="btn btn-outline-primary w-100 mt-2" type="submit">
-                            <i class="mdi mdi-account-switch me-1"></i>Assign
+                            <i class="mdi mdi-account-switch me-1"></i>Simpan Penangan
                         </button>
                     </form>
                 <?php endif; ?>
@@ -613,8 +680,20 @@ $sanction_store_url_ctrl = base_url('koordinator/sanctions/store/' . $violationI
         // variabel ini bisa dipakai oleh partial modal jika kamu sudah set di sana
         $sanction_post_url = $sanction_store_url_ctrl; // direkomendasikan pakai SanctionController
         $sanction_post_url_alt = $sanction_store_url_case; // fallback jika modal masih pakai CaseController
+
+        $modalKoord = APPPATH . 'Views/koordinator/cases/add_sanction.php';
+        $modalCouns = APPPATH . 'Views/counselor/cases/add_sanction.php';
     ?>
-    <?= $this->include('koordinator/cases/add_sanction') ?>
+
+    <?php if (is_file($modalKoord)): ?>
+        <?= $this->include('koordinator/cases/add_sanction') ?>
+    <?php elseif (is_file($modalCouns)): ?>
+        <?= $this->include('counselor/cases/add_sanction') ?>
+    <?php else: ?>
+        <div class="alert alert-warning">
+            Partial modal <code>add_sanction</code> tidak ditemukan.
+        </div>
+    <?php endif; ?>
 <?php endif; ?>
 
 <!-- Update Status Modal -->

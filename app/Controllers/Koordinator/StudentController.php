@@ -55,7 +55,7 @@ class StudentController extends BaseKoordinatorController
 
     /**
      * Helper: Permission untuk edit/update siswa.
-     * Mengakomodasi perbedaan setup permission (manage_students vs manage_academic_data).
+     * Mengakomodasi perbedaan setup permission (manage_users).
      */
     private function requireManageStudentsPermission()
     {
@@ -66,7 +66,7 @@ class StudentController extends BaseKoordinatorController
         }
 
         if (function_exists('has_permission')) {
-            if (!has_permission('manage_students') && !has_permission('manage_academic_data')) {
+            if (!has_permission('manage_users')) {
                 return redirect()->to(base_url('koordinator/students'))
                     ->with('error', 'Anda tidak memiliki izin untuk mengubah data siswa.');
             }
@@ -75,7 +75,7 @@ class StudentController extends BaseKoordinatorController
 
         // Fallback: gunakan require_permission jika tersedia
         if (function_exists('require_permission')) {
-            require_permission('manage_students');
+            require_permission('manage_users');
         }
 
         return null;
@@ -95,8 +95,7 @@ class StudentController extends BaseKoordinatorController
 
         if (function_exists('has_permission')) {
             if (
-                !has_permission('manage_students') &&
-                !has_permission('manage_academic_data') &&
+                !has_permission('manage_users') &&
                 !has_permission('manage_violations')
             ) {
                 return redirect()->to(base_url('koordinator/students'))
@@ -107,7 +106,7 @@ class StudentController extends BaseKoordinatorController
 
         if (function_exists('require_permission')) {
             // fallback paling aman: treat as student update privilege
-            require_permission('manage_students');
+            require_permission('manage_users');
         }
 
         return null;
