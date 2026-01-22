@@ -369,6 +369,68 @@ class CaseController extends BaseController
     }
 
     /**
+     * === NEW: Normalisasi handled_by dari POST ===
+     * - '' / '0' / 0 => null
+     * - selain itu => int
+     */
+    private function normalizeHandledBy($value): ?int
+    {
+        $raw = trim((string)($value ?? ''));
+        if ($raw === '' || $raw === '0') return null;
+
+        $id = (int)$raw;
+        return $id > 0 ? $id : null;
+    }
+
+    /**
+     * === NEW: Ambil daftar user id yang valid sebagai penangan (BK staff aktif) ===
+     * Sumber utama: ViolationService::getCounselors() (yang sudah include role 2+3).
+     * Fallback: tetap izinkan diri sendiri jika auth_id tersedia.
+     */
+    private function getAllowedHandlerIds(): array
+    {
+        $allowed = [];
+
+        try {
+            $rows = (array) $this->violationService->getCounselors(); // di service sudah role_id IN (2,3)
+            foreach ($rows as $r) {
+                if (is_array($r) && isset($r['id'])) {
+                    $allowed[] = (int) $r['id'];
+                }
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        $selfId = function_exists('auth_id') ? (int) auth_id() : (int) (session()->get('user_id') ?? 0);
+        if ($selfId > 0) $allowed[] = $selfId;
+
+        $allowed = array_values(array_unique(array_filter($allowed, fn($x) => (int)$x > 0)));
+        return $allowed;
+    }
+
+    /**
+     * === NEW: Validasi handled_by agar hanya BK staff aktif (koordinator/guru bk) ===
+     * Jika invalid -> redirect back dengan error + withInput.
+     */
+    private function ensureValidHandledByOrBack(?int $handledBy)
+    {
+        // null = boleh (unassign / tidak di-set)
+        if ($handledBy === null) return null;
+
+        $allowed = $this->getAllowedHandlerIds();
+        if (!$allowed) return null; // kalau list kosong, jangan memblok agar tidak bikin fatal
+
+        if (!in_array($handledBy, $allowed, true)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Penangan BK tidak valid atau tidak aktif.');
+        }
+
+        return null;
+    }
+
+    /**
      * Dropdown siswa aktif (selaras Counselor) - versi lebih "tahan beda skema".
      *
      * Output minimal untuk dropdown:
@@ -528,9 +590,13 @@ class CaseController extends BaseController
         $data['reported_by'] = function_exists('auth_id') ? auth_id() : null;
 
         // Default handled_by jika form tidak mengirim
-        if (empty($data['handled_by'])) {
+        if (!array_key_exists('handled_by', (array)$data) || $data['handled_by'] === '' || $data['handled_by'] === null) {
             $data['handled_by'] = function_exists('auth_id') ? auth_id() : null;
         }
+
+        // ✅ NEW: normalize + validate handled_by (Koordinator BK / Guru BK aktif)
+        $data['handled_by'] = $this->normalizeHandledBy($data['handled_by']);
+        if ($r = $this->ensureValidHandledByOrBack($data['handled_by'])) return $r;
 
         // Evidence upload (multiple)
         $uploaded = $this->uploadEvidenceMultiple('evidence');
@@ -593,7 +659,7 @@ class CaseController extends BaseController
         ];
         $studentHistory = $this->getStudentHistorySafe((int)$violation['student_id'], $historyFilters);
 
-        // untuk dropdown assign guru BK di sidebar (tetap ditampilkan di view)
+        // untuk dropdown assign BK di sidebar/view
         $counselors = $this->violationService->getCounselors();
 
         // untuk dropdown jenis sanksi di modal (kalau method tersedia di model/service)
@@ -676,7 +742,7 @@ class CaseController extends BaseController
             'students'    => $this->getActiveStudents(),
 
             'categories'  => $this->violationService->getCategoriesGrouped(),
-            'counselors'  => $this->violationService->getCounselors(),
+            'counselors'  => $this->violationService->getCounselors(), // ✅ list penangan (role 2/3) dari service
             'breadcrumbs' => [
                 ['title' => 'Dashboard', 'url' => base_url('koordinator/dashboard')],
                 ['title' => 'Kasus & Pelanggaran', 'url' => base_url('koordinator/cases')],
@@ -700,6 +766,12 @@ class CaseController extends BaseController
         }
 
         $data = $this->request->getPost();
+
+        // ✅ NEW: normalize + validate handled_by jika dikirim dari form edit
+        if (array_key_exists('handled_by', (array)$data)) {
+            $data['handled_by'] = $this->normalizeHandledBy($data['handled_by']);
+            if ($r = $this->ensureValidHandledByOrBack($data['handled_by'])) return $r;
+        }
 
         // Ambil evidence lama (dari service bila ada, fallback dari model)
         $existingEvidence = [];
@@ -821,10 +893,14 @@ class CaseController extends BaseController
     }
 
     /**
-     * Assign Guru BK untuk menangani kasus
+     * Assign penangan (handled_by) untuk menangani kasus
      *
      * ✅ Kebijakan terbaru:
      * - Koordinator boleh assign meski hanya R/U (tanpa manage_violations).
+     * ✅ FIX:
+     * - Penangan boleh Koordinator BK / Guru BK (role 2/3) yang aktif.
+     * - Bisa kembalikan ke diri sendiri (post handled_by = auth_id()).
+     * - Opsional: jika 0/kosong -> unassign (handled_by NULL) bila service mendukung.
      *
      * Kompatibel dengan input name="handled_by" atau "counselor_id"
      */
@@ -849,44 +925,34 @@ class CaseController extends BaseController
             return redirect()->back()->with('error', 'Kasus tidak ditemukan');
         }
 
-        $counselorId = (int) ($this->request->getPost('counselor_id')
+        $raw = $this->request->getPost('counselor_id')
             ?? $this->request->getPost('handled_by')
-            ?? 0);
+            ?? null;
 
-        if ($counselorId <= 0) {
-            return redirect()->back()->with('error', 'Pilih Guru BK untuk penanganan');
-        }
+        $handledBy = $this->normalizeHandledBy($raw);
 
-        // ✅ Validasi: hanya boleh assign ke user yang memang termasuk daftar Guru BK
-        $counselors = [];
-        try {
-            $counselors = (array) $this->violationService->getCounselors();
-        } catch (\Throwable $e) {
-            log_message('error', 'Koordinator CaseController::assignCounselor getCounselors error: ' . $e->getMessage());
-        }
+        // Jika user memang mengirim "0" / kosong, kita coba unassign (opsional)
+        // Kalau kamu tidak ingin unassign, kamu bisa ganti blok ini menjadi error.
+        $isUnassign = ($handledBy === null);
 
-        $allowedIds = [];
-        if (is_array($counselors)) {
-            foreach ($counselors as $c) {
-                if (is_array($c) && isset($c['id'])) $allowedIds[] = (int) $c['id'];
-            }
-        }
-
-        if ($allowedIds && !in_array($counselorId, $allowedIds, true)) {
-            return redirect()->back()->with('error', 'Guru BK tidak valid / tidak tersedia.');
+        if (!$isUnassign) {
+            // ✅ Validasi: hanya BK staff aktif
+            if ($r = $this->ensureValidHandledByOrBack($handledBy)) return $r;
         }
 
         try {
-            $result = $this->violationService->assignCounselor($id, $counselorId);
+            // Jika service kamu mendukung unassign via counselorId <=0, kirim 0.
+            // Kalau tidak, service akan menolak dan masuk ke error message.
+            $result = $this->violationService->assignCounselor($id, $handledBy ?? 0);
 
             if (!empty($result['success'])) {
-                return redirect()->back()->with('success', $result['message'] ?? 'Penangan (Guru BK) berhasil ditugaskan');
+                return redirect()->back()->with('success', $result['message'] ?? 'Penangan kasus berhasil diperbarui');
             }
 
-            return redirect()->back()->with('error', $result['error'] ?? $result['message'] ?? 'Gagal menugaskan penangan');
+            return redirect()->back()->with('error', $result['error'] ?? $result['message'] ?? 'Gagal memperbarui penangan kasus');
         } catch (\Throwable $e) {
             log_message('error', 'Koordinator CaseController::assignCounselor error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menugaskan penangan.');
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat memperbarui penangan kasus.');
         }
     }
 

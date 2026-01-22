@@ -22,9 +22,12 @@ $session = session();
  * ------------------------------------------------------------
  * Kalau nanti fitur sudah siap, tinggal ubah ke true.
  */
-$__enableAssessments = false;
-$__enableCareerInfo  = false;
-$__enableCommonMenu  = false;
+$__enableAssessments        = false;
+$__enableCareerInfo         = false;
+$__enableCommonMenu         = false;
+
+// ✅ Fitur baru: Pengaduan Pelanggaran (Violation Submissions)
+$__enableViolationSubmissions = true;
 
 // Ambil user & role (aman)
 $user = function_exists('auth_user')
@@ -66,7 +69,7 @@ $__logoUrl  = $__logoPath ? base_url($__logoPath) : base_url('assets/images/logo
 
 // Cache-busting logo agar kalau ganti logo langsung update
 $__logoBust = '';
-if ($__logoPath && is_file(FCPATH . ltrim($__logoPath, '/'))) {
+if ($__logoPath && defined('FCPATH') && is_file(FCPATH . ltrim($__logoPath, '/'))) {
     $__logoBust = '?t=' . @filemtime(FCPATH . ltrim($__logoPath, '/'));
 }
 
@@ -76,7 +79,7 @@ $__avatarUrl = $__avatar ? base_url($__avatar) : base_url('assets/images/users/d
 
 // Cache-busting avatar
 $__avatarBust = '';
-if ($__avatar && is_file(FCPATH . ltrim($__avatar, '/'))) {
+if ($__avatar && defined('FCPATH') && is_file(FCPATH . ltrim($__avatar, '/'))) {
     $__avatarBust = '?t=' . @filemtime(FCPATH . ltrim($__avatar, '/'));
 }
 
@@ -122,12 +125,12 @@ $__isRoleAny = function (array $names, ?int $roleId = null) use ($__roleNameNorm
 };
 
 // Flag role
-$__isAdmin      = $__isRoleAny(['admin', 'administrator'], 1);
-$__isKoordinator= $__isRoleAny(['koordinator', 'koordinator bk'], 2);
-$__isCounselor  = $__isRoleAny(['counselor', 'guru bk'], 3);
-$__isHomeroom   = $__isRoleAny(['homeroom', 'wali kelas'], 4);
-$__isStudent    = $__isRoleAny(['student', 'siswa'], 5);
-$__isParent     = $__isRoleAny(['parent', 'orang tua'], 6);
+$__isAdmin       = $__isRoleAny(['admin', 'administrator'], 1);
+$__isKoordinator = $__isRoleAny(['koordinator', 'koordinator bk'], 2);
+$__isCounselor   = $__isRoleAny(['counselor', 'guru bk'], 3);
+$__isHomeroom    = $__isRoleAny(['homeroom', 'wali kelas'], 4);
+$__isStudent     = $__isRoleAny(['student', 'siswa'], 5);
+$__isParent      = $__isRoleAny(['parent', 'orang tua'], 6);
 
 // Active helper
 $__active = function (string $pattern): string {
@@ -151,6 +154,72 @@ $__mm = function (array $patterns): string {
 
 // Inline fallback gradient (boleh diganti via CSS)
 $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f18 100%);';
+
+/**
+ * ------------------------------------------------------------
+ * Permission alias umum (supaya konsisten dengan Routes.php)
+ * ------------------------------------------------------------
+ * Catatan:
+ * - Sebagian proyek lama kadang masih punya permission lama (mis: schedule_counseling).
+ *   Di sini dibuat kompatibel tanpa memaksa kamu pakai permission lama itu.
+ */
+$__permViewDashboard             = $__can('view_dashboard');
+$__permManageUsers               = $__can('manage_users');
+$__permManageRoles               = $__can('manage_roles');
+$__permManageAcademicData        = $__can('manage_academic_data');
+$__permViewAllStudents           = $__can('view_all_students');
+$__permImportExport              = $__can('import_export_data');
+$__permManageSettings            = $__can('manage_settings');
+
+$__permViewCounselingSessions    = $__can('view_counseling_sessions');
+$__permManageCounselingSessions  = $__can('manage_counseling_sessions');
+
+$__permViewCounselingSchedule    = $__canAny(['view_counseling_schedule', 'schedule_counseling']); // kompatibilitas
+$__permViewViolations            = $__can('view_violations');
+$__permManageViolations          = $__can('manage_violations');
+$__permManageLightViolations     = $__can('manage_light_violations');
+
+$__permManageSanctions           = $__can('manage_sanctions');
+
+$__permViewReports               = $__can('view_reports');
+$__permViewReportsAggregate      = $__canAny(['view_reports_aggregate', 'view_reports']);
+$__permViewReportsIndividual     = $__canAny(['view_reports_individual', 'view_reports']);
+$__permGenerateReportsAggregate  = $__can('generate_reports_aggregate');
+$__permGenerateReportsIndividual = $__can('generate_reports_individual');
+
+$__permSendMessages              = $__can('send_messages');
+
+$__permTakeAssessments           = $__can('take_assessments');
+$__permManageAssessments         = $__can('manage_assessments');
+
+$__permViewCareerInfo            = $__can('view_career_info');
+$__permManageCareerInfo          = $__can('manage_career_info');
+
+$__permViewStudentPortfolio      = $__can('view_student_portfolio');
+
+$__permViewViolationSubmissions  = $__can('view_violation_submissions');
+
+$__permViewStaffInfo             = $__can('view_staff_info');
+
+
+/**
+ * ------------------------------------------------------------
+ * Permission alias khusus fitur Pengaduan Pelanggaran
+ * ------------------------------------------------------------
+ * Catatan:
+ * - Kalau permission ini belum ada di sistemmu, menu tetap akan tampil berbasis role
+ *   (guard akses tetap wajib di routes/controller).
+ */
+$__permSubmitVS = $__can('submit_violation_submissions');
+$__permManageVS = $__canAny([
+    'review_violation_submissions',
+    'manage_violation_submissions',
+    'convert_violation_submissions'
+]);
+
+$__showStudentVS = $__enableViolationSubmissions && ($__isStudent || $__permSubmitVS);
+$__showParentVS  = $__enableViolationSubmissions && ($__isParent || $__permSubmitVS);
+$__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCounselor || $__isHomeroom || $__permManageVS);
 
 ?>
 <!-- ========== Left Sidebar Start ========== -->
@@ -201,12 +270,14 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           <!-- ADMIN MENU -->
           <li class="menu-title">Menu Admin</li>
 
+          <?php if ($__permViewDashboard): ?>
           <li>
-            <a href="<?= base_url('admin/dashboard') ?>" class="waves-effect<?= $__activeAny(['admin/dashboard', 'admin']) ?>">
+            <a href="<?= base_url('admin/dashboard') ?>" class="waves-effect<?= $__active('admin/dashboard*') ?>">
               <i class="mdi mdi-view-dashboard"></i>
               <span>Dashboard</span>
             </a>
           </li>
+          <?php endif; ?>
 
           <?php if ($__canAny(['manage_users','manage_roles'])): ?>
           <li class="<?= $__mm(['admin/users*','admin/roles*']) ?>">
@@ -215,53 +286,58 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
               <span>Pengguna</span>
             </a>
             <ul class="sub-menu" aria-expanded="false">
-              <?php if ($__can('manage_users')): ?>
-                <li><a href="<?= base_url('admin/users') ?>">Manajemen Pengguna</a></li>
+              <?php if ($__permManageUsers): ?>
+                <li><a href="<?= base_url('admin/users') ?>" class="<?= $__active('admin/users*') ? 'active' : '' ?>">Manajemen Pengguna</a></li>
               <?php endif; ?>
-              <?php if ($__can('manage_roles')): ?>
-                <li><a href="<?= base_url('admin/roles') ?>">Manajemen Peran</a></li>
+              <?php if ($__permManageRoles): ?>
+                <li><a href="<?= base_url('admin/roles') ?>" class="<?= $__active('admin/roles*') ? 'active' : '' ?>">Manajemen Peran</a></li>
               <?php endif; ?>
             </ul>
           </li>
           <?php endif; ?>
 
-          <?php if ($__canAny(['manage_academic_data','view_all_students'])): ?>
+          <?php if ($__canAny(['manage_academic_data','manage_users','import_export_data'])): ?>
           <li class="<?= $__mm(['admin/academic-years*','admin/classes*','admin/students*']) ?>">
             <a href="javascript:void(0);" class="has-arrow waves-effect">
               <i class="mdi mdi-school"></i>
               <span>Data Akademik</span>
             </a>
             <ul class="sub-menu" aria-expanded="false">
-              <?php if ($__can('manage_academic_data')): ?>
+              <?php if ($__permManageAcademicData): ?>
                 <li><a href="<?= base_url('admin/academic-years') ?>">Manajemen Tahun Ajaran</a></li>
                 <li><a href="<?= base_url('admin/classes') ?>">Manajemen Kelas</a></li>
               <?php endif; ?>
-              <?php if ($__can('view_all_students')): ?>
+
+              <?php if ($__permManageUsers): ?>
                 <li><a href="<?= base_url('admin/students') ?>">Manajemen Siswa</a></li>
               <?php endif; ?>
             </ul>
           </li>
           <?php endif; ?>
 
+          <?php if ($__permManageSettings): ?>
           <li>
             <a href="<?= base_url('admin/settings') ?>" class="waves-effect<?= $__active('admin/settings*') ?>">
               <i class="mdi mdi-cogs"></i>
               <span>Pengaturan</span>
             </a>
           </li>
+          <?php endif; ?>
 
         <?php elseif ($__isKoordinator): ?>
           <!-- KOORDINATOR BK MENU -->
           <li class="menu-title">Menu Koordinator</li>
 
+          <?php if ($__permViewDashboard): ?>
           <li>
-            <a href="<?= base_url('koordinator/dashboard') ?>" class="waves-effect<?= $__activeAny(['koordinator/dashboard','koordinator']) ?>">
+            <a href="<?= base_url('koordinator/dashboard') ?>" class="waves-effect<?= $__active('koordinator/dashboard*') ?>">
               <i class="mdi mdi-view-dashboard"></i>
               <span>Dashboard</span>
             </a>
           </li>
+          <?php endif; ?>
 
-          <?php if ($__can('view_all_students')): ?>
+          <?php if ($__permManageUsers): ?>
           <li>
             <a href="<?= base_url('koordinator/students') ?>" class="waves-effect<?= $__active('koordinator/students*') ?>">
               <i class="mdi mdi-account-group"></i>
@@ -270,7 +346,7 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
-          <?php if ($__can('manage_users')): ?>
+          <?php if ($__permManageUsers): ?>
           <li>
             <a href="<?= base_url('koordinator/users') ?>" class="waves-effect<?= $__active('koordinator/users*') ?>">
               <i class="mdi mdi-account-multiple"></i>
@@ -279,12 +355,15 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
-          <?php if ($__canAny([
-              'view_counseling_sessions','manage_counseling_sessions',
-              'view_violations','manage_violations',
-              'manage_assessments','take_assessments'
-          ])): ?>
-          <li class="<?= $__mm(['koordinator/sessions*','koordinator/cases*','koordinator/assessments*']) ?>">
+          <?php
+            $__showKoordinatorBK = $__canAny([
+                'view_counseling_sessions','manage_counseling_sessions',
+                'view_violations','manage_violations',
+                'manage_assessments','take_assessments'
+            ]) || $__showStaffVS;
+          ?>
+          <?php if ($__showKoordinatorBK): ?>
+          <li class="<?= $__mm(['koordinator/sessions*','koordinator/cases*','koordinator/assessments*','koordinator/violation-submissions*']) ?>">
             <a href="javascript:void(0);" class="has-arrow waves-effect">
               <i class="mdi mdi-clipboard-text"></i>
               <span>Layanan BK</span>
@@ -293,8 +372,13 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
               <?php if ($__canAny(['view_counseling_sessions','manage_counseling_sessions'])): ?>
                 <li><a href="<?= base_url('koordinator/sessions') ?>">Sesi Konseling</a></li>
               <?php endif; ?>
+
               <?php if ($__canAny(['view_violations','manage_violations'])): ?>
                 <li><a href="<?= base_url('koordinator/cases') ?>">Kasus & Pelanggaran</a></li>
+              <?php endif; ?>
+
+              <?php if ($__showStaffVS && $__permViewViolationSubmissions): ?>
+                <li><a href="<?= base_url('koordinator/violation-submissions') ?>">Pengaduan Pelanggaran</a></li>
               <?php endif; ?>
 
               <?php if ($__enableAssessments && $__canAny(['manage_assessments','take_assessments'])): ?>
@@ -313,7 +397,7 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
-          <?php if ($__canAny(['view_reports','generate_reports'])): ?>
+          <?php if ($__permViewReportsAggregate): ?>
           <li>
             <a href="<?= base_url('koordinator/reports') ?>" class="waves-effect<?= $__active('koordinator/reports*') ?>">
               <i class="mdi mdi-file-chart"></i>
@@ -326,14 +410,16 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           <!-- GURU BK MENU -->
           <li class="menu-title">Menu Guru BK</li>
 
+          <?php if ($__permViewDashboard): ?>
           <li>
-            <a href="<?= base_url('counselor/dashboard') ?>" class="waves-effect<?= $__activeAny(['counselor/dashboard','counselor']) ?>">
+            <a href="<?= base_url('counselor/dashboard') ?>" class="waves-effect<?= $__active('counselor/dashboard*') ?>">
               <i class="mdi mdi-view-dashboard"></i>
               <span>Dashboard</span>
             </a>
           </li>
+          <?php endif; ?>
 
-          <?php if ($__can('view_all_students')): ?>
+          <?php if ($__permViewAllStudents): ?>
           <li>
             <a href="<?= base_url('counselor/students') ?>" class="waves-effect<?= $__active('counselor/students*') ?>">
               <i class="mdi mdi-account-group"></i>
@@ -342,7 +428,7 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
-          <?php if ($__canAny(['view_counseling_sessions','manage_counseling_sessions','schedule_counseling'])): ?>
+          <?php if ($__canAny(['view_counseling_sessions','manage_counseling_sessions'])): ?>
           <li class="<?= $__mm(['counselor/sessions*','counselor/schedule*']) ?>">
             <a href="javascript:void(0);" class="has-arrow waves-effect">
               <i class="mdi mdi-calendar-check"></i>
@@ -352,7 +438,8 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
               <?php if ($__canAny(['view_counseling_sessions','manage_counseling_sessions'])): ?>
                 <li><a href="<?= base_url('counselor/sessions') ?>">Sesi Konseling</a></li>
               <?php endif; ?>
-              <?php if ($__can('schedule_counseling')): ?>
+
+              <?php if ($__permViewCounselingSessions): ?>
                 <li><a href="<?= base_url('counselor/schedule') ?>">Kalender</a></li>
               <?php endif; ?>
             </ul>
@@ -364,6 +451,15 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
             <a href="<?= base_url('counselor/cases') ?>" class="waves-effect<?= $__active('counselor/cases*') ?>">
               <i class="mdi mdi-alert-circle"></i>
               <span>Kasus & Pelanggaran</span>
+            </a>
+          </li>
+          <?php endif; ?>
+
+          <?php if ($__showStaffVS && $__permViewViolationSubmissions): ?>: ?>
+          <li>
+            <a href="<?= base_url('counselor/violation-submissions') ?>" class="waves-effect<?= $__active('counselor/violation-submissions*') ?>">
+              <i class="mdi mdi-message-alert"></i>
+              <span>Pengaduan Pelanggaran</span>
             </a>
           </li>
           <?php endif; ?>
@@ -386,7 +482,7 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
-          <?php if ($__canAny(['view_reports','generate_reports'])): ?>
+          <?php if ($__permViewReportsIndividual): ?>
           <li>
             <a href="<?= base_url('counselor/reports') ?>" class="waves-effect<?= $__active('counselor/reports*') ?>">
               <i class="mdi mdi-file-chart"></i>
@@ -399,21 +495,34 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           <!-- WALI KELAS MENU -->
           <li class="menu-title">Menu Wali Kelas</li>
 
+          <?php if ($__permViewDashboard): ?>
           <li>
-            <a href="<?= base_url('homeroom/dashboard') ?>" class="waves-effect<?= $__activeAny(['homeroom/dashboard','homeroom']) ?>">
+            <a href="<?= base_url('homeroom/dashboard') ?>" class="waves-effect<?= $__active('homeroom/dashboard*') ?>">
               <i class="mdi mdi-view-dashboard"></i>
               <span>Dashboard</span>
             </a>
           </li>
+          <?php endif; ?>
 
+          <?php if ($__permViewDashboard): ?>
           <li>
             <a href="<?= base_url('homeroom/my-class') ?>" class="waves-effect<?= $__active('homeroom/my-class*') ?>">
               <i class="mdi mdi-google-classroom"></i>
               <span>Kelas Binaan</span>
             </a>
           </li>
+          <?php endif; ?>
 
-          <?php if ($__can('schedule_counseling')): ?>
+          <?php if ($__permViewAllStudents): ?>
+          <li class="<?= $__mm(['homeroom/students*']) ?>">
+            <a href="<?= base_url('homeroom/students') ?>" class="waves-effect<?= $__active('homeroom/students*') ?>">
+              <i class="mdi mdi-account-group"></i>
+              <span>Data Siswa</span>
+            </a>
+          </li>
+          <?php endif; ?>
+
+          <?php if ($__permViewCounselingSessions): ?>
           <li>
             <a href="<?= base_url('homeroom/sessions') ?>" class="waves-effect<?= $__active('homeroom/sessions*') ?>">
               <i class="mdi mdi-calendar-check"></i>
@@ -422,7 +531,7 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
-          <?php if ($__can('view_violations')): ?>
+          <?php if ($__canAny(['view_violations','manage_light_violations'])): ?>
           <li>
             <a href="<?= base_url('homeroom/violations') ?>" class="waves-effect<?= $__active('homeroom/violations*') ?>">
               <i class="mdi mdi-alert-circle"></i>
@@ -431,7 +540,16 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
-          <?php if ($__enableCareerInfo && $__can('view_career_info')): ?>
+          <?php if ($__showStaffVS && $__permViewViolationSubmissions): ?>: ?>
+          <li>
+            <a href="<?= base_url('homeroom/violation-submissions') ?>" class="waves-effect<?= $__active('homeroom/violation-submissions*') ?>">
+              <i class="mdi mdi-message-alert"></i>
+              <span>Pengaduan Pelanggaran</span>
+            </a>
+          </li>
+          <?php endif; ?>
+
+          <?php if ($__enableCareerInfo && $__canAny(['manage_career_info','view_career_info'])): ?>
           <li>
             <a href="<?= base_url('homeroom/career-info') ?>" class="waves-effect<?= $__active('homeroom/career-info*') ?>">
               <i class="mdi mdi-briefcase-outline"></i>
@@ -440,7 +558,7 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
-          <?php if ($__can('view_reports')): ?>
+          <?php if ($__permViewReportsIndividual): ?>
           <li>
             <a href="<?= base_url('homeroom/reports') ?>" class="waves-effect<?= $__active('homeroom/reports*') ?>">
               <i class="mdi mdi-file-chart"></i>
@@ -453,28 +571,34 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           <!-- SISWA MENU -->
           <li class="menu-title">Menu Siswa</li>
 
+          <?php if ($__permViewDashboard): ?>
           <li>
-            <a href="<?= base_url('student/dashboard') ?>" class="waves-effect<?= $__activeAny(['student/dashboard','student']) ?>">
+            <a href="<?= base_url('student/dashboard') ?>" class="waves-effect<?= $__active('student/dashboard*') ?>">
               <i class="mdi mdi-view-dashboard"></i>
               <span>Dashboard</span>
             </a>
           </li>
+          <?php endif; ?>
 
+          <?php if ($__permViewStudentPortfolio): ?>
           <li>
             <a href="<?= base_url('student/profile') ?>" class="waves-effect<?= $__active('student/profile*') ?>">
               <i class="mdi mdi-account-circle"></i>
               <span>Profil Saya</span>
             </a>
           </li>
+          <?php endif; ?>
 
+          <?php if ($__permViewStaffInfo): ?>
           <li>
             <a href="<?= base_url('student/staff') ?>" class="waves-effect<?= $__active('student/staff*') ?>">
               <i class="mdi mdi-account-tie"></i>
               <span>Info Guru</span>
             </a>
           </li>
+          <?php endif; ?>
 
-          <?php if ($__enableAssessments && $__canAny(['take_assessments','manage_assessments'])): ?>
+          <?php if ($__enableAssessments && $__canAny(['take_assessments'])): ?>
           <li>
             <a href="<?= base_url('student/assessments') ?>" class="waves-effect<?= $__active('student/assessments*') ?>">
               <i class="mdi mdi-clipboard-check"></i>
@@ -483,7 +607,7 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
-          <?php if ($__can('schedule_counseling')): ?>
+          <?php if ($__permViewCounselingSessions): ?>
           <li>
             <a href="<?= base_url('student/schedule') ?>" class="waves-effect<?= $__active('student/schedule*') ?>">
               <i class="mdi mdi-calendar"></i>
@@ -492,7 +616,7 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
-          <?php if ($__can('view_violations')): ?>
+          <?php if ($__permViewViolations): ?>
           <li>
             <a href="<?= base_url('student/violations') ?>" class="waves-effect<?= $__active('student/violations*') ?>">
               <i class="mdi mdi-alert-circle"></i>
@@ -501,7 +625,7 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
-          <?php if ($__enableCareerInfo): ?>
+          <?php if ($__enableCareerInfo && $__permViewCareerInfo): ?>
           <li>
             <a href="<?= base_url('student/career') ?>" class="waves-effect<?= $__active('student/career*') ?>">
               <i class="mdi mdi-school-outline"></i>
@@ -510,25 +634,65 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
           </li>
           <?php endif; ?>
 
+          <?php if ($__showStudentVS && $__can ('submit_violation_submissions')): ?>
+          <li>
+            <a href="<?= base_url('student/violation-submissions') ?>" class="waves-effect<?= $__active('student/violation-submissions*') ?>">
+              <i class="mdi mdi-message-alert"></i>
+              <span>Pengaduan Pelanggaran</span>
+            </a>
+          </li>
+          <?php endif; ?>
+
         <?php elseif ($__isParent): ?>
           <!-- ORANG TUA MENU -->
           <li class="menu-title">Menu Orang Tua</li>
 
+          <?php if ($__permViewDashboard): ?>
           <li>
-            <a href="<?= base_url('parent/dashboard') ?>" class="waves-effect<?= $__activeAny(['parent/dashboard','parent']) ?>">
+            <a href="<?= base_url('parent/dashboard') ?>" class="waves-effect<?= $__active('parent/dashboard*') ?>">
               <i class="mdi mdi-view-dashboard"></i>
               <span>Dashboard</span>
             </a>
           </li>
+          <?php endif; ?>
 
+          <?php if ($__permViewStudentPortfolio): ?>
+          <li>
+            <a href="<?= base_url('parent/children') ?>" class="waves-effect<?= $__activeAny(['parent/children*','parent/child*']) ?>">
+              <i class="mdi mdi-account-child"></i>
+              <span>Data Anak</span>
+            </a>
+          </li>
+          <?php endif; ?>
+
+          <?php if ($__permViewReportsIndividual): ?>
           <li>
             <a href="<?= base_url('parent/reports/children') ?>" class="waves-effect<?= $__active('parent/reports*') ?>">
               <i class="mdi mdi-file-chart"></i>
               <span>Laporan Anak</span>
             </a>
           </li>
+          <?php endif; ?>
 
-          <?php if ($__enableCareerInfo): ?>
+          <?php if ($__showParentVS && $__can('submit_violation_submissions')): ?>
+          <li>
+            <a href="<?= base_url('parent/violation-submissions') ?>" class="waves-effect<?= $__active('parent/violation-submissions*') ?>">
+              <i class="mdi mdi-message-alert"></i>
+              <span>Pengaduan Pelanggaran</span>
+            </a>
+          </li>
+          <?php endif; ?>
+
+          <?php if ($__permSendMessages): ?>
+          <li>
+            <a href="<?= base_url('parent/communication') ?>" class="waves-effect<?= $__active('parent/communication*') ?>">
+              <i class="mdi mdi-email-outline"></i>
+              <span>Komunikasi</span>
+            </a>
+          </li>
+          <?php endif; ?>
+
+          <?php if ($__enableCareerInfo && $__permViewCareerInfo): ?>
           <li>
             <a href="<?= base_url('parent/career') ?>" class="waves-effect<?= $__active('parent/career*') ?>">
               <i class="mdi mdi-school-outline"></i>
@@ -542,19 +706,23 @@ $__sidebarBg = 'background:linear-gradient(180deg,#0f3a2c 0%, #0b2b21 55%, #071f
         <?php if ($__enableCommonMenu): ?>
           <li class="menu-title">Menu Umum</li>
 
+          <?php if ($__permSendMessages): ?>
           <li>
             <a href="<?= base_url('messages') ?>" class="waves-effect<?= $__active('messages*') ?>">
               <i class="mdi mdi-email"></i>
               <span>Pesan</span>
             </a>
           </li>
+          <?php endif; ?>
 
+          <?php if ($__permViewDashboard): ?>
           <li>
             <a href="<?= base_url('notifications') ?>" class="waves-effect<?= $__active('notifications*') ?>">
               <i class="mdi mdi-bell"></i>
               <span>Notifikasi</span>
             </a>
           </li>
+          <?php endif; ?>
         <?php endif; ?>
 
       </ul>

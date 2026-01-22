@@ -9,12 +9,18 @@
  * - POST ke koordinator/cases/update/{id}
  * - Kategori & siswa readonly
  * - Mendukung hapus sebagian evidence & upload evidence baru (multi)
+ * - ✅ Tambahan KP: Bisa mengganti "Ditangani Oleh" (handled_by) dari halaman edit
  */
 
 $this->extend('layouts/main');
 $this->section('content');
 
-helper('permission'); // supaya has_permission tersedia (konsisten seperti sidebar)
+// helper optional: jangan fatal kalau helper tidak ada
+try {
+    helper(['permission', 'app', 'auth']);
+} catch (\Throwable $e) {
+    // ignore
+}
 
 // Helper kecil utk aman akses nilai array
 if (!function_exists('v')) {
@@ -42,8 +48,36 @@ $severityBadge = match ($severityVal) {
 
 // Guard tombol aksi (sidebar-style)
 $canManageViolations = function_exists('has_permission')
-    ? has_permission('manage_violations')
+    ? (bool) has_permission('manage_violations')
     : true;
+
+// ====== NEW: data user login (untuk opsi "Saya (Koordinator)")
+$session = function_exists('session') ? session() : null;
+$myId = 0;
+try {
+    $myId = function_exists('auth_id') ? (int) auth_id() : (int) ($session ? ($session->get('user_id') ?? 0) : 0);
+} catch (\Throwable $e) {
+    $myId = (int) ($session ? ($session->get('user_id') ?? 0) : 0);
+}
+$myName = (string) ($session ? ($session->get('full_name') ?? $session->get('name') ?? $session->get('user_full_name') ?? '') : '');
+if (trim($myName) === '') {
+    $myName = 'Saya (Koordinator)';
+}
+
+$currentHandledBy = (int)($violation['handled_by'] ?? 0);
+
+// Pastikan $counselors aman
+$counselors = $counselors ?? [];
+if (!is_array($counselors)) $counselors = [];
+
+// Evidence files: fallback decode dari JSON evidence jika evidence_files tidak ada
+$evidenceFiles = [];
+if (!empty($violation['evidence_files']) && is_array($violation['evidence_files'])) {
+    $evidenceFiles = $violation['evidence_files'];
+} elseif (!empty($violation['evidence']) && is_string($violation['evidence'])) {
+    $tmp = json_decode($violation['evidence'], true);
+    if (is_array($tmp)) $evidenceFiles = $tmp;
+}
 ?>
 
 <!-- Page Title -->
@@ -62,8 +96,7 @@ $canManageViolations = function_exists('has_permission')
   </div>
 </div>
 
-<?php helper('app'); ?>
-<?= show_alerts() ?>
+<?= function_exists('show_alerts') ? show_alerts() : '' ?>
 
 <?php if (session()->getFlashdata('errors')): ?>
   <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -128,6 +161,42 @@ $canManageViolations = function_exists('has_permission')
             </div>
           </div>
 
+          <!-- ✅ NEW: Ditangani Oleh (handled_by) -->
+          <div class="row g-3 mb-3">
+            <div class="col-12">
+              <label class="form-label">Ditangani Oleh (Penangan BK)</label>
+              <select name="handled_by" class="form-select">
+                <option value="">-- Pilih Penangan --</option>
+
+                <?php if ($myId > 0): ?>
+                  <option value="<?= (int)$myId ?>" <?= ($currentHandledBy === (int)$myId) ? 'selected' : '' ?>>
+                    Saya (Koordinator): <?= esc($myName) ?>
+                  </option>
+                <?php endif; ?>
+
+                <?php if (!empty($counselors)): ?>
+                  <?php foreach ($counselors as $c): ?>
+                    <?php
+                      if (!is_array($c) || empty($c['id'])) continue;
+                      $cid = (int) $c['id'];
+                      $cname = (string) ($c['name'] ?? $c['full_name'] ?? $c['email'] ?? ('User#'.$cid));
+
+                      // Hindari duplikasi jika "saya" juga ada di list
+                      if ($myId > 0 && $cid === (int)$myId) continue;
+                    ?>
+                    <option value="<?= $cid ?>" <?= ($currentHandledBy === $cid) ? 'selected' : '' ?>>
+                      <?= esc($cname) ?>
+                    </option>
+                  <?php endforeach; ?>
+                <?php endif; ?>
+              </select>
+
+              <small class="text-muted d-block mt-1">
+                Pilih <strong>Saya (Koordinator)</strong> untuk mengembalikan penanganan ke koordinator, atau pilih Guru BK untuk mendelegasikan.
+              </small>
+            </div>
+          </div>
+
           <!-- Waktu & Lokasi -->
           <div class="row g-3 mb-3">
             <div class="col-md-6">
@@ -161,14 +230,14 @@ $canManageViolations = function_exists('has_permission')
           </div>
 
           <!-- Lampiran yang sudah ada -->
-          <?php if (!empty($violation['evidence_files']) && is_array($violation['evidence_files'])): ?>
+          <?php if (!empty($evidenceFiles) && is_array($evidenceFiles)): ?>
             <div class="mb-3">
               <label class="form-label">Lampiran Saat Ini</label>
               <ul class="list-unstyled mb-0">
-                <?php foreach ($violation['evidence_files'] as $f):
-                    $rel = ltrim(preg_replace('#/+#','/',$f), '/'); ?>
+                <?php foreach ($evidenceFiles as $f):
+                    $rel = ltrim(preg_replace('#/+#','/', (string)$f), '/'); ?>
                   <li class="mb-1 d-flex align-items-center">
-                    <a href="<?= base_url($rel) ?>" target="_blank" class="me-2">
+                    <a href="<?= base_url($rel) ?>" target="_blank" rel="noopener" class="me-2">
                       <i class="mdi mdi-file"></i> <?= esc(basename($rel)) ?>
                     </a>
                     <label class="ms-2 small">

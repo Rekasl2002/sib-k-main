@@ -864,35 +864,69 @@ class ViolationService
             ->findAll();
     }
 
+    /**
+     * Daftar penangan BK untuk assignment.
+     * ✅ FIX: include Koordinator BK (role_id=2) + Guru BK (role_id=3)
+     */
     public function getCounselors(): array
     {
         return $this->db->table('users')
-            ->select('id, full_name, email, phone')
+            ->select('id, full_name, email, phone, role_id')
             ->where('deleted_at', null)
             ->where('is_active', 1)
-            ->where('role_id', 3)
+            ->whereIn('role_id', [2, 3])
+            ->orderBy('role_id', 'ASC')
             ->orderBy('full_name', 'ASC')
             ->get()
             ->getResultArray();
     }
 
+    /**
+     * Assign handled_by (penangan) untuk kasus/pelanggaran.
+     * ✅ FIX: menerima Koordinator BK (role_id=2) dan Guru BK (role_id=3)
+     * ✅ OPSIONAL: jika $counselorId <= 0, maka handled_by di-null-kan (unassign).
+     */
     public function assignCounselor(int $violationId, int $counselorId): array
     {
         try {
             $violation = $this->violationModel->asArray()->find($violationId);
             if (!$violation) return ['success' => false, 'message' => 'Data pelanggaran tidak ditemukan'];
 
+            // Opsional: lepas penangan (handled_by = NULL)
+            if ($counselorId <= 0) {
+                $payload = ['handled_by' => null];
+
+                $ok = $this->violationModel->update($violationId, $payload);
+                if (!$ok) {
+                    return [
+                        'success' => false,
+                        'message' => 'Gagal melepaskan penangan kasus',
+                        'errors'  => $this->violationModel->errors(),
+                    ];
+                }
+
+                $sid = (int)($violation['student_id'] ?? 0);
+                if ($sid > 0) {
+                    $this->syncStudentViolationPoints($sid);
+                }
+
+                $this->logActivity('assign_counselor', $violationId, 'Unassign penangan (handled_by = NULL)');
+
+                return ['success' => true, 'message' => 'Penangan kasus berhasil dilepas'];
+            }
+
+            // Validasi penangan: harus user aktif role Koordinator BK / Guru BK
             $counselor = $this->db->table('users')
-                ->select('id')
+                ->select('id, role_id')
                 ->where('deleted_at', null)
                 ->where('is_active', 1)
-                ->where('role_id', 3)
+                ->whereIn('role_id', [2, 3])
                 ->where('id', $counselorId)
                 ->get()
                 ->getRowArray();
 
             if (!$counselor) {
-                return ['success' => false, 'message' => 'Guru BK tidak valid atau tidak aktif'];
+                return ['success' => false, 'message' => 'Penangan (Koordinator BK/Guru BK) tidak valid atau tidak aktif'];
             }
 
             $payload = ['handled_by' => $counselorId];
@@ -905,7 +939,7 @@ class ViolationService
             if (!$ok) {
                 return [
                     'success' => false,
-                    'message' => 'Gagal menugaskan Guru BK',
+                    'message' => 'Gagal memperbarui penangan kasus',
                     'errors'  => $this->violationModel->errors(),
                 ];
             }
@@ -915,9 +949,9 @@ class ViolationService
                 $this->syncStudentViolationPoints($sid);
             }
 
-            $this->logActivity('assign_counselor', $violationId, 'Assign Guru BK (handled_by)');
+            $this->logActivity('assign_counselor', $violationId, 'Set penangan (handled_by)');
 
-            return ['success' => true, 'message' => 'Guru BK berhasil ditugaskan'];
+            return ['success' => true, 'message' => 'Penangan kasus berhasil diperbarui'];
         } catch (\Throwable $e) {
             log_message('error', 'ViolationService::assignCounselor - ' . $e->getMessage());
             return ['success' => false, 'message' => 'Terjadi kesalahan: ' . $e->getMessage()];

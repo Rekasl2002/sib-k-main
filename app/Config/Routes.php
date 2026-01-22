@@ -4,7 +4,12 @@
  * File Path: app/Config/Routes.php
  *
  * Complete Routes Configuration (RBAC-ready)
- * Qovex Template • CodeIgniter 4
+ * Qovex Template • CodeIgniter 4.6.3
+ *
+ * IMPORTANT (RBAC Permissions):
+ * - Semua filter permission di file ini WAJIB sesuai dengan `permissions.permission_name` di database.
+ * - Format filter yang dipakai:  'permission:<permission_name>[,<permission_name_lain>...]'
+ * - Jangan pakai nama permission yang tidak ada di tabel `permissions`. Jika butuh, gunakan yang sudah ada & paling relevan.
  */
 
 use CodeIgniter\Router\RouteCollection;
@@ -39,8 +44,7 @@ $routes->setDefaultController('Home');
 $routes->setDefaultMethod('index');
 $routes->setTranslateURIDashes(false);
 
-// 404 override custom kamu sudah ada di bawah, jadi ini cukup default dulu:
-$routes->set404Override();
+// 404 override custom kamu sudah ada di bawah (lihat bagian akhir file).
 
 // Disarankan: matikan AutoRoute untuk keamanan (semua rute eksplisit)
 $routes->setAutoRoute(false);
@@ -329,7 +333,7 @@ $routes->group('koordinator', [
             $routes->post('toggle/(:num)', 'StaffController::toggleActive/$1', ['as' => 'koordinator.staff.toggle']);
         });
 
-        // STUDENTS (Koordinator: R semua, U akademik)
+        // STUDENTS (Koordinator: lihat semua sesuai scope; edit/update mengikuti guard controller)
         $routes->group('students', function ($routes) {
             $routes->get('/', 'StudentController::index', [
                 'filter' => 'permission:view_all_students',
@@ -352,17 +356,17 @@ $routes->group('koordinator', [
                 'as'     => 'koordinator.students.stats'
             ]);
 
+            // Edit/update: pakai permission yang memang ada di tabel (hindari manage_academic_data yang khusus Admin)
             $routes->get('edit/(:num)', 'StudentController::edit/$1', [
-                'filter' => 'permission:view_all_students,manage_academic_data',
+                'filter' => 'permission:view_all_students',
                 'as'     => 'koordinator.students.edit'
             ]);
             $routes->post('update/(:num)', 'StudentController::update/$1', [
-                'filter' => 'permission:view_all_students,manage_academic_data',
+                'filter' => 'permission:view_all_students',
                 'as'     => 'koordinator.students.update'
             ]);
 
-            // ✅ TAMBAHAN: Sinkron poin pelanggaran (Koordinator)
-            // Filter minimal: view_all_students (detail permission/guard tambahan sudah ada di controller)
+            // ✅ Sinkron poin pelanggaran (Koordinator)
             $routes->post('sync-violation-points', 'StudentController::syncViolationPoints', [
                 'filter' => 'permission:view_all_students',
                 'as'     => 'koordinator.students.syncViolationPoints'
@@ -433,7 +437,7 @@ $routes->group('koordinator', [
                 'as'     => 'koordinator.cases.notify'
             ]);
 
-            // Assign Guru BK: Koordinator tetap boleh meski tanpa manage_violations
+            // Assign Guru BK: Koordinator boleh (minimal lihat data pelanggaran)
             $routes->post('assignCounselor/(:num)', 'CaseController::assignCounselor/$1', [
                 'filter' => 'permission:view_violations',
                 'as'     => 'koordinator.cases.assign'
@@ -534,16 +538,17 @@ $routes->group('koordinator', [
             $routes->post('review/(:num)', 'AssessmentController::reviewSave/$1', ['as' => 'koordinator.assessments.review.save']);
             $routes->post('(:num)/results/(:num)/ungrade', 'AssessmentController::ungradeResult/$1/$2', ['as' => 'koordinator.assessments.results.ungrade']);
             $routes->post('(:num)/results/(:num)/delete', 'AssessmentController::deleteResult/$1/$2', ['as' => 'koordinator.assessments.results.delete']);
-            $routes->post('(:num)/results/(:num)/delete', 'AssessmentController::deleteResult/$1/$2', ['as' => 'koordinator.assessments.results.delete']);
         });
 
-        // Reports (izin: view_reports + generate_reports untuk download)
-        $routes->group('reports', ['filter' => 'permission:view_reports'], function ($routes) {
+        // Reports:
+        // - Koordinator akses agregat -> view_reports_aggregate
+        // - Download agregat -> generate_reports_aggregate
+        $routes->group('reports', ['filter' => 'permission:view_reports_aggregate'], function ($routes) {
             $routes->get('/', 'ReportController::index', ['as' => 'koordinator.reports']);
             $routes->get('preview', 'ReportController::preview', ['as' => 'koordinator.reports.preview']);
 
             $routes->match(['get', 'post'], 'download', 'ReportController::download', [
-                'filter' => 'permission:generate_reports',
+                'filter' => 'permission:generate_reports_aggregate',
                 'as'     => 'koordinator.reports.download',
             ]);
         });
@@ -638,9 +643,9 @@ $routes->group('counselor', [
             ]);
         });
 
-        // Schedule
+        // Schedule (pakai permission yang ada di tabel: view_counseling_sessions)
         $routes->get('schedule', 'ScheduleController::index', [
-            'filter' => 'permission:schedule_counseling',
+            'filter' => 'permission:view_counseling_sessions',
             'as'     => 'counselor.schedule'
         ]);
         $routes->get('schedule/create', 'SessionController::create', [
@@ -648,7 +653,7 @@ $routes->group('counselor', [
             'as'     => 'counselor.schedule.create'
         ]);
         $routes->get('schedule/events', 'ScheduleController::events', [
-            'filter' => 'permission:schedule_counseling',
+            'filter' => 'permission:view_counseling_sessions',
             'as'     => 'counselor.schedule.events'
         ]);
         $routes->post('schedule/reschedule', 'ScheduleController::reschedule', [
@@ -664,8 +669,7 @@ $routes->group('counselor', [
             $routes->post('(:num)', 'StudentController::update/$1', ['as' => 'counselor.students.update']);
             $routes->get('detail/(:num)', 'StudentController::detail/$1', ['as' => 'counselor.students.detail']);
 
-            // ✅ Sinkron poin pelanggaran (Guru BK) - biarkan akses mengikuti group filter view_all_students
-            // (guard tambahan tetap bisa dilakukan di controller bila diperlukan)
+            // ✅ Sinkron poin pelanggaran (Guru BK)
             $routes->post('sync-violation-points', 'StudentController::syncViolationPoints', [
                 'as' => 'counselor.students.syncViolationPoints'
             ]);
@@ -813,12 +817,14 @@ $routes->group('counselor', [
             $routes->post('(:num)/duplicate', 'AssessmentController::duplicate/$1', ['as' => 'counselor.assessments.duplicate']);
         });
 
-        // Reports
-        $routes->group('reports', ['filter' => 'permission:view_reports'], function ($routes) {
+        // Reports:
+        // - Guru BK akses individual -> view_reports_individual
+        // - Download individual -> generate_reports_individual
+        $routes->group('reports', ['filter' => 'permission:view_reports_individual'], function ($routes) {
             $routes->get('/', 'ReportController::index', ['as' => 'counselor.reports']);
             $routes->get('preview', 'ReportController::preview', ['as' => 'counselor.reports.preview']);
             $routes->get('download', 'ReportController::download', [
-                'filter' => 'permission:generate_reports',
+                'filter' => 'permission:generate_reports_individual',
                 'as'     => 'counselor.reports.download'
             ]);
 
@@ -839,14 +845,14 @@ $routes->group('counselor', [
                 $qs = http_build_query($q);
                 $url = '/counselor/reports/download?format=pdf' . ($qs ? '&' . $qs : '');
                 return redirect()->to($url);
-            }, ['filter' => 'permission:generate_reports', 'as' => 'counselor.reports.pdf']);
+            }, ['filter' => 'permission:generate_reports_individual', 'as' => 'counselor.reports.pdf']);
 
             $routes->post('generate-excel', static function () {
                 $q  = service('request')->getPost() ?? [];
                 $qs = http_build_query($q);
                 $url = '/counselor/reports/download?format=xlsx' . ($qs ? '&' . $qs : '');
                 return redirect()->to($url);
-            }, ['filter' => 'permission:generate_reports', 'as' => 'counselor.reports.excel']);
+            }, ['filter' => 'permission:generate_reports_individual', 'as' => 'counselor.reports.excel']);
         });
 
         // Career & University info
@@ -894,7 +900,9 @@ $routes->group('homeroom', [
             'as'     => 'homeroom.dashboard.stats'
         ]);
 
-        // Pelanggaran: list/detail view, CRUD manage
+        // Pelanggaran:
+        // - Lihat -> view_violations
+        // - Kelola pelanggaran ringan -> manage_light_violations (sesuai tabel permissions)
         $routes->group('violations', function ($routes) {
             $routes->get('/', 'ViolationController::index', [
                 'filter' => 'permission:view_violations',
@@ -906,32 +914,35 @@ $routes->group('homeroom', [
             ]);
 
             $routes->get('create', 'ViolationController::create', [
-                'filter' => 'permission:manage_violations',
+                'filter' => 'permission:manage_light_violations',
                 'as'     => 'homeroom.violations.create'
             ]);
             $routes->post('store', 'ViolationController::store', [
-                'filter' => 'permission:manage_violations',
+                'filter' => 'permission:manage_light_violations',
                 'as'     => 'homeroom.violations.store'
             ]);
             $routes->get('edit/(:num)', 'ViolationController::edit/$1', [
-                'filter' => 'permission:manage_violations',
+                'filter' => 'permission:manage_light_violations',
                 'as'     => 'homeroom.violations.edit'
             ]);
             $routes->post('update/(:num)', 'ViolationController::update/$1', [
-                'filter' => 'permission:manage_violations',
+                'filter' => 'permission:manage_light_violations',
                 'as'     => 'homeroom.violations.update'
             ]);
             $routes->post('delete/(:num)', 'ViolationController::delete/$1', [
-                'filter' => 'permission:manage_violations',
+                'filter' => 'permission:manage_light_violations',
                 'as'     => 'homeroom.violations.delete'
             ]);
         });
 
-        // Reports
-        $routes->group('reports', ['filter' => 'permission:view_reports'], function ($routes) {
+        // Reports (wali kelas -> individual)
+        $routes->group('reports', ['filter' => 'permission:view_reports_individual'], function ($routes) {
             $routes->get('/', 'ClassReportController::index', ['as' => 'homeroom.reports']);
             $routes->get('preview', 'ClassReportController::preview', ['as' => 'homeroom.reports.preview']);
-            $routes->match(['get', 'post'], 'download', 'ClassReportController::download', ['as' => 'homeroom.reports.download']);
+            $routes->match(['get', 'post'], 'download', 'ClassReportController::download', [
+                'filter' => 'permission:generate_reports_individual',
+                'as'     => 'homeroom.reports.download'
+            ]);
 
             $routes->get('data', static function () {
                 $q  = service('request')->getGet() ?? [];
@@ -952,15 +963,15 @@ $routes->group('homeroom', [
 
         // Data siswa wali kelas
         $routes->get('students', 'StudentController::index', [
-            'filter' => 'permission:view_student_portfolio',
+            'filter' => 'permission:view_all_students',
             'as'     => 'homeroom.students'
         ]);
         $routes->get('students/index', 'StudentController::index', [
-            'filter' => 'permission:view_student_portfolio',
+            'filter' => 'permission:view_all_students',
             'as'     => 'homeroom.students.index'
         ]);
         $routes->get('students/(:num)', 'StudentController::show/$1', [
-            'filter' => 'permission:view_student_portfolio',
+            'filter' => 'permission:view_all_students',
             'as'     => 'homeroom.students.show'
         ]);
 
@@ -973,12 +984,13 @@ $routes->group('homeroom', [
             'as'     => 'homeroom.students.sessions.detail'
         ]);
 
+        // Career info: sesuai tabel permissions, wali kelas masuk kategori "manage_career_info"
         $routes->get('career-info', 'CareerInfoController::index', [
-            'filter' => 'permission:view_career_info',
+            'filter' => 'permission:manage_career_info',
             'as'     => 'homeroom.career.index'
         ]);
         $routes->get('career-info/student-choices', 'CareerInfoController::studentChoices', [
-            'filter' => 'permission:view_career_info',
+            'filter' => 'permission:manage_career_info',
             'as'     => 'homeroom.career.choices'
         ]);
     });
@@ -1022,8 +1034,24 @@ $routes->group('student', [
             'as'     => 'student.staff'
         ]);
 
-        // Jadwal/request konseling
-        $routes->group('schedule', ['filter' => 'permission:schedule_counseling'], function ($routes) {
+        // Pengaduan Pelanggaran (Violation Submissions) - milik sendiri
+        $routes->group('violation-submissions', [
+            'filter' => 'permission:submit_violation_submissions',
+        ], function ($routes) {
+            $routes->get('/', 'ViolationSubmissionsController::index', ['as' => 'student.violation_submissions.index']);
+            $routes->get('create', 'ViolationSubmissionsController::create', ['as' => 'student.violation_submissions.create']);
+            $routes->post('store', 'ViolationSubmissionsController::store', ['as' => 'student.violation_submissions.store']);
+
+            $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1', ['as' => 'student.violation_submissions.show']);
+            $routes->get('edit/(:num)', 'ViolationSubmissionsController::edit/$1', ['as' => 'student.violation_submissions.edit']);
+            $routes->post('update/(:num)', 'ViolationSubmissionsController::update/$1', ['as' => 'student.violation_submissions.update']);
+
+            $routes->post('delete/(:num)', 'ViolationSubmissionsController::delete/$1', ['as' => 'student.violation_submissions.delete']);
+            $routes->get('delete/(:num)', 'ViolationSubmissionsController::delete/$1', ['as' => 'student.violation_submissions.delete.get']);
+        });
+
+        // Jadwal/request konseling (pakai permission tabel: view_counseling_sessions)
+        $routes->group('schedule', ['filter' => 'permission:view_counseling_sessions'], function ($routes) {
             $routes->get('/', 'ScheduleController::index', ['as' => 'student.schedule']);
             $routes->get('request', 'ScheduleController::requestForm', ['as' => 'student.schedule.request']);
             $routes->post('request', 'ScheduleController::storeRequest', ['as' => 'student.schedule.store']);
@@ -1044,7 +1072,7 @@ $routes->group('student', [
             $routes->get('review/(:num)', 'AssessmentController::review/$1', ['as' => 'student.assessments.review']);
         });
 
-        // Career
+        // Career (lihat)
         $routes->group('career', ['filter' => 'permission:view_career_info'], function ($routes) {
             $routes->get('/', 'CareerController::index', ['as' => 'student.career']);
             $routes->get('explore', 'CareerController::explore', ['as' => 'student.career.explore']);
@@ -1054,7 +1082,7 @@ $routes->group('student', [
             $routes->get('(:num)', 'CareerController::detail/$1', ['as' => 'student.career.detail']);
         });
 
-        // Riwayat pelanggaran
+        // Riwayat pelanggaran (lihat)
         $routes->get('violations', 'ViolationController::index', [
             'filter' => 'permission:view_violations',
             'as'     => 'student.violations'
@@ -1130,7 +1158,7 @@ $routes->group('parent', [
                 'as'     => 'parent.children.violations.categories'
             ]);
 
-            // Jadwal sesi anak
+            // Jadwal/sesi anak
             $routes->get('(:num)/sessions', 'ChildController::sessions/$1', [
                 'filter' => 'permission:view_counseling_sessions',
                 'as'     => 'parent.children.sessions'
@@ -1154,13 +1182,27 @@ $routes->group('parent', [
             ]);
         });
 
+        // Pengaduan Pelanggaran (milik sendiri) - gunakan permission tabel
+        $routes->group('violation-submissions', ['filter' => 'permission:submit_violation_submissions'], function ($routes) {
+            $routes->get('/', 'ViolationSubmissionsController::index');
+            $routes->get('create', 'ViolationSubmissionsController::create');
+            $routes->post('store', 'ViolationSubmissionsController::store');
+
+            $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1');
+            $routes->get('edit/(:num)', 'ViolationSubmissionsController::edit/$1');
+            $routes->post('update/(:num)', 'ViolationSubmissionsController::update/$1');
+
+            $routes->post('delete/(:num)', 'ViolationSubmissionsController::delete/$1');
+            $routes->get('delete/(:num)', 'ViolationSubmissionsController::delete/$1'); // opsional
+        });
+
         // Komunikasi
         $routes->group('communication', ['filter' => 'permission:send_messages'], function ($routes) {
             $routes->get('/', 'CommunicationController::index', ['as' => 'parent.communication']);
             $routes->post('send-message', 'CommunicationController::sendMessage', ['as' => 'parent.communication.send']);
         });
 
-        // Career
+        // Career (lihat)
         $routes->group('career', ['filter' => 'permission:view_career_info'], function ($routes) {
             $routes->get('/', 'CareerController::index', ['as' => 'parent.career']);
             $routes->get('explore', 'CareerController::explore', ['as' => 'parent.career.explore']);
@@ -1170,8 +1212,8 @@ $routes->group('parent', [
             $routes->get('(:num)', 'CareerController::detail/$1', ['as' => 'parent.career.detail']);
         });
 
-        // Reports
-        $routes->group('reports', ['filter' => 'permission:view_reports'], function ($routes) {
+        // Reports (orang tua -> individual)
+        $routes->group('reports', ['filter' => 'permission:view_reports_individual'], function ($routes) {
             $routes->get('child/(:num)', 'ReportController::childReport/$1', ['as' => 'parent.reports.child']);
             $routes->get('children', 'ReportController::childrenReport', ['as' => 'parent.reports.children']);
         });

@@ -39,8 +39,8 @@ $activeAcademicYear = is_string($activeAcademicYear) ? trim($activeAcademicYear)
 // Permission untuk menampilkan tombol sinkron
 $canSync = false;
 if (function_exists('has_permission')) {
-    // controller sync memakai guard: manage_students ATAU manage_academic_data (lihat requireManageStudentsPermission)
-    $canSync = has_permission('manage_academic_data') || has_permission('manage_students');
+    // controller sync memakai guard: manage_users ATAU manage_users (lihat requireManageStudentsPermission)
+    $canSync = has_permission('manage_users') || has_permission('manage_users');
 }
 
 // Small helper untuk nama tampil
@@ -484,7 +484,7 @@ $importWarnings = session()->getFlashdata('import_warnings');
                                                     <i class="mdi mdi-eye"></i>
                                                 </a>
 
-                                                <?php if (has_permission('manage_academic_data')): ?>
+                                                <?php if (has_permission('manage_users')): ?>
                                                     <a href="<?= base_url('koordinator/students/edit/' . (int)($student['id'] ?? 0)) ?>"
                                                         class="btn btn-sm btn-primary"
                                                         title="Edit"
