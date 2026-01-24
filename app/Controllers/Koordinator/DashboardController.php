@@ -118,9 +118,24 @@ class DashboardController extends BaseKoordinatorController
         // ---------- RINGKASAN SEKOLAH LENGKAP ----------
         $schoolSummary = $this->safeCall($this->coord, 'getSchoolWideSummary', []) ?? [];
 
+        // ---------- PELANGGARAN PER KATEGORI (untuk widget doughnut) ----------
+        $monthsBack = 6;
+        $violationByCategory = $this->tryGetViolationByCategory(5, $monthsBack);
+        $categoryRangeLabel = $monthsBack . ' bulan terakhir';
+
+        // ---------- CURRENT USER (untuk kartu Selamat Datang) ----------
+        helper('auth');
+        $currentUser = function_exists('auth_user') ? (auth_user() ?? []) : [];
+        $activeAcademic = $this->getActiveAcademicYearInfo();
+
+
         // Kirim ke view
         $data = [
             'pageTitle'            => 'Dashboard Koordinator BK',
+            'currentUser'        => $currentUser,
+            'activeAcademic' => $activeAcademic,
+            'violationByCategory'=> $violationByCategory,
+            'categoryRangeLabel' => $categoryRangeLabel,
             'quick'                => $quickStats,
             'violationsByLevel'    => $violationsByLevel,
             'monthlyViolations'    => $monthlyViolations,
@@ -165,6 +180,103 @@ class DashboardController extends BaseKoordinatorController
         }
         return $labels;
     }
+
+    protected function getActiveAcademicYearInfo(): array
+    {
+        try {
+            $db = \Config\Database::connect();
+
+            // pastikan tabel ada
+            if (!method_exists($db, 'tableExists') || !$db->tableExists('academic_years')) {
+                return [];
+            }
+
+            $fields = $db->getFieldNames('academic_years');
+
+            $b = $db->table('academic_years')->select('*');
+
+            // soft delete guard
+            if (in_array('deleted_at', $fields, true)) {
+                $b->where('deleted_at', null);
+            }
+
+            // cari yang aktif dengan beberapa kemungkinan nama kolom
+            if (in_array('is_active', $fields, true)) {
+                $b->where('is_active', 1);
+            } elseif (in_array('active', $fields, true)) {
+                $b->where('active', 1);
+            } elseif (in_array('status', $fields, true)) {
+                $b->where('status', 'active');
+            }
+
+            // ambil yang terbaru/aktif (fallback kalau lebih dari 1)
+            $orderCol = in_array('updated_at', $fields, true) ? 'updated_at' : 'id';
+            $row = $b->orderBy($orderCol, 'DESC')->get(1)->getRowArray();
+
+            if (!$row) return [];
+
+            // beberapa kemungkinan nama kolom tahun ajaran/semester
+            $year = $row['year_name']
+                ?? $row['academic_year']
+                ?? $row['name']
+                ?? $row['label']
+                ?? $row['tahun_ajaran']
+                ?? '';
+
+            $semester = $row['semester']
+                ?? $row['semester_name']
+                ?? $row['term']
+                ?? $row['periode']
+                ?? '';
+
+            return [
+                'year'     => (string) $year,
+                'semester' => (string) $semester,
+            ];
+        } catch (\Throwable $e) {
+            log_message('error', 'getActiveAcademicYearInfo error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /* ---------- Pelanggaran per kategori (widget doughnut) ---------- */
+    protected function tryGetViolationByCategory(int $limit = 5, int $monthsBack = 6): array
+    {
+        // Jika nanti CoordinatorService punya method khusus, kita pakai dulu
+        $val = $this->safeCall($this->coord, 'getViolationByCategory', [$limit, $monthsBack]);
+        if (is_array($val)) {
+            return $val;
+        }
+
+        try {
+            $db = \Config\Database::connect();
+
+            $builder = $db->table('violation_categories vc');
+            $builder->select('vc.category_name, vc.severity_level, COUNT(v.id) as count');
+            $builder->join('violations v', 'v.category_id = vc.id AND v.deleted_at IS NULL', 'inner');
+            $builder->where('vc.deleted_at', null);
+
+            // Default: 6 bulan terakhir (mulai dari awal bulan)
+            if ($monthsBack > 0) {
+                $start = Time::now()
+                    ->subMonths(max(0, $monthsBack - 1))
+                    ->format('Y-m-01');
+
+                $builder->where('v.violation_date >=', $start);
+            }
+
+            return $builder
+                ->groupBy('vc.id')
+                ->orderBy('count', 'DESC')
+                ->limit($limit)
+                ->get()
+                ->getResultArray();
+        } catch (\Throwable $e) {
+            log_message('error', 'tryGetViolationByCategory error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
 
     /* ---------- Quick counts tambahan ---------- */
 

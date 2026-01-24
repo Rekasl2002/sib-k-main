@@ -20,6 +20,8 @@ use App\Models\ClassModel;
 use App\Models\StudentModel;
 use App\Models\ViolationModel;
 use App\Models\CounselingSessionModel;
+use CodeIgniter\I18n\Time;
+
 
 class DashboardController extends BaseController
 {
@@ -93,9 +95,6 @@ class DashboardController extends BaseController
         // Get recent violations (last 7 days)
         $recentViolations = $this->getRecentViolations($classId, 7);
 
-        // Get violation trends (last 6 months)
-        $violationTrends = $this->getViolationTrends($classId, 6);
-
         // Get top violators (top 5)
         $topViolators = $this->getTopViolators($classId, 5);
 
@@ -105,8 +104,19 @@ class DashboardController extends BaseController
         // Get recent counseling sessions for students in this class
         $recentSessions = $this->getRecentSessions($classId, 5);
 
-        // Get violation by category
-        $violationByCategory = $this->getViolationByCategory($classId);
+        $monthsBack = 6;
+
+        // Tren Layanan BK (6 bulan terakhir) -> pelanggaran + sesi konseling
+        $trendLabels     = $this->monthsLabel($monthsBack);
+        $trendViolations = $this->getMonthlyViolationsForClass((int) $class['id'], $monthsBack);
+        $trendSessions   = $this->getMonthlySessionsForClass((int) $class['id'], $monthsBack);
+
+        // (opsional) biarkan ini tetap ada kalau masih dipakai tempat lain
+        $violationTrends = $this->getViolationTrends((int) $class['id'], $monthsBack);
+
+        // Pelanggaran per kategori (6 bulan terakhir)
+        $violationByCategory  = $this->getViolationByCategory((int) $class['id'], 5, $monthsBack);
+        $categoryRangeLabel   = $monthsBack . ' bulan terakhir';
 
         // ===== FIX: gunakan helper auth_user() (bukan current_user()) =====
         $currentUser = auth_user();
@@ -122,11 +132,14 @@ class DashboardController extends BaseController
             'class'               => $class,
             'stats'               => $stats,
             'recentViolations'    => $recentViolations,
-            'violationTrends'     => $violationTrends,
+            'trendLabels'        => $trendLabels,
+            'trendViolations'    => $trendViolations,
+            'trendSessions'      => $trendSessions,
+            'categoryRangeLabel' => $categoryRangeLabel,
+            'violationByCategory'  => $violationByCategory,
             'topViolators'        => $topViolators,
             'attentionStudents'   => $attentionStudents, // <-- penting untuk card "Siswa Perlu Perhatian"
             'recentSessions'      => $recentSessions,
-            'violationByCategory' => $violationByCategory,
             'currentUser'         => $currentUser,
         ];
 
@@ -400,6 +413,87 @@ class DashboardController extends BaseController
         }
     }
 
+    private function monthsLabel(int $monthsBack): array
+    {
+        $labels = [];
+        $now = Time::now()->setDay(1); // awal bulan ini
+
+        for ($i = $monthsBack - 1; $i >= 0; $i--) {
+            $labels[] = $now->subMonths($i)->format('Y-m');
+        }
+        return $labels;
+    }
+
+    private function mapMonthRowsToSeries(array $labels, array $rows): array
+    {
+        $map = [];
+        foreach ($rows as $r) {
+            $map[(string) ($r['ym'] ?? '')] = (int) ($r['total'] ?? 0);
+        }
+
+        $series = [];
+        foreach ($labels as $ym) {
+            $series[] = (int) ($map[$ym] ?? 0);
+        }
+        return $series;
+    }
+
+    private function getMonthlyViolationsForClass(int $classId, int $monthsBack = 6): array
+    {
+        try {
+            $labels = $this->monthsLabel($monthsBack);
+            $start  = Time::now()
+                ->subMonths(max(0, $monthsBack - 1))
+                ->format('Y-m-01');
+
+            $rows = $this->db->table('violations v')
+                ->select("DATE_FORMAT(v.violation_date, '%Y-%m') AS ym, COUNT(*) AS total", false)
+                ->join('students s', 's.id = v.student_id', 'inner')
+                ->where('s.class_id', $classId)
+                ->where('v.deleted_at', null)
+                ->where('v.violation_date >=', $start)
+                ->groupBy('ym')
+                ->orderBy('ym', 'ASC')
+                ->get()
+                ->getResultArray();
+
+            return $this->mapMonthRowsToSeries($labels, $rows);
+        } catch (\Throwable $e) {
+            log_message('error', '[HOMEROOM DASHBOARD] monthly violations error: ' . $e->getMessage());
+            return array_fill(0, $monthsBack, 0);
+        }
+    }
+
+    private function getMonthlySessionsForClass(int $classId, int $monthsBack = 6): array
+    {
+        try {
+            $labels = $this->monthsLabel($monthsBack);
+            $start  = Time::now()
+                ->subMonths(max(0, $monthsBack - 1))
+                ->format('Y-m-01');
+
+            $rows = $this->db->table('counseling_sessions cs')
+                ->select("DATE_FORMAT(cs.session_date, '%Y-%m') AS ym, COUNT(*) AS total", false)
+                ->join('students s', 's.id = cs.student_id', 'left') // individual sessions
+                ->where('cs.deleted_at', null)
+                ->where('cs.session_date >=', $start)
+                ->groupStart()
+                    ->where('cs.class_id', $classId)     // sesi klasikal per kelas
+                    ->orWhere('s.class_id', $classId)    // sesi individu siswa kelas ini
+                ->groupEnd()
+                ->where('cs.status !=', 'Dibatalkan')    // biar tidak menghitung yang batal
+                ->groupBy('ym')
+                ->orderBy('ym', 'ASC')
+                ->get()
+                ->getResultArray();
+
+            return $this->mapMonthRowsToSeries($labels, $rows);
+        } catch (\Throwable $e) {
+            log_message('error', '[HOMEROOM DASHBOARD] monthly sessions error: ' . $e->getMessage());
+            return array_fill(0, $monthsBack, 0);
+        }
+    }
+
     /**
      * Get top violators
      *
@@ -567,20 +661,24 @@ class DashboardController extends BaseController
      * @param int $classId
      * @return array
      */
-    private function getViolationByCategory($classId)
+    private function getViolationByCategory($classId, int $limit = 5, int $monthsBack = 6)
     {
         try {
-            return $this->db->table('violation_categories')
-                ->select('violation_categories.category_name,
-                         COUNT(violations.id) as count,
-                         violation_categories.severity_level')
-                ->join('violations', 'violations.category_id = violation_categories.id AND violations.deleted_at IS NULL', 'left')
-                ->join('students', 'students.id = violations.student_id', 'left')
-                ->where('students.class_id', $classId)
-                ->where('violation_categories.deleted_at', null)
-                ->groupBy('violation_categories.id')
+            $start = Time::now()
+                ->subMonths(max(0, $monthsBack - 1))
+                ->format('Y-m-01');
+
+            return $this->db->table('violations v')
+                ->select('vc.category_name, COUNT(v.id) as count, vc.severity_level')
+                ->join('violation_categories vc', 'vc.id = v.category_id', 'inner')
+                ->join('students s', 's.id = v.student_id', 'inner')
+                ->where('s.class_id', (int) $classId)
+                ->where('v.deleted_at', null)
+                ->where('vc.deleted_at', null)
+                ->where('v.violation_date >=', $start)
+                ->groupBy('v.category_id')
                 ->orderBy('count', 'DESC')
-                ->limit(5)
+                ->limit($limit)
                 ->get()
                 ->getResultArray();
         } catch (\Exception $e) {

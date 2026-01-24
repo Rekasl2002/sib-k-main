@@ -37,6 +37,14 @@ if (!function_exists('gv')) {
 $quick            = rowa($quick ?? $stats ?? []);
 $violationsData   = array_map('rowa', $violationsByLevel ?? $violationsChart ?? []);
 $recentActivities = $recentActivities ?? [];
+// Current user (untuk kartu Selamat Datang)
+$currentUser = rowa($currentUser ?? []);
+$activeAcademicYearLabel = (string) ($activeAcademicYearLabel ?? '');
+
+// Data pelanggaran per kategori (untuk chart doughnut)
+$violationByCategory = array_map('rowa', $violationByCategory ?? []);
+$categoryRangeLabel  = (string) ($categoryRangeLabel ?? '');
+
 
 // Data tren bulanan (labels + data) – jika tidak ada, fallback ke array kosong
 $monthlyViolations  = rowa($monthlyViolations  ?? []);
@@ -96,6 +104,65 @@ foreach ($violationsData as $row) {
         </div>
     </div>
 
+    <!-- Welcome Card (disamakan dengan Wali Kelas, disesuaikan untuk Koordinator BK) -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card welcome-card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h4 class="text-white mb-2">
+                                Selamat Datang, <?= esc($currentUser['full_name'] ?? 'Koordinator BK') ?>!
+                            </h4>
+                            <?php
+                                $activeAcademic = rowa($activeAcademic ?? []);
+                                $ay = trim((string) ($activeAcademic['year'] ?? ''));
+                                $sem = trim((string) ($activeAcademic['semester'] ?? ''));
+                                $ayText = '';
+
+                                if ($ay !== '' && $sem !== '') {
+                                    $ayText = "Tahun Ajaran {$ay} Semester {$sem}";
+                                } elseif ($ay !== '') {
+                                    $ayText = "Tahun Ajaran {$ay}";
+                                }
+                                ?>
+
+                                <p class="text-white-50 mb-0">
+                                    Anda login sebagai <strong>Koordinator BK</strong>
+                                    <?php if ($ayText !== ''): ?>
+                                        <span class="ms-1">• <?= esc($ayText) ?></span>
+                                    <?php endif; ?>
+                                    <br>
+                                    Pantau pelanggaran, sesi konseling, dan kinerja layanan BK seluruh madrasah, sekaligus kelola akun Guru BK.
+                                </p>
+                            <?php if (!empty($activeAcademicYearLabel)): ?>
+                                <div class="mt-2">
+                                    <span class="badge bg-light text-dark">
+                                        <i class="mdi mdi-calendar-check-outline me-1"></i>
+                                        Tahun Akademik Aktif: <?= esc($activeAcademicYearLabel) ?>
+                                    </span>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <div class="d-grid gap-2">
+                                <a href="<?= base_url('homeroom/violations/create') ?>" class="btn btn-light">
+                                    <i class="mdi mdi-alert-circle-outline me-1"></i> Laporkan Pelanggaran
+                                </a>
+                                <a href="<?= base_url('homeroom/violations') ?>" class="btn btn-light">
+                                    <i class="mdi mdi-format-list-bulleted me-1"></i> Lihat Semua Pelanggaran
+                                </a>
+                                <a href="<?= base_url('homeroom/reports') ?>" class="btn btn-light">
+                                    <i class="mdi mdi-file-chart me-1"></i> Lihat Laporan
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Row: Quick Stats Utama -->
     <div class="row">
         <!-- Total Siswa -->
@@ -114,7 +181,7 @@ foreach ($violationsData as $row) {
                         </div>
                     </div>
                     <small class="text-muted d-block mt-2">
-                        Mengacu pada tabel <code>students</code>.
+                        Mengacu pada data siswa
                     </small>
                 </div>
             </div>
@@ -227,7 +294,7 @@ foreach ($violationsData as $row) {
                         </div>
                     </div>
                     <small class="text-muted d-block mt-2">
-                        Seluruh record di <code>counseling_sessions</code>.
+                        Seluruh record di sesi konseling
                     </small>
                 </div>
             </div>
@@ -362,73 +429,105 @@ foreach ($violationsData as $row) {
         </div>
     </div>
 
-    <!-- Row: Grafik Tren BK + Detail Pelanggaran -->
-    <div class="row">
-        <!-- Grafik Tren -->
-        <div class="col-lg-7 mb-3">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center mb-2">
-                        <h5 class="card-title mb-0">
-                            Tren Layanan BK (<?= count($trendLabels) ?> bulan terakhir)
-                        </h5>
-                        <small class="text-muted">
-                            Pelanggaran • Sesi
-                        </small>
-                    </div>
-
-                    <div class="position-relative" style="height:260px; width:100%;">
-                      <canvas id="bk-trend-chart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabel distribusi pelanggaran -->
-        <div class="col-lg-5 mb-3">
-            <div class="card shadow-sm border-0 h-100">
-                <div class="card-body">
-                    <h5 class="card-title mb-2">
-                        Detail Distribusi Pelanggaran
+<!-- Row: Grafik Tren BK + Pelanggaran per Kategori -->
+<div class="row">
+    <!-- Grafik Tren -->
+    <div class="col-lg-8 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="card-title mb-0">
+                        Tren Layanan BK (<?= count($trendLabels) ?> bulan terakhir)
                     </h5>
+                    <small class="text-muted">
+                        Pelanggaran • Sesi
+                    </small>
+                </div>
 
-                    <?php if (!empty($violationsData)): ?>
-                        <div class="table-responsive">
-                            <table class="table table-sm align-middle mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>Level</th>
-                                        <th class="text-end">Jumlah</th>
-                                        <th class="text-end">Persen</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <?php foreach ($violationsData as $row): ?>
-                                        <?php
-                                        $level = (string) ($row['level'] ?? '-');
-                                        $count = (int) ($row['total'] ?? 0);
-                                        $percent = $totalViolations > 0
-                                            ? round(($count / $totalViolations) * 100, 1)
-                                            : 0;
-                                        ?>
-                                        <tr>
-                                            <td><?= esc(ucwords(strtolower($level))) ?></td>
-                                            <td class="text-end"><?= number_format($count) ?></td>
-                                            <td class="text-end"><?= $percent ?>%</td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                </tbody>
-                            </table>
-                        </div>
-                    <?php else: ?>
-                        <p class="text-muted mb-0">
-                            Belum ada data pelanggaran yang dapat diringkas.
-                        </p>
-                    <?php endif; ?>
+                <div class="position-relative" style="height:260px; width:100%;">
+                  <canvas id="bk-trend-chart"></canvas>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Pelanggaran per Kategori -->
+    <div class="col-lg-4 mb-3">
+        <div class="card shadow-sm border-0 h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="card-title mb-0">
+                        <i class="mdi mdi-chart-donut text-info me-1"></i>Pelanggaran per Kategori
+                    </h5>
+                    <?php if (!empty($categoryRangeLabel)): ?>
+                        <small class="text-muted"><?= esc($categoryRangeLabel) ?></small>
+                    <?php endif; ?>
+                </div>
+
+                <?php if (!empty($violationByCategory)): ?>
+                    <div class="position-relative" style="height:260px; width:100%;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <div class="mt-2 small text-muted">
+                        Menampilkan <?= min(5, count($violationByCategory)) ?> kategori teratas berdasarkan jumlah kasus.
+                    </div>
+                <?php else: ?>
+                    <div class="text-center py-5">
+                        <i class="mdi mdi-information-outline font-size-24 text-muted"></i>
+                        <p class="text-muted mt-2 mb-0">Belum ada data pelanggaran</p>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Row: Detail Distribusi Pelanggaran -->
+<div class="row">
+    <div class="col-lg-12 mb-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="card-title mb-2">
+                    Detail Distribusi Pelanggaran
+                </h5>
+
+                <?php if (!empty($violationsData)): ?>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Level</th>
+                                    <th class="text-end">Jumlah</th>
+                                    <th class="text-end">Persen</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($violationsData as $row): ?>
+                                    <?php
+                                    $level = (string) ($row['level'] ?? '-');
+                                    $count = (int) ($row['total'] ?? 0);
+                                    $percent = $totalViolations > 0
+                                        ? round(($count / $totalViolations) * 100, 1)
+                                        : 0;
+                                    ?>
+                                    <tr>
+                                        <td><?= esc(ucwords(strtolower($level))) ?></td>
+                                        <td class="text-end"><?= number_format($count) ?></td>
+                                        <td class="text-end"><?= $percent ?>%</td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <p class="text-muted mb-0">
+                        Belum ada data pelanggaran yang dapat diringkas.
+                    </p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- Row: Top List Siswa & Guru BK -->
     <div class="row mt-3">
@@ -617,7 +716,7 @@ foreach ($violationsData as $row) {
                                /* elseif (str_contains($type, 'assessment')) {
                                     $badgeClass = 'bg-primary';
                                     $badgeText  = 'Asesmen';
-                                }-->*/
+                                }*/
                                 elseif (str_contains($type, 'notification')) {
                                     $badgeClass = 'bg-dark';
                                     $badgeText  = 'Notifikasi';
@@ -735,6 +834,53 @@ foreach ($violationsData as $row) {
                     interaction: {
                         mode: 'index',
                         intersect: false
+                    }
+                }
+            });
+        }
+        // Doughnut Chart: Pelanggaran per Kategori
+        const ctxCat = document.getElementById('categoryChart');
+        const catRaw = <?= json_encode($violationByCategory ?? []) ?>;
+
+        if (ctxCat && typeof Chart !== 'undefined' && catRaw && catRaw.length) {
+            const labels = catRaw.map(r => r.category_name || '');
+            const values = catRaw.map(r => Number(r.count ?? 0));
+
+            // Palet warna sederhana (disamakan dengan dashboard Wali Kelas)
+            const baseColors = [
+                'rgba(64,81,137,0.9)',
+                'rgba(244,106,106,0.9)',
+                'rgba(241,180,76,0.9)',
+                'rgba(45,206,137,0.9)',
+                'rgba(56,175,255,0.9)',
+                'rgba(154,85,255,0.9)'
+            ];
+            const bgColors = values.map((v, i) => baseColors[i % baseColors.length]);
+            const borderColors = bgColors.map(c => c.replace('0.9', '1'));
+
+            new Chart(ctxCat, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: bgColors,
+                        borderColor: borderColors,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const value = context.parsed || 0;
+                                    return ' ' + value + ' kasus';
+                                }
+                            }
+                        }
                     }
                 }
             });

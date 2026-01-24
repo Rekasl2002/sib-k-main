@@ -102,6 +102,22 @@ class DashboardController extends BaseController
         // Get pending sessions (need follow-up)
         $data['pendingSessions'] = $this->getPendingSessions($counselorId);
 
+        // ===== Tambahan untuk Welcome Card (Tahun Ajaran + Semester + Kelas Binaan) =====
+        $data['activeAcademic']   = $this->getActiveAcademicYear();
+        $data['currentUser']      = $this->getCurrentUserRow($counselorId);
+        $data['assignedClasses']  = $this->getAssignedClassesForCounselor(
+            $counselorId,
+            $data['activeAcademic']['id'] ?? null
+        );
+
+        // ===== Tambahan untuk Chart: Pelanggaran per Kategori =====
+        $data['violationByCategory'] = $this->getViolationByCategoryForCounselor(
+            $counselorId,
+            $data['activeAcademic'] ?? null
+        );
+        $data['categoryRangeLabel'] = '6 bulan terakhir';
+
+
         // Page metadata
         $data['title']       = 'Dashboard Guru BK';
         $data['pageTitle']   = 'Dashboard Guru BK';
@@ -672,5 +688,113 @@ class DashboardController extends BaseController
         }
 
         return $chartData;
+    }
+
+    /**
+     * Ambil Tahun Ajaran yang sedang aktif (untuk ditampilkan di Welcome Card)
+     */
+    private function getActiveAcademicYear(): ?array
+    {
+        try {
+            $row = $this->db->table('academic_years')
+                ->select('id, year_name, semester, start_date, end_date')
+                ->where('is_active', 1)
+                ->where('deleted_at', null)
+                ->orderBy('id', 'DESC')
+                ->get(1)
+                ->getRowArray();
+
+            return $row ?: null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    /**
+     * Ambil data user login (minimal untuk full_name)
+     */
+    private function getCurrentUserRow(int $userId): array
+    {
+        try {
+            $row = $this->db->table('users')
+                ->select('id, full_name')
+                ->where('id', (int) $userId)
+                ->get(1)
+                ->getRowArray();
+
+            if ($row) {
+                return $row;
+            }
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        // fallback dari session jika query gagal
+        return [
+            'id'        => $userId,
+            'full_name' => session('full_name') ?? session('name') ?? 'Guru BK',
+        ];
+    }
+
+    /**
+     * Ambil daftar kelas binaan Guru BK (classes.counselor_id)
+     * Opsional: difilter hanya untuk Tahun Ajaran aktif.
+     */
+    private function getAssignedClassesForCounselor(int $counselorId, ?int $academicYearId = null): array
+    {
+        try {
+            $builder = $this->db->table('classes c')
+                ->select('c.id, c.class_name, c.grade_level, c.major, c.academic_year_id')
+                ->where('c.deleted_at', null)
+                ->where('c.is_active', 1)
+                ->where('c.counselor_id', (int) $counselorId);
+
+            if (!empty($academicYearId)) {
+                $builder->where('c.academic_year_id', (int) $academicYearId);
+            }
+
+            return $builder
+                ->orderBy('c.grade_level', 'ASC')
+                ->orderBy('c.class_name', 'ASC')
+                ->get()
+                ->getResultArray() ?? [];
+        } catch (\Throwable $e) {
+            return [];
+        }
+    }
+
+    /**
+     * Data doughnut chart Pelanggaran per Kategori (scope Guru BK)
+     * - Konsisten dengan chart lain: ikut yang handled_by atau reported_by (Guru BK tsb)
+     * - Difilter periode Tahun Ajaran aktif (violation_date BETWEEN start_date AND end_date) jika tersedia
+     */
+    private function getViolationByCategoryForCounselor(int $counselorId, ?array $activeAcademic = null): array
+    {
+        try {
+            $monthsBack = 6;
+            $start = Time::now()
+                ->subMonths(max(0, $monthsBack - 1))
+                ->format('Y-m-01');
+
+            // Ambil pelanggaran siswa yang kelasnya dibina oleh Guru BK ini
+            $builder = $this->db->table('violations v')
+                ->select('vc.category_name, COUNT(v.id) as count')
+                ->join('violation_categories vc', 'vc.id = v.category_id', 'inner')
+                ->join('students s', 's.id = v.student_id', 'inner')
+                ->join('classes c', 'c.id = s.class_id', 'inner')
+                ->where('v.deleted_at', null)
+                ->where('vc.deleted_at', null)
+                ->where('c.deleted_at', null)
+                ->where('c.counselor_id', (int) $counselorId)
+                ->where('v.violation_date >=', $start)
+                ->groupBy('v.category_id')
+                ->orderBy('count', 'DESC')
+                ->limit(5);
+
+            return $builder->get()->getResultArray() ?? [];
+        } catch (\Throwable $e) {
+            log_message('error', '[COUNSELOR DASHBOARD] getViolationByCategoryForCounselor error: ' . $e->getMessage());
+            return [];
+        }
     }
 }

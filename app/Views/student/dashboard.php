@@ -3,6 +3,13 @@
 <?= $this->section('content') ?>
 
 <?php
+$currentUser    = is_array($currentUser ?? null) ? $currentUser : (array) ($currentUser ?? []);
+$activeAcademic = is_array($activeAcademic ?? null) ? $activeAcademic : (array) ($activeAcademic ?? []);
+$ay  = trim((string) ($activeAcademic['year'] ?? ''));
+$sem = trim((string) ($activeAcademic['semester'] ?? ''));
+?>
+
+<?php
 // Helper aman untuk ambil nilai dari array/objek
 if (!function_exists('v')) {
   /**
@@ -67,13 +74,53 @@ if (!function_exists('badgeClass')) {
       </div>
     </div>
 
+<!-- Welcome Card Siswa (style sama seperti Admin) -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card welcome-card">
+            <div class="card-body">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-7">
+                        <h4 class="text-white mb-2">
+                            Selamat Datang, <?= esc($currentUser['full_name'] ?? 'Siswa') ?>!
+                        </h4>
+
+                        <p class="text-white-50 mb-2">
+                            Anda login sebagai <strong>Siswa</strong>
+                            <?php if ($ay !== '' && $sem !== ''): ?>
+                                <span class="ms-1">• Tahun Ajaran <?= esc($ay) ?> Semester <?= esc($sem) ?></span>
+                            <?php elseif ($ay !== ''): ?>
+                                <span class="ms-1">• Tahun Ajaran <?= esc($ay) ?></span>
+                            <?php endif; ?>
+                        </p>
+
+                        <p class="text-white-50 mb-0">
+                            Akses data pribadi, jadwal konseling, riwayat kasus ringkas, asesmen, serta portal informasi karir & perguruan tinggi.
+                        </p>
+                    </div>
+
+                    <!-- Tombol cepat (kanan) -->
+                    <div class="col-md-5">
+                        <div class="d-grid gap-2">
+                            <a href="<?= base_url('student/profile') ?>" class="btn btn-light">
+                                <i class="mdi mdi-account-circle-outline me-1"></i> Profil Saya
+                            </a>
+                            <a href="<?= base_url('student/staff') ?>" class="btn btn-light">
+                                <i class="mdi mdi-account-circle-outline me-1"></i> Info Guru
+                            </a>
+                        </div>
+                    </div>
+                </div><!-- /row -->
+            </div>
+        </div>
+    </div>
+</div>
+
     <!-- Welcome + Info ringkas -->
     <div class="row">
       <div class="col-xl-8">
         <div class="card">
           <div class="card-body">
-            <h5 class="card-title mb-3">Selamat datang, <?= v($student ?? [],'full_name','Siswa') ?>!</h5>
-
             <div class="row g-3">
               <div class="col-md-4">
                 <div class="p-3 bg-light rounded">

@@ -73,6 +73,16 @@ class DashboardController extends BaseController
         // Chart data for student growth (last 6 months)
         $stats['student_growth_chart'] = $this->getStudentGrowthData();
 
+        helper('auth');
+
+        // current user (untuk nama)
+        $currentUser = function_exists('auth_user') ? (auth_user() ?? []) : [
+            'full_name' => session('full_name') ?? session('name') ?? 'Admin'
+        ];
+
+        // tahun ajaran aktif + semester
+        $activeAcademic = $this->getActiveAcademicYearInfo();
+
         $data = [
             'title' => 'Dashboard Admin',
             'page_title' => 'Dashboard Admin',
@@ -83,6 +93,8 @@ class DashboardController extends BaseController
             'user' => $user,
             'active_year' => $activeYear,
             'stats' => $stats,
+            'currentUser'    => $currentUser,
+            'activeAcademic' => $activeAcademic,
         ];
 
         return view('admin/dashboard', $data);
@@ -321,5 +333,58 @@ class DashboardController extends BaseController
             'success' => true,
             'data' => $stats,
         ]);
+    }
+    
+    protected function getActiveAcademicYearInfo(): array
+    {
+        try {
+            $db = \Config\Database::connect();
+
+            // kalau tabel tidak ada, aman return kosong
+            if (method_exists($db, 'tableExists') && !$db->tableExists('academic_years')) {
+                return [];
+            }
+
+            $fields = $db->getFieldNames('academic_years');
+
+            $b = $db->table('academic_years')->select('*');
+
+            if (in_array('deleted_at', $fields, true)) {
+                $b->where('deleted_at', null);
+            }
+
+            if (in_array('is_active', $fields, true)) {
+                $b->where('is_active', 1);
+            } elseif (in_array('active', $fields, true)) {
+                $b->where('active', 1);
+            } elseif (in_array('status', $fields, true)) {
+                $b->where('status', 'active');
+            }
+
+            $orderCol = in_array('updated_at', $fields, true) ? 'updated_at' : 'id';
+            $row = $b->orderBy($orderCol, 'DESC')->get(1)->getRowArray();
+            if (!$row) return [];
+
+            $year = $row['year_name']
+                ?? $row['academic_year']
+                ?? $row['name']
+                ?? $row['label']
+                ?? $row['tahun_ajaran']
+                ?? '';
+
+            $semester = $row['semester']
+                ?? $row['semester_name']
+                ?? $row['term']
+                ?? $row['periode']
+                ?? '';
+
+            return [
+                'year'     => (string) $year,
+                'semester' => (string) $semester,
+            ];
+        } catch (\Throwable $e) {
+            log_message('error', 'getActiveAcademicYearInfo (admin) error: ' . $e->getMessage());
+            return [];
+        }
     }
 }
