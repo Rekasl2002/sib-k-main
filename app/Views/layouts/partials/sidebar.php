@@ -182,8 +182,8 @@ $__permManageLightViolations     = $__can('manage_light_violations');
 $__permManageSanctions           = $__can('manage_sanctions');
 
 $__permViewReports               = $__can('view_reports');
-$__permViewReportsAggregate      = $__canAny(['view_reports_aggregate', 'view_reports']);
-$__permViewReportsIndividual     = $__canAny(['view_reports_individual', 'view_reports']);
+$__permViewReportsAggregate      = $__canAny(['view_reports_aggregate']);
+$__permViewReportsIndividual     = $__canAny(['view_reports_individual']);
 $__permGenerateReportsAggregate  = $__can('generate_reports_aggregate');
 $__permGenerateReportsIndividual = $__can('generate_reports_individual');
 
@@ -513,15 +513,6 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           </li>
           <?php endif; ?>
 
-          <?php if ($__permViewAllStudents): ?>
-          <li class="<?= $__mm(['homeroom/students*']) ?>">
-            <a href="<?= base_url('homeroom/students') ?>" class="waves-effect<?= $__active('homeroom/students*') ?>">
-              <i class="mdi mdi-account-group"></i>
-              <span>Data Siswa</span>
-            </a>
-          </li>
-          <?php endif; ?>
-
           <?php if ($__permViewCounselingSessions): ?>
           <li>
             <a href="<?= base_url('homeroom/sessions') ?>" class="waves-effect<?= $__active('homeroom/sessions*') ?>">
@@ -540,7 +531,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           </li>
           <?php endif; ?>
 
-          <?php if ($__showStaffVS && $__permViewViolationSubmissions): ?>: ?>
+          <?php if ($__showStaffVS && $__permViewViolationSubmissions): ?>
           <li>
             <a href="<?= base_url('homeroom/violation-submissions') ?>" class="waves-effect<?= $__active('homeroom/violation-submissions*') ?>">
               <i class="mdi mdi-message-alert"></i>
@@ -652,15 +643,6 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
             <a href="<?= base_url('parent/dashboard') ?>" class="waves-effect<?= $__active('parent/dashboard*') ?>">
               <i class="mdi mdi-view-dashboard"></i>
               <span>Dashboard</span>
-            </a>
-          </li>
-          <?php endif; ?>
-
-          <?php if ($__permViewStudentPortfolio): ?>
-          <li>
-            <a href="<?= base_url('parent/children') ?>" class="waves-effect<?= $__activeAny(['parent/children*','parent/child*']) ?>">
-              <i class="mdi mdi-account-child"></i>
-              <span>Data Anak</span>
             </a>
           </li>
           <?php endif; ?>

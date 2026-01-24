@@ -33,7 +33,7 @@ class ClassReportController extends BaseController
 
     public function index()
     {
-        if ($redir = $this->ensurePerm('view_reports', '/homeroom/dashboard', 'Akses laporan ditolak.')) {
+        if ($redir = $this->ensurePerm('view_reports_individual', '/homeroom/dashboard', 'Akses laporan ditolak.')) {
             return $redir;
         }
 
@@ -78,7 +78,7 @@ class ClassReportController extends BaseController
 
     public function preview()
     {
-        if ($redir = $this->ensurePerm('view_reports', '/homeroom/dashboard', 'Akses laporan ditolak.')) {
+        if ($redir = $this->ensurePerm('view_reports_individual', '/homeroom/dashboard', 'Akses laporan ditolak.')) {
             return $redir;
         }
 
@@ -111,7 +111,7 @@ class ClassReportController extends BaseController
     public function download()
     {
         // FIX: Jangan pakai generate_reports untuk Homeroom kecuali memang kamu ingin memisah izin.
-        if ($redir = $this->ensurePerm('view_reports', '/homeroom/reports', 'Anda tidak punya izin untuk mengunduh laporan.')) {
+        if ($redir = $this->ensurePerm('view_reports_individual', '/homeroom/reports', 'Anda tidak punya izin untuk mengunduh laporan.')) {
             return $redir;
         }
 

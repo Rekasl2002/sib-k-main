@@ -15,6 +15,12 @@
 
 $this->extend('layouts/main');
 $this->section('content');
+
+$currentUser        = $currentUser ?? ['full_name' => session('full_name') ?? session('name') ?? 'Guru BK'];
+$activeAcademic     = $activeAcademic ?? [];
+$assignedClasses    = $assignedClasses ?? [];
+$violationByCategory = $violationByCategory ?? [];
+
 ?>
 
 <!-- Start Page Content -->
@@ -32,6 +38,78 @@ $this->section('content');
         </div>
     </div>
 </div>
+
+<!-- Welcome + Tombol Cepat -->
+<div class="row">
+    <div class="col-12">
+        <div class="card welcome-card">
+            <div class="card-body">
+                <div class="row align-items-start g-3">
+
+                    <!-- KIRI: Teks Welcome -->
+                    <div class="col-lg-7">
+                        <h4 class="text-white mb-2">
+                            Selamat Datang, <?= esc($currentUser['full_name'] ?? 'Guru BK') ?>!
+                        </h4>
+
+                        <p class="text-white-50 mb-3">
+                            Anda adalah <strong>Guru BK</strong>
+                            <?php if (!empty($activeAcademic['year_name'])): ?>
+                                <span class="ms-1">• Tahun Ajaran <?= esc($activeAcademic['year_name']) ?> Semester <?= esc($activeAcademic['semester'] ?? '-') ?></span>
+                            <?php endif; ?>
+                        </p>
+
+                        <div>
+                            <div class="text-white-50 mb-2">Kelas binaan:</div>
+
+                            <?php if (!empty($assignedClasses)): ?>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <?php foreach ($assignedClasses as $c): ?>
+                                        <span class="badge bg-light text-dark">
+                                            <?= esc($c['class_name'] ?? '-') ?>
+                                        </span>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php else: ?>
+                                <div class="text-white">-</div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <!-- KANAN: Tombol Cepat -->
+                    <div class="col-lg-5">
+                        <div class="d-flex justify-content-lg-end">
+                            <div class="w-100" style="max-width: 420px;">
+                                <div class="row g-2">
+                                    <div class="col-12 col-md-6">
+                                        <a href="<?= base_url('counselor/sessions/create') ?>" class="btn btn-light w-100 text-start">
+                                            <i class="mdi mdi-plus-circle me-1"></i> Tambah Sesi Baru
+                                        </a>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <a href="<?= base_url('counselor/sessions') ?>" class="btn btn-light w-100 text-start">
+                                            <i class="mdi mdi-calendar-check me-1"></i> Lihat Semua Sesi
+                                        </a>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <a href="<?= base_url('counselor/cases') ?>" class="btn btn-light w-100 text-start">
+                                            <i class="mdi mdi-alert-circle-outline me-1"></i> Kelola Pelanggaran
+                                        </a>
+                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <a href="<?= base_url('counselor/reports') ?>" class="btn btn-light w-100 text-start">
+                                            <i class="mdi mdi-file-chart me-1"></i> Laporan
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /row -->
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <!-- Statistics Cards -->
 <div class="row">
@@ -128,10 +206,10 @@ $this->section('content');
     </div>
 </div>
 
-<!-- Row: Session Trend + Quick Actions -->
+<!-- Row: Session Trend -->
 <div class="row">
     <!-- Chart: Session Trends -->
-    <div class="col-xl-8">
+    <div class="col-xl-6">
         <div class="card">
             <div class="card-header">
                 <h4 class="card-title mb-0">Tren Sesi Konseling (6 Bulan Terakhir)</h4>
@@ -142,30 +220,30 @@ $this->section('content');
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="col-xl-4">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">Quick Actions</h4>
-            </div>
+    <!-- Pelanggaran per Kategori -->
+    <div class="col-xl-6 mb-4">
+        <div class="card shadow-sm border-0 h-100">
             <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="<?= base_url('counselor/sessions/create') ?>" class="btn btn-primary">
-                        <i class="mdi mdi-plus-circle me-1"></i> Tambah Sesi Baru
-                    </a>
-                    <a href="<?= base_url('counselor/sessions') ?>" class="btn btn-outline-primary">
-                        <i class="mdi mdi-calendar-check me-1"></i> Lihat Semua Sesi
-                    </a>
-                    <a href="<?= base_url('counselor/schedule') ?>" class="btn btn-outline-info">
-                        <i class="mdi mdi-calendar me-1"></i> Jadwal Konseling
-                    </a>
-                    <a href="<?= base_url('counselor/cases') ?>" class="btn btn-primary">
-                        <i class="mdi mdi-alert-circle-outline me-1"></i> Kelola Pelanggaran
-                    </a>
-                    <a href="<?= base_url('counselor/reports') ?>" class="btn btn-outline-success">
-                        <i class="mdi mdi-file-chart me-1"></i> Laporan
-                    </a>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <h5 class="card-title mb-0">
+                        <i class="mdi mdi-chart-donut text-info me-1"></i>Pelanggaran per Kategori
+                    </h5>
+                    <small class="text-muted"><?= esc($categoryRangeLabel ?? '6 bulan terakhir') ?></small>
                 </div>
+
+                <?php if (!empty($violationByCategory)): ?>
+                    <div class="position-relative" style="height:260px; width:100%;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <div class="mt-2 small text-muted">
+                        Menampilkan <?= min(5, count($violationByCategory)) ?> kategori teratas berdasarkan jumlah kasus.
+                    </div>
+                <?php else: ?>
+                    <div class="text-center py-5">
+                        <i class="mdi mdi-information-outline font-size-24 text-muted"></i>
+                        <p class="text-muted mt-2 mb-0">Belum ada data pelanggaran</p>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -277,9 +355,6 @@ $this->section('content');
                     <div class="text-center py-4">
                         <i class="mdi mdi-calendar-blank text-muted" style="font-size: 48px;"></i>
                         <p class="text-muted mt-2">Tidak ada sesi konseling hari ini</p>
-                        <a href="<?= base_url('counselor/sessions/create') ?>" class="btn btn-sm btn-primary">
-                            <i class="mdi mdi-plus"></i> Buat Sesi Baru
-                        </a>
                     </div>
                 <?php endif; ?>
             </div>
@@ -687,6 +762,47 @@ document.addEventListener('DOMContentLoaded', function () {
                 maintainAspectRatio: false,
                 plugins: { legend: { display: true, position: 'top' } },
                 scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+    }
+
+    // ===== Doughnut Chart: Pelanggaran per Kategori =====
+    const catRaw = <?= json_encode($violationByCategory ?? []) ?>;
+
+    if (catRaw && catRaw.length && document.getElementById('categoryChart')) {
+        const ctxCat = document.getElementById('categoryChart').getContext('2d');
+
+        const labels = catRaw.map(r => r.category_name || '');
+        const values = catRaw.map(r => Number(r.count ?? 0));
+
+        const baseColors = [
+            'rgba(64,81,137,0.9)',
+            'rgba(244,106,106,0.9)',
+            'rgba(241,180,76,0.9)',
+            'rgba(45,206,137,0.9)',
+            'rgba(56,175,255,0.9)',
+            'rgba(154,85,255,0.9)'
+        ];
+        const bgColors = values.map((v, i) => baseColors[i % baseColors.length]);
+        const borderColors = bgColors.map(c => c.replace('0.9', '1'));
+
+        new Chart(ctxCat, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: bgColors,
+                    borderColor: borderColors,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                },
+                cutout: '60%'
             }
         });
     }

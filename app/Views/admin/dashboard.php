@@ -3,6 +3,13 @@
 <?= $this->section('content') ?>
 
 <?php
+$currentUser    = is_array($currentUser ?? null) ? $currentUser : (array) ($currentUser ?? []);
+$activeAcademic = is_array($activeAcademic ?? null) ? $activeAcademic : (array) ($activeAcademic ?? []);
+$ay = trim((string) ($activeAcademic['year'] ?? ''));
+$sem = trim((string) ($activeAcademic['semester'] ?? ''));
+?>
+
+<?php
 /**
  * File Path: app/Views/admin/dashboard.php
  * 
@@ -33,28 +40,51 @@
     </div>
 </div>
 
-<!-- Welcome Message -->
-<div class="row">
+<!-- Welcome Card Admin (style sama seperti Koordinator BK) -->
+<div class="row mb-3">
     <div class="col-12">
-        <div class="card">
+        <div class="card welcome-card">
             <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-grow-1">
-                        <h5 class="mb-1">Selamat Datang, <?= esc($user['full_name']) ?>!</h5>
-                        <p class="text-muted mb-0">
-                            <i class="mdi mdi-calendar-check me-1"></i>
-                            <?php if ($active_year): ?>
-                                Tahun Ajaran Aktif: <strong><?= esc($active_year['year_name']) ?></strong> - Semester <strong><?= esc($active_year['semester']) ?></strong>
-                            <?php else: ?>
-                                <span class="text-danger">Belum ada tahun ajaran aktif</span>
+                <div class="row align-items-center g-3">
+                    <div class="col-md-7">
+                        <h4 class="text-white mb-2">
+                            Selamat Datang, <?= esc($currentUser['full_name'] ?? 'Admin') ?>!
+                        </h4>
+
+                        <p class="text-white-50 mb-2">
+                            Anda login sebagai <strong>Admin</strong>
+                            <?php if ($ay !== '' && $sem !== ''): ?>
+                                <span class="ms-1">• Tahun Ajaran <?= esc($ay) ?> Semester <?= esc($sem) ?></span>
+                            <?php elseif ($ay !== ''): ?>
+                                <span class="ms-1">• Tahun Ajaran <?= esc($ay) ?></span>
                             <?php endif; ?>
                         </p>
+
+                        <p class="text-white-50 mb-0">
+                            Kelola data master sistem, pengguna, peran, kelas, serta pengaturan Tahun Ajaran.
+                        </p>
                     </div>
-                </div>
+
+                    <!-- Tombol cepat di kanan (seperti gambar Koordinator) -->
+                    <div class="col-md-5">
+                        <div class="d-grid gap-2">
+                            <a href="<?= base_url('admin/users') ?>" class="btn btn-light">
+                                <i class="mdi mdi-account-multiple-outline me-1"></i> Kelola Pengguna
+                            </a>
+                            <a href="<?= base_url('admin/roles') ?>" class="btn btn-light">
+                                <i class="mdi mdi-shield-account-outline me-1"></i> Kelola Role & Permission
+                            </a>
+                            <a href="<?= base_url('admin/academic-years') ?>" class="btn btn-light">
+                                <i class="mdi mdi-calendar-range-outline me-1"></i> Tahun Ajaran
+                            </a>
+                        </div>
+                    </div>
+                </div><!-- /row -->
             </div>
         </div>
     </div>
 </div>
+
 
 <!-- Statistics Cards -->
 <div class="row">
@@ -163,21 +193,21 @@
 <!-- Charts and Distribution -->
 <div class="row">
     <!-- Student Growth Chart -->
-    <div class="col-xl-8">
+    <div class="col-xl-6">
         <div class="card">
             <div class="card-body">
                 <h4 class="card-title mb-4">
                     <i class="mdi mdi-chart-line me-2"></i>Pertumbuhan Siswa (6 Bulan Terakhir)
                 </h4>
                 <div>
-                    <canvas id="studentGrowthChart" height="100"></canvas>
+                    <canvas id="studentGrowthChart" height="200"></canvas>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Users by Role -->
-    <div class="col-xl-4">
+    <div class="col-xl-6">
         <div class="card">
             <div class="card-body">
                 <h4 class="card-title mb-4">
@@ -185,135 +215,6 @@
                 </h4>
                 <div>
                     <canvas id="usersByRoleChart" height="200"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Distribution Statistics -->
-<div class="row">
-    <!-- Students by Grade -->
-    <div class="col-xl-6">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title mb-4">
-                    <i class="mdi mdi-chart-bar me-2"></i>Siswa Berdasarkan Tingkat
-                </h4>
-                <div class="table-responsive">
-                    <table class="table table-centered table-nowrap mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Tingkat</th>
-                                <th>Jumlah Siswa</th>
-                                <th>Persentase</th>
-                                <th>Progress</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($stats['students_by_grade'])): ?>
-                                <?php
-                                $total = array_sum($stats['students_by_grade']);
-                                foreach ($stats['students_by_grade'] as $grade => $count):
-                                    $percentage = $total > 0 ? round(($count / $total) * 100, 1) : 0;
-                                    $progressColor = $grade == 'X' ? 'primary' : ($grade == 'XI' ? 'success' : 'info');
-                                ?>
-                                    <tr>
-                                        <td>
-                                            <h5 class="font-size-14 mb-0">
-                                                <span class="badge bg-<?= $progressColor ?> font-size-12">
-                                                    Kelas <?= esc($grade) ?>
-                                                </span>
-                                            </h5>
-                                        </td>
-                                        <td><?= number_format($count) ?> siswa</td>
-                                        <td><?= $percentage ?>%</td>
-                                        <td>
-                                            <div class="progress" style="height: 6px;">
-                                                <div class="progress-bar bg-<?= $progressColor ?>"
-                                                    role="progressbar"
-                                                    style="width: <?= $percentage ?>%"
-                                                    aria-valuenow="<?= $percentage ?>"
-                                                    aria-valuemin="0"
-                                                    aria-valuemax="100">
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted">Belum ada data siswa</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Students by Status -->
-    <div class="col-xl-6">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title mb-4">
-                    <i class="mdi mdi-chart-donut me-2"></i>Siswa Berdasarkan Status
-                </h4>
-                <div class="table-responsive">
-                    <table class="table table-centered table-nowrap mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Status</th>
-                                <th>Jumlah Siswa</th>
-                                <th>Persentase</th>
-                                <th>Progress</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php if (!empty($stats['students_by_status'])): ?>
-                                <?php
-                                $total = array_sum($stats['students_by_status']);
-                                $statusColors = [
-                                    'Aktif' => 'success',
-                                    'Alumni' => 'info',
-                                    'Pindah' => 'warning',
-                                    'Keluar' => 'danger'
-                                ];
-                                foreach ($stats['students_by_status'] as $status => $count):
-                                    $percentage = $total > 0 ? round(($count / $total) * 100, 1) : 0;
-                                    $color = $statusColors[$status] ?? 'secondary';
-                                ?>
-                                    <tr>
-                                        <td>
-                                            <h5 class="font-size-14 mb-0">
-                                                <span class="badge bg-<?= $color ?> font-size-12">
-                                                    <?= esc($status) ?>
-                                                </span>
-                                            </h5>
-                                        </td>
-                                        <td><?= number_format($count) ?> siswa</td>
-                                        <td><?= $percentage ?>%</td>
-                                        <td>
-                                            <div class="progress" style="height: 6px;">
-                                                <div class="progress-bar bg-<?= $color ?>"
-                                                    role="progressbar"
-                                                    style="width: <?= $percentage ?>%"
-                                                    aria-valuenow="<?= $percentage ?>"
-                                                    aria-valuemin="0"
-                                                    aria-valuemax="100">
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            <?php else: ?>
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted">Belum ada data siswa</td>
-                                </tr>
-                            <?php endif; ?>
-                        </tbody>
-                    </table>
                 </div>
             </div>
         </div>
@@ -431,6 +332,135 @@
                             <?php else: ?>
                                 <tr>
                                     <td colspan="4" class="text-center text-muted">Belum ada pengguna terbaru</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Distribution Statistics -->
+<div class="row">
+    <!-- Students by Grade -->
+    <div class="col-xl-6 col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">
+                    <i class="mdi mdi-chart-bar me-2"></i>Siswa Berdasarkan Tingkat
+                </h4>
+                <div class="table-responsive">
+                    <table class="table table-centered table-nowrap mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tingkat</th>
+                                <th>Jumlah Siswa</th>
+                                <th>Persentase</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($stats['students_by_grade'])): ?>
+                                <?php
+                                $total = array_sum($stats['students_by_grade']);
+                                foreach ($stats['students_by_grade'] as $grade => $count):
+                                    $percentage = $total > 0 ? round(($count / $total) * 100, 1) : 0;
+                                    $progressColor = $grade == 'X' ? 'primary' : ($grade == 'XI' ? 'success' : 'info');
+                                ?>
+                                    <tr>
+                                        <td>
+                                            <h5 class="font-size-14 mb-0">
+                                                <span class="badge bg-<?= $progressColor ?> font-size-12">
+                                                    Kelas <?= esc($grade) ?>
+                                                </span>
+                                            </h5>
+                                        </td>
+                                        <td><?= number_format($count) ?> siswa</td>
+                                        <td><?= $percentage ?>%</td>
+                                        <td>
+                                            <div class="progress" style="height: 6px;">
+                                                <div class="progress-bar bg-<?= $progressColor ?>"
+                                                    role="progressbar"
+                                                    style="width: <?= $percentage ?>%"
+                                                    aria-valuenow="<?= $percentage ?>"
+                                                    aria-valuemin="0"
+                                                    aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">Belum ada data siswa</td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Students by Status -->
+    <div class="col-xl-6">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title mb-4">
+                    <i class="mdi mdi-chart-donut me-2"></i>Siswa Berdasarkan Status
+                </h4>
+                <div class="table-responsive">
+                    <table class="table table-centered table-nowrap mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Status</th>
+                                <th>Jumlah Siswa</th>
+                                <th>Persentase</th>
+                                <th>Progress</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if (!empty($stats['students_by_status'])): ?>
+                                <?php
+                                $total = array_sum($stats['students_by_status']);
+                                $statusColors = [
+                                    'Aktif' => 'success',
+                                    'Alumni' => 'info',
+                                    'Pindah' => 'warning',
+                                    'Keluar' => 'danger'
+                                ];
+                                foreach ($stats['students_by_status'] as $status => $count):
+                                    $percentage = $total > 0 ? round(($count / $total) * 100, 1) : 0;
+                                    $color = $statusColors[$status] ?? 'secondary';
+                                ?>
+                                    <tr>
+                                        <td>
+                                            <h5 class="font-size-14 mb-0">
+                                                <span class="badge bg-<?= $color ?> font-size-12">
+                                                    <?= esc($status) ?>
+                                                </span>
+                                            </h5>
+                                        </td>
+                                        <td><?= number_format($count) ?> siswa</td>
+                                        <td><?= $percentage ?>%</td>
+                                        <td>
+                                            <div class="progress" style="height: 6px;">
+                                                <div class="progress-bar bg-<?= $color ?>"
+                                                    role="progressbar"
+                                                    style="width: <?= $percentage ?>%"
+                                                    aria-valuenow="<?= $percentage ?>"
+                                                    aria-valuemin="0"
+                                                    aria-valuemax="100">
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">Belum ada data siswa</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>

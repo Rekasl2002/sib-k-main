@@ -97,9 +97,17 @@ if (!function_exists('violation_status_badge_class')) {
                             </p>
                         </div>
                         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                            <a href="<?= base_url('homeroom/violations/create') ?>" class="btn btn-light">
-                                <i class="mdi mdi-plus-circle me-1"></i> Laporkan Pelanggaran
-                            </a>
+                            <div class="d-grid gap-2">
+                                <a href="<?= base_url('homeroom/violations/create') ?>" class="btn btn-light">
+                                    <i class="mdi mdi-alert-circle-outline me-1"></i> Laporkan Pelanggaran
+                                </a>
+                                <a href="<?= base_url('homeroom/violations') ?>" class="btn btn-light">
+                                    <i class="mdi mdi-format-list-bulleted me-1"></i> Lihat Semua Pelanggaran
+                                </a>
+                                <a href="<?= base_url('homeroom/reports') ?>" class="btn btn-light">
+                                    <i class="mdi mdi-file-chart me-1"></i> Lihat Laporan Kelas
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -192,7 +200,7 @@ if (!function_exists('violation_status_badge_class')) {
                     </div>
                     <div class="mt-3">
                         <small class="text-muted">
-                            <?= $stats['students_with_violations'] ?> siswa terlibat
+                            Hitungan dalam satu Minggu
                         </small>
                     </div>
                 </div>
@@ -230,11 +238,15 @@ if (!function_exists('violation_status_badge_class')) {
         <div class="col-xl-8">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">
-                        <i class="mdi mdi-chart-line text-primary me-2"></i>Tren Pelanggaran (6 Bulan Terakhir)
-                    </h5>
-                    <div class="chart-container" style="height: 300px;">
-                        <canvas id="violationTrendChart"></canvas>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title mb-0">
+                            <i class="mdi mdi-chart-line text-primary me-2"></i>Tren Layanan BK (6 bulan terakhir)
+                        </h5>
+                        <small class="text-muted">Pelanggaran • Sesi</small>
+                    </div>
+
+                    <div class="position-relative" style="height:260px; width:100%;">
+                        <canvas id="bk-trend-chart"></canvas>
                     </div>
                 </div>
             </div>
@@ -244,12 +256,20 @@ if (!function_exists('violation_status_badge_class')) {
         <div class="col-xl-4">
             <div class="card">
                 <div class="card-body">
-                    <h5 class="card-title mb-4">
-                        <i class="mdi mdi-chart-donut text-info me-2"></i>Pelanggaran per Kategori
-                    </h5>
-                    <div class="chart-container" style="height: 300px;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title mb-0">
+                            <i class="mdi mdi-chart-donut text-info me-2"></i>Pelanggaran per Kategori
+                        </h5>
+                        <small class="text-muted"><?= esc($categoryRangeLabel ?? '6 bulan terakhir') ?></small>
+                    </div>
+                    <div class="chart-container" style="height: 260px;">
                         <?php if (!empty($violationByCategory)): ?>
+                             <div class="position-relative" style="height:240px; width:100%;">
                             <canvas id="categoryChart"></canvas>
+                            </div>
+                            <div class="mt-2 small text-muted">
+                                Menampilkan <?= min(5, count($violationByCategory)) ?> kategori teratas berdasarkan jumlah kasus.
+                            </div>
                         <?php else: ?>
                             <div class="text-center py-5">
                                 <i class="mdi mdi-information-outline font-size-24 text-muted"></i>
@@ -477,17 +497,6 @@ if (!function_exists('violation_status_badge_class')) {
                     <p class="text-muted small">
                         Shortcut untuk tugas harian Wali Kelas.
                     </p>
-                    <div class="d-grid gap-2">
-                        <a href="<?= base_url('homeroom/violations/create') ?>" class="btn btn-danger">
-                            <i class="mdi mdi-alert-circle-outline me-1"></i> Laporkan Pelanggaran
-                        </a>
-                        <a href="<?= base_url('homeroom/violations') ?>" class="btn btn-info">
-                            <i class="mdi mdi-format-list-bulleted me-1"></i> Lihat Semua Pelanggaran
-                        </a>
-                        <a href="<?= base_url('homeroom/reports') ?>" class="btn btn-success">
-                            <i class="mdi mdi-file-chart me-1"></i> Lihat Laporan Kelas
-                        </a>
-                    </div>
                 </div>
             </div>
 
@@ -513,47 +522,33 @@ if (!function_exists('violation_status_badge_class')) {
         }
 
         // --------------------------
-        // Line Chart: Tren Pelanggaran
+        // Line Chart: Tren Layanan BK (Pelanggaran + Sesi)
         // --------------------------
-        const trendRaw = <?= json_encode($violationTrends ?? []) ?>;
+        const ctxTrend = document.getElementById('bk-trend-chart');
+        const labelsTrend = <?= json_encode(array_values($trendLabels ?? [])) ?>;
+        const dataViol = <?= json_encode(array_map('intval', $trendViolations ?? [])) ?>;
+        const dataSess = <?= json_encode(array_map('intval', $trendSessions ?? [])) ?>;
 
-        if (trendRaw && trendRaw.length && document.getElementById('violationTrendChart')) {
-            const ctx = document.getElementById('violationTrendChart').getContext('2d');
-            const labels = trendRaw.map(r => r.month || '');
-            const values = trendRaw.map(r => Number(r.count || 0));
-
-            new Chart(ctx, {
+        if (ctxTrend && typeof Chart !== 'undefined' && labelsTrend.length) {
+            new Chart(ctxTrend, {
                 type: 'line',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Jumlah Pelanggaran',
-                        data: values,
-                        borderColor: '#f46a6a',
-                        backgroundColor: 'rgba(244,106,106,0.15)',
-                        borderWidth: 2,
-                        pointRadius: 4,
-                        pointHoverRadius: 5,
-                        tension: 0.35,
-                        fill: true
-                    }]
+                    labels: labelsTrend,
+                    datasets: [
+                        { label: 'Pelanggaran', data: dataViol, borderWidth: 2, tension: 0.3 },
+                        { label: 'Sesi Konseling', data: dataSess, borderWidth: 2, tension: 0.3 }
+                    ]
                 },
                 options: {
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
                     scales: {
                         y: {
                             beginAtZero: true,
                             ticks: { precision: 0 }
-                        },
-                        x: {
-                            ticks: {
-                                autoSkip: true,
-                                maxTicksLimit: 6
-                            }
                         }
+                    },
+                    plugins: {
+                        legend: { display: true, position: 'top' }
                     }
                 }
             });

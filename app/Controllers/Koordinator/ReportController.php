@@ -26,7 +26,7 @@ class ReportController extends BaseKoordinatorController
 
     public function index()
     {
-        if ($redir = $this->ensurePerm('view_reports', '/koordinator/dashboard', 'Akses laporan ditolak.')) {
+        if ($redir = $this->ensurePerm('view_reports_aggregate', '/koordinator/dashboard', 'Akses laporan ditolak.')) {
             return $redir;
         }
 
@@ -83,7 +83,7 @@ class ReportController extends BaseKoordinatorController
 
     public function preview()
     {
-        if ($redir = $this->ensurePerm('view_reports', '/koordinator/dashboard', 'Akses laporan ditolak.')) {
+        if ($redir = $this->ensurePerm('view_reports_aggregate', '/koordinator/dashboard', 'Akses laporan ditolak.')) {
             return $redir;
         }
 
@@ -123,7 +123,7 @@ class ReportController extends BaseKoordinatorController
 
     public function download()
     {
-        if ($redir = $this->ensurePerm('generate_reports', '/koordinator/reports', 'Anda tidak punya izin untuk mengunduh laporan.')) {
+        if ($redir = $this->ensurePerm('generate_reports_aggregate', '/koordinator/reports', 'Anda tidak punya izin untuk mengunduh laporan.')) {
             return $redir;
         }
 
