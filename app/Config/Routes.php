@@ -53,7 +53,15 @@ $routes->setAutoRoute(false);
 // Default
 // -------------------------------
 $routes->get('/', 'Home::index');
-$routes->get('test', 'Test::index');
+
+/**
+ * ✅ DEPLOYMENT HARDENING:
+ * Route test hanya boleh aktif di development.
+ * (Di production, route ini tidak didaftarkan supaya tidak jadi pintu "debug" publik.)
+ */
+if (defined('ENVIRONMENT') && ENVIRONMENT === 'development') {
+    $routes->get('test', 'Test::index');
+}
 
 /**
  * ✅ Dashboard universal (opsional, tapi enak untuk redirect fail-safe)
