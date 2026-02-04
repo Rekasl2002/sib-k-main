@@ -59,7 +59,7 @@
         <div class="mb-3">
             <label for="class_id" class="form-label">Kelas</label>
             <select class="form-select" name="class_id">
-                <option value="">Pilih Kelas</option><option value="1" >X - X-IPA-1</option><option value="2" >X - X-IPA-2</option><option value="12" >X - X-IPA-A-Ganjil-2025</option><option value="3" >X - X-IPS-1</option><option value="4" >X - X-IPS-2</option><option value="5" >XI - XI-IPA-1</option><option value="6" >XI - XI-IPA-2</option><option value="7" >XI - XI-IPS-1</option><option value="8" >XII - XII-IPA-1</option><option value="9" >XII - XII-IPA-2</option><option value="10" >XII - XII-IPS-1</option>            </select>
+                <option value="">Pilih Kelas</option><option value="1" >X - X-IPA-1</option><option value="2" >X - X-IPA-2</option><option value="3" >X - X-IPS-1</option><option value="4" >X - X-IPS-2</option>            </select>
         </div>
     </div>
     <div class="col-md-4">
@@ -82,7 +82,7 @@
         <div class="mb-3">
             <label for="parent_id" class="form-label">Orang Tua/Wali</label>
             <select class="form-select" name="parent_id">
-                <option value="">Pilih Orang Tua</option><option value="74" >Alfa Ramian Yuda</option><option value="65" >Arial</option><option value="68" >Bold</option><option value="10" >Dewi Lestari</option><option value="9" >Suryanto</option><option value="26" >test</option><option value="57" >Testorangtua1</option><option value="59" >Testorangtua2</option>            </select>
+                <option value="">Pilih Orang Tua</option><option value="10" >Dewi Lestari</option><option value="9" >Suryanto</option>            </select>
         </div>
         <div class="mb-3">
             <label for="status" class="form-label">Status</label>

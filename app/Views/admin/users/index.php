@@ -276,7 +276,7 @@ $exportQuery = http_build_query([
                         <i class="mdi mdi-file-excel-outline me-1"></i> Expor CSV
                     </a>
                     <a href="<?= base_url('admin/users/create') ?>" class="btn btn-primary">
-                        <i class="mdi mdi-plus-circle me-1"></i> Tambah User
+                        <i class="mdi mdi-plus-circle me-1"></i> Tambah Pengguna
                     </a>
                 </div>
             </div>
@@ -393,7 +393,7 @@ $exportQuery = http_build_query([
                                     <i class="mdi mdi-account-off text-muted" style="font-size: 48px;"></i>
                                     <p class="text-muted mt-2">Tidak ada data user</p>
                                     <a href="<?= base_url('admin/users/create') ?>" class="btn btn-primary btn-sm">
-                                        <i class="mdi mdi-plus"></i> Tambah User
+                                        <i class="mdi mdi-plus"></i> Tambah Pengguna
                                     </a>
                                 </td>
                             </tr>

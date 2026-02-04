@@ -18,12 +18,15 @@
  * - Halaman admin/students menggunakan "pagination hanya di VIEW" (DataTables).
  * - Jadi index() mengambil semua data terfilter (tanpa paginate), dan $pager = null.
  *
+ * Tambahan (2026-01-30):
+ * - Normalisasi nomor telepon input (+62/62 menjadi 08) pada store(), update(), dan pre-processing import Excel.
+ *
  * @package    SIB-K
- * @subpackage Controllers/Admin
+ * @subpackage Controllers
  * @category   Student Management
  * @author     Development Team
  * @created    2025-01-05
- * @updated    2026-01-07
+ * @updated    2026-01-30
  */
 
 namespace App\Controllers\Admin;
@@ -33,12 +36,21 @@ use App\Services\StudentService;
 use App\Validation\StudentValidation;
 use App\Libraries\ExcelImporter;
 use App\Models\StudentModel;
+use App\Models\UserModel;
+
+// Untuk pre-processing file import (tanpa menambah file baru)
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Writer\Xls;
 
 class StudentController extends BaseController
 {
     protected $studentService;
     protected $excelImporter;
     protected $studentModel;
+    protected $userModel;
 
     public function __construct()
     {
@@ -48,6 +60,7 @@ class StudentController extends BaseController
         $this->studentService = new StudentService();
         $this->excelImporter  = new ExcelImporter();
         $this->studentModel   = new StudentModel();
+        $this->userModel      = new UserModel();
     }
 
     /**
@@ -181,6 +194,149 @@ class StudentController extends BaseController
     }
 
     /**
+     * Normalisasi nomor Indonesia:
+     * - "+62xxxx" -> "0xxxx"
+     * - "62xxxx"  -> "0xxxx"
+     * - "8xxxx"   -> "08xxxx"
+     * - "08xxxx"  -> tetap
+     * - Spasi/strip/titik/() dihapus
+     *
+     * Contoh: 62845163525 -> 0845163525
+     */
+    private function normalizeIdPhoneTo08(?string $phone): string
+    {
+        $p = trim((string) ($phone ?? ''));
+        if ($p === '') {
+            return '';
+        }
+
+        // Hapus whitespace dan karakter umum pemisah
+        $p = preg_replace('/[\s\-\.\(\)]+/', '', $p);
+        $p = (string) ($p ?? '');
+        if ($p === '') {
+            return '';
+        }
+
+        // Hilangkan awalan "+"
+        if (strpos($p, '+') === 0) {
+            $p = substr($p, 1);
+        }
+
+        // Kasus "0062...." (opsional, tapi sering muncul)
+        if (strpos($p, '0062') === 0) {
+            $p = substr($p, 2); // jadi "62...."
+        }
+
+        // Konversi 62 -> 0
+        if (strpos($p, '62') === 0) {
+            $rest = substr($p, 2);
+            if ($rest !== '' && $rest[0] === '0') {
+                // kalau sudah ada 0 setelah 62, cukup buang 62
+                $p = $rest;
+            } else {
+                $p = '0' . $rest;
+            }
+        } elseif (strpos($p, '8') === 0) {
+            // kadang ditulis tanpa 0: 8123... -> 08123...
+            $p = '0' . $p;
+        }
+
+        return $p;
+    }
+
+    /**
+     * Pre-processing file Excel import:
+     * Normalisasi kolom nomor HP agar "+62/62" menjadi "08" sebelum diproses ExcelImporter.
+     * Ini tetap aman karena hanya mengubah nilai sel telepon (bukan struktur/kolom).
+     */
+    private function preNormalizeImportExcelPhones(string $filePath): void
+    {
+        if (!is_file($filePath)) {
+            return;
+        }
+
+        $ext = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
+        if (!in_array($ext, ['xlsx', 'xls'], true)) {
+            return;
+        }
+
+        try {
+            $spreadsheet = IOFactory::load($filePath);
+            $sheet       = $spreadsheet->getActiveSheet();
+
+            $highestRow = (int) $sheet->getHighestRow();
+            if ($highestRow < 2) {
+                return;
+            }
+
+            // Cari kolom berdasarkan header (lebih fleksibel), fallback ke P & Q (template default)
+            $highestColumn = (string) $sheet->getHighestColumn();
+            $maxColIndex   = Coordinate::columnIndexFromString($highestColumn);
+
+            $phoneCols = []; // [colIndex => label]
+            for ($c = 1; $c <= $maxColIndex; $c++) {
+                $header = trim((string) $sheet->getCellByColumnAndRow($c, 1)->getValue());
+                if ($header === '') {
+                    continue;
+                }
+
+                $h = strtolower(preg_replace('/\s+/', ' ', $header));
+
+                // Deteksi kata "hp" atau "telepon" dll
+                $isPhone = (strpos($h, 'hp') !== false) || (strpos($h, 'telepon') !== false) || (strpos($h, 'telp') !== false);
+
+                if (!$isPhone) {
+                    continue;
+                }
+
+                // Simpan kolom, nanti semua yang terdeteksi akan dinormalisasi
+                $phoneCols[$c] = $header;
+            }
+
+            // Fallback jika tidak ketemu header telepon
+            if (empty($phoneCols)) {
+                // P = 16, Q = 17 (template kamu)
+                $phoneCols[16] = 'No. HP Siswa';
+                $phoneCols[17] = 'No. HP Orang Tua';
+            }
+
+            for ($row = 2; $row <= $highestRow; $row++) {
+                foreach ($phoneCols as $colIndex => $label) {
+                    // Pastikan kolom tidak melebihi jumlah kolom aktif
+                    if ($colIndex > $maxColIndex) {
+                        continue;
+                    }
+
+                    $cell = $sheet->getCellByColumnAndRow($colIndex, $row);
+                    $val  = $cell->getValue();
+
+                    if ($val === null || trim((string) $val) === '') {
+                        continue;
+                    }
+
+                    $normalized = $this->normalizeIdPhoneTo08((string) $val);
+
+                    // Tulis sebagai string supaya nol di depan aman
+                    $sheet->setCellValueExplicitByColumnAndRow(
+                        $colIndex,
+                        $row,
+                        $normalized,
+                        DataType::TYPE_STRING
+                    );
+                }
+            }
+
+            // Simpan balik file yang sama
+            $writer = ($ext === 'xls') ? new Xls($spreadsheet) : new Xlsx($spreadsheet);
+            $writer->save($filePath);
+        } catch (\Throwable $e) {
+            // Jangan menggagalkan import hanya karena pre-processing.
+            // Cukup log, importer tetap jalan seperti biasa.
+            log_message('warning', 'Pre-normalize import phones failed: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Display students list
      * Catatan: Pagination hanya di VIEW (DataTables).
      */
@@ -286,18 +442,37 @@ class StudentController extends BaseController
     {
         require_permission('manage_students');
 
-        $createWithUser = $this->request->getPost('create_with_user') == '1';
+        // Ambil post mentah dulu untuk normalisasi telepon sebelum validasi
+        $post = $this->request->getPost();
+        $createWithUser = ($post['create_with_user'] ?? null) == '1';
+
+        // Normalisasi nomor telepon siswa (jika ada di form)
+        // Umumnya field user = phone
+        if (isset($post['phone'])) {
+            $post['phone'] = $this->normalizeIdPhoneTo08((string) $post['phone']);
+        }
+        // Jaga-jaga jika form pakai key lain
+        if (isset($post['student_phone']) && !isset($post['phone'])) {
+            $post['student_phone'] = $this->normalizeIdPhoneTo08((string) $post['student_phone']);
+        }
+
         $rules = $createWithUser
             ? StudentValidation::createWithUserRules()
             : StudentValidation::createRules();
 
-        if (! $this->validate($rules)) {
+        // Validasi menggunakan data yang sudah dinormalisasi
+        if (! $this->validateData($post, $rules)) {
             return redirect()->back()
                 ->withInput()
                 ->with('errors', $this->validator->getErrors());
         }
 
-        $data = StudentValidation::sanitizeInput($this->request->getPost());
+        $data = StudentValidation::sanitizeInput($post);
+
+        // Pastikan phone tetap versi normalized saat dipakai service
+        if (isset($data['phone'])) {
+            $data['phone'] = $this->normalizeIdPhoneTo08((string) $data['phone']);
+        }
 
         $result = $createWithUser
             ? $this->studentService->createStudentWithUser($data)
@@ -307,6 +482,19 @@ class StudentController extends BaseController
             return redirect()->back()
                 ->withInput()
                 ->with('error', $result['message']);
+        }
+
+        // Opsional: kalau tidak create user, tapi form mengirim phone + user_id, update phone user agar konsisten
+        if (! $createWithUser) {
+            $userId = (int) ($data['user_id'] ?? 0);
+            $phone  = (string) ($data['phone'] ?? '');
+            if ($userId > 0 && $phone !== '') {
+                try {
+                    $this->userModel->update($userId, ['phone' => $phone]);
+                } catch (\Throwable $e) {
+                    log_message('warning', 'Update user phone after createStudent failed: ' . $e->getMessage());
+                }
+            }
         }
 
         return redirect()->to('admin/students')->with('success', $result['message']);
@@ -384,11 +572,41 @@ class StudentController extends BaseController
 
         $postData = $this->request->getPost();
 
+        // Normalisasi telepon jika ada (umumnya field user phone)
+        $rawPhone = '';
+        if (isset($postData['phone'])) {
+            $rawPhone = (string) $postData['phone'];
+            $postData['phone'] = $this->normalizeIdPhoneTo08($rawPhone);
+        } elseif (isset($postData['student_phone'])) {
+            $rawPhone = (string) $postData['student_phone'];
+            $postData['student_phone'] = $this->normalizeIdPhoneTo08($rawPhone);
+        }
+
+        // Ambil user_id untuk update phone user setelah service update student
+        $studentRow = $this->studentModel->find($id);
+        $userId     = $studentRow ? (int) ($studentRow['user_id'] ?? 0) : 0;
+
         $result = $this->studentService->updateStudent($id, $postData);
 
         if (! $result['success']) {
             return redirect()->back()->withInput()
                 ->with('error', $result['message']);
+        }
+
+        // Opsional tapi penting: update phone user jika dikirim dari form
+        $normalizedPhone = '';
+        if (isset($postData['phone'])) {
+            $normalizedPhone = (string) $postData['phone'];
+        } elseif (isset($postData['student_phone'])) {
+            $normalizedPhone = (string) $postData['student_phone'];
+        }
+
+        if ($userId > 0 && $normalizedPhone !== '') {
+            try {
+                $this->userModel->update($userId, ['phone' => $normalizedPhone]);
+            } catch (\Throwable $e) {
+                log_message('warning', 'Update user phone on student update failed: ' . $e->getMessage());
+            }
         }
 
         return redirect()->to('admin/students')->with('success', $result['message']);
@@ -651,6 +869,9 @@ class StudentController extends BaseController
             }
 
             $filePath = $uploadPath . $newFileName;
+
+            // Pre-processing: ubah +62/62 -> 08 di kolom telepon sebelum import
+            $this->preNormalizeImportExcelPhones($filePath);
 
             $results = $this->excelImporter->importStudents($filePath);
 

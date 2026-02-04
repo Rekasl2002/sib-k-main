@@ -52,7 +52,13 @@ $routes->setAutoRoute(false);
 // -------------------------------
 // Default
 // -------------------------------
-$routes->get('/', 'Home::index');
+
+// ✅ FIX: Masuk web langsung ke halaman login
+$routes->get('/', static fn() => redirect()->to('/login'));
+
+// ✅ OPSIONAL: tetap sediakan akses Home::index (kalau masih dibutuhkan)
+$routes->get('home', 'Home::index');
+
 $routes->get('test', 'Test::index');
 
 /**
@@ -532,6 +538,12 @@ $routes->group('koordinator', [
             $routes->get('(:num)/results', 'AssessmentController::results/$1', ['as' => 'koordinator.assessments.results']);
             $routes->get('(:num)/results/export', 'AssessmentController::exportResults/$1', ['as' => 'koordinator.assessments.results.export']);
             $routes->get('(:num)/results/(:num)', 'AssessmentController::resultDetail/$1/$2', ['as' => 'koordinator.assessments.results.detail']);
+
+            $routes->post('grade/submit', 'AssessmentController::submitGrade', ['as' => 'koordinator.assessments.grade.submit']);
+            $routes->post('grade/answer', 'AssessmentController::gradeAnswerAction', ['as' => 'koordinator.assessments.grade.answer']);
+            $routes->post('review/(:num)', 'AssessmentController::reviewSave/$1', ['as' => 'koordinator.assessments.review.save']);
+            $routes->post('(:num)/results/(:num)/ungrade', 'AssessmentController::ungradeResult/$1/$2', ['as' => 'koordinator.assessments.results.ungrade']);
+            $routes->post('(:num)/results/(:num)/delete', 'AssessmentController::deleteResult/$1/$2', ['as' => 'koordinator.assessments.results.delete']);
 
             $routes->post('grade/submit', 'AssessmentController::submitGrade', ['as' => 'koordinator.assessments.grade.submit']);
             $routes->post('grade/answer', 'AssessmentController::gradeAnswerAction', ['as' => 'koordinator.assessments.grade.answer']);

@@ -49,7 +49,7 @@ class ReportController extends BaseController
      */
     public function index()
     {
-        if ($redir = $this->ensurePerm('view_reports', '/counselor/dashboard', 'Akses laporan ditolak.')) {
+        if ($redir = $this->ensurePerm('view_reports_individual', '/counselor/dashboard', 'Akses laporan ditolak.')) {
             return $redir;
         }
 
@@ -112,7 +112,7 @@ class ReportController extends BaseController
      */
     public function preview()
     {
-        if ($redir = $this->ensurePerm('view_reports', '/counselor/dashboard', 'Akses laporan ditolak.')) {
+        if ($redir = $this->ensurePerm('view_reports_individual', '/counselor/dashboard', 'Akses laporan ditolak.')) {
             return $redir;
         }
 
