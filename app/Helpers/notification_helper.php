@@ -225,6 +225,9 @@ if (!function_exists('get_unread_count')) {
 }
 
 if (!function_exists('mark_as_read')) {
+    /**
+     * @param int|string|array<int, int|string> $notification_ids
+     */
     function mark_as_read($notification_ids, ?int $user_id = null): bool
     {
         try {
@@ -359,10 +362,10 @@ if (!function_exists('format_notification_time')) {
 if (!function_exists('render_notification_badge')) {
     function render_notification_badge(?int $user_id = null): string
     {
-        helper('permission');
+        helper(['auth', 'permission']);
 
         if ($user_id === null) {
-            $user_id = current_user_id();
+            $user_id = auth_id();
         }
 
         if (!$user_id) {

@@ -45,9 +45,9 @@ class AuthController extends BaseController
         }
 
         $data = [
-            'title' => 'Login - SIB-K',
-            $schoolName = setting('general.school_name', env('school.name')),
-            $logo = setting('branding.logo_path', env('school.logo')),
+            'title'      => 'Login - SIB-K',
+            'schoolName' => setting('general.school_name', env('school.name')),
+            'logo'       => setting('branding.logo_path', env('school.logo')),
         ];
 
         return view('auth/login', $data);
@@ -136,8 +136,8 @@ class AuthController extends BaseController
         }
 
         $data = [
-            'title' => 'Registrasi - SIB-K',
-            $schoolName = setting('general.school_name', env('school.name')),
+            'title'      => 'Registrasi - SIB-K',
+            'schoolName' => setting('general.school_name', env('school.name')),
         ];
 
         return view('auth/register', $data);
@@ -206,8 +206,8 @@ class AuthController extends BaseController
         }
 
         $data = [
-            'title' => 'Lupa Password - SIB-K',
-            $schoolName = setting('general.school_name', env('school.name')),
+            'title'      => 'Lupa Password - SIB-K',
+            'schoolName' => setting('general.school_name', env('school.name')),
         ];
 
         return view('auth/forgot_password', $data);
@@ -275,11 +275,12 @@ class AuthController extends BaseController
 
         // Set cookie for 30 days
         set_cookie([
-            'name'   => 'sibk_remember',
-            'value'  => $token,
-            'expire' => 2592000, // 30 days
-            'secure' => false,
+            'name'     => 'sibk_remember',
+            'value'    => $token,
+            'expire'   => 2592000, // 30 days
+            'secure'   => $this->request->isSecure(),
             'httponly' => true,
+            'samesite' => 'Lax',
         ]);
     }
 

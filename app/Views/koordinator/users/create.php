@@ -98,7 +98,7 @@ if (!function_exists('class_label')) {
         <div class="col-12">
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="mdi mdi-alert-circle me-2"></i>
-                <?= session()->getFlashdata('error') ?>
+                <?= esc(session()->getFlashdata('error')) ?>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         </div>

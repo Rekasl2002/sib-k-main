@@ -107,13 +107,19 @@ if (!function_exists('has_role')) {
         }
 
         $session = \Config\Services::session();
-        $userRole = $session->get('role_name');
+        $userRole = strtolower(trim((string) $session->get('role_name')));
 
         if (is_array($roles)) {
-            return in_array($userRole, $roles);
+            foreach ($roles as $role) {
+                if ($userRole === strtolower(trim((string) $role))) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
-        return $userRole === $roles;
+        return $userRole === strtolower(trim((string) $roles));
     }
 }
 
@@ -131,19 +137,54 @@ if (!function_exists('has_permission')) {
         }
 
         $session = \Config\Services::session();
-        $userPermissions = $session->get('permissions') ?? [];
 
         // Admin has all permissions
-        if ($session->get('role_name') === 'Admin') {
+        if (has_role(['Admin', 'Administrator'])) {
             return true;
         }
 
-        if (is_array($permissions)) {
-            // Check if user has ANY of the permissions
-            return count(array_intersect($permissions, $userPermissions)) > 0;
+        try {
+            helper('permission');
+        } catch (\Throwable $e) {
+            // Fallback to session permissions below.
         }
 
-        return in_array($permissions, $userPermissions);
+        try {
+            $userPermissions = function_exists('user_permissions')
+                ? user_permissions()
+                : ($session->get('permissions') ?? []);
+        } catch (\Throwable $e) {
+            $userPermissions = $session->get('permissions') ?? [];
+        }
+
+        if (!is_array($userPermissions)) {
+            $userPermissions = [];
+        }
+
+        $userPermissions = array_values(array_filter(array_map(static fn($v) => trim((string) $v), $userPermissions)));
+        $needed = is_array($permissions) ? $permissions : [$permissions];
+
+        foreach ($needed as $permission) {
+            $permission = trim((string) $permission);
+            if ($permission === '') {
+                continue;
+            }
+
+            if (in_array($permission, $userPermissions, true)) {
+                return true;
+            }
+
+            if (str_contains($permission, '*')) {
+                $pattern = '/^' . str_replace('\*', '.*', preg_quote($permission, '/')) . '$/i';
+                foreach ($userPermissions as $ownedPermission) {
+                    if (preg_match($pattern, $ownedPermission)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }
 
@@ -155,7 +196,7 @@ if (!function_exists('is_admin')) {
      */
     function is_admin(): bool
     {
-        return has_role('Admin');
+        return has_role(['Admin', 'Administrator']);
     }
 }
 
@@ -167,7 +208,7 @@ if (!function_exists('is_koordinator')) {
      */
     function is_koordinator(): bool
     {
-        return has_role('Koordinator BK');
+        return has_role(['Koordinator BK', 'Koordinator']);
     }
 }
 
@@ -179,7 +220,7 @@ if (!function_exists('is_guru_bk')) {
      */
     function is_guru_bk(): bool
     {
-        return has_role('Guru BK');
+        return has_role(['Guru BK', 'Counselor']);
     }
 }
 
@@ -191,7 +232,7 @@ if (!function_exists('is_wali_kelas')) {
      */
     function is_wali_kelas(): bool
     {
-        return has_role('Wali Kelas');
+        return has_role(['Wali Kelas', 'Homeroom']);
     }
 }
 
@@ -203,7 +244,7 @@ if (!function_exists('is_siswa')) {
      */
     function is_siswa(): bool
     {
-        return has_role('Siswa');
+        return has_role(['Siswa', 'Student']);
     }
 }
 
@@ -215,7 +256,7 @@ if (!function_exists('is_orang_tua')) {
      */
     function is_orang_tua(): bool
     {
-        return has_role('Orang Tua');
+        return has_role(['Orang Tua', 'Parent']);
     }
 }
 

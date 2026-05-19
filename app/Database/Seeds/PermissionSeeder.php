@@ -29,6 +29,13 @@ class PermissionSeeder extends Seeder
             ['id' => 18, 'permission_name' => 'manage_sanctions', 'description' => 'Kelola sanksi pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
             ['id' => 19, 'permission_name' => 'import_export_data', 'description' => 'Import/Export data via Excel', 'created_at' => date('Y-m-d H:i:s')],
             ['id' => 20, 'permission_name' => 'view_all_students', 'description' => 'Lihat semua data siswa', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 21, 'permission_name' => 'manage_settings', 'description' => 'Kelola pengaturan aplikasi', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 22, 'permission_name' => 'view_reports_aggregate', 'description' => 'Lihat laporan agregat', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 23, 'permission_name' => 'generate_reports_aggregate', 'description' => 'Unduh/generate laporan agregat', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 24, 'permission_name' => 'view_reports_individual', 'description' => 'Lihat laporan individual siswa', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 25, 'permission_name' => 'generate_reports_individual', 'description' => 'Unduh/generate laporan individual siswa', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 26, 'permission_name' => 'manage_light_violations', 'description' => 'Kelola pelanggaran ringan untuk wali kelas', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 27, 'permission_name' => 'submit_violation_submissions', 'description' => 'Ajukan laporan/pengaduan pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
         ];
 
         // Truncate table first

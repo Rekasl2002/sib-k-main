@@ -7,7 +7,7 @@
     <small class="text-muted">Dikirim: <?= esc($msg['created_at']) ?></small>
   </div>
   <div class="card-body">
-    <div class="mb-3"><?= $msg['body'] ?></div>
+    <div class="mb-3"><?= nl2br(esc($msg['body'])) ?></div>
     <hr>
     <form method="post" action="<?= site_url('messages/reply/'.$msg['id']) ?>">
       <?= csrf_field() ?>

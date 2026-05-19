@@ -115,6 +115,7 @@ class Autoload extends AutoloadConfig
         'filesystem',
         'cookie',
         'security',
+        'permission',
         'auth',
         'app',
         'settings',

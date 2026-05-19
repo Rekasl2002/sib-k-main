@@ -24,6 +24,7 @@ if (!function_exists('auth_user')) {
                 'full_name'     => session('full_name'),
                 'role_id'       => session('role_id'),
                 'role_name'     => session('role_name'),
+                'permissions'   => session('permissions') ?? [],
                 'profile_photo' => session('profile_photo'),
             ];
         }
@@ -229,18 +230,16 @@ if (!function_exists('user_avatar')) {
      * - Mengabaikan nilai default lama yang tersimpan di DB (anggap sebagai kosong)
      * - Fallback: public/assets/images/users/default-avatar.svg
      */
-    function user_avatar(?string $photo = null): string
+    function user_avatar(?string $photo = null, ?int $userId = null): string
     {
         helper('url');
 
         $defaultRel = 'assets/images/users/default-avatar.svg';
 
-        if (!$photo) {
-            $photo = session('profile_photo');
-        }
-
-        if (!$photo) {
-            return base_url($defaultRel);
+        $args = func_num_args();
+        if ($args === 0) {
+            $photo  = session('profile_photo');
+            $userId = (int) (session('user_id') ?? 0);
         }
 
         $photo = trim((string) $photo);
@@ -248,8 +247,15 @@ if (!function_exists('user_avatar')) {
             return base_url($defaultRel);
         }
 
+        if (preg_match('~^https?://~i', $photo)) {
+            return $photo;
+        }
+
+        $photoNoQuery = strtok($photo, '?');
+        $photoNoQuery = trim((string) $photoNoQuery);
+
         // Abaikan nilai default lama (kalau pernah tersimpan di DB)
-        $photoNorm = strtolower(ltrim(str_replace('\\', '/', $photo), '/'));
+        $photoNorm = strtolower(ltrim(str_replace('\\', '/', $photoNoQuery), '/'));
         $baseNorm  = strtolower(basename($photoNorm));
 
         $legacyDefaults = [
@@ -273,18 +279,16 @@ if (!function_exists('user_avatar')) {
             return base_url($defaultRel);
         }
 
-        // URL penuh
-        if (preg_match('~^https?://~i', $photo)) {
-            return $photo;
-        }
-
         // Normalisasi path
-        $photo = ltrim(str_replace('\\', '/', $photo), '/');
+        $photo = ltrim(str_replace('\\', '/', $photoNoQuery), '/');
 
         $candidates = [$photo];
 
         // Jika hanya filename
         if (strpos($photo, '/') === false) {
+            if (!empty($userId)) {
+                $candidates[] = 'uploads/profile_photos/' . (int) $userId . '/' . $photo;
+            }
             $candidates[] = 'uploads/profile_photos/' . $photo;
             $candidates[] = 'uploads/users/' . $photo;
             $candidates[] = 'uploads/profiles/' . $photo; // legacy
@@ -298,12 +302,19 @@ if (!function_exists('user_avatar')) {
             $candidates[] = 'uploads/profiles/' . $base;
         }
 
+        if (!empty($userId) && preg_match('~^uploads/profile_photos/(\d+)/~', $photo, $m)) {
+            if ((int) $m[1] !== (int) $userId) {
+                return base_url($defaultRel);
+            }
+        }
+
         foreach (array_unique($candidates) as $rel) {
             $rel = ltrim(str_replace('\\', '/', $rel), '/');
             $abs = rtrim(FCPATH, '/\\') . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $rel);
 
             if (is_file($abs)) {
-                return base_url($rel);
+                $v = @filemtime($abs) ?: time();
+                return base_url($rel) . '?v=' . $v;
             }
         }
 
@@ -312,7 +323,7 @@ if (!function_exists('user_avatar')) {
 }
 
 /** Role helpers (kompatibilitas) */
-if (!function_exists('is_admin'))           { function is_admin(): bool { return has_role('Admin'); } }
+if (!function_exists('is_admin'))           { function is_admin(): bool { return has_role(['Admin','Administrator']); } }
 if (!function_exists('is_coordinator'))     { function is_coordinator(): bool { return has_role(['Koordinator BK','Koordinator']); } }
 if (!function_exists('is_koordinator'))     { function is_koordinator(): bool { return is_coordinator(); } } // ✅ buat view add_sanction.php
 if (!function_exists('is_counselor'))       { function is_counselor(): bool { return has_role(['Guru BK','Counselor']); } }

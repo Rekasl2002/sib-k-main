@@ -315,7 +315,7 @@ class UserController extends BaseController
         }
 
         return redirect()->back()
-            ->with('success', "Password berhasil direset. Password baru: <strong>{$newPassword}</strong>. Harap catat dan sampaikan kepada user.");
+            ->with('success', "Password berhasil direset. Password baru: {$newPassword}. Harap catat dan sampaikan kepada user.");
     }
 
     /**

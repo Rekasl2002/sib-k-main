@@ -59,8 +59,6 @@ $routes->get('/', static fn() => redirect()->to('/login'));
 // ✅ OPSIONAL: tetap sediakan akses Home::index (kalau masih dibutuhkan)
 $routes->get('home', 'Home::index');
 
-$routes->get('test', 'Test::index');
-
 /**
  * ✅ Dashboard universal (opsional, tapi enak untuk redirect fail-safe)
  * Mengarahkan user ke dashboard sesuai role_name di session.
@@ -95,7 +93,7 @@ $routes->get('student', static fn() => redirect()->to('/student/dashboard'), ['f
 $routes->group('auth', ['filter' => 'csrf'], function ($routes) {
     $routes->get('login', 'Auth\AuthController::index');
     $routes->post('login', 'Auth\AuthController::login');
-    $routes->match(['get', 'post'], 'logout', 'Auth\AuthController::logout');
+    $routes->post('logout', 'Auth\AuthController::logout');
     $routes->get('register', 'Auth\AuthController::register');
     $routes->post('register', 'Auth\AuthController::doRegister');
     $routes->get('forgot-password', 'Auth\AuthController::forgotPassword');
@@ -140,9 +138,7 @@ $routes->group('', ['filter' => 'csrf'], function ($routes) {
     $routes->get('login', 'Auth\AuthController::index', ['as' => 'login']);
     $routes->post('login', 'Auth\AuthController::login', ['as' => 'login.submit']);
 
-    // Tambah fallback GET logout supaya kompatibel dengan link di UI
     $routes->post('logout', 'Auth\AuthController::logout', ['as' => 'logout']);
-    $routes->get('logout', 'Auth\AuthController::logout', ['as' => 'logout.get']);
 
     $routes->get('register', 'Auth\AuthController::register', ['as' => 'register']);
     $routes->post('register', 'Auth\AuthController::doRegister', ['as' => 'register.submit']);
@@ -450,7 +446,7 @@ $routes->group('koordinator', [
             ]);
 
             $routes->post('addSanction/(:num)', 'CaseController::addSanction/$1', [
-                'filter' => 'permission:manage_violations,manage_sanctions',
+                'filter' => 'permission:any,manage_violations,manage_sanctions',
                 'as'     => 'koordinator.cases.sanction',
             ]);
         });
@@ -464,11 +460,11 @@ $routes->group('koordinator', [
         // SANCTIONS
         $routes->group('sanctions', function ($routes) {
             $routes->post('create/(:num)', 'SanctionController::store/$1', [
-                'filter' => 'permission:manage_violations,manage_sanctions',
+                'filter' => 'permission:any,manage_violations,manage_sanctions',
                 'as'     => 'koordinator.sanctions.create'
             ]);
             $routes->post('store/(:num)', 'SanctionController::store/$1', [
-                'filter' => 'permission:manage_violations,manage_sanctions',
+                'filter' => 'permission:any,manage_violations,manage_sanctions',
                 'as'     => 'koordinator.sanctions.store'
             ]);
 
@@ -487,7 +483,7 @@ $routes->group('koordinator', [
             ]);
 
             $routes->post('delete/(:num)', 'SanctionController::delete/$1', [
-                'filter' => 'permission:manage_violations,manage_sanctions',
+                'filter' => 'permission:any,manage_violations,manage_sanctions',
                 'as'     => 'koordinator.sanctions.delete'
             ]);
 
@@ -720,7 +716,7 @@ $routes->group('counselor', [
             ]);
 
             $routes->post('addSanction/(:num)', 'CaseController::addSanction/$1', [
-                'filter' => 'permission:manage_violations,manage_sanctions',
+                'filter' => 'permission:any,manage_violations,manage_sanctions',
                 'as'     => 'counselor.cases.sanction'
             ]);
             $routes->post('notifyParent/(:num)', 'CaseController::notifyParent/$1', [
@@ -732,7 +728,7 @@ $routes->group('counselor', [
         // Sanctions
         $routes->group('sanctions', function ($routes) {
             $routes->post('create/(:num)', 'SanctionController::store/$1', [
-                'filter' => 'permission:manage_violations,manage_sanctions'
+                'filter' => 'permission:any,manage_violations,manage_sanctions'
             ]);
             $routes->get('show/(:num)', 'SanctionController::show/$1', [
                 'filter' => 'permission:view_violations'
@@ -744,7 +740,7 @@ $routes->group('counselor', [
                 'filter' => 'permission:manage_sanctions'
             ]);
             $routes->post('delete/(:num)', 'SanctionController::delete/$1', [
-                'filter' => 'permission:manage_violations,manage_sanctions'
+                'filter' => 'permission:any,manage_violations,manage_sanctions'
             ]);
             $routes->post('complete/(:num)', 'SanctionController::complete/$1', [
                 'filter' => 'permission:manage_sanctions'
@@ -784,7 +780,7 @@ $routes->group('counselor', [
                 'as'     => 'counselor.violations.delete'
             ]);
             $routes->post('addSanction/(:num)', 'CaseController::addSanction/$1', [
-                'filter' => 'permission:manage_violations,manage_sanctions',
+                'filter' => 'permission:any,manage_violations,manage_sanctions',
                 'as'     => 'counselor.violations.sanction'
             ]);
             $routes->post('notifyParent/(:num)', 'CaseController::notifyParent/$1', [

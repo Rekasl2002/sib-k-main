@@ -1,0 +1,74 @@
+# Local environment
+.env
+.env.*
+!.env.example
+env copy
+
+# Composer dependencies
+/vendor/
+
+# CodeIgniter runtime files
+/writable/*
+!/writable/.gitkeep
+!/writable/.htaccess
+!/writable/index.html
+!/writable/cache/
+!/writable/cache/.gitkeep
+!/writable/cache/index.html
+!/writable/debugbar/
+!/writable/debugbar/.gitkeep
+!/writable/debugbar/index.html
+!/writable/dompdf/
+!/writable/dompdf/.gitkeep
+!/writable/logs/
+!/writable/logs/.gitkeep
+!/writable/session/
+!/writable/session/.gitkeep
+!/writable/session/index.html
+!/writable/uploads/
+!/writable/uploads/.gitkeep
+!/writable/uploads/index.html
+/writable/cache/*
+!/writable/cache/.gitkeep
+!/writable/cache/index.html
+/writable/debugbar/*
+!/writable/debugbar/.gitkeep
+!/writable/debugbar/index.html
+/writable/dompdf/*
+!/writable/dompdf/.gitkeep
+/writable/logs/*
+!/writable/logs/.gitkeep
+/writable/session/*
+!/writable/session/.gitkeep
+!/writable/session/index.html
+/writable/uploads/*
+!/writable/uploads/.gitkeep
+!/writable/uploads/index.html
+
+# Runtime files that should never be web-accessible
+/public/writable/
+/public/{writable}/
+
+# User-uploaded assets
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Test and tool output
+.phpunit.result.cache
+coverage/
+build/
+*.log
+
+# Local IDE metadata
+.vscode/
+.idea/
+
+# Accidental REPL fragments
+/execute('INSERT
+/insert(\[...\])
+/origin)
+/query('INSERT
+/run('db
+/run()
+/run(\[\])
+/simpleQuery('INSERT

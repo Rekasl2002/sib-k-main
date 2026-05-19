@@ -48,7 +48,7 @@ $formAction = $isEdit ? base_url('admin/classes/update/' . $class['id']) : base_
 <?php if (session()->getFlashdata('error')): ?>
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <i class="mdi mdi-alert-circle me-2"></i>
-        <?= session()->getFlashdata('error') ?>
+        <?= esc(session()->getFlashdata('error')) ?>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>

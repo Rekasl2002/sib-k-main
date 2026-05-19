@@ -1,7 +1,6 @@
 <?php
 
 use App\Models\SettingModel;
-use Throwable;
 
 if (! function_exists('settings_cache_key')) {
     /**
@@ -15,6 +14,26 @@ if (! function_exists('settings_cache_key')) {
     }
 }
 
+if (! function_exists('settings_resolve_key')) {
+    /**
+     * Dukung dua format pemanggilan:
+     * - setting('app_name', 'SIB-K', 'general')
+     * - setting('general.app_name', 'SIB-K')
+     */
+    function settings_resolve_key(string $key, string $group): array
+    {
+        if ($group === 'general' && strpos($key, '.') !== false) {
+            [$candidateGroup, $candidateKey] = explode('.', $key, 2);
+
+            if ($candidateGroup !== '' && $candidateKey !== '') {
+                return [$candidateGroup, $candidateKey];
+            }
+        }
+
+        return [$group, $key];
+    }
+}
+
 if (! function_exists('setting')) {
     /**
      * Ambil nilai setting
@@ -22,6 +41,7 @@ if (! function_exists('setting')) {
      */
     function setting(string $key, $default = null, string $group = 'general')
     {
+        [$group, $key] = settings_resolve_key($key, $group);
         $ckey = settings_cache_key($group, $key);
 
         // 1) Coba dari cache (pakai wrapper agar nilai null tetap bisa dicache)
@@ -32,7 +52,7 @@ if (! function_exists('setting')) {
             if (is_array($cached) && array_key_exists('__hit', $cached)) {
                 return $cached['value'];
             }
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             // Cache error? lanjut saja tanpa cache
         }
 
@@ -41,7 +61,7 @@ if (! function_exists('setting')) {
             /** @var SettingModel $model */
             $model = model(SettingModel::class);
             $val   = $model->getValue($key, $group, $default);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             $val = $default;
         }
 
@@ -49,7 +69,7 @@ if (! function_exists('setting')) {
         try {
             $cache = cache();
             $cache->save($ckey, ['__hit' => 1, 'value' => $val], 3600);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             // Abaikan kalau cache gagal
         }
 
@@ -61,15 +81,16 @@ if (! function_exists('set_setting')) {
     /**
      * Simpan/update setting lalu invalidasi cache kuncinya
      * Signature: set_setting('group','key', $value, $type='string')
+     *
+     * @param mixed $value
      */
     function set_setting(string $group, string $key, $value, string $type = 'string'): bool
     {
-        /** @var SettingModel $model */
-        $model = model(SettingModel::class);
-
-        // Normalisasi value sesuai type
-        $storedValue = null;
         try {
+            /** @var SettingModel $model */
+            $model = model(SettingModel::class);
+
+            // Normalisasi value sesuai type
             $storedValue = match ($type) {
                 'int'  => (string) ((int) $value),
                 'bool' => (string) ((int) (bool) $value),
@@ -78,31 +99,31 @@ if (! function_exists('set_setting')) {
                     : (json_encode($value, JSON_UNESCAPED_UNICODE) ?: ''),
                 default => (string) $value,
             };
-        } catch (Throwable $e) {
-            $storedValue = (string) $value;
-        }
 
-        $existing = $model->where(['group' => $group, 'key' => $key])->first();
+            $existing = $model->where(['group' => $group, 'key' => $key])->first();
 
-        if ($existing) {
-            $ok = $model->update($existing['id'], [
-                'value' => $storedValue,
-                'type'  => $type,
-            ]);
-        } else {
-            $ok = (bool) $model->insert([
-                'group'    => $group,
-                'key'      => $key,
-                'value'    => $storedValue,
-                'type'     => $type,
-                'autoload' => 0,
-            ]);
+            if ($existing) {
+                $ok = $model->update($existing['id'], [
+                    'value' => $storedValue,
+                    'type'  => $type,
+                ]);
+            } else {
+                $ok = (bool) $model->insert([
+                    'group'    => $group,
+                    'key'      => $key,
+                    'value'    => $storedValue,
+                    'type'     => $type,
+                    'autoload' => 0,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            return false;
         }
 
         // Invalidate cache
         try {
             cache()->delete(settings_cache_key($group, $key));
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             // ignore
         }
 
@@ -118,7 +139,7 @@ if (! function_exists('forget_setting')) {
     {
         try {
             cache()->delete(settings_cache_key($group, $key));
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             // ignore
         }
     }

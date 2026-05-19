@@ -325,9 +325,12 @@ if (!function_exists('get_file_size')) {
     function get_file_size($bytes, $decimals = 2)
     {
         $size = ['B', 'KB', 'MB', 'GB', 'TB'];
-        $factor = floor((strlen($bytes) - 1) / 3);
+        $bytes = max(0, (float) $bytes);
+        $decimals = max(0, (int) $decimals);
+        $factor = $bytes > 0 ? (int) floor(log($bytes, 1024)) : 0;
+        $factor = (int) min($factor, count($size) - 1);
 
-        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . ' ' . @$size[$factor];
+        return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . ' ' . $size[$factor];
     }
 }
 

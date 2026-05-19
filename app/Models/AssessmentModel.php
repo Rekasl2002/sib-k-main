@@ -307,7 +307,7 @@ class AssessmentModel extends Model
 
         // Get student info
         $student = $db->table('students s')
-            ->select('s.id, s.class_id, c.grade_level, c.grade')
+            ->select('s.id, s.class_id, c.grade_level, c.grade_level AS grade')
             ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
             ->where('s.id', $sid)
             ->where('s.deleted_at', null)
