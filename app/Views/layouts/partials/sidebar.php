@@ -9,7 +9,7 @@
 
 try {
     // url_is() ada di url helper. auth_user/auth_role biasanya di auth helper.
-    helper(['permission', 'auth', 'url']);
+    helper(['permission', 'auth', 'url', 'simulation_access']);
 } catch (\Throwable $e) {
     // Jika salah satu helper tidak ada, kita tetap jalan dengan fallback.
 }
@@ -131,6 +131,15 @@ $__isCounselor   = $__isRoleAny(['counselor', 'guru bk'], 3);
 $__isHomeroom    = $__isRoleAny(['homeroom', 'wali kelas'], 4);
 $__isStudent     = $__isRoleAny(['student', 'siswa'], 5);
 $__isParent      = $__isRoleAny(['parent', 'orang tua'], 6);
+
+$__canAccessDemoSuite = false;
+try {
+    $__canAccessDemoSuite = function_exists('can_access_simulation_suite')
+        ? can_access_simulation_suite()
+        : $__isAdmin;
+} catch (\Throwable $e) {
+    $__canAccessDemoSuite = $__isAdmin;
+}
 
 // Active helper
 $__active = function (string $pattern): string {
@@ -455,7 +464,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           </li>
           <?php endif; ?>
 
-          <?php if ($__showStaffVS && $__permViewViolationSubmissions): ?>: ?>
+          <?php if ($__showStaffVS && $__permViewViolationSubmissions): ?>
           <li>
             <a href="<?= base_url('counselor/violation-submissions') ?>" class="waves-effect<?= $__active('counselor/violation-submissions*') ?>">
               <i class="mdi mdi-message-alert"></i>
@@ -705,6 +714,23 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
             </a>
           </li>
           <?php endif; ?>
+        <?php endif; ?>
+
+        <?php if ($__canAccessDemoSuite): ?>
+        <li class="menu-title">Prototipe/Simulasi</li>
+        <li class="<?= $__mm(['simulation*','prototype*','admin/simulation-access*']) ?>">
+          <a href="javascript:void(0);" class="has-arrow waves-effect">
+            <i class="mdi mdi-test-tube"></i>
+            <span>Prototipe/Simulasi</span>
+          </a>
+          <ul class="sub-menu" aria-expanded="false">
+            <li><a href="<?= base_url('simulation') ?>" class="<?= $__active('simulation*') ? 'active' : '' ?>">Simulasi Fitur</a></li>
+            <li><a href="<?= base_url('prototype') ?>" class="<?= $__active('prototype*') ? 'active' : '' ?>">Prototipe Skripsi</a></li>
+            <?php if ($__isAdmin): ?>
+              <li><a href="<?= base_url('admin/simulation-access') ?>" class="<?= $__active('admin/simulation-access*') ? 'active' : '' ?>">Kelola Akses</a></li>
+            <?php endif; ?>
+          </ul>
+        </li>
         <?php endif; ?>
 
       </ul>

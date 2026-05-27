@@ -46,8 +46,10 @@ env copy
 !/writable/uploads/index.html
 
 # Runtime files that should never be web-accessible
-/public/writable/
-/public/{writable}/
+/public/writable/*
+!/public/writable/.htaccess
+/public/{writable}/*
+!/public/{writable}/.htaccess
 
 # User-uploaded assets
 /public/uploads/*

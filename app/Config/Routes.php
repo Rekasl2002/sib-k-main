@@ -200,6 +200,13 @@ $routes->group('admin', [
             $routes->get('search', 'UserController::search', ['as' => 'admin.users.search']);
         });
 
+        // AKSES PROTOTIPE/SIMULASI (khusus Admin)
+        $routes->group('simulation-access', function ($routes) {
+            $routes->get('/', 'SimulationAccessController::index', ['as' => 'admin.simulation_access']);
+            $routes->post('grant', 'SimulationAccessController::grant', ['as' => 'admin.simulation_access.grant']);
+            $routes->post('revoke', 'SimulationAccessController::revoke', ['as' => 'admin.simulation_access.revoke']);
+        });
+
         // ROLE MANAGEMENT (izin: manage_roles)
         $routes->group('roles', ['filter' => 'permission:manage_roles'], function ($routes) {
             $routes->get('/', 'RoleController::index', ['as' => 'admin.roles']);
@@ -1226,6 +1233,26 @@ $routes->group('parent', [
             $routes->get('children', 'ReportController::childrenReport', ['as' => 'parent.reports.children']);
         });
     });
+});
+
+// ===============================
+// Simulasi & Prototype Fitur (data dummy, tidak menulis data operasional)
+// ===============================
+$routes->group('simulation', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'SimulationController::index', ['as' => 'simulation.index']);
+    $routes->get('progress/(:segment)', 'SimulationController::progress/$1', ['as' => 'simulation.progress']);
+    $routes->get('(:segment)', 'SimulationController::feature/$1', ['as' => 'simulation.feature']);
+});
+
+// Prototype Fitur Skripsi
+$routes->group('prototype', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'PrototypeController::index', ['as' => 'prototype.index']);
+    $routes->get('progress/(:segment)', 'PrototypeController::progress/$1', ['as' => 'prototype.progress']);
+    $routes->get('violation-submissions', 'PrototypeController::violationSubmissions', ['as' => 'prototype.violation_submissions']);
+    $routes->get('notifications', 'PrototypeController::notifications', ['as' => 'prototype.notifications']);
+    $routes->get('messages', 'PrototypeController::messages', ['as' => 'prototype.messages']);
+    $routes->get('assessments', 'PrototypeController::assessments', ['as' => 'prototype.assessments']);
+    $routes->get('career', 'PrototypeController::career', ['as' => 'prototype.career']);
 });
 
 // ===============================
