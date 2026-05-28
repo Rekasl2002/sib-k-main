@@ -27,7 +27,7 @@
           </div>
           <div class="mb-3">
             <label class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" value="<?= esc($user['email']) ?>" required>
+            <input type="email" name="email" class="form-control" value="<?= esc($user['email']) ?>">
           </div>
           <div class="mb-3">
             <label class="form-label">No. HP</label>

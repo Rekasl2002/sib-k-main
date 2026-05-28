@@ -27,7 +27,7 @@
         <table class="table table-striped align-middle mb-0">
           <thead>
             <tr>
-              <th style="width:15%">NIS</th>
+              <th style="width:15%">NISN</th>
               <th style="width:35%">Nama</th>
               <th style="width:10%">Skor</th>
               <th style="width:20%">Selesai Pada</th>
@@ -36,7 +36,7 @@
           <tbody>
             <?php foreach ($results as $r): ?>
               <tr>
-                <td><?= esc($r['student_nis'] ?? '') ?></td>
+                <td><?= esc($r['nisn'] ?? $r['student_nisn'] ?? '') ?></td>
                 <td><?= esc($r['student_name'] ?? '') ?></td>
                 <td><?= esc($r['score'] ?? '') ?></td>
                 <td><?= esc($r['completed_at'] ?? '') ?></td>

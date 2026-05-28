@@ -35,7 +35,7 @@
     $subject = trim(
       ($row['subject_student_name'] ?? '')
       . ' • ' . ($row['subject_student_class'] ?? '')
-      . ' • NIS ' . ($row['subject_student_nis'] ?? '')
+      . ' • NISN ' . ($row['subject_student_nisn'] ?? '')
     );
   } else {
     $subject = $row['subject_other_name'] ?? '-';

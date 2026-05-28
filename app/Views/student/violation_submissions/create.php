@@ -59,7 +59,7 @@ $errors     = (isset($errors) && is_array($errors)) ? $errors : [];
             <?php foreach ($students as $s): ?>
               <?php $sid = $s['id'] ?? ''; ?>
               <option value="<?= esc($sid) ?>" <?= (string)old('subject_student_id') === (string)$sid ? 'selected' : '' ?>>
-                <?= esc(($s['full_name'] ?? '-') . ' • ' . ($s['class_name'] ?? '-') . ' • NIS ' . ($s['nis'] ?? '-')) ?>
+                <?= esc(($s['full_name'] ?? '-') . ' • ' . ($s['class_name'] ?? '-') . ' • NISN ' . ($s['nisn'] ?? '-')) ?>
               </option>
             <?php endforeach; ?>
           </select>

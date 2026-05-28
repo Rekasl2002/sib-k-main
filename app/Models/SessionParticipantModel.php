@@ -116,7 +116,7 @@ class SessionParticipantModel extends Model
     {
         $builder = $this->select(
                 'session_participants.*,' .
-                'students.nisn, students.nis, students.gender,' .
+                'students.nisn, students.nik, students.gender,' .
                 'u.full_name as student_name, u.email as student_email,' .
                 'classes.class_name'
             )
@@ -389,7 +389,7 @@ class SessionParticipantModel extends Model
     {
         return $this->select(
                 'session_participants.*,' .
-                'students.nisn, students.nis,' .
+                'students.nisn, students.nik,' .
                 'u.full_name as student_name'
             )
             ->join('students', 'students.id = session_participants.student_id')
@@ -455,7 +455,7 @@ class SessionParticipantModel extends Model
 
         // Get all students from class not in session
         $builder = $db->table('students')
-            ->select('students.id, students.nisn, students.nis, u.full_name as student_name')
+            ->select('students.id, students.nisn, students.nik, u.full_name as student_name')
             ->join('users u', 'u.id = students.user_id', 'left')
             ->where('students.class_id', (int) $classId)
             ->where('students.status', 'Aktif')

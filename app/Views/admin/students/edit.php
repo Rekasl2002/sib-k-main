@@ -123,8 +123,8 @@ $errors = session()->getFlashdata('errors') ?? [];
                                 <td class="text-end"><code><?= esc($student['nisn']) ?></code></td>
                             </tr>
                             <tr>
-                                <td class="text-muted">NIS:</td>
-                                <td class="text-end"><code><?= esc($student['nis']) ?></code></td>
+                                <td class="text-muted">NIK:</td>
+                                <td class="text-end"><code><?= esc($student['nik'] ?? '-') ?></code></td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Poin Pelanggaran:</td>
@@ -194,7 +194,7 @@ $errors = session()->getFlashdata('errors') ?? [];
                         </div>
                     </div>
 
-                    <!-- NISN & NIS -->
+                    <!-- NISN & NIK -->
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -219,22 +219,21 @@ $errors = session()->getFlashdata('errors') ?? [];
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="nis" class="form-label">
-                                    NIS <span class="text-danger">*</span>
+                                <label for="nik" class="form-label">
+                                    NIK
                                 </label>
                                 <input type="text"
-                                       class="form-control <?= isset($errors['nis']) ? 'is-invalid' : '' ?>"
-                                       id="nis"
-                                       name="nis"
-                                       value="<?= old('nis') ?? esc($student['nis']) ?>"
-                                       placeholder="4–20 digit"
+                                       class="form-control <?= isset($errors['nik']) ? 'is-invalid' : '' ?>"
+                                       id="nik"
+                                       name="nik"
+                                       value="<?= old('nik') ?? esc($student['nik'] ?? '') ?>"
+                                       placeholder="16 digit"
                                        inputmode="numeric"
-                                       pattern="\d{4,20}"
-                                       minlength="4" maxlength="20"
-                                       required>
-                                <small class="form-text">Nomor Induk Siswa (4–20 digit angka)</small>
-                                <?php if (isset($errors['nis'])): ?>
-                                    <div class="invalid-feedback"><?= $errors['nis'] ?></div>
+                                       pattern="\d{16}"
+                                       maxlength="16">
+                                <small class="form-text">Nomor Induk Kependudukan sesuai file EMIS (opsional)</small>
+                                <?php if (isset($errors['nik'])): ?>
+                                    <div class="invalid-feedback"><?= $errors['nik'] ?></div>
                                 <?php endif; ?>
                             </div>
                         </div>
@@ -353,6 +352,43 @@ $errors = session()->getFlashdata('errors') ?? [];
                                 <?php if (isset($errors['address'])): ?>
                                     <div class="invalid-feedback"><?= $errors['address'] ?></div>
                                 <?php endif; ?>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="special_needs" class="form-label">Kebutuhan Khusus</label>
+                                    <input type="text" class="form-control <?= isset($errors['special_needs']) ? 'is-invalid' : '' ?>"
+                                           id="special_needs" name="special_needs"
+                                           value="<?= old('special_needs') ?? esc($student['special_needs'] ?? '') ?>">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="disability" class="form-label">Disabilitas</label>
+                                    <input type="text" class="form-control <?= isset($errors['disability']) ? 'is-invalid' : '' ?>"
+                                           id="disability" name="disability"
+                                           value="<?= old('disability') ?? esc($student['disability'] ?? '') ?>">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="kip_pip_number" class="form-label">Nomor KIP/PIP</label>
+                                    <input type="text" class="form-control <?= isset($errors['kip_pip_number']) ? 'is-invalid' : '' ?>"
+                                           id="kip_pip_number" name="kip_pip_number"
+                                           value="<?= old('kip_pip_number') ?? esc($student['kip_pip_number'] ?? '') ?>">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="father_name" class="form-label">Nama Ayah Kandung</label>
+                                    <input type="text" class="form-control" id="father_name" name="father_name"
+                                           value="<?= old('father_name') ?? esc($student['father_name'] ?? '') ?>">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="mother_name" class="form-label">Nama Ibu Kandung</label>
+                                    <input type="text" class="form-control" id="mother_name" name="mother_name"
+                                           value="<?= old('mother_name') ?? esc($student['mother_name'] ?? '') ?>">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="guardian_name" class="form-label">Nama Wali</label>
+                                    <input type="text" class="form-control" id="guardian_name" name="guardian_name"
+                                           value="<?= old('guardian_name') ?? esc($student['guardian_name'] ?? '') ?>">
+                                </div>
                             </div>
                         </div>
                         <div class="col-md-4">
@@ -542,9 +578,9 @@ $errors = session()->getFlashdata('errors') ?? [];
         var forms = document.querySelectorAll('.needs-validation');
         Array.prototype.slice.call(forms).forEach(function(form) {
             form.addEventListener('submit', function(event) {
-                // Hard validation untuk pattern NISN & NIS
+                // Hard validation untuk pattern NISN & NIK
                 var nisn = form.querySelector('#nisn');
-                var nis  = form.querySelector('#nis');
+                var nik  = form.querySelector('#nik');
 
                 if (nisn && !/^\d{10}$/.test(nisn.value)) {
                     nisn.setCustomValidity('NISN harus tepat 10 digit angka');
@@ -552,10 +588,10 @@ $errors = session()->getFlashdata('errors') ?? [];
                     nisn.setCustomValidity('');
                 }
 
-                if (nis && !/^\d{4,20}$/.test(nis.value)) {
-                    nis.setCustomValidity('NIS harus 4–20 digit angka');
-                } else if (nis) {
-                    nis.setCustomValidity('');
+                if (nik && nik.value !== '' && !/^\d{16}$/.test(nik.value)) {
+                    nik.setCustomValidity('NIK harus tepat 16 digit angka');
+                } else if (nik) {
+                    nik.setCustomValidity('');
                 }
 
                 if (!form.checkValidity()) {
@@ -573,9 +609,9 @@ $errors = session()->getFlashdata('errors') ?? [];
             });
         };
         var nisnEl = document.getElementById('nisn');
-        var nisEl  = document.getElementById('nis');
+        var nikEl  = document.getElementById('nik');
         if (nisnEl) onlyDigits(nisnEl);
-        if (nisEl)  onlyDigits(nisEl);
+        if (nikEl)  onlyDigits(nikEl);
     })();
 </script>
 <?= $this->endSection() ?>

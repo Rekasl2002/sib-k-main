@@ -262,67 +262,68 @@ class StudentController extends BaseController
 
         try {
             $spreadsheet = IOFactory::load($filePath);
-            $sheet       = $spreadsheet->getActiveSheet();
 
-            $highestRow = (int) $sheet->getHighestRow();
-            if ($highestRow < 2) {
-                return;
-            }
-
-            // Cari kolom berdasarkan header (lebih fleksibel), fallback ke P & Q (template default)
-            $highestColumn = (string) $sheet->getHighestColumn();
-            $maxColIndex   = Coordinate::columnIndexFromString($highestColumn);
-
-            $phoneCols = []; // [colIndex => label]
-            for ($c = 1; $c <= $maxColIndex; $c++) {
-                $header = trim((string) $sheet->getCellByColumnAndRow($c, 1)->getValue());
-                if ($header === '') {
+            foreach ($spreadsheet->getWorksheetIterator() as $sheet) {
+                $highestRow = (int) $sheet->getHighestRow();
+                if ($highestRow < 2) {
                     continue;
                 }
 
-                $h = strtolower(preg_replace('/\s+/', ' ', $header));
+                // Cari kolom berdasarkan header (lebih fleksibel), fallback ke P & Q (template default)
+                $highestColumn = (string) $sheet->getHighestColumn();
+                $maxColIndex   = Coordinate::columnIndexFromString($highestColumn);
 
-                // Deteksi kata "hp" atau "telepon" dll
-                $isPhone = (strpos($h, 'hp') !== false) || (strpos($h, 'telepon') !== false) || (strpos($h, 'telp') !== false);
+                $phoneCols = []; // [colIndex => label]
+                for ($c = 1; $c <= $maxColIndex; $c++) {
+                    $header = trim((string) $sheet->getCellByColumnAndRow($c, 1)->getValue());
+                    if ($header === '') {
+                        continue;
+                    }
 
-                if (!$isPhone) {
-                    continue;
+                    $h = strtolower(preg_replace('/\s+/', ' ', $header));
+
+                    // Deteksi kata "hp" atau "telepon" dll
+                    $isPhone = (strpos($h, 'hp') !== false) || (strpos($h, 'telepon') !== false) || (strpos($h, 'telp') !== false);
+
+                    if (!$isPhone) {
+                        continue;
+                    }
+
+                    // Simpan kolom, nanti semua yang terdeteksi akan dinormalisasi
+                    $phoneCols[$c] = $header;
                 }
 
-                // Simpan kolom, nanti semua yang terdeteksi akan dinormalisasi
-                $phoneCols[$c] = $header;
-            }
+                // Fallback jika tidak ketemu header telepon
+                if (empty($phoneCols)) {
+                    // P = 16, Q = 17 (template kamu)
+                    $phoneCols[16] = 'No. HP Siswa';
+                    $phoneCols[17] = 'No. HP Orang Tua';
+                }
 
-            // Fallback jika tidak ketemu header telepon
-            if (empty($phoneCols)) {
-                // P = 16, Q = 17 (template kamu)
-                $phoneCols[16] = 'No. HP Siswa';
-                $phoneCols[17] = 'No. HP Orang Tua';
-            }
+                for ($row = 2; $row <= $highestRow; $row++) {
+                    foreach ($phoneCols as $colIndex => $label) {
+                        // Pastikan kolom tidak melebihi jumlah kolom aktif
+                        if ($colIndex > $maxColIndex) {
+                            continue;
+                        }
 
-            for ($row = 2; $row <= $highestRow; $row++) {
-                foreach ($phoneCols as $colIndex => $label) {
-                    // Pastikan kolom tidak melebihi jumlah kolom aktif
-                    if ($colIndex > $maxColIndex) {
-                        continue;
+                        $cell = $sheet->getCellByColumnAndRow($colIndex, $row);
+                        $val  = $cell->getValue();
+
+                        if ($val === null || trim((string) $val) === '') {
+                            continue;
+                        }
+
+                        $normalized = $this->normalizeIdPhoneTo08((string) $val);
+
+                        // Tulis sebagai string supaya nol di depan aman
+                        $sheet->setCellValueExplicitByColumnAndRow(
+                            $colIndex,
+                            $row,
+                            $normalized,
+                            DataType::TYPE_STRING
+                        );
                     }
-
-                    $cell = $sheet->getCellByColumnAndRow($colIndex, $row);
-                    $val  = $cell->getValue();
-
-                    if ($val === null || trim((string) $val) === '') {
-                        continue;
-                    }
-
-                    $normalized = $this->normalizeIdPhoneTo08((string) $val);
-
-                    // Tulis sebagai string supaya nol di depan aman
-                    $sheet->setCellValueExplicitByColumnAndRow(
-                        $colIndex,
-                        $row,
-                        $normalized,
-                        DataType::TYPE_STRING
-                    );
                 }
             }
 
@@ -675,7 +676,7 @@ class StudentController extends BaseController
             $exportData[] = [
                 'ID'                => $student['id'] ?? null,
                 'NISN'              => $student['nisn'] ?? null,
-                'NIS'               => $student['nis'] ?? null,
+                'NIK'               => $student['nik'] ?? null,
                 'Nama Lengkap'      => $this->getStudentDisplayName($student),
                 'Username'          => $student['username'] ?? '-',
                 'Email'             => $student['email'] ?? '-',
@@ -684,9 +685,16 @@ class StudentController extends BaseController
                 'Tingkat'           => $student['grade_level'] ?? '-',
                 'Tempat Lahir'      => $student['birth_place'] ?? '-',
                 'Tanggal Lahir'     => ! empty($student['birth_date']) ? date('d/m/Y', strtotime($student['birth_date'])) : '-',
+                'Umur'              => student_age_text($student['birth_date'] ?? null),
                 'Agama'             => $student['religion'] ?? '-',
                 'Alamat'            => $student['address'] ?? '-',
                 'Telepon'           => $student['phone'] ?? '-',
+                'Kebutuhan Khusus'  => $student['special_needs'] ?? '-',
+                'Disabilitas'       => $student['disability'] ?? '-',
+                'Nomor KIP/PIP'     => $student['kip_pip_number'] ?? '-',
+                'Nama Ayah Kandung' => $student['father_name'] ?? '-',
+                'Nama Ibu Kandung'  => $student['mother_name'] ?? '-',
+                'Nama Wali'         => $student['guardian_name'] ?? '-',
                 'Status'            => $student['status'] ?? '-',
                 'Poin Pelanggaran'  => $student['total_violation_points'] ?? 0,
                 'Tanggal Masuk'     => ! empty($student['admission_date']) ? date('d/m/Y', strtotime($student['admission_date'])) : '-',
@@ -741,7 +749,7 @@ class StudentController extends BaseController
                 'id'     => $student['id'] ?? null,
                 'text'   => $name . ' (' . ($student['nisn'] ?? '-') . ')',
                 'nisn'   => $student['nisn'] ?? null,
-                'nis'    => $student['nis'] ?? null,
+                'nik'    => $student['nik'] ?? null,
                 'class'  => $student['class_name'] ?? '-',
                 'status' => $student['status'] ?? '-',
             ];
@@ -772,7 +780,7 @@ class StudentController extends BaseController
                 'id'        => $student['id'] ?? null,
                 'user_id'   => $student['user_id'] ?? null,
                 'nisn'      => $student['nisn'] ?? null,
-                'nis'       => $student['nis'] ?? null,
+                'nik'       => $student['nik'] ?? null,
                 'full_name' => $this->getStudentDisplayName($student),
                 'gender'    => $student['gender'] ?? null,
             ];

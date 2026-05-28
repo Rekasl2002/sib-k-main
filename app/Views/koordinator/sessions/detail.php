@@ -260,7 +260,7 @@ $statusBadgeClass = match ($session['status'] ?? '') {
                                     <thead>
                                         <tr>
                                             <th style="width: 48px;">#</th>
-                                            <th>NIS/NISN</th>
+                                            <th>NISN</th>
                                             <th>Nama</th>
                                             <th>Kehadiran</th>
                                             <th>Catatan Partisipasi</th>
@@ -269,7 +269,7 @@ $statusBadgeClass = match ($session['status'] ?? '') {
                                     <tbody>
                                         <?php $i = 1; foreach ((array) $participants as $p): ?>
                                             <?php
-                                                $pNis  = $p['nis'] ?? ($p['nisn'] ?? '');
+                                                $pNis  = $p['nisn'] ?? '';
                                                 $pName = $p['student_name'] ?? ($p['name'] ?? 'Tanpa Nama');
                                                 $pAtt  = $p['attendance_status'] ?? '-';
                                                 $pNote = $p['participation_note'] ?? '';

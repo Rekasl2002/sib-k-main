@@ -57,7 +57,7 @@ class UserModel extends Model
     protected $validationRules = [
         'role_id'   => 'required|integer|is_not_unique[roles.id]',
         'username'  => 'required|min_length[3]|max_length[100]|is_unique[users.username,id,{id}]|regex_match[/^[A-Za-z0-9._-]+$/]',
-        'email'     => 'required|valid_email|max_length[255]|is_unique[users.email,id,{id}]',
+        'email'     => 'permit_empty|valid_email|max_length[255]|is_unique[users.email,id,{id}]',
         'password'  => 'permit_empty|min_length[6]|max_length[255]',
         'full_name' => 'required|min_length[3]|max_length[255]',
         'phone'     => 'permit_empty|regex_match[/^[0-9]{10,20}$/]',
@@ -72,7 +72,6 @@ class UserModel extends Model
             'regex_match' => 'Username hanya boleh huruf, angka, titik, underscore, atau minus',
         ],
         'email' => [
-            'required'    => 'Email harus diisi',
             'valid_email' => 'Email tidak valid',
             'is_unique'   => 'Email sudah digunakan',
         ],
@@ -108,7 +107,8 @@ class UserModel extends Model
         $payload =& $data['data'];
 
         if (isset($payload['email'])) {
-            $payload['email'] = strtolower(trim((string) $payload['email']));
+            $email = strtolower(trim((string) $payload['email']));
+            $payload['email'] = $email !== '' ? $email : null;
         }
         if (isset($payload['username'])) {
             $payload['username'] = trim((string) $payload['username']);

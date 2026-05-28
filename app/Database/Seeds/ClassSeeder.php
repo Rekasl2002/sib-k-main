@@ -12,7 +12,7 @@ class ClassSeeder extends Seeder
             // Kelas X
             [
                 'id'                   => 1,
-                'academic_year_id'     => 2, // 2024/2025
+                'academic_year_id'     => 3, // 2025/2026
                 'class_name'           => 'X-IPA-1',
                 'grade_level'          => 'X',
                 'major'                => 'IPA',
@@ -25,7 +25,7 @@ class ClassSeeder extends Seeder
             ],
             [
                 'id'                   => 2,
-                'academic_year_id'     => 2,
+                'academic_year_id'     => 3,
                 'class_name'           => 'X-IPA-2',
                 'grade_level'          => 'X',
                 'major'                => 'IPA',
@@ -38,7 +38,7 @@ class ClassSeeder extends Seeder
             ],
             [
                 'id'                   => 3,
-                'academic_year_id'     => 2,
+                'academic_year_id'     => 3,
                 'class_name'           => 'X-IPS-1',
                 'grade_level'          => 'X',
                 'major'                => 'IPS',
@@ -51,7 +51,7 @@ class ClassSeeder extends Seeder
             ],
             [
                 'id'                   => 4,
-                'academic_year_id'     => 2,
+                'academic_year_id'     => 3,
                 'class_name'           => 'X-IPS-2',
                 'grade_level'          => 'X',
                 'major'                => 'IPS',
@@ -66,7 +66,7 @@ class ClassSeeder extends Seeder
             // Kelas XI
             [
                 'id'                   => 5,
-                'academic_year_id'     => 2,
+                'academic_year_id'     => 3,
                 'class_name'           => 'XI-IPA-1',
                 'grade_level'          => 'XI',
                 'major'                => 'IPA',
@@ -79,7 +79,7 @@ class ClassSeeder extends Seeder
             ],
             [
                 'id'                   => 6,
-                'academic_year_id'     => 2,
+                'academic_year_id'     => 3,
                 'class_name'           => 'XI-IPA-2',
                 'grade_level'          => 'XI',
                 'major'                => 'IPA',
@@ -92,7 +92,7 @@ class ClassSeeder extends Seeder
             ],
             [
                 'id'                   => 7,
-                'academic_year_id'     => 2,
+                'academic_year_id'     => 3,
                 'class_name'           => 'XI-IPS-1',
                 'grade_level'          => 'XI',
                 'major'                => 'IPS',
@@ -107,7 +107,7 @@ class ClassSeeder extends Seeder
             // Kelas XII
             [
                 'id'                   => 8,
-                'academic_year_id'     => 2,
+                'academic_year_id'     => 3,
                 'class_name'           => 'XII-IPA-1',
                 'grade_level'          => 'XII',
                 'major'                => 'IPA',
@@ -120,7 +120,7 @@ class ClassSeeder extends Seeder
             ],
             [
                 'id'                   => 9,
-                'academic_year_id'     => 2,
+                'academic_year_id'     => 3,
                 'class_name'           => 'XII-IPA-2',
                 'grade_level'          => 'XII',
                 'major'                => 'IPA',
@@ -133,7 +133,7 @@ class ClassSeeder extends Seeder
             ],
             [
                 'id'                   => 10,
-                'academic_year_id'     => 2,
+                'academic_year_id'     => 3,
                 'class_name'           => 'XII-IPS-1',
                 'grade_level'          => 'XII',
                 'major'                => 'IPS',

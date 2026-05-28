@@ -126,7 +126,7 @@ class CounselingSessionModel extends Model
     {
         /** @var array $session */
         $session = $this->select('counseling_sessions.*,
-                                  students.nisn, students.nis,
+                                  students.nisn, students.nik,
                                   student_users.full_name as student_name,
                                   student_users.email as student_email,
                                   counselor_users.full_name as counselor_name,
@@ -158,7 +158,7 @@ class CounselingSessionModel extends Model
             $participantModel = new SessionParticipantModel();
             $session['participants'] = $participantModel
                 ->select('session_participants.*, 
-                          students.nisn, students.nis,
+                          students.nisn, students.nik,
                           users.full_name as student_name')
                 ->join('students', 'students.id = session_participants.student_id')
                 ->join('users', 'users.id = students.user_id')
@@ -183,7 +183,7 @@ class CounselingSessionModel extends Model
     public function getSessionsByCounselor($counselorId, $filters = [])
     {
         $builder = $this->select('counseling_sessions.*,
-                                  students.nisn, students.nis,
+                                  students.nisn, students.nik,
                                   users.full_name as student_name,
                                   classes.class_name')
             ->join('students', 'students.id = counseling_sessions.student_id', 'left')

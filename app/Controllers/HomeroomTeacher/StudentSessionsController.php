@@ -413,7 +413,7 @@ class StudentSessionsController extends BaseController
                     sp.student_id,
                     sp.attendance_status,
                     sp.participation_note,
-                    s.nisn, s.nis,
+                    s.nisn, s.nik,
                     u.full_name AS student_name,
                     c.class_name
                 ')

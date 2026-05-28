@@ -28,7 +28,7 @@ class DashboardController extends BaseController
             ->select("
                 s.id,
                 u.full_name AS full_name,
-                s.nisn, s.nis, s.class_id,
+                s.nisn, s.nik, s.class_id,
                 c.class_name, c.grade_level, c.major,
                 u.email, u.phone, u.profile_photo,
 

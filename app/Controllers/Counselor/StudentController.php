@@ -53,8 +53,8 @@ class StudentController extends BaseController
                 'students.id',
                 'students.user_id',
                 'students.class_id',
-                'students.nis',
                 'students.nisn',
+                'students.nik',
                 'students.gender',
                 'students.status',
                 'students.admission_date',
@@ -63,6 +63,12 @@ class StudentController extends BaseController
                 'students.birth_date',
                 'students.religion',
                 'students.address',
+                'students.special_needs',
+                'students.disability',
+                'students.kip_pip_number',
+                'students.father_name',
+                'students.mother_name',
+                'students.guardian_name',
                 'COALESCE(students.total_violation_points,0) AS total_violation_points',
 
                 // users (akun siswa)
@@ -130,8 +136,8 @@ class StudentController extends BaseController
             $builder->groupStart()
                 ->like('u.full_name', $q)
                 ->orLike('u.email', $q)
-                ->orLike('students.nis', $q)
                 ->orLike('students.nisn', $q)
+                ->orLike('students.nik', $q)
             ->groupEnd();
         }
 
@@ -274,7 +280,7 @@ class StudentController extends BaseController
             'religion'       => 'permit_empty|max_length[20]',
             'admission_date' => 'permit_empty|valid_date',
             'address'        => 'permit_empty|max_length[255]',
-            'status'         => 'permit_empty|in_list[Aktif,Alumni,Pindah,Keluar]',
+            'status'         => 'permit_empty|in_list[Aktif,Alumni,Pindah,Keluar,Tidak Aktif]',
             'parent_id'      => 'permit_empty|is_natural_no_zero',
         ];
 

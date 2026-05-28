@@ -294,7 +294,7 @@ class StudentService
             $builder->groupStart()
                 ->like('users.full_name', $filters['search'])
                 ->orLike('students.nisn', $filters['search'])
-                ->orLike('students.nis', $filters['search'])
+                ->orLike('students.nik', $filters['search'])
                 ->orLike('users.email', $filters['search'])
             ->groupEnd();
         }
@@ -308,7 +308,7 @@ class StudentService
             'students.created_at' => 'students.created_at',
             'students.updated_at' => 'students.updated_at',
             'students.nisn'       => 'students.nisn',
-            'students.nis'        => 'students.nis',
+            'students.nik'        => 'students.nik',
             'students.status'     => 'students.status',
             'students.gender'     => 'students.gender',
             'classes.class_name'  => 'classes.class_name',
@@ -431,12 +431,18 @@ class StudentService
                 'user_id'                => $data['user_id'],
                 'class_id'               => $data['class_id'] ?? null,
                 'nisn'                   => $data['nisn'] ?? null,
-                'nis'                    => $data['nis'] ?? null,
+                'nik'                    => $data['nik'] ?? null,
                 'gender'                 => $data['gender'] ?? null,
                 'birth_place'            => $data['birth_place'] ?? null,
                 'birth_date'             => $data['birth_date'] ?? null,
                 'religion'               => $data['religion'] ?? null,
                 'address'                => $data['address'] ?? null,
+                'special_needs'          => $data['special_needs'] ?? null,
+                'disability'             => $data['disability'] ?? null,
+                'kip_pip_number'         => $data['kip_pip_number'] ?? null,
+                'father_name'            => $data['father_name'] ?? null,
+                'mother_name'            => $data['mother_name'] ?? null,
+                'guardian_name'          => $data['guardian_name'] ?? null,
                 'parent_id'              => $data['parent_id'] ?? null,
                 'admission_date'         => $data['admission_date'] ?? date('Y-m-d'),
                 'status'                 => $data['status'] ?? 'Aktif',
@@ -507,7 +513,7 @@ class StudentService
             $userData = [
                 'role_id'   => $studentRole['id'],
                 'username'  => $data['username'],
-                'email'     => $data['email'],
+                'email'     => trim((string)($data['email'] ?? '')) ?: null,
                 'password'  => $data['password'], // hashing di UserModel
                 'full_name' => $fullName,
                 'phone'     => $data['phone'] ?? null,
@@ -530,12 +536,18 @@ class StudentService
                 'user_id'                => $userId,
                 'class_id'               => $data['class_id'] ?? null,
                 'nisn'                   => $data['nisn'] ?? null,
-                'nis'                    => $data['nis'] ?? null,
+                'nik'                    => $data['nik'] ?? null,
                 'gender'                 => $data['gender'] ?? null,
                 'birth_place'            => $data['birth_place'] ?? null,
                 'birth_date'             => $data['birth_date'] ?? null,
                 'religion'               => $data['religion'] ?? null,
                 'address'                => $data['address'] ?? null,
+                'special_needs'          => $data['special_needs'] ?? null,
+                'disability'             => $data['disability'] ?? null,
+                'kip_pip_number'         => $data['kip_pip_number'] ?? null,
+                'father_name'            => $data['father_name'] ?? null,
+                'mother_name'            => $data['mother_name'] ?? null,
+                'guardian_name'          => $data['guardian_name'] ?? null,
                 'parent_id'              => $data['parent_id'] ?? null,
                 'admission_date'         => $data['admission_date'] ?? date('Y-m-d'),
                 'status'                 => $data['status'] ?? 'Aktif',
@@ -590,12 +602,18 @@ class StudentService
             $updateData = [
                 'class_id'       => $data['class_id'] ?? null,
                 'nisn'           => $data['nisn'] ?? null,
-                'nis'            => $data['nis'] ?? null,
+                'nik'            => $data['nik'] ?? null,
                 'gender'         => $data['gender'] ?? null,
                 'birth_place'    => $data['birth_place'] ?? null,
                 'birth_date'     => $data['birth_date'] ?? null,
                 'religion'       => $data['religion'] ?? null,
                 'address'        => $data['address'] ?? null,
+                'special_needs'  => $data['special_needs'] ?? null,
+                'disability'     => $data['disability'] ?? null,
+                'kip_pip_number' => $data['kip_pip_number'] ?? null,
+                'father_name'    => $data['father_name'] ?? null,
+                'mother_name'    => $data['mother_name'] ?? null,
+                'guardian_name'  => $data['guardian_name'] ?? null,
                 'parent_id'      => $data['parent_id'] ?? null,
                 'admission_date' => $data['admission_date'] ?? null,
                 'status'         => $data['status'] ?? 'Aktif',

@@ -288,7 +288,7 @@ class ReportService
         }
 
         $b = $this->db->table('students s')
-            ->select('s.nisn, s.nis, u.full_name as full_name, s.gender, s.birth_date, s.status, c.class_name')
+            ->select('s.nisn, s.nik, u.full_name as full_name, s.gender, s.birth_date, TIMESTAMPDIFF(YEAR, s.birth_date, CURDATE()) AS age, s.special_needs, s.disability, s.kip_pip_number, s.father_name, s.mother_name, s.guardian_name, s.status, c.class_name', false)
             ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'left')
             ->join('classes c', 'c.id = s.class_id', 'left')
             ->whereIn('s.id', $ids)
@@ -301,7 +301,7 @@ class ReportService
             $b->groupStart()
                 ->like('u.full_name', $filter['search'])
                 ->orLike('s.nisn', $filter['search'])
-                ->orLike('s.nis', $filter['search'])
+                ->orLike('s.nik', $filter['search'])
               ->groupEnd();
         }
 
@@ -309,11 +309,11 @@ class ReportService
             $b,
             $filter['sort_by']  ?? 'u.full_name',
             $filter['sort_dir'] ?? 'asc',
-            ['u.full_name', 's.nisn', 's.nis', 'c.class_name', 's.status']
+            ['u.full_name', 's.nisn', 's.nik', 'c.class_name', 's.status']
         );
 
         return [
-            'columns' => ['NISN', 'NIS', 'Nama', 'JK', 'Tgl Lahir', 'Status', 'Kelas'],
+            'columns' => ['NISN', 'NIK', 'Nama', 'JK', 'Tgl Lahir', 'Umur', 'Kebutuhan Khusus', 'Disabilitas', 'Nomor KIP/PIP', 'Nama Ayah Kandung', 'Nama Ibu Kandung', 'Nama Wali', 'Status', 'Kelas'],
             'rows'    => $b->get()->getResultArray(),
         ];
     }

@@ -61,7 +61,7 @@
 
           <div class="col-md-4 col-sm-6">
             <label class="form-label">
-              Cari Siswa / NIS / <?= $activeTab === 'careers' ? 'Karir' : 'Perguruan Tinggi' ?>
+              Cari Siswa / NISN / <?= $activeTab === 'careers' ? 'Karir' : 'Perguruan Tinggi' ?>
             </label>
             <input type="text"
                    name="q"
@@ -150,7 +150,7 @@
                 <thead>
                   <tr>
                     <th>Siswa</th>
-                    <th>NIS</th>
+                    <th>NISN</th>
                     <th>Kelas</th>
                     <th>Karir</th>
                     <th>Sektor</th>
@@ -162,7 +162,7 @@
                   <?php foreach ($careerChoices as $row): ?>
                     <tr>
                       <td><?= esc($row['student_name'] ?? '-') ?></td>
-                      <td><?= esc($row['nis'] ?? '-') ?></td>
+                      <td><?= esc($row['nisn'] ?? '-') ?></td>
                       <td><?= esc($row['class_name'] ?? '-') ?></td>
                       <td><?= esc($row['career_title'] ?? '-') ?></td>
                       <td><?= esc($row['sector'] ?? '-') ?></td>
@@ -202,7 +202,7 @@
                 <thead>
                   <tr>
                     <th>Siswa</th>
-                    <th>NIS</th>
+                    <th>NISN</th>
                     <th>Kelas</th>
                     <th>Perguruan Tinggi</th>
                     <th>Lokasi</th>
@@ -214,7 +214,7 @@
                   <?php foreach ($universityChoices as $row): ?>
                     <tr>
                       <td><?= esc($row['student_name'] ?? '-') ?></td>
-                      <td><?= esc($row['nis'] ?? '-') ?></td>
+                      <td><?= esc($row['nisn'] ?? '-') ?></td>
                       <td><?= esc($row['class_name'] ?? '-') ?></td>
                       <td><?= esc($row['university_name'] ?? '-') ?></td>
                       <td><?= esc($row['location'] ?? '-') ?></td>

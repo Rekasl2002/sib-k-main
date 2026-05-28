@@ -25,13 +25,11 @@ final class StudentValidation
                 'is_unique'              => 'NISN sudah terdaftar',
                 'unique_with_soft_delete'=> 'NISN sudah terdaftar',
             ],
-            'nis'       => [
-                'required'               => 'NIS wajib diisi',
-                'numeric'                => 'NIS hanya boleh angka',
-                'min_length'             => 'NIS minimal 4 digit',
-                'max_length'             => 'NIS maksimal 20 digit',
-                'is_unique'              => 'NIS sudah terdaftar',
-                'unique_with_soft_delete'=> 'NIS sudah terdaftar',
+            'nik'       => [
+                'numeric'                => 'NIK hanya boleh angka',
+                'exact_length'           => 'NIK harus 16 digit',
+                'is_unique'              => 'NIK sudah terdaftar',
+                'unique_with_soft_delete'=> 'NIK sudah terdaftar',
             ],
             'class_id'  => [
                 'required'           => 'Kelas harus dipilih',
@@ -68,24 +66,30 @@ final class StudentValidation
             'class_id'      => 'permit_empty|is_natural_no_zero|is_not_unique[classes.id]',
             'full_name'     => 'required|min_length[3]|max_length[100]',
             'nisn'          => 'required|numeric|exact_length[10]|is_unique[students.nisn]',
-            'nis'           => 'required|numeric|min_length[4]|max_length[20]|is_unique[students.nis]',
+            'nik'           => 'permit_empty|numeric|exact_length[16]|is_unique[students.nik]',
             'gender'        => 'required|in_list[L,P]',
             'birth_place'   => 'permit_empty|max_length[100]',
             'birth_date'    => 'permit_empty|valid_date[Y-m-d]',
             'religion'      => 'permit_empty|max_length[50]|in_list[Islam,Kristen,Katolik,Hindu,Buddha,Konghucu]',
             'address'       => 'permit_empty|max_length[255]',
+            'special_needs' => 'permit_empty|max_length[100]',
+            'disability'    => 'permit_empty|max_length[100]',
+            'kip_pip_number'=> 'permit_empty|max_length[50]',
+            'father_name'   => 'permit_empty|max_length[255]',
+            'mother_name'   => 'permit_empty|max_length[255]',
+            'guardian_name' => 'permit_empty|max_length[255]',
             // gunakan valid_phone agar konsisten dengan Config\Validation
             'phone'         => 'permit_empty|valid_phone',
             'parent_id'     => 'permit_empty|is_natural_no_zero|is_not_unique[users.id]',
             'admission_date'=> 'permit_empty|valid_date[Y-m-d]',
-            'status'        => 'permit_empty|in_list[Aktif,Alumni,Pindah,Keluar]',
+            'status'        => 'permit_empty|in_list[Aktif,Alumni,Pindah,Keluar,Tidak Aktif]',
         ];
     }
 
     /**
      * ===== Aturan UPDATE (dinamis) =====
      * - Sertakan 'id' agar placeholder {id} terisi
-     * - Unik NISN/NIS hanya jika nilainya berubah
+     * - Unik NISN/NIK hanya jika nilainya berubah
      * - class_id dibuat REQUIRED agar konsisten dengan form edit (required)
      */
     public static function rulesForUpdate(array $existing, array $input): array
@@ -94,7 +98,7 @@ final class StudentValidation
             'id'            => 'required|is_natural_no_zero',
             'full_name'     => 'required|min_length[3]|max_length[100]',
             'nisn'          => 'required|numeric|exact_length[10]',
-            'nis'           => 'required|numeric|min_length[4]|max_length[20]',
+            'nik'           => 'permit_empty|numeric|exact_length[16]',
             // class_id wajib pada edit
             'class_id'      => 'required|is_natural_no_zero|is_not_unique[classes.id]',
             'gender'        => 'required|in_list[L,P]',
@@ -102,10 +106,16 @@ final class StudentValidation
             'birth_date'    => 'permit_empty|valid_date[Y-m-d]',
             'religion'      => 'permit_empty|max_length[50]|in_list[Islam,Kristen,Katolik,Hindu,Buddha,Konghucu]',
             'address'       => 'permit_empty|max_length[255]',
+            'special_needs' => 'permit_empty|max_length[100]',
+            'disability'    => 'permit_empty|max_length[100]',
+            'kip_pip_number'=> 'permit_empty|max_length[50]',
+            'father_name'   => 'permit_empty|max_length[255]',
+            'mother_name'   => 'permit_empty|max_length[255]',
+            'guardian_name' => 'permit_empty|max_length[255]',
             'phone'         => 'permit_empty|valid_phone',
             'parent_id'     => 'permit_empty|is_natural_no_zero|is_not_unique[users.id]',
             'admission_date'=> 'permit_empty|valid_date[Y-m-d]',
-            'status'        => 'permit_empty|in_list[Aktif,Alumni,Pindah,Keluar]',
+            'status'        => 'permit_empty|in_list[Aktif,Alumni,Pindah,Keluar,Tidak Aktif]',
         ];
 
         // tambahkan unik hanya jika berubah
@@ -115,9 +125,9 @@ final class StudentValidation
             // $rules['nisn'] .= '|unique_with_soft_delete[students.nisn,id,{id}]';
         }
 
-        if (array_key_exists('nis', $input) && $input['nis'] !== ($existing['nis'] ?? null)) {
-            $rules['nis'] .= '|is_unique[students.nis,id,{id}]';
-            // $rules['nis']  .= '|unique_with_soft_delete[students.nis,id,{id}]';
+        if (array_key_exists('nik', $input) && $input['nik'] !== ($existing['nik'] ?? null)) {
+            $rules['nik'] .= '|is_unique[students.nik,id,{id}]';
+            // $rules['nik'] .= '|unique_with_soft_delete[students.nik,id,{id}]';
         }
 
         return $rules;
@@ -130,16 +140,22 @@ final class StudentValidation
             'class_id'      => 'required|is_natural_no_zero|is_not_unique[classes.id]',
             'full_name'     => 'required|min_length[3]|max_length[100]',
             'nisn'          => "required|numeric|exact_length[10]|is_unique[students.nisn,id,{$studentId}]",
-            'nis'           => "required|numeric|min_length[4]|max_length[20]|is_unique[students.nis,id,{$studentId}]",
+            'nik'           => "permit_empty|numeric|exact_length[16]|is_unique[students.nik,id,{$studentId}]",
             'gender'        => 'required|in_list[L,P]',
             'birth_place'   => 'permit_empty|max_length[100]',
             'birth_date'    => 'permit_empty|valid_date[Y-m-d]',
             'religion'      => 'permit_empty|max_length[50]|in_list[Islam,Kristen,Katolik,Hindu,Buddha,Konghucu]',
             'address'       => 'permit_empty|max_length[255]',
+            'special_needs' => 'permit_empty|max_length[100]',
+            'disability'    => 'permit_empty|max_length[100]',
+            'kip_pip_number'=> 'permit_empty|max_length[50]',
+            'father_name'   => 'permit_empty|max_length[255]',
+            'mother_name'   => 'permit_empty|max_length[255]',
+            'guardian_name' => 'permit_empty|max_length[255]',
             'phone'         => 'permit_empty|valid_phone',
             'parent_id'     => 'permit_empty|is_natural_no_zero|is_not_unique[users.id]',
             'admission_date'=> 'permit_empty|valid_date[Y-m-d]',
-            'status'        => 'permit_empty|in_list[Aktif,Alumni,Pindah,Keluar]',
+            'status'        => 'permit_empty|in_list[Aktif,Alumni,Pindah,Keluar,Tidak Aktif]',
         ];
     }
 
@@ -152,7 +168,7 @@ final class StudentValidation
         $userRules = [
             // Anda juga punya custom valid_username; alpha_dash juga oke
             'username'  => 'required|min_length[3]|max_length[30]|alpha_dash|is_unique[users.username]',
-            'email'     => 'required|valid_email|max_length[255]|is_unique[users.email]',
+            'email'     => 'permit_empty|valid_email|max_length[255]|is_unique[users.email]',
             'full_name' => 'required|min_length[3]|max_length[100]',
             'password'  => 'required|min_length[6]|max_length[255]',
         ];
@@ -189,6 +205,13 @@ final class StudentValidation
             'birth_date',
             'religion',
             'address',
+            'nik',
+            'special_needs',
+            'disability',
+            'kip_pip_number',
+            'father_name',
+            'mother_name',
+            'guardian_name',
             'parent_id',
             'admission_date',
             'phone',
@@ -239,7 +262,7 @@ final class StudentValidation
 
     public static function getStatusOptions(): array
     {
-        return ['Aktif', 'Alumni', 'Pindah', 'Keluar'];
+        return ['Aktif', 'Alumni', 'Pindah', 'Keluar', 'Tidak Aktif'];
     }
 
     public static function getGenderOptions(): array

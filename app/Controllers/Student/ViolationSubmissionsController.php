@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use App\Services\ViolationSubmissionService;
 use App\Models\StudentModel;
 use App\Models\ViolationCategoryModel;
+use CodeIgniter\Exceptions\PageNotFoundException;
 
 class ViolationSubmissionsController extends BaseController
 {
@@ -15,6 +16,12 @@ class ViolationSubmissionsController extends BaseController
 
     public function __construct()
     {
+        helper('app');
+
+        if (!feature_violation_submissions_enabled()) {
+            throw PageNotFoundException::forPageNotFound('Fitur Pengaduan Pelanggaran belum tersedia.');
+        }
+
         $this->service       = new ViolationSubmissionService();
         $this->studentModel  = new StudentModel();
         $this->categoryModel = new ViolationCategoryModel();
@@ -80,7 +87,7 @@ class ViolationSubmissionsController extends BaseController
 
         // List siswa terlapor selain dirinya sendiri
         $students = $this->studentModel
-            ->select('students.id, users.full_name, students.nis, classes.class_name')
+            ->select('students.id, users.full_name, students.nisn, classes.class_name')
             ->join('users', 'users.id = students.user_id')
             ->join('classes', 'classes.id = students.class_id', 'left')
             ->where('students.deleted_at', null)
@@ -274,7 +281,7 @@ class ViolationSubmissionsController extends BaseController
         $selfStudentId = isset($selfStudent['id']) ? (int) $selfStudent['id'] : 0;
 
         $students = $this->studentModel
-            ->select('students.id, users.full_name, students.nis, classes.class_name')
+            ->select('students.id, users.full_name, students.nisn, classes.class_name')
             ->join('users', 'users.id = students.user_id')
             ->join('classes', 'classes.id = students.class_id', 'left')
             ->where('students.deleted_at', null)

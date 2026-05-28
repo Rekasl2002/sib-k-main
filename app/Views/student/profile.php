@@ -29,6 +29,8 @@ $valPhone     = old('phone',      $profile['phone']      ?? '');
 $valBirthPl   = old('birth_place',$profile['birth_place']?? '');
 $valBirthDt   = old('birth_date', date_input($profile['birth_date'] ?? null));
 $valAddress   = old('address',    $profile['address']    ?? '');
+$valAge        = student_age_text($profile['birth_date'] ?? null);
+$genderLabel   = (($profile['gender'] ?? '') === 'L') ? 'Laki-laki' : ((($profile['gender'] ?? '') === 'P') ? 'Perempuan' : '-');
 
 // ==============================
 // ✅ Avatar: samakan dengan /profile
@@ -179,7 +181,7 @@ if ($avatarPath) {
         <div class="card">
           <div class="card-body">
             <h5 class="card-title mb-3">Identitas Siswa</h5>
-            <p class="mb-2">NIS: <strong><?= v($profile,'nis','-') ?></strong></p>
+            <p class="mb-2">NIK: <strong><?= v($profile,'nik','-') ?></strong></p>
             <p class="mb-0">NISN: <strong><?= v($profile,'nisn','-') ?></strong></p>
           </div>
         </div>
@@ -205,7 +207,38 @@ if ($avatarPath) {
               </div>
               <div class="col-md-6">
                 <div class="text-muted small mb-1">Tanggal Lahir</div>
-                <div class="fw-semibold"><?= $valBirthDt ? esc($valBirthDt) : '—' ?></div>
+                <div class="fw-semibold">
+                  <?= $valBirthDt ? esc($valBirthDt) : '—' ?>
+                  <?php if ($valAge !== '-'): ?><span class="text-muted">(<?= esc($valAge) ?>)</span><?php endif; ?>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="text-muted small mb-1">Jenis Kelamin</div>
+                <div class="fw-semibold"><?= esc($genderLabel) ?></div>
+              </div>
+              <div class="col-md-6">
+                <div class="text-muted small mb-1">Kebutuhan Khusus</div>
+                <div class="fw-semibold"><?= esc($profile['special_needs'] ?? '—') ?></div>
+              </div>
+              <div class="col-md-6">
+                <div class="text-muted small mb-1">Disabilitas</div>
+                <div class="fw-semibold"><?= esc($profile['disability'] ?? '—') ?></div>
+              </div>
+              <div class="col-md-6">
+                <div class="text-muted small mb-1">Nomor KIP/PIP</div>
+                <div class="fw-semibold"><?= esc($profile['kip_pip_number'] ?? '—') ?></div>
+              </div>
+              <div class="col-md-6">
+                <div class="text-muted small mb-1">Nama Ayah Kandung</div>
+                <div class="fw-semibold"><?= esc($profile['father_name'] ?? '—') ?></div>
+              </div>
+              <div class="col-md-6">
+                <div class="text-muted small mb-1">Nama Ibu Kandung</div>
+                <div class="fw-semibold"><?= esc($profile['mother_name'] ?? '—') ?></div>
+              </div>
+              <div class="col-md-6">
+                <div class="text-muted small mb-1">Nama Wali</div>
+                <div class="fw-semibold"><?= esc($profile['guardian_name'] ?? '—') ?></div>
               </div>
               <div class="col-12">
                 <div class="text-muted small mb-1">Alamat</div>

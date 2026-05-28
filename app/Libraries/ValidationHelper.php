@@ -53,21 +53,6 @@ class ValidationHelper
     }
 
     /**
-     * Validate NIS format
-     * 
-     * Aturan baru:
-     * - Hanya angka
-     * - 4–20 digit
-     * 
-     * @param string $nis
-     * @return bool
-     */
-    public static function valid_nis($nis)
-    {
-        return preg_match('/^[0-9]{4,20}$/', $nis) === 1;
-    }
-
-    /**
      * Validate Indonesian date format (d-m-Y or d/m/Y)
      * 
      * @param string $date
@@ -270,7 +255,7 @@ class ValidationHelper
      */
     public static function valid_grade_level($grade)
     {
-        return in_array($grade, ['X', 'XI', 'XII']);
+        return in_array((string) $grade, ['7', '8', '9', '10', '11', '12', 'X', 'XI', 'XII'], true);
     }
 
     /**
@@ -396,7 +381,6 @@ class ValidationHelper
         return [
             'valid_phone'         => '{field} harus diawali 08 dan terdiri dari 10–15 digit (format 08xxxxxxxxxx)',
             'valid_nisn'          => '{field} harus 10 digit angka',
-            'valid_nis'           => '{field} harus 4–20 digit angka',
             'valid_indo_date'     => '{field} harus berformat tanggal Indonesia (dd-mm-yyyy)',
             'valid_academic_year' => '{field} harus berformat tahun ajaran (YYYY/YYYY)',
             'strong_password'     => '{field} minimal 6 karakter dengan kombinasi huruf dan angka',
@@ -406,7 +390,7 @@ class ValidationHelper
             'valid_image'         => '{field} harus berupa file gambar yang valid',
             'valid_username'      => '{field} hanya boleh mengandung huruf, angka, titik, dan underscore',
             'valid_nik'           => '{field} harus 16 digit angka',
-            'valid_grade_level'   => '{field} harus X, XI, atau XII',
+            'valid_grade_level'   => '{field} harus berupa tingkat kelas yang valid',
             'valid_semester'      => '{field} harus Ganjil atau Genap',
             'valid_gender'        => '{field} harus L atau P',
             'valid_religion'      => '{field} tidak valid',

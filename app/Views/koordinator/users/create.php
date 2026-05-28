@@ -262,15 +262,14 @@ if (!function_exists('class_label')) {
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="email" class="form-label">
-                                    Email <span class="text-danger">*</span>
+                                    Email
                                 </label>
                                 <input type="email"
                                        class="form-control<?= isset($errors['email']) ? ' is-invalid' : '' ?>"
                                        id="email"
                                        name="email"
                                        value="<?= old('email') ?>"
-                                       placeholder="contoh@email.com"
-                                       required>
+                                       placeholder="contoh@email.com">
                                 <?php if (isset($errors['email'])): ?>
                                     <div class="invalid-feedback">
                                         <?= esc($errors['email']) ?>

@@ -434,7 +434,7 @@ class CaseController extends BaseController
      * Dropdown siswa aktif (selaras Counselor) - versi lebih "tahan beda skema".
      *
      * Output minimal untuk dropdown:
-     * - id, nisn, nis, full_name, class_name
+     * - id, nisn, full_name, class_name
      */
     private function getActiveStudents(): array
     {
@@ -474,7 +474,6 @@ class CaseController extends BaseController
         $select = [
             's.id',
             ($has($studentCols, 'nisn') ? 's.nisn' : "'' AS nisn"),
-            ($has($studentCols, 'nis')  ? 's.nis'  : "'' AS nis"),
             ($has($classCols, 'class_name') ? 'c.class_name' : "'' AS class_name"),
             $nameExpr . ' AS full_name',
         ];
@@ -705,7 +704,7 @@ class CaseController extends BaseController
             ->select(
                 'v.*,
                 u.full_name AS student_name,
-                s.nisn, s.nis,
+                s.nisn, s.nik,
                 c.class_name,
                 vc.category_name,
                 vc.severity_level,

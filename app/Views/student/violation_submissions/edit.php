@@ -131,7 +131,7 @@ $disabledAttr = $isEditable ? '' : 'disabled';
             <?php foreach ($students as $s): ?>
               <?php
                 $sid   = $s['id'] ?? '';
-                $label = ($s['full_name'] ?? '-') . ' • ' . ($s['class_name'] ?? '-') . ' • NIS ' . ($s['nis'] ?? '-');
+                $label = ($s['full_name'] ?? '-') . ' • ' . ($s['class_name'] ?? '-') . ' • NISN ' . ($s['nisn'] ?? '-');
               ?>
               <option value="<?= esc($sid) ?>" <?= $sel($curStudent, $sid) ?>>
                 <?= esc($label) ?>

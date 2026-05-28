@@ -14,7 +14,7 @@
  * @category   User Management
  * @author     Development Team
  * @created    2025-01-05
- * @updated    2025-11-13 - Samakan aturan phone & data siswa (NISN/NIS) dengan StudentValidation
+ * @updated    2025-11-13 - Samakan aturan phone & data siswa (NISN/NIK) dengan StudentValidation
  * @updated    2025-11-13 - Data Siswa diselaraskan dengan form admin/students/create
  */
 
@@ -171,15 +171,14 @@ $classes = $classes ?? [];
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="email" class="form-label">
-                                    Email <span class="text-danger">*</span>
+                                    Email
                                 </label>
                                 <input type="email"
                                        class="form-control<?= isset($errors['email']) ? ' is-invalid' : '' ?>"
                                        id="email"
                                        name="email"
                                        value="<?= old('email') ?>"
-                                       placeholder="contoh@email.com"
-                                       required>
+                                       placeholder="contoh@email.com">
                                 <?php if (isset($errors['email'])): ?>
                                     <div class="invalid-feedback">
                                         <?= esc($errors['email']) ?>
@@ -287,7 +286,7 @@ $classes = $classes ?? [];
                     <div id="student-section" class="border rounded p-3 mt-3" style="display:none">
                         <h6 class="mb-3"><i class="mdi mdi-school me-1"></i> Data Siswa</h6>
 
-                        <!-- Baris 1: NISN & NIS -->
+                        <!-- Baris 1: NISN & NIK -->
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -312,23 +311,22 @@ $classes = $classes ?? [];
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="student_nis" class="form-label">
-                                        NIS <span class="text-danger">*</span>
+                                    <label for="student_nik" class="form-label">
+                                        NIK
                                     </label>
                                     <input
                                         type="text"
                                         class="form-control"
-                                        id="student_nis"
-                                        name="student[nis]"
-                                        value="<?= old('student.nis') ?>"
-                                        placeholder="4–20 digit angka"
-                                        minlength="4"
-                                        maxlength="20"
-                                        pattern="[0-9]{4,20}"
+                                        id="student_nik"
+                                        name="student[nik]"
+                                        value="<?= old('student.nik') ?>"
+                                        placeholder="16 digit angka"
+                                        maxlength="16"
+                                        pattern="[0-9]{16}"
                                         inputmode="numeric"
                                     >
                                     <small class="text-muted">
-                                        Nomor Induk Siswa (4–20 digit angka).
+                                        Nomor Induk Kependudukan sesuai file EMIS (opsional).
                                     </small>
                                 </div>
                             </div>
@@ -460,9 +458,8 @@ $classes = $classes ?? [];
 
                         <div class="alert alert-warning mt-2 mb-0">
                             <i class="mdi mdi-alert-outline me-2"></i>
-                            Jika Role = <strong>Siswa</strong>, <strong>NISN</strong>, <strong>NIS</strong>, dan
-                            <strong>Jenis Kelamin</strong> wajib diisi dan harus sesuai aturan
-                            (NISN 10 digit angka, NIS 4–20 digit angka).
+                            Jika Role = <strong>Siswa</strong>, <strong>NISN</strong> dan
+                            <strong>Jenis Kelamin</strong> wajib diisi. <strong>NIK</strong> opsional mengikuti file EMIS.
                         </div>
                     </div>
                     <!-- =================== /Data Siswa (Role = Siswa) ===================== -->
@@ -548,16 +545,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // NISN & NIS siswa: angka saja
+    // NISN & NIK siswa: angka saja
     const nisnInput    = document.querySelector('input[name="student[nisn]"]');
-    const nisInput     = document.querySelector('input[name="student[nis]"]');
+    const nikInput     = document.querySelector('input[name="student[nik]"]');
     if (nisnInput) {
         nisnInput.addEventListener('keyup', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
     }
-    if (nisInput) {
-        nisInput.addEventListener('keyup', function () {
+    if (nikInput) {
+        nikInput.addEventListener('keyup', function () {
             this.value = this.value.replace(/[^0-9]/g, '');
         });
     }
@@ -565,7 +562,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Gender siswa
     const studentGender = document.getElementById('student_gender');
 
-    // Toggle section siswa + set required untuk NISN/NIS/Gender jika role = Siswa
+    // Toggle section siswa + set required untuk NISN/NIK/Gender jika role = Siswa
     const roleSelect   = document.querySelector('select[name="role_id"]');
     const studentBox   = document.getElementById('student-section');
     const STUDENT_ROLE = <?= (int)$studentRoleId ?>;
@@ -578,7 +575,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (nisnInput)     nisnInput.required     = isStudent;
-        if (nisInput)      nisInput.required      = isStudent;
+        if (nikInput)      nikInput.required      = false;
         if (studentGender) studentGender.required = isStudent;
     }
 

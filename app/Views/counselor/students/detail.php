@@ -15,6 +15,8 @@
         $genderLabel = 'Perempuan';
     }
 
+    $ageText = student_age_text($student['birth_date'] ?? null);
+
     // Status badge sederhana
     $status = $student['status'] ?? '';
     $statusClass = 'secondary';
@@ -78,8 +80,8 @@
                 <h6 class="text-muted mb-3">Data Akademik & Identitas</h6>
 
                 <div class="row mb-2">
-                    <div class="col-sm-4 text-muted">NIS</div>
-                    <div class="col-sm-8"><?= esc($student['nis'] ?? '-') ?></div>
+                    <div class="col-sm-4 text-muted">NIK</div>
+                    <div class="col-sm-8"><?= esc($student['nik'] ?? '-') ?></div>
                 </div>
 
                 <div class="row mb-2">
@@ -99,7 +101,12 @@
 
                 <div class="row mb-2">
                     <div class="col-sm-4 text-muted">Tanggal Lahir</div>
-                    <div class="col-sm-8"><?= esc($student['birth_date'] ?? '-') ?></div>
+                    <div class="col-sm-8">
+                        <?= esc($student['birth_date'] ?? '-') ?>
+                        <?php if ($ageText !== '-'): ?>
+                            <span class="text-muted">(<?= esc($ageText) ?>)</span>
+                        <?php endif; ?>
+                    </div>
                 </div>
 
                 <div class="row mb-2">
@@ -117,6 +124,36 @@
                     <div class="col-sm-8">
                         <?= nl2br(esc($student['address'] ?? '-')) ?>
                     </div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Kebutuhan Khusus</div>
+                    <div class="col-sm-8"><?= esc($student['special_needs'] ?? '-') ?></div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Disabilitas</div>
+                    <div class="col-sm-8"><?= esc($student['disability'] ?? '-') ?></div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Nomor KIP/PIP</div>
+                    <div class="col-sm-8"><?= esc($student['kip_pip_number'] ?? '-') ?></div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Nama Ayah Kandung</div>
+                    <div class="col-sm-8"><?= esc($student['father_name'] ?? '-') ?></div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Nama Ibu Kandung</div>
+                    <div class="col-sm-8"><?= esc($student['mother_name'] ?? '-') ?></div>
+                </div>
+
+                <div class="row mb-2">
+                    <div class="col-sm-4 text-muted">Nama Wali</div>
+                    <div class="col-sm-8"><?= esc($student['guardian_name'] ?? '-') ?></div>
                 </div>
             </div>
         </div>

@@ -126,7 +126,6 @@ function avatar_url($row): string {
 
                 <p class="text-white-50 mb-0" style="max-width: 900px;">
                     Pantau perkembangan anak, riwayat pelanggaran, dan ringkasan layanan BK.
-                    Anda juga dapat mengajukan laporan pelanggaran melalui menu yang tersedia.
                 </p>
             </div>
         </div>
@@ -199,7 +198,7 @@ function avatar_url($row): string {
             <th style="width:42px;"></th>
             <th>Nama</th>
             <th>Kelas</th>
-            <th>NIS</th>
+            <th>NIK</th>
             <th>NISN</th>
             <?php if ($hasViolCount): ?><th class="text-center">Pelanggaran</th><?php endif; ?>
             <?php if ($hasPoints): ?><th class="text-center">Poin</th><?php endif; ?>
@@ -225,7 +224,7 @@ function avatar_url($row): string {
             </td>
             <td class="fw-semibold"><?= h($childName) ?></td>
             <td><?= h($c['class_name'] ?? '—') ?></td>
-            <td><?= h($c['nis'] ?? '—') ?></td>
+            <td><?= h($c['nik'] ?? '—') ?></td>
             <td><?= h($c['nisn'] ?? '—') ?></td>
             <?php if ($hasViolCount): ?>
               <td class="text-center"><?= (int)($c['violations_count'] ?? 0) ?></td>

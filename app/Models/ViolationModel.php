@@ -223,7 +223,7 @@ class ViolationModel extends Model
     public function getViolationWithDetails($id)
     {
         return $this->select('violations.*,
-                              students.nisn, students.nis,
+                              students.nisn, students.nik,
                               student_users.full_name as student_name,
                               student_users.email as student_email,
                               classes.class_name,
@@ -258,7 +258,7 @@ class ViolationModel extends Model
     {
         $builder = $this->select('violations.*,
                                   students.nisn,
-                                  students.nis,
+                                  students.nisn,
                                   student_users.full_name as student_name,
                                   classes.class_name,
                                   violation_categories.category_name,
@@ -326,7 +326,7 @@ class ViolationModel extends Model
             $builder->groupStart()
                 ->like('student_users.full_name', $q)
                 ->orLike('students.nisn', $q)
-                ->orLike('students.nis', $q)
+                ->orLike('students.nisn', $q)
                 ->orLike('violations.description', $q)
                 ->orLike('violations.location', $q)
                 ->orLike('violation_categories.category_name', $q)
@@ -466,7 +466,7 @@ class ViolationModel extends Model
             $builder->groupStart()
                 ->like('su.full_name', $q)
                 ->orLike('s.nisn', $q)
-                ->orLike('s.nis', $q)
+                ->orLike('s.nisn', $q)
                 ->orLike('v.description', $q)
                 ->orLike('v.location', $q)
                 ->groupEnd();
@@ -553,7 +553,7 @@ class ViolationModel extends Model
             $builder->groupStart()
                 ->like('su.full_name', $q)
                 ->orLike('s.nisn', $q)
-                ->orLike('s.nis', $q)
+                ->orLike('s.nisn', $q)
                 ->orLike('v.description', $q)
                 ->orLike('v.location', $q)
                 ->groupEnd();
@@ -580,7 +580,7 @@ class ViolationModel extends Model
         $builder = $db->table('violations v')
             ->select('s.id,
                       s.nisn,
-                      s.nis,
+                      s.nisn,
                       u.full_name as student_name,
                       c.class_name,
                       COUNT(v.id) as violation_count,
@@ -642,7 +642,7 @@ class ViolationModel extends Model
             $builder->groupStart()
                 ->like('u.full_name', $q)
                 ->orLike('s.nisn', $q)
-                ->orLike('s.nis', $q)
+                ->orLike('s.nisn', $q)
                 ->groupEnd();
         }
 
@@ -673,7 +673,7 @@ class ViolationModel extends Model
     {
         $builder = $this->select('violations.*,
                               students.nisn,
-                              students.nis,
+                              students.nisn,
                               student_users.full_name as student_name,
                               student_users.email as student_email,
                               classes.class_name,

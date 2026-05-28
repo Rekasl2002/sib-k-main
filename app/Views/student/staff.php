@@ -182,7 +182,7 @@ if (!function_exists('staff_card')) {
                 <div>
                     <div class="fw-semibold"><?= h($studentName) ?></div>
                     <div class="text-muted small">Kelas: <?= h($classLabel) ?></div>
-                    <div class="text-muted small">NIS: <?= h($student['nis'] ?? '—') ?> | NISN: <?= h($student['nisn'] ?? '—') ?></div>
+                    <div class="text-muted small">NIK: <?= h($student['nik'] ?? '—') ?> | NISN: <?= h($student['nisn'] ?? '—') ?></div>
                 </div>
             </div>
         </div>

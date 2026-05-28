@@ -7,6 +7,7 @@ use App\Controllers\BaseController;
 use App\Services\ViolationSubmissionService;
 use App\Models\StudentModel;
 use App\Models\ViolationCategoryModel;
+use CodeIgniter\Exceptions\PageNotFoundException;
 
 class ViolationSubmissionsController extends BaseController
 {
@@ -17,6 +18,12 @@ class ViolationSubmissionsController extends BaseController
 
     public function __construct()
     {
+        helper('app');
+
+        if (!feature_violation_submissions_enabled()) {
+            throw PageNotFoundException::forPageNotFound('Fitur Pengaduan Pelanggaran belum tersedia.');
+        }
+
         $this->service       = new ViolationSubmissionService();
         $this->studentModel  = new StudentModel();
         $this->categoryModel = new ViolationCategoryModel();
@@ -404,14 +411,14 @@ class ViolationSubmissionsController extends BaseController
 
     /**
      * Ambil opsi siswa untuk dropdown (tahan banting: coba join users+classes dulu, fallback ke students).
-     * Output keys disamakan dengan yang dipakai view: id, full_name, nis, class_name
+     * Output keys disamakan dengan yang dipakai view: id, full_name, nisn, class_name
      */
     private function fetchStudentsForDropdown(): array
     {
         // Coba pola yang sama dengan versi siswa (users.full_name)
         try {
             $b = $this->db->table('students')
-                ->select('students.id, users.full_name, students.nis, classes.class_name')
+                ->select('students.id, users.full_name, students.nisn, classes.class_name')
                 ->join('users', 'users.id = students.user_id')
                 ->join('classes', 'classes.id = students.class_id', 'left')
                 ->orderBy('classes.class_name', 'ASC')
@@ -438,7 +445,7 @@ class ViolationSubmissionsController extends BaseController
             // Fallback: kalau schema students punya full_name langsung
             try {
                 $b = $this->db->table('students')
-                    ->select('id, full_name, nis')
+                    ->select('id, full_name, nisn')
                     ->orderBy('full_name', 'ASC');
 
                 $rows = $b->get()->getResultArray();

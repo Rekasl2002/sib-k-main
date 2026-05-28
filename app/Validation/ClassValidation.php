@@ -46,10 +46,10 @@ class ClassValidation
             ],
             'grade_level' => [
                 'label' => 'Tingkat Kelas',
-                'rules' => 'required|in_list[X,XI,XII]',
+                'rules' => 'required|max_length[20]',
                 'errors' => [
                     'required' => 'Tingkat kelas harus dipilih',
-                    'in_list' => 'Tingkat kelas harus X, XI, atau XII',
+                    'max_length' => 'Tingkat kelas maksimal 20 karakter',
                 ]
             ],
             'major' => [
@@ -124,10 +124,10 @@ class ClassValidation
             ],
             'grade_level' => [
                 'label' => 'Tingkat Kelas',
-                'rules' => 'required|in_list[X,XI,XII]',
+                'rules' => 'required|max_length[20]',
                 'errors' => [
                     'required' => 'Tingkat kelas harus dipilih',
-                    'in_list' => 'Tingkat kelas harus X, XI, atau XII',
+                    'max_length' => 'Tingkat kelas maksimal 20 karakter',
                 ]
             ],
             'major' => [
@@ -180,6 +180,12 @@ class ClassValidation
     public static function getGradeLevelOptions()
     {
         return [
+            '7' => 'Kelas 7',
+            '8' => 'Kelas 8',
+            '9' => 'Kelas 9',
+            '10' => 'Kelas 10',
+            '11' => 'Kelas 11',
+            '12' => 'Kelas 12',
             'X' => 'Kelas X',
             'XI' => 'Kelas XI',
             'XII' => 'Kelas XII',

@@ -486,7 +486,6 @@ class AssessmentAnswerModel extends Model
                 assessment_questions.points,
                 {$stuMeta['select']},
                 s.nisn,
-                " . ($this->fieldExists('students', 'nis') ? "s.nis," : "NULL AS nis,") . "
                 assessments.title as assessment_title
             ")
             ->join('assessment_questions', $joinQ, 'inner')

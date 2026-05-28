@@ -173,8 +173,7 @@
                 </h5>
                 <p class="card-text">
                     Download template Excel untuk impor data siswa.
-                    Template sudah dilengkapi contoh data, petunjuk pengisian,
-                    serta dropdown otomatis untuk beberapa kolom (Jenis Kelamin, Status, Agama, dan Kelas).
+                    File EMIS sekolah juga bisa langsung diunggah selama header utamanya tersedia.
                 </p>
                 <a href="<?= base_url('admin/students/download-template') ?>"
                     class="btn btn-light btn-block">
@@ -195,8 +194,8 @@
                     <h6 class="font-size-14 mb-2">Langkah-langkah:</h6>
                     <ol class="ps-3 mb-0 small">
                         <li>Download template Excel</li>
-                        <li>Isi data siswa sesuai format dan petunjuk di dalam file</li>
-                        <li>Pastikan semua kolom wajib terisi dengan benar</li>
+                        <li>Isi data siswa atau gunakan file sekolah yang sudah ada</li>
+                        <li>Pastikan NISN, nama, tanggal lahir, dan jenis kelamin tersedia</li>
                         <li>Unggah file yang sudah diisi</li>
                         <li>Sistem akan memvalidasi dan memproses data</li>
                     </ol>
@@ -205,19 +204,15 @@
                 <div class="mb-3">
                     <h6 class="font-size-14 mb-2">Kolom Wajib:</h6>
                     <ul class="ps-3 mb-0 small">
-                        <li><strong>NISN</strong> (minimal 10 digit angka)</li>
-                        <li><strong>NIS</strong> (minimal 5 karakter)</li>
+                        <li><strong>NISN</strong> (tepat 10 digit angka)</li>
                         <li><strong>Nama Lengkap</strong></li>
-                        <li><strong>Email</strong> (format valid)</li>
                         <li><strong>Jenis Kelamin</strong> (L / P)</li>
                         <li><strong>Tanggal Lahir</strong> (format tanggal valid)</li>
-                        <li><strong>Tanggal Masuk</strong> (format tanggal valid)</li>
-                        <li><strong>No. HP Siswa</strong></li>
                     </ul>
                     <p class="mb-0 mt-2 small text-muted">
-                        Data orang tua (Nama, Email, No. HP) bersifat wajib
-                        <strong>jika salah satu diisi</strong>. Jika orang tua punya lebih dari satu anak,
-                        gunakan <strong>email yang sama</strong> untuk semua anak tersebut.
+                        Email, nomor HP, tanggal masuk, dan data orang tua boleh kosong.
+                        Jika kelas/rombel seperti <strong>Kelas 12 - A</strong> belum ada,
+                        sistem akan membuat kelasnya otomatis.
                     </p>
                 </div>
 
@@ -225,7 +220,7 @@
                     <small>
                         <i class="mdi mdi-alert-circle-outline me-1"></i>
                         <strong>Perhatian:</strong>
-                        Data yang tidak valid atau duplikat (NISN, NIS, atau Email) tidak akan diimpor
+                        Data yang tidak valid atau duplikat (NISN, NIK, atau email jika diisi) tidak akan diimpor
                         dan akan muncul di laporan error. Baris yang valid tetap diproses.
                     </small>
                 </div>
@@ -259,14 +254,15 @@
                             <code>Aktif</code>,
                             <code>Alumni</code>,
                             <code>Pindah</code>,
-                            <code>Keluar</code>
+                            <code>Keluar</code>,
+                            <code>Tidak Aktif</code>
                         </td>
                     </tr>
                     <tr>
                         <td class="text-muted">No. HP:</td>
                         <td>
-                            Hanya angka, diawali <code>08</code>,
-                            tanpa spasi atau tanda baca lain.
+                            Opsional. Bisa diawali <code>08</code>, <code>62</code>, atau <code>+62</code>.
+                            Sistem akan menormalkan ke format <code>08</code>.
                         </td>
                     </tr>
                     <tr>

@@ -200,9 +200,21 @@ $useShowAlerts = function_exists('show_alerts');
                             <label class="form-label">Tingkat</label>
                             <select name="grade_level" class="form-select">
                                 <option value="">Semua Tingkat</option>
-                                <option value="X"   <?= ($filters['grade_level'] ?? '') == 'X' ? 'selected' : '' ?>>X</option>
-                                <option value="XI"  <?= ($filters['grade_level'] ?? '') == 'XI' ? 'selected' : '' ?>>XI</option>
-                                <option value="XII" <?= ($filters['grade_level'] ?? '') == 'XII' ? 'selected' : '' ?>>XII</option>
+                                <?php
+                                $gradeOptions = [];
+                                foreach (($classes ?? []) as $class) {
+                                    $grade = trim((string)($class['grade_level'] ?? ''));
+                                    if ($grade !== '') $gradeOptions[$grade] = $grade;
+                                }
+                                if (!empty($filters['grade_level'])) $gradeOptions[(string)$filters['grade_level']] = (string)$filters['grade_level'];
+                                uksort($gradeOptions, static function ($a, $b) {
+                                    $rank = static fn($v) => ['7'=>7,'8'=>8,'9'=>9,'10'=>10,'X'=>10,'11'=>11,'XI'=>11,'12'=>12,'XII'=>12][$v] ?? 99;
+                                    return ($rank($a) <=> $rank($b)) ?: strcmp((string)$a, (string)$b);
+                                });
+                                ?>
+                                <?php foreach ($gradeOptions as $grade): ?>
+                                    <option value="<?= esc($grade) ?>" <?= (($filters['grade_level'] ?? '') == $grade) ? 'selected' : '' ?>><?= esc($grade) ?></option>
+                                <?php endforeach; ?>
                             </select>
                         </div>
 
@@ -235,7 +247,7 @@ $useShowAlerts = function_exists('show_alerts');
                             <input type="text"
                                    name="search"
                                    class="form-control"
-                                   placeholder="NISN, NIS, Nama, Email..."
+                                   placeholder="NISN, NIK, Nama, Email..."
                                    value="<?= esc($filters['search'] ?? '') ?>">
                         </div>
 
@@ -305,7 +317,7 @@ $useShowAlerts = function_exists('show_alerts');
                                 <th style="width: 50px;">No</th>
                                 <th>Siswa</th>
                                 <th>NISN</th>
-                                <th>NIS</th>
+                                <th>NIK</th>
                                 <th>Kelas</th>
                                 <th>Gender</th>
                                 <th>Status</th>
@@ -338,7 +350,7 @@ $useShowAlerts = function_exists('show_alerts');
                                             </div>
                                         </td>
                                         <td><code><?= esc($student['nisn'] ?? '-') ?></code></td>
-                                        <td><code><?= esc($student['nis'] ?? '-') ?></code></td>
+                                        <td><code><?= esc($student['nik'] ?? '-') ?></code></td>
                                         <td>
                                             <?php if (!empty($student['class_name'])): ?>
                                                 <span class="badge bg-primary">

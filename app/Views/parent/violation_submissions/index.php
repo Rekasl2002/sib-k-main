@@ -37,7 +37,7 @@ if (!function_exists('sibk_fmt_dt')) {
 /**
  * Build label "Terlapor" secara rapi (lebih tahan banting):
  * - Jika subject_other_name terisi -> pakai itu
- * - Jika tidak -> pakai data siswa (nama/kelas/nis) dari field yang tersedia
+ * - Jika tidak -> pakai data siswa (nama/kelas/NISN) dari field yang tersedia
  */
 if (!function_exists('sibk_subject_label')) {
     function sibk_subject_label(array $r): string
@@ -47,12 +47,12 @@ if (!function_exists('sibk_subject_label')) {
 
         $name  = trim((string) ($r['subject_student_name'] ?? $r['student_name'] ?? ''));
         $class = trim((string) ($r['subject_student_class'] ?? $r['subject_class_name'] ?? $r['class_name'] ?? ''));
-        $nis   = trim((string) ($r['subject_student_nis'] ?? $r['nis'] ?? ''));
+        $NISN   = trim((string) ($r['subject_student_nisn'] ?? $r['nisn'] ?? ''));
 
         $parts = [];
         if ($name !== '')  $parts[] = $name;
         if ($class !== '') $parts[] = $class;
-        if ($nis !== '')   $parts[] = 'NIS ' . $nis;
+        if ($NISN !== '')   $parts[] = 'NISN ' . $NISN;
 
         return $parts ? implode(' • ', $parts) : '-';
     }

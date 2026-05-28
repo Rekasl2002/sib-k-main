@@ -59,7 +59,7 @@
             <label class="form-label">Cari Siswa / Kelas / Pilihan</label>
             <input type="text" name="q" value="<?= esc($filters['q'] ?? '') ?>"
                    class="form-control form-control-sm"
-                   placeholder="Nama siswa / NIS / kelas / judul karir / universitas">
+                   placeholder="Nama siswa / NISN / kelas / judul karir / universitas">
           </div>
 
           <div class="col-md-3">
@@ -121,7 +121,7 @@
               <tr>
                 <th>#</th>
                 <th>Siswa</th>
-                <th>NIS</th>
+                <th>NISN</th>
                 <th>Kelas</th>
                 <th>Judul Karir</th>
                 <th>Sektor</th>
@@ -140,7 +140,7 @@
                   <tr>
                     <td><?= $no++ ?></td>
                     <td><?= esc($row['student_name'] ?? '-') ?></td>
-                    <td><?= esc($row['nis'] ?? '-') ?></td>
+                    <td><?= esc($row['nisn'] ?? '-') ?></td>
                     <td><?= esc(($row['grade_level'] ?? '') . ' - ' . ($row['class_name'] ?? '')) ?></td>
                     <td><?= esc($row['career_title'] ?? '-') ?></td>
                     <td><?= esc($row['sector'] ?? '-') ?></td>
@@ -179,7 +179,7 @@
               <tr>
                 <th>#</th>
                 <th>Siswa</th>
-                <th>NIS</th>
+                <th>NISN</th>
                 <th>Kelas</th>
                 <th>Universitas</th>
                 <th>Akreditasi</th>
@@ -198,7 +198,7 @@
                   <tr>
                     <td><?= $no++ ?></td>
                     <td><?= esc($row['student_name'] ?? '-') ?></td>
-                    <td><?= esc($row['nis'] ?? '-') ?></td>
+                    <td><?= esc($row['nisn'] ?? '-') ?></td>
                     <td><?= esc(($row['grade_level'] ?? '') . ' - ' . ($row['class_name'] ?? '')) ?></td>
                     <td><?= esc($row['university_name'] ?? '-') ?></td>
                     <td><?= esc($row['accreditation'] ?? '-') ?></td>

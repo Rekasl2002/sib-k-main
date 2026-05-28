@@ -31,7 +31,7 @@ class ReportController extends BaseParentController
             ->select('
                 s.id,
                 COALESCE(u.full_name, "-") AS full_name,
-                s.nis,
+                s.nisn,
                 s.gender,
                 s.class_id,
                 c.class_name,

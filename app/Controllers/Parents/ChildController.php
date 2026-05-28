@@ -79,7 +79,7 @@ class ChildController extends BaseController
         // FIX: jangan orderBy students.full_name (bisa tidak ada), gunakan users.full_name
         $students = $this->db->table('students s')
             ->select('
-                s.id, s.user_id, s.nisn, s.nis, s.class_id, s.status,
+                s.id, s.user_id, s.nisn, s.nik, s.class_id, s.status,
                 u.full_name,
                 c.class_name
             ')
@@ -332,9 +332,9 @@ class ChildController extends BaseController
 
         // Validasi manual (ringan)
         $errors = [];
-        if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        if ($email !== '' && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errors['email'] = 'Format email tidak valid.';
-        } else {
+        } elseif ($email !== '') {
             // Cek unik email (kecuali milik anak sendiri)
             $dup = $this->db->table('users')->select('id')
                 ->where('email', $email)
@@ -362,7 +362,7 @@ class ChildController extends BaseController
 
         // Update ke tabel users
         $this->db->table('users')->where('id', $childUserId)->update([
-            'email'      => $email,
+            'email'      => $email !== '' ? $email : null,
             'phone'      => $phone === '' ? null : $phone,
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
@@ -591,7 +591,6 @@ class ChildController extends BaseController
 
                 // data siswa
                 'su.full_name AS student_full_name',
-                's.nis       AS student_nis',
                 's.nisn      AS student_nisn',
                 'c.class_name AS class_name',
 
@@ -652,7 +651,6 @@ class ChildController extends BaseController
             'student'   => [
                 'id'         => $student['id'],
                 'full_name'  => $violation['student_full_name'] ?? ($student['full_name'] ?? ''),
-                'nis'        => $violation['student_nis'] ?? ($student['nis'] ?? ''),
                 'nisn'       => $violation['student_nisn'] ?? ($student['nisn'] ?? ''),
                 'class_name' => $violation['class_name'] ?? ($student['class_name'] ?? ''),
             ],
@@ -1115,7 +1113,7 @@ class ChildController extends BaseController
                     sp.student_id,
                     sp.attendance_status,
                     sp.participation_note,
-                    s.nisn, s.nis,
+                    s.nisn, s.nik,
                     u.full_name AS student_name,
                     c.class_name
                 ')

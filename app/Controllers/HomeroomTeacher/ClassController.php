@@ -152,7 +152,7 @@ class ClassController extends BaseController
                 'u.full_name AS full_name',
                 's.gender',
                 's.nisn',
-                's.nis',
+                's.nisn',
                 's.total_violation_points',
                 's.status',
             ])

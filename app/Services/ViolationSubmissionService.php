@@ -34,7 +34,7 @@ class ViolationSubmissionService
             'vs.*',
             'vc.category_name',
             'su.full_name AS subject_student_name',
-            'ss.nis AS subject_student_nis',
+            'ss.nisn AS subject_student_nisn',
             'c.class_name AS subject_student_class',
         ]);
         $builder->join('violation_categories vc', 'vc.id = vs.category_id', 'left');
@@ -63,7 +63,7 @@ class ViolationSubmissionService
             'ru.full_name AS reporter_name',
             'hu.full_name AS handled_by_name',
             'su.full_name AS subject_student_name',
-            'ss.nis AS subject_student_nis',
+            'ss.nisn AS subject_student_nisn',
             'c.class_name AS subject_student_class',
         ]);
         $builder->join('violation_categories vc', 'vc.id = vs.category_id', 'left');

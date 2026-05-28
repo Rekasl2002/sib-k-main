@@ -259,7 +259,7 @@ $errors       = session('errors') ?? [];
                             <?php $grade = old('target_grade', $A['target_grade'] ?? ''); ?>
                             <select name="target_grade" id="target_grade" class="form-select">
                                 <option value="">Pilih tingkat</option>
-                                <?php foreach (['X', 'XI', 'XII'] as $g): ?>
+                                <?php foreach (($grades ?? ['X', 'XI', 'XII']) as $g): ?>
                                     <option value="<?= $g ?>" <?= $grade === $g ? 'selected' : '' ?>>
                                         <?= $g ?>
                                     </option>

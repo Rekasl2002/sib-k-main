@@ -139,7 +139,7 @@ $__errs = array_values(array_unique(array_filter(array_map('strval', $__errs))))
                                 <label class="form-label">Siswa</label>
                                 <input type="text" class="form-control"
                                 value="<?= esc(($session['student_name'] ?? 'N/A')
-                                        . (!empty($session['student_nis'])  ? ' ('.$session['student_nis'].')' : '')
+                                        . (!empty($session['student_nisn'])  ? ' ('.$session['student_nisn'].')' : '')
                                         . (!empty($session['class_name'])   ? ' — Kelas '.$session['class_name'] : '')) ?>"
                                 readonly>
                                 <input type="hidden" name="student_id" value="<?= (int)$session['student_id'] ?>">
@@ -163,11 +163,11 @@ $__errs = array_values(array_unique(array_filter(array_map('strval', $__errs))))
                                             $sid        = (int)($stu['id'] ?? 0);
                                             $isSelected = in_array($sid, $selectedParticipantIds ?? [], true);
                                             $nm         = $stu['student_name'] ?? ($stu['name'] ?? 'Tanpa Nama');
-                                            $nis        = $stu['nis'] ?? ($stu['nisn'] ?? '');
+                                            $NISN        = $stu['nisn'] ?? '';
                                             $cls        = $stu['class_name'] ?? '';
                                         ?>
                                         <option value="<?= $sid ?>" <?= $isSelected ? 'selected' : '' ?>>
-                                            <?= esc($nm) ?><?= $nis ? ' ('.esc($nis).')' : '' ?><?= $cls ? ' — '.esc($cls) : '' ?>
+                                            <?= esc($nm) ?><?= $NISN ? ' ('.esc($NISN).')' : '' ?><?= $cls ? ' — '.esc($cls) : '' ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>

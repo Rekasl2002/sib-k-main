@@ -110,7 +110,7 @@ class SessionController extends BaseController
         $builder = $this->db->table('counseling_sessions cs')
             ->select('
                 cs.*,
-                s.nisn, s.nis,
+                s.nisn, s.nik,
                 su.full_name AS student_name,
                 c.class_name,
                 cu.full_name AS counselor_name,
@@ -214,7 +214,6 @@ class SessionController extends BaseController
             ->select('
                 cs.*,
                 s.nisn AS student_nisn,
-                s.nis  AS student_nis,
                 su.full_name AS student_name,
                 su.email AS student_email,
                 cu.full_name AS counselor_name,
@@ -238,7 +237,7 @@ class SessionController extends BaseController
             ->select("
                 sp.id AS participant_id,
                 sp.student_id,
-                s.nisn, s.nis,
+                s.nisn, s.nik,
                 u.full_name AS student_name,
                 c.class_name,
                 sp.attendance_status,
@@ -313,7 +312,7 @@ class SessionController extends BaseController
     {
         $rows = $this->studentModel
             ->asArray()
-            ->select('students.id, students.nisn, students.nis, users.full_name as student_name, classes.class_name')
+            ->select('students.id, students.nisn, students.nik, users.full_name as student_name, classes.class_name')
             ->join('users', 'users.id = students.user_id')
             ->join('classes', 'classes.id = students.class_id', 'left')
             ->where('students.status', 'Aktif')

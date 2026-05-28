@@ -282,7 +282,7 @@ class ViolationService
                 $this->syncStudentViolationPoints((int) $data['student_id']);
             }
 
-            $nisn = $student['nisn'] ?? ($student['nis'] ?? 'unknown');
+            $nisn = $student['nisn'] ?? 'unknown';
             $this->logActivity('create_violation', (int)$violationId, "Pelanggaran baru dilaporkan untuk siswa: {$nisn}");
 
             return [
@@ -830,7 +830,7 @@ class ViolationService
     public function getStudentsForFilter(): array
     {
         return $this->db->table('students s')
-            ->select('s.id, u.full_name AS full_name, s.nisn, s.nis, s.class_id, s.status')
+            ->select('s.id, u.full_name AS full_name, s.nisn, s.nik, s.class_id, s.status')
             ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'inner')
             ->where('s.deleted_at', null)
             ->orderBy('u.full_name', 'ASC')
@@ -841,7 +841,7 @@ class ViolationService
     public function getStudentsForViolation(): array
     {
         return $this->db->table('students s')
-            ->select('s.id, u.full_name AS full_name, s.nisn, s.nis, s.class_id')
+            ->select('s.id, u.full_name AS full_name, s.nisn, s.nik, s.class_id')
             ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'inner')
             ->where('s.deleted_at', null)
             ->where('s.status', 'Aktif')
@@ -1027,7 +1027,7 @@ class ViolationService
             $b->groupStart()
                 ->like('u.full_name', $q)
                 ->orLike('s.nisn', $q)
-                ->orLike('s.nis', $q)
+                ->orLike('s.nisn', $q)
                 ->orLike('v.description', $q)
                 ->orLike('v.location', $q)
                 ->groupEnd();

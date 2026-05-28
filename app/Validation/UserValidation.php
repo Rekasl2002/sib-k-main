@@ -24,7 +24,6 @@ final class UserValidation
                 'is_unique'  => 'Username sudah digunakan',
             ],
             'email' => [
-                'required'    => 'Email wajib diisi',
                 'valid_email' => 'Format email tidak valid',
                 'max_length'  => 'Email maksimal 255 karakter',
                 'is_unique'   => 'Email sudah digunakan',
@@ -64,7 +63,7 @@ final class UserValidation
         return [
             'role_id'          => 'required|is_natural_no_zero|is_not_unique[roles.id]',
             'username'         => 'required|min_length[3]|max_length[30]|alpha_dash|is_unique[users.username]',
-            'email'            => 'required|valid_email|max_length[255]|is_unique[users.email]',
+            'email'            => 'permit_empty|valid_email|max_length[255]|is_unique[users.email]',
             'password'         => 'required|min_length[6]|max_length[255]',
             'password_confirm' => 'required|matches[password]',
             'full_name'        => 'required|min_length[3]|max_length[100]',
@@ -85,7 +84,7 @@ final class UserValidation
             'id'               => 'required|is_natural_no_zero', // penting utk {id}
             'role_id'          => 'required|is_natural_no_zero|is_not_unique[roles.id]',
             'username'         => 'required|min_length[3]|max_length[30]|alpha_dash',
-            'email'            => 'required|valid_email|max_length[255]',
+            'email'            => 'permit_empty|valid_email|max_length[255]',
             'full_name'        => 'required|min_length[3]|max_length[100]',
             'phone'            => 'permit_empty|valid_phone',
             'is_active'        => 'permit_empty|in_list[0,1]',
@@ -123,7 +122,7 @@ final class UserValidation
             'id'               => 'required|is_natural_no_zero',
             'role_id'          => 'required|is_natural_no_zero|is_not_unique[roles.id]',
             'username'         => "required|min_length[3]|max_length[30]|alpha_dash|is_unique[users.username,id,{$userId}]",
-            'email'            => "required|valid_email|max_length[255]|is_unique[users.email,id,{$userId}]",
+            'email'            => "permit_empty|valid_email|max_length[255]|is_unique[users.email,id,{$userId}]",
             'full_name'        => 'required|min_length[3]|max_length[100]',
             'phone'            => 'permit_empty|valid_phone',
             'is_active'        => 'permit_empty|in_list[0,1]',
@@ -139,7 +138,7 @@ final class UserValidation
     public $userCreate = [
         'role_id'          => 'required|is_natural_no_zero|is_not_unique[roles.id]',
         'username'         => 'required|min_length[3]|max_length[30]|alpha_dash|is_unique[users.username]',
-        'email'            => 'required|valid_email|max_length[255]|is_unique[users.email]',
+        'email'            => 'permit_empty|valid_email|max_length[255]|is_unique[users.email]',
         'password'         => 'required|min_length[6]|max_length[255]',
         'password_confirm' => 'required|matches[password]',
         'full_name'        => 'required|min_length[3]|max_length[100]',
@@ -151,7 +150,7 @@ final class UserValidation
         'id'               => 'required|is_natural_no_zero', // supaya {id} terisi
         'role_id'          => 'required|is_natural_no_zero|is_not_unique[roles.id]',
         'username'         => 'required|min_length[3]|max_length[30]|alpha_dash|is_unique[users.username,id,{id}]',
-        'email'            => 'required|valid_email|max_length[255]|is_unique[users.email,id,{id}]',
+        'email'            => 'permit_empty|valid_email|max_length[255]|is_unique[users.email,id,{id}]',
         'full_name'        => 'required|min_length[3]|max_length[100]',
         'phone'            => 'permit_empty|valid_phone',
         'is_active'        => 'permit_empty|in_list[0,1]',
@@ -214,7 +213,7 @@ final class UserValidation
     /**
      * ===== Validasi password lama (untuk changePassword) =====
      */
-    public function validateOldPassword(string $str, string &$error = null, array $data = null): bool
+    public function validateOldPassword(string $str, ?string &$error = null, ?array $data = null): bool
     {
         $userModel = new \App\Models\UserModel();
         $userId    = session()->get('user_id');

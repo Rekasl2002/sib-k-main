@@ -177,41 +177,45 @@ class DatabaseSeeder extends Seeder
      */
     private function seedRolePermissions(array $permissionMap, string $now): void
     {
+        $disabledPermissions = [
+            'submit_violation_submissions',
+            'view_violation_submissions',
+            'review_violation_submissions',
+            'manage_violation_submissions',
+            'convert_violation_submissions',
+        ];
+
         $sets = [
-            1 => array_keys($permissionMap),
+            1 => array_values(array_diff(array_keys($permissionMap), $disabledPermissions)),
             2 => [
                 'view_dashboard', 'manage_users', 'view_all_students', 'manage_academic_data',
                 'manage_counseling_sessions', 'view_counseling_sessions', 'manage_violations',
                 'view_violations', 'manage_sanctions', 'manage_assessments', 'manage_career_info',
                 'view_career_info', 'send_messages', 'view_reports_aggregate',
                 'generate_reports_aggregate', 'view_reports_individual', 'generate_reports_individual',
-                'import_export_data', 'view_violation_submissions', 'review_violation_submissions',
-                'manage_violation_submissions', 'convert_violation_submissions',
+                'import_export_data',
             ],
             3 => [
                 'view_dashboard', 'view_all_students', 'manage_counseling_sessions',
                 'view_counseling_sessions', 'manage_violations', 'view_violations',
                 'manage_sanctions', 'manage_assessments', 'manage_career_info',
                 'view_career_info', 'send_messages', 'view_reports_individual',
-                'generate_reports_individual', 'view_violation_submissions',
-                'review_violation_submissions', 'manage_violation_submissions',
-                'convert_violation_submissions',
+                'generate_reports_individual',
             ],
             4 => [
                 'view_dashboard', 'view_all_students', 'view_counseling_sessions',
                 'view_violations', 'manage_light_violations', 'view_reports_individual',
                 'generate_reports_individual', 'send_messages', 'view_career_info',
-                'submit_violation_submissions',
             ],
             5 => [
                 'view_dashboard', 'take_assessments', 'schedule_counseling',
                 'send_messages', 'view_career_info', 'view_violations',
-                'view_student_portfolio', 'submit_violation_submissions',
+                'view_student_portfolio',
             ],
             6 => [
                 'view_dashboard', 'send_messages', 'view_career_info', 'view_violations',
                 'view_reports_individual', 'generate_reports_individual',
-                'view_student_portfolio', 'submit_violation_submissions',
+                'view_student_portfolio',
             ],
         ];
 
@@ -239,17 +243,17 @@ class DatabaseSeeder extends Seeder
     {
         $rows = [
             [1, 1, 'admin', 'admin@sibk.sch.id', 'admin123', 'Administrator Sistem', '081100000001'],
-            [2, 2, 'koordinator', 'koordinator.bk@sibk.sch.id', 'koordinator123', 'Drs. Ahmad Supriyadi, M.Pd', '081100000002'],
-            [3, 3, 'gurubk1', 'siti.nurhaliza@sibk.sch.id', 'gurubk123', 'Siti Nurhaliza, S.Pd', '081100000003'],
-            [4, 3, 'gurubk2', 'budi.santoso@sibk.sch.id', 'gurubk123', 'Budi Santoso, S.Psi', '081100000004'],
-            [5, 4, 'walikelas1', 'rina.wati@sibk.sch.id', 'walikelas123', 'Rina Wati, S.Pd', '081100000005'],
-            [6, 4, 'walikelas2', 'dedi.kusuma@sibk.sch.id', 'walikelas123', 'Dedi Kusuma, S.Pd', '081100000006'],
-            [7, 5, 'siswa001', 'ahmad.fajar@student.sibk.sch.id', 'siswa123', 'Ahmad Fajar Nugraha', '081100000007'],
-            [8, 5, 'siswa002', 'putri.amanda@student.sibk.sch.id', 'siswa123', 'Putri Amanda Sari', '081100000008'],
-            [9, 5, 'siswa003', 'nabila.zahra@student.sibk.sch.id', 'siswa123', 'Nabila Zahra Fitri', '081100000009'],
-            [10, 6, 'parent001', 'suryanto@example.test', 'parent123', 'Suryanto', '081100000010'],
-            [11, 6, 'parent002', 'dewi.lestari@example.test', 'parent123', 'Dewi Lestari', '081100000011'],
-            [12, 6, 'parent003', 'hasanah@example.test', 'parent123', 'Hasanah', '081100000012'],
+            [2, 2, 'koordinator', 'koordinator.bk@sibk.sch.id', 'koordinator123', 'Koordinator BK 1, S.Pd.MA.', '081100000002'],
+            [3, 3, 'gurubk1', 'guru.bk@sibk.sch.id', 'gurubk123', 'Guru BK 2, S.Psi., M.M', '081100000003'],
+            [4, 3, 'gurubk2', 'guru.bk.demo@sibk.sch.id', 'gurubk123', 'Guru BK Demo, S.Psi', '081100000004'],
+            [5, 4, 'walikelas1', 'wali.kelas@sibk.sch.id', 'walikelas123', 'Wali Kelas 1 Ma’rifah, S.Pd', '081100000005'],
+            [6, 4, 'walikelas2', 'wali.kelas.demo@sibk.sch.id', 'walikelas123', 'Wali Kelas Demo, S.Pd', '081100000006'],
+            [7, 5, 'siswa001', null, 'siswa123', 'Nama Siswa Contoh', '081234567890'],
+            [8, 5, 'siswa002', null, 'siswa123', 'Muhammad Iqbal Ramadhan', '082234567890'],
+            [9, 5, 'siswa003', null, 'siswa123', 'Nabila Zahra Fitriani', '083234567890'],
+            [10, 6, 'parent001', null, 'parent123', 'Tatang Ruhiyat', '081234567891'],
+            [11, 6, 'parent002', null, 'parent123', 'Asep Hidayat', '082234567891'],
+            [12, 6, 'parent003', null, 'parent123', 'Iis Nurhayati', '083234567891'],
         ];
 
         $payload = [];
@@ -276,21 +280,45 @@ class DatabaseSeeder extends Seeder
     {
         $this->insertRows('academic_years', [
             ['id' => 1, 'year_name' => '2024/2025', 'start_date' => '2024-07-01', 'end_date' => '2025-06-30', 'is_active' => 0, 'semester' => 'Genap', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'year_name' => '2025/2026', 'start_date' => '2025-07-01', 'end_date' => '2026-06-30', 'is_active' => 1, 'semester' => 'Genap', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 2, 'year_name' => '2025/2026', 'start_date' => '2025-07-01', 'end_date' => '2026-06-30', 'is_active' => 1, 'semester' => 'Ganjil', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 3, 'year_name' => '2026/2027', 'start_date' => '2026-07-01', 'end_date' => '2027-06-30', 'is_active' => 0, 'semester' => 'Ganjil', 'created_at' => $now, 'updated_at' => $now],
         ]);
 
         $this->insertRows('classes', [
-            ['id' => 1, 'academic_year_id' => 2, 'class_name' => 'X-IPA-1', 'grade_level' => 'X', 'major' => 'IPA', 'homeroom_teacher_id' => 5, 'counselor_id' => 3, 'max_students' => 36, 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'academic_year_id' => 2, 'class_name' => 'X-IPS-1', 'grade_level' => 'X', 'major' => 'IPS', 'homeroom_teacher_id' => 6, 'counselor_id' => 4, 'max_students' => 34, 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'academic_year_id' => 2, 'class_name' => 'XI-IPA-1', 'grade_level' => 'XI', 'major' => 'IPA', 'homeroom_teacher_id' => 5, 'counselor_id' => 3, 'max_students' => 35, 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 4, 'academic_year_id' => 2, 'class_name' => 'XII-IPS-1', 'grade_level' => 'XII', 'major' => 'IPS', 'homeroom_teacher_id' => 6, 'counselor_id' => 4, 'max_students' => 32, 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 1, 'academic_year_id' => 2, 'class_name' => 'Kelas 12 - A', 'grade_level' => '12', 'major' => 'Umum', 'homeroom_teacher_id' => 5, 'counselor_id' => 3, 'max_students' => 36, 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 2, 'academic_year_id' => 2, 'class_name' => 'Kelas 12 - B', 'grade_level' => '12', 'major' => 'Umum', 'homeroom_teacher_id' => 5, 'counselor_id' => 3, 'max_students' => 36, 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 3, 'academic_year_id' => 2, 'class_name' => 'Kelas 12 - C', 'grade_level' => '12', 'major' => 'Umum', 'homeroom_teacher_id' => 5, 'counselor_id' => 3, 'max_students' => 36, 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 4, 'academic_year_id' => 2, 'class_name' => 'Kelas 11 - A', 'grade_level' => '11', 'major' => 'Umum', 'homeroom_teacher_id' => 6, 'counselor_id' => 4, 'max_students' => 36, 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
         ]);
 
         $this->insertRows('students', [
-            ['id' => 1, 'user_id' => 7, 'class_id' => 1, 'nisn' => '0123456789', 'nis' => '2025001', 'gender' => 'L', 'birth_place' => 'Bandung', 'birth_date' => '2009-04-12', 'religion' => 'Islam', 'address' => 'Jl. Merdeka No. 11, Bandung', 'parent_id' => 10, 'admission_date' => '2025-07-14', 'status' => 'Aktif', 'total_violation_points' => 25, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'user_id' => 8, 'class_id' => 1, 'nisn' => '0123456790', 'nis' => '2025002', 'gender' => 'P', 'birth_place' => 'Garut', 'birth_date' => '2009-08-20', 'religion' => 'Islam', 'address' => 'Jl. Cibaduyut No. 20, Bandung', 'parent_id' => 11, 'admission_date' => '2025-07-14', 'status' => 'Aktif', 'total_violation_points' => 5, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'user_id' => 9, 'class_id' => 2, 'nisn' => '0123456791', 'nis' => '2025003', 'gender' => 'P', 'birth_place' => 'Cimahi', 'birth_date' => '2009-11-02', 'religion' => 'Islam', 'address' => 'Jl. Asia Afrika No. 5, Bandung', 'parent_id' => 12, 'admission_date' => '2025-07-14', 'status' => 'Aktif', 'total_violation_points' => 0, 'created_at' => $now, 'updated_at' => $now],
+            [
+                'id' => 1, 'user_id' => 7, 'class_id' => 1, 'nisn' => '1000000003', 'nik' => '1000000000000003',
+                'gender' => 'P', 'birth_place' => 'Bandung', 'birth_date' => '2007-09-19', 'religion' => 'Islam',
+                'address' => 'Kp. Contoh, Banjaran, Kabupaten Bandung, Jawa Barat 40377',
+                'special_needs' => 'Tidak Ada', 'disability' => 'Tidak Ada', 'kip_pip_number' => 'PIP-2025-0001',
+                'father_name' => 'Tatang Ruhiyat', 'mother_name' => 'Neneng Sulastri', 'guardian_name' => 'Tatang Ruhiyat',
+                'parent_id' => 10, 'admission_date' => '2025-07-14', 'status' => 'Aktif', 'total_violation_points' => 25,
+                'created_at' => $now, 'updated_at' => $now,
+            ],
+            [
+                'id' => 2, 'user_id' => 8, 'class_id' => 1, 'nisn' => '1000000004', 'nik' => '1000000000000004',
+                'gender' => 'L', 'birth_place' => 'Bandung', 'birth_date' => '2008-01-15', 'religion' => 'Islam',
+                'address' => 'Jl. Raya Banjaran No. 12, Kabupaten Bandung',
+                'special_needs' => 'Tidak Ada', 'disability' => 'Tidak Ada', 'kip_pip_number' => null,
+                'father_name' => 'Asep Hidayat', 'mother_name' => 'Sri Mulyani', 'guardian_name' => 'Asep Hidayat',
+                'parent_id' => 11, 'admission_date' => '2025-07-14', 'status' => 'Aktif', 'total_violation_points' => 5,
+                'created_at' => $now, 'updated_at' => $now,
+            ],
+            [
+                'id' => 3, 'user_id' => 9, 'class_id' => 2, 'nisn' => '1000000005', 'nik' => '1000000000000005',
+                'gender' => 'P', 'birth_place' => 'Garut', 'birth_date' => '2007-04-12', 'religion' => 'Islam',
+                'address' => 'Kp. Sukamaju, Banjaran, Kabupaten Bandung',
+                'special_needs' => 'Tidak Ada', 'disability' => 'Tidak Ada', 'kip_pip_number' => 'KIP-2025-0003',
+                'father_name' => 'Dedi Supriadi', 'mother_name' => 'Iis Nurhayati', 'guardian_name' => 'Iis Nurhayati',
+                'parent_id' => 12, 'admission_date' => '2025-07-14', 'status' => 'Aktif', 'total_violation_points' => 0,
+                'created_at' => $now, 'updated_at' => $now,
+            ],
         ]);
     }
 
@@ -315,11 +343,7 @@ class DatabaseSeeder extends Seeder
             ['id' => 1, 'violation_id' => 1, 'sanction_type' => 'Pembinaan BK', 'sanction_date' => '2026-05-07', 'start_date' => '2026-05-07', 'end_date' => '2026-05-14', 'duration_days' => 7, 'description' => 'Mengikuti pembinaan perilaku bersama Guru BK.', 'status' => 'Sedang Berjalan', 'assigned_by' => 3, 'documents' => 'uploads/violations/demo-sanksi.txt', 'notes' => 'Dipantau oleh wali kelas.', 'created_at' => $now, 'updated_at' => $now],
         ]);
 
-        $this->insertRows('violation_submissions', [
-            ['id' => 1, 'reporter_type' => 'student', 'reporter_user_id' => 8, 'subject_student_id' => 1, 'category_id' => 5, 'occurred_date' => '2026-05-18', 'occurred_time' => '12:10:00', 'location' => 'Kantin', 'description' => 'Melaporkan dugaan perundungan verbal di kantin.', 'witness' => 'Nabila', 'evidence_json' => json_encode(['uploads/violation_submissions/2026/05/demo-bukti-pengaduan.txt']), 'status' => 'Diajukan', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'reporter_type' => 'parent', 'reporter_user_id' => 10, 'subject_student_id' => 1, 'category_id' => 4, 'occurred_date' => '2026-05-10', 'occurred_time' => '09:30:00', 'location' => 'Lapangan', 'description' => 'Orang tua melaporkan konflik ringan antar siswa.', 'status' => 'Ditolak', 'handled_by' => 3, 'handled_at' => '2026-05-10 13:00:00', 'review_notes' => 'Data tidak cukup, diminta klarifikasi tambahan.', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'reporter_type' => 'parent', 'reporter_user_id' => 11, 'subject_student_id' => 2, 'category_id' => 1, 'occurred_date' => '2026-05-09', 'occurred_time' => '07:18:00', 'location' => 'Gerbang sekolah', 'description' => 'Pengaduan dikonversi menjadi catatan pelanggaran keterlambatan.', 'status' => 'Dikonversi', 'handled_by' => 4, 'handled_at' => '2026-05-09 09:00:00', 'review_notes' => 'Sudah dikonversi menjadi kasus pelanggaran.', 'converted_violation_id' => 2, 'created_at' => $now, 'updated_at' => $now],
-        ]);
+        // Fitur pengaduan pelanggaran belum diaktifkan, jadi data demonya tidak diisi.
     }
 
     private function seedCounseling(string $now): void
@@ -347,7 +371,6 @@ class DatabaseSeeder extends Seeder
         $this->insertRows('notifications', [
             ['id' => 1, 'user_id' => 7, 'title' => 'Asesmen Baru', 'message' => 'Asesmen Minat Karier sudah tersedia.', 'type' => 'assessment', 'link' => '/student/assessments', 'data' => json_encode(['assessment_id' => 1]), 'is_read' => 0, 'created_at' => $now, 'updated_at' => $now],
             ['id' => 2, 'user_id' => 10, 'title' => 'Notifikasi Pelanggaran', 'message' => 'Ada pembaruan kasus pelanggaran Ahmad.', 'type' => 'violation', 'link' => '/parent/violations/1', 'data' => json_encode(['violation_id' => 1]), 'is_read' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'user_id' => 3, 'title' => 'Pengaduan Baru', 'message' => 'Ada pengaduan pelanggaran yang perlu ditinjau.', 'type' => 'violation_submission', 'link' => '/counselor/violation-submissions', 'data' => json_encode(['submission_id' => 1]), 'is_read' => 1, 'read_at' => '2026-05-18 13:00:00', 'created_at' => $now, 'updated_at' => $now],
         ]);
 
         $this->insertRows('messages', [

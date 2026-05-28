@@ -9,7 +9,7 @@
 
 try {
     // url_is() ada di url helper. auth_user/auth_role biasanya di auth helper.
-    helper(['permission', 'auth', 'url', 'simulation_access']);
+    helper(['permission', 'auth', 'url', 'simulation_access', 'app']);
 } catch (\Throwable $e) {
     // Jika salah satu helper tidak ada, kita tetap jalan dengan fallback.
 }
@@ -27,7 +27,9 @@ $__enableCareerInfo         = false;
 $__enableCommonMenu         = false;
 
 // ✅ Fitur baru: Pengaduan Pelanggaran (Violation Submissions)
-$__enableViolationSubmissions = true;
+$__enableViolationSubmissions = function_exists('feature_violation_submissions_enabled')
+    ? feature_violation_submissions_enabled()
+    : false;
 
 // Ambil user & role (aman)
 $user = function_exists('auth_user')
@@ -372,7 +374,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
             ]) || $__showStaffVS;
           ?>
           <?php if ($__showKoordinatorBK): ?>
-          <li class="<?= $__mm(['koordinator/sessions*','koordinator/cases*','koordinator/assessments*','koordinator/violation-submissions*']) ?>">
+          <li class="<?= $__mm(['koordinator/sessions*','koordinator/schedule*','koordinator/cases*','koordinator/assessments*','koordinator/violation-submissions*']) ?>">
             <a href="javascript:void(0);" class="has-arrow waves-effect">
               <i class="mdi mdi-clipboard-text"></i>
               <span>Layanan BK</span>
@@ -380,6 +382,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__canAny(['view_counseling_sessions','manage_counseling_sessions'])): ?>
                 <li><a href="<?= base_url('koordinator/sessions') ?>">Sesi Konseling</a></li>
+                <li><a href="<?= base_url('koordinator/schedule') ?>">Kalender</a></li>
               <?php endif; ?>
 
               <?php if ($__canAny(['view_violations','manage_violations'])): ?>

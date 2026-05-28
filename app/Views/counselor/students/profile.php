@@ -26,13 +26,19 @@ $grade      = $student['grade_level'] ?? null;
 $status     = $student['status']      ?? '-';
 $gender     = $student['gender']      ?? null;
 
-$nis        = $student['nis']         ?? '-';
+$nik        = $student['nik']         ?? '-';
 $nisn       = $student['nisn']        ?? '-';
 
 $birthPlace = $student['birth_place'] ?? null;
 $birthDate  = $student['birth_date']  ?? null;
 $religion   = $student['religion']    ?? null;
 $address    = $student['address']     ?? null;
+$specialNeeds = $student['special_needs'] ?? null;
+$disability = $student['disability'] ?? null;
+$kipPipNumber = $student['kip_pip_number'] ?? null;
+$fatherName = $student['father_name'] ?? null;
+$motherName = $student['mother_name'] ?? null;
+$guardianName = $student['guardian_name'] ?? null;
 
 $admission  = $student['admission_date'] ?? null;
 $points     = (int) ($student['total_violation_points'] ?? 0);
@@ -203,8 +209,8 @@ if (!empty($birthDate)) {
                                                 </div>
                                             </div>
                                             <div class="flex-grow-1">
-                                                <p class="text-muted mb-1">NIS</p>
-                                                <h5 class="mb-0"><code><?= esc($nis) ?></code></h5>
+                                                <p class="text-muted mb-1">NIK</p>
+                                                <h5 class="mb-0"><code><?= esc($nik) ?></code></h5>
                                             </div>
                                         </div>
                                     </div>
@@ -328,6 +334,14 @@ if (!empty($birthDate)) {
                                 </td>
                                 <td class="fw-medium"><?= !empty($address) ? esc($address) : '-' ?></td>
                             </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-account-heart me-1"></i>Kebutuhan Khusus</td>
+                                <td class="fw-medium"><?= !empty($specialNeeds) ? esc($specialNeeds) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-wheelchair-accessibility me-1"></i>Disabilitas</td>
+                                <td class="fw-medium"><?= !empty($disability) ? esc($disability) : '-' ?></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -368,9 +382,15 @@ if (!empty($birthDate)) {
                             </tr>
                             <tr>
                                 <td class="text-muted">
-                                    <i class="mdi mdi-card-text me-1"></i>NIS
+                                    <i class="mdi mdi-card-text me-1"></i>NIK
                                 </td>
-                                <td class="fw-medium"><code><?= esc($nis) ?></code></td>
+                                <td class="fw-medium"><code><?= esc($nik) ?></code></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">
+                                    <i class="mdi mdi-card-bulleted-outline me-1"></i>Nomor KIP/PIP
+                                </td>
+                                <td class="fw-medium"><code><?= !empty($kipPipNumber) ? esc($kipPipNumber) : '-' ?></code></td>
                             </tr>
                             <tr>
                                 <td class="text-muted">
@@ -400,6 +420,18 @@ if (!empty($birthDate)) {
                                         <?= $points ?> Poin
                                     </span>
                                 </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-account-tie me-1"></i>Nama Ayah Kandung</td>
+                                <td class="fw-medium"><?= !empty($fatherName) ? esc($fatherName) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-account-heart-outline me-1"></i>Nama Ibu Kandung</td>
+                                <td class="fw-medium"><?= !empty($motherName) ? esc($motherName) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-account-supervisor me-1"></i>Nama Wali</td>
+                                <td class="fw-medium"><?= !empty($guardianName) ? esc($guardianName) : '-' ?></td>
                             </tr>
                         </tbody>
                     </table>

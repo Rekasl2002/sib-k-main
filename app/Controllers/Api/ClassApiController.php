@@ -31,7 +31,7 @@ class ClassApiController extends BaseController
     public function getStudents($classId)
     {
         $rows = $this->db->table('students s')
-            ->select('s.id, s.user_id, s.nis, s.nisn, u.full_name, u.email')
+            ->select('s.id, s.user_id, s.nisn, s.nik, u.full_name, u.email')
             ->join('users u', 'u.id = s.user_id', 'left')
             ->where('s.class_id', (int) $classId)
             ->where('s.deleted_at', null)

@@ -149,7 +149,7 @@ $errorsPhoto   = session('errors_photo') ?? [];
             <h4 class="mb-1"><?= v($profile, 'full_name', 'Nama belum diisi') ?></h4>
             <p class="text-muted mb-1"><?= v($profile, 'class_name', 'Kelas belum diatur') ?></p>
             <p class="text-muted mb-0 small">
-              NISN: <?= v($profile, 'nisn', '-') ?> &nbsp; • &nbsp; NIS: <?= v($profile, 'nis', '-') ?>
+              NIK: <?= v($profile, 'nik', '-') ?> &nbsp; • &nbsp; NISN: <?= v($profile, 'nisn', '-') ?>
             </p>
             <hr>
             <div class="text-start text-muted small">
@@ -187,11 +187,24 @@ $errorsPhoto   = session('errors_photo') ?? [];
               <table class="table table-borderless mb-0">
                 <tbody>
                   <tr><th class="text-muted" style="width:30%">Nama Lengkap</th><td><?= v($profile, 'full_name', '-') ?></td></tr>
-                  <tr><th class="text-muted">NISN / NIS</th><td><?= v($profile, 'nisn', '-') ?> / <?= v($profile, 'nis', '-') ?></td></tr>
+                  <tr><th class="text-muted">NIK / NISN</th><td><?= v($profile, 'nik', '-') ?> / <?= v($profile, 'nisn', '-') ?></td></tr>
                   <tr><th class="text-muted">Jenis Kelamin</th><td><?= v($profile, 'gender', '-') ?></td></tr>
-                  <tr><th class="text-muted">Tempat, Tanggal Lahir</th><td><?= v($profile, 'birth_place', '-') ?>, <?= fmt_date_id($birthDateRaw) ?></td></tr>
+                  <tr>
+                    <th class="text-muted">Tempat, Tanggal Lahir</th>
+                    <td>
+                      <?= v($profile, 'birth_place', '-') ?>, <?= fmt_date_id($birthDateRaw) ?>
+                      <?php $ageText = student_age_text($birthDateRaw); ?>
+                      <?php if ($ageText !== '-'): ?><span class="text-muted">(<?= esc($ageText) ?>)</span><?php endif; ?>
+                    </td>
+                  </tr>
                   <tr><th class="text-muted">Agama</th><td><?= v($profile, 'religion', '-') ?></td></tr>
                   <tr><th class="text-muted">Alamat</th><td><?= v($profile, 'address', '-') ?></td></tr>
+                  <tr><th class="text-muted">Kebutuhan Khusus</th><td><?= v($profile, 'special_needs', '-') ?></td></tr>
+                  <tr><th class="text-muted">Disabilitas</th><td><?= v($profile, 'disability', '-') ?></td></tr>
+                  <tr><th class="text-muted">Nomor KIP/PIP</th><td><?= v($profile, 'kip_pip_number', '-') ?></td></tr>
+                  <tr><th class="text-muted">Nama Ayah Kandung</th><td><?= v($profile, 'father_name', '-') ?></td></tr>
+                  <tr><th class="text-muted">Nama Ibu Kandung</th><td><?= v($profile, 'mother_name', '-') ?></td></tr>
+                  <tr><th class="text-muted">Nama Wali</th><td><?= v($profile, 'guardian_name', '-') ?></td></tr>
                   <tr>
                     <th class="text-muted">Kelas</th>
                     <td>
@@ -222,8 +235,7 @@ $errorsPhoto   = session('errors_photo') ?? [];
                       <label class="form-label">Email Anak</label>
                       <input type="email" name="email"
                              value="<?= esc(old('email', is_array($profile) ? ($profile['email'] ?? '') : ($profile->email ?? ''))) ?>"
-                             class="form-control <?= isset($errorsContact['email']) ? 'is-invalid' : '' ?>"
-                             required>
+                             class="form-control <?= isset($errorsContact['email']) ? 'is-invalid' : '' ?>">
                       <?php if (isset($errorsContact['email'])): ?>
                         <div class="invalid-feedback"><?= esc($errorsContact['email']) ?></div>
                       <?php endif; ?>

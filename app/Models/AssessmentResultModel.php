@@ -342,7 +342,6 @@ class AssessmentResultModel extends Model
             {$evalSel},
             {$stuMeta['select']},
             students.nisn,
-            " . ($this->fieldExists('students', 'nis') ? "students.nis," : "NULL AS nis,") . "
             students.class_id,
             classes.class_name,
             reviewers.full_name AS reviewer_name
@@ -378,7 +377,6 @@ class AssessmentResultModel extends Model
                 {$evalSel},
                 {$stuMeta['select']},
                 students.nisn,
-                " . ($this->fieldExists('students', 'nis') ? "students.nis," : "NULL AS nis,") . "
                 classes.class_name
             ")
             ->join('assessments', 'assessments.id = '.$this->table.'.assessment_id AND '.$this->joinSoftDeleteGuard('assessments', 'assessments'), 'inner')
@@ -411,11 +409,7 @@ class AssessmentResultModel extends Model
                 $builder->like('students.full_name', $search);
             }
 
-            // Cari NIS/NISN
             $builder->orLike('students.nisn', $search);
-            if ($this->fieldExists('students', 'nis')) {
-                $builder->orLike('students.nis', $search);
-            }
 
             $builder->groupEnd();
         }
@@ -813,7 +807,6 @@ class AssessmentResultModel extends Model
                 {$this->table}.*,
                 {$stuMeta['select']},
                 students.nisn,
-                " . ($this->fieldExists('students', 'nis') ? "students.nis," : "NULL AS nis,") . "
                 classes.class_name
             ")
             ->join('students', 'students.id = '.$this->table.'.student_id AND '.$this->joinSoftDeleteGuard('students', 'students'), 'inner');

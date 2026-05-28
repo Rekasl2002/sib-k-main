@@ -137,7 +137,7 @@ class CareerInfoController extends BaseController
                     student_saved_careers.id          AS saved_id,
                     student_saved_careers.created_at  AS saved_at,
                     students.id                       AS student_id,
-                    students.nis                      AS nis,
+                    students.nisn                      AS nisn,
                     users.full_name                   AS student_name,
                     classes.id                        AS class_id,
                     classes.class_name                AS class_name,
@@ -155,7 +155,7 @@ class CareerInfoController extends BaseController
             if ($q !== '') {
                 $cb->groupStart()
                     ->like('users.full_name', $q)
-                    ->orLike('students.nis', $q)
+                    ->orLike('students.nisn', $q)
                     ->orLike('career_options.title', $q)
                 ->groupEnd();
             }
@@ -198,7 +198,7 @@ class CareerInfoController extends BaseController
                     student_saved_universities.id         AS saved_id,
                     student_saved_universities.created_at AS saved_at,
                     students.id                           AS student_id,
-                    students.nis                          As nis,
+                    students.nisn                          AS nisn,
                     users.full_name                       AS student_name,
                     classes.id                            AS class_id,
                     classes.class_name                    AS class_name,
@@ -216,7 +216,7 @@ class CareerInfoController extends BaseController
             if ($q !== '') {
                 $ub->groupStart()
                     ->like('users.full_name', $q)
-                    ->orLike('students.nis', $q)
+                    ->orLike('students.nisn', $q)
                     ->orLike('university_info.university_name', $q)
                 ->groupEnd();
             }

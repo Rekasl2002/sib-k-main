@@ -126,7 +126,7 @@ class CounselingService
     {
         $builder = $this->sessionModel
             ->select('counseling_sessions.*,
-                      students.nisn, students.nis,
+                      students.nisn, students.nik,
                       users.full_name as student_name,
                       classes.class_name,
                       (SELECT COUNT(*) FROM session_notes 
@@ -235,7 +235,7 @@ class CounselingService
     {
         $builder = $this->sessionModel
             ->select('counseling_sessions.*,
-                      students.nisn, students.nis,
+                      students.nisn, students.nik,
                       student_users.full_name as student_name,
                       classes.class_name,
                       counselor_users.full_name as counselor_name,
@@ -636,7 +636,7 @@ class CounselingService
     public function getAvailableStudents($classId = null)
     {
         $builder = $this->studentModel
-            ->select('students.id, students.nisn, students.nis, users.full_name, classes.class_name')
+            ->select('students.id, students.nisn, students.nik, users.full_name, classes.class_name')
             ->join('users', 'users.id = students.user_id')
             ->join('classes', 'classes.id = students.class_id', 'left')
             ->where('students.status', 'Aktif');
@@ -672,7 +672,7 @@ class CounselingService
     {
         $builder = $this->sessionModel
             ->select('counseling_sessions.*,
-                      students.nisn, students.nis,
+                      students.nisn, students.nik,
                       users.full_name as student_name,
                       classes.class_name,
                       counselor_users.full_name as counselor_name,

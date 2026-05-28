@@ -403,7 +403,7 @@ class ScheduleController extends BaseStudentController
                     sp.attendance_status,
                     sp.participation_note,
                     s.nisn,
-                    s.nis,
+                    s.nisn,
                     u.full_name AS student_name,
                     c.class_name
                 ')

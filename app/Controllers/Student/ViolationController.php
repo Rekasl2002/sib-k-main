@@ -184,7 +184,7 @@ class ViolationController extends BaseController
         $handledCol = in_array('handled_by', $fieldNames, true) ? 'handled_by' : null;
 
         // Helper kecil untuk select kolom violations yang mungkin ada/tidak
-        $v = static function (string $col, array $names, string $alias = null): string {
+        $v = static function (string $col, array $names, ?string $alias = null): string {
             $alias = $alias ?: $col;
             return in_array($col, $names, true) ? "v.$col" : "NULL AS $alias";
         };
@@ -217,7 +217,6 @@ class ViolationController extends BaseController
 
             // data siswa (nama dari users)
             'su.full_name AS student_full_name',
-            's.nis       AS student_nis',
             's.nisn      AS student_nisn',
             'c.class_name AS class_name',
         ];
@@ -307,7 +306,6 @@ class ViolationController extends BaseController
             // kirim juga array student siap pakai ke view
             'student'   => [
                 'full_name'  => $violation['student_full_name'] ?? '',
-                'nis'        => $violation['student_nis'] ?? '',
                 'nisn'       => $violation['student_nisn'] ?? '',
                 'class_name' => $violation['class_name'] ?? '',
             ],

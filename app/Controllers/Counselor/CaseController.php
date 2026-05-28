@@ -779,7 +779,7 @@ class CaseController extends BaseController
     private function getActiveStudents(): array
     {
         return $this->studentModel
-            ->select('students.id, students.nisn, students.nis, users.full_name, classes.class_name')
+            ->select('students.id, students.nisn, students.nik, users.full_name, classes.class_name')
             ->join('users', 'users.id = students.user_id AND users.deleted_at IS NULL', 'inner')
             ->join('classes', 'classes.id = students.class_id AND classes.deleted_at IS NULL', 'left')
             ->where('students.deleted_at', null)

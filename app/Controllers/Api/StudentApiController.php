@@ -22,7 +22,7 @@ class StudentApiController extends BaseController
         if ($q !== '') {
             $builder->groupStart()
                 ->like('u.full_name', $q)
-                ->orLike('s.nis', $q)
+                ->orLike('s.nisn', $q)
                 ->orLike('s.nisn', $q)
                 ->groupEnd();
         }
@@ -58,7 +58,7 @@ class StudentApiController extends BaseController
     private function baseQuery()
     {
         return $this->db->table('students s')
-            ->select('s.id, s.user_id, s.class_id, s.nis, s.nisn, s.gender, s.status, u.full_name, u.email, c.class_name, c.grade_level')
+            ->select('s.id, s.user_id, s.class_id, s.nisn, s.nik, s.gender, s.status, u.full_name, u.email, c.class_name, c.grade_level')
             ->join('users u', 'u.id = s.user_id', 'left')
             ->join('classes c', 'c.id = s.class_id', 'left')
             ->where('s.deleted_at', null);

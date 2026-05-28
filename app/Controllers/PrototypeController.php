@@ -322,7 +322,9 @@ class PrototypeController extends BaseController
 
     private function features(): array
     {
-        return [
+        helper('app');
+
+        $features = [
             'violation-submissions' => [
                 'title'       => 'Pelaporan/Pengaduan Pelanggaran',
                 'short_title' => 'Pengaduan',
@@ -374,6 +376,12 @@ class PrototypeController extends BaseController
                 'outcome'     => 'Referensi karier/kuliah dikelola Guru BK, siswa menyimpan pilihan, dan pihak pendamping melihat arah minat.',
             ],
         ];
+
+        if (!feature_violation_submissions_enabled()) {
+            unset($features['violation-submissions']);
+        }
+
+        return $features;
     }
 
     private function demoForRole(string $key, string $role): array

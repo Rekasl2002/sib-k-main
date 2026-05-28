@@ -11,12 +11,12 @@
     </div>
     <div class="col-md-6">
         <div class="mb-3">
-            <label for="nis" class="form-label">
-                NIS <span class="text-danger">*</span>
+            <label for="nik" class="form-label">
+                NIK
             </label>
-            <input type="text" class="form-control" name="nis" 
-                   value="<?= old('nis') ?>" placeholder="4-20 karakter" required>
-            <small class="text-muted">Nomor Induk Siswa</small>
+            <input type="text" class="form-control" name="nik"
+                   value="<?= old('nik') ?>" placeholder="16 digit" maxlength="16">
+            <small class="text-muted">Nomor Induk Kependudukan dari file EMIS (opsional)</small>
         </div>
     </div>
 </div>
@@ -76,6 +76,34 @@
         <div class="mb-3">
             <label for="address" class="form-label">Alamat Lengkap</label>
             <textarea class="form-control" name="address" rows="3"><?= old('address') ?></textarea>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="special_needs" class="form-label">Kebutuhan Khusus</label>
+                <input type="text" class="form-control" name="special_needs" value="<?= old('special_needs') ?>">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="disability" class="form-label">Disabilitas</label>
+                <input type="text" class="form-control" name="disability" value="<?= old('disability') ?>">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="kip_pip_number" class="form-label">Nomor KIP/PIP</label>
+                <input type="text" class="form-control" name="kip_pip_number" value="<?= old('kip_pip_number') ?>">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="father_name" class="form-label">Nama Ayah Kandung</label>
+                <input type="text" class="form-control" name="father_name" value="<?= old('father_name') ?>">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="mother_name" class="form-label">Nama Ibu Kandung</label>
+                <input type="text" class="form-control" name="mother_name" value="<?= old('mother_name') ?>">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="guardian_name" class="form-label">Nama Wali</label>
+                <input type="text" class="form-control" name="guardian_name" value="<?= old('guardian_name') ?>">
+            </div>
         </div>
     </div>
     <div class="col-md-4">

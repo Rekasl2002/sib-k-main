@@ -355,7 +355,7 @@ class SessionController extends BaseController
             ->select("
                 sp.id AS participant_id,
                 sp.student_id,
-                s.nisn, s.nis,
+                s.nisn, s.nik,
                 u.full_name AS student_name,
                 c.class_name,
                 sp.attendance_status,
@@ -427,7 +427,7 @@ class SessionController extends BaseController
         if (($sessionRow['session_type'] ?? '') === 'Individu' && !empty($sessionRow['student_id'])) {
             $stu = $this->studentModel
                 ->asArray()
-                ->select('students.id, students.nisn, students.nis, users.full_name AS student_name, classes.class_name')
+                ->select('students.id, students.nisn, users.full_name AS student_name, classes.class_name')
                 ->join('users', 'users.id = students.user_id')
                 ->join('classes', 'classes.id = students.class_id', 'left')
                 ->where('students.id', (int) $sessionRow['student_id'])
@@ -436,7 +436,6 @@ class SessionController extends BaseController
             if ($stu) {
                 $sessionRow['student_name'] = $stu['student_name'];
                 $sessionRow['student_nisn'] = $stu['nisn'];
-                $sessionRow['student_nis']  = $stu['nis'];
                 $sessionRow['class_name']   = $stu['class_name'];
             }
         }
@@ -1207,7 +1206,7 @@ class SessionController extends BaseController
         try {
             $students = $this->studentModel
                 ->asArray()
-                ->select('students.id, students.nisn, students.nis, users.full_name as student_name')
+                ->select('students.id, students.nisn, students.nik, users.full_name as student_name')
                 ->join('users', 'users.id = students.user_id')
                 ->where('students.class_id', (int) $classId)
                 ->where('students.status', 'Aktif')
@@ -1280,7 +1279,7 @@ class SessionController extends BaseController
     {
         $rows = $this->studentModel
             ->asArray()
-            ->select('students.id, students.nisn, students.nis, users.full_name as student_name, classes.class_name')
+            ->select('students.id, students.nisn, students.nik, users.full_name as student_name, classes.class_name')
             ->join('users', 'users.id = students.user_id')
             ->join('classes', 'classes.id = students.class_id', 'left')
             ->where('students.status', 'Aktif')

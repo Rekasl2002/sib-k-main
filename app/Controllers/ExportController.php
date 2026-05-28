@@ -25,18 +25,21 @@ class ExportController extends BaseController
     public function students()
     {
         $rows = $this->db->table('students s')
-            ->select('s.id, s.full_name, s.nis, s.nisn, c.class_name, s.gender, s.birth_date')
+            ->select('s.id, u.full_name, s.nisn, s.nik, c.class_name, s.gender, s.birth_date, s.special_needs, s.disability, s.kip_pip_number, s.father_name, s.mother_name, s.guardian_name')
+            ->join('users u', 'u.id = s.user_id', 'left')
             ->join('classes c', 'c.id = s.class_id', 'left')
-            ->orderBy('c.class_name')->orderBy('s.full_name')->get()->getResultArray();
+            ->orderBy('c.class_name')->orderBy('u.full_name')->get()->getResultArray();
 
         $sheet = new Spreadsheet();
         $sheet->getProperties()->setCreator('SIB-K')->setTitle('Daftar Siswa');
         $ws = $sheet->getActiveSheet();
         $ws->setTitle('Siswa');
 
-        $ws->fromArray(['ID','Nama','NIS','NISN','Kelas','Gender','Tanggal Lahir'], null, 'A1');
+        $ws->fromArray(['ID','Nama','NISN','NIK','Kelas','Gender','Tanggal Lahir','Umur','Kebutuhan Khusus','Disabilitas','Nomor KIP/PIP','Nama Ayah Kandung','Nama Ibu Kandung','Nama Wali'], null, 'A1');
         $ws->fromArray($rows ? array_map(fn($r)=>[
-            $r['id'],$r['full_name'],$r['nis'],$r['nisn'],$r['class_name'],$r['gender'],$r['birth_date']
+            $r['id'],$r['full_name'],$r['nisn'],$r['nik'],$r['class_name'],$r['gender'],$r['birth_date'],
+            student_age_text($r['birth_date'] ?? null), $r['special_needs'], $r['disability'], $r['kip_pip_number'],
+            $r['father_name'], $r['mother_name'], $r['guardian_name']
         ], $rows) : [], null, 'A2');
 
         $this->outputSpreadsheet($sheet, 'Export_Siswa.xlsx');
@@ -48,8 +51,9 @@ class ExportController extends BaseController
         $to   = $this->request->getGet('to');
 
         $b = $this->db->table('violations v')
-            ->select('v.id, v.violation_date, s.full_name as student, c.class_name, vc.category_name, v.description, v.points')
+            ->select('v.id, v.violation_date, u.full_name as student, c.class_name, vc.category_name, v.description, v.points')
             ->join('students s','s.id=v.student_id','left')
+            ->join('users u','u.id=s.user_id','left')
             ->join('classes c','c.id=s.class_id','left')
             ->join('violation_categories vc','vc.id=v.category_id','left');
         if ($from) $b->where('v.violation_date >=', $from);
@@ -75,8 +79,9 @@ class ExportController extends BaseController
         $to   = $this->request->getGet('to');
 
         $b = $this->db->table('counseling_sessions cs')
-            ->select('cs.id, cs.session_date, s.full_name as student, c.class_name, u.full_name as counselor, cs.duration_minutes, cs.topic')
+            ->select('cs.id, cs.session_date, su.full_name as student, c.class_name, u.full_name as counselor, cs.duration_minutes, cs.topic')
             ->join('students s','s.id=cs.student_id','left')
+            ->join('users su','su.id=s.user_id','left')
             ->join('classes c','c.id=s.class_id','left')
             ->join('users u','u.id=cs.counselor_id','left');
         if ($from) $b->where('cs.session_date >=', $from);

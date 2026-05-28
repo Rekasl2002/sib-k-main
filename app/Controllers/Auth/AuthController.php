@@ -159,7 +159,7 @@ class AuthController extends BaseController
         // Validation rules
         $rules = [
             'username' => 'required|min_length[3]|max_length[50]|is_unique[users.username]|alpha_numeric',
-            'email' => 'required|valid_email|is_unique[users.email]',
+            'email' => 'permit_empty|valid_email|is_unique[users.email]',
             'password' => 'required|min_length[6]',
             'password_confirm' => 'required|matches[password]',
             'full_name' => 'required|min_length[3]|max_length[255]',
@@ -175,7 +175,7 @@ class AuthController extends BaseController
         $userData = [
             'role_id' => 5, // Default: Siswa
             'username' => $this->request->getPost('username'),
-            'email' => $this->request->getPost('email'),
+            'email' => trim((string) $this->request->getPost('email')) ?: null,
             'password' => $this->request->getPost('password'),
             'full_name' => $this->request->getPost('full_name'),
             'phone' => $this->request->getPost('phone'),

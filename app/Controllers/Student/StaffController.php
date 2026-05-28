@@ -14,7 +14,7 @@ class StaffController extends BaseStudentController
             ->select('
                 s.id AS id,
                 s.class_id,
-                s.nis,
+                s.nisn,
                 s.nisn,
                 u.full_name AS full_name,
                 u.profile_photo AS profile_photo,

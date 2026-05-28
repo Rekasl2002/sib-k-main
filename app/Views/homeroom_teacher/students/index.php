@@ -31,8 +31,8 @@
               <tr>
                 <th style="width:4rem">No</th>
                 <th>Nama</th>
-                <th class="d-none d-sm-table-cell">NISN</th>
-                <th class="d-none d-md-table-cell">NIS</th>
+                <th class="d-none d-sm-table-cell">NIK</th>
+                <th class="d-none d-md-table-cell">NISN</th>
                 <th class="text-center">JK</th>
                 <th class="text-end">Poin</th>
                 <th style="width:7rem"></th>
@@ -43,8 +43,8 @@
                 <tr>
                   <td><?= $no++; ?></td>
                   <td><?= esc($st['full_name'] ?? '-'); ?></td>
-                  <td class="d-none d-sm-table-cell"><?= esc($st['nisn'] ?? '-'); ?></td>
-                  <td class="d-none d-md-table-cell"><?= esc($st['nis'] ?? '-'); ?></td>
+                  <td class="d-none d-sm-table-cell"><?= esc($st['nik'] ?? '-'); ?></td>
+                  <td class="d-none d-md-table-cell"><?= esc($st['nisn'] ?? '-'); ?></td>
                   <td class="text-center"><?= esc($st['gender'] ?? '-'); ?></td>
                   <td class="text-end fw-semibold"><?= (int)($st['total_violation_points'] ?? 0); ?></td>
                   <td class="text-end">

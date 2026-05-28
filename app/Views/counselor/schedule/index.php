@@ -20,7 +20,11 @@
 $defaultView = $defaultView ?? 'dayGridMonth';
 $defaultDate = $defaultDate ?? date('Y-m-d');
 $canDrag     = array_key_exists('canDrag', get_defined_vars()) ? (bool)$canDrag : true;
+$canCreate   = array_key_exists('canCreate', get_defined_vars()) ? (bool)$canCreate : true;
 $filters     = $filters ?? [];
+$calendarTitle = $calendarTitle ?? 'Kalender Jadwal';
+$dashboardUrl  = $dashboardUrl ?? base_url('counselor/dashboard');
+$listUrl       = $listUrl ?? base_url('counselor/sessions');
 
 $queryString = http_build_query(array_filter([
   'class_id'   => $filters['class_id']   ?? null,
@@ -30,12 +34,14 @@ $queryString = http_build_query(array_filter([
   'end'        => $filters['end']        ?? null,
 ]));
 
-$eventsUrl  = rtrim(base_url('counselor/schedule/events'), '/')
-            . ($queryString ? ('?'.$queryString) : '');
+$eventsUrl  = $eventsUrl ?? (
+  rtrim(base_url('counselor/schedule/events'), '/')
+  . ($queryString ? ('?' . $queryString) : '')
+);
 
-$reschUrl   = rtrim(base_url('counselor/schedule/reschedule'), '/');
-$createUrl  = rtrim(base_url('counselor/schedule/create'), '/');
-$detailBase = rtrim(base_url('counselor/sessions/detail'), '/');
+$reschUrl   = $reschUrl ?? rtrim(base_url('counselor/schedule/reschedule'), '/');
+$createUrl  = $createUrl ?? rtrim(base_url('counselor/schedule/create'), '/');
+$detailBase = $detailBase ?? rtrim(base_url('counselor/sessions/detail'), '/');
 
 $tz = 'Asia/Jakarta';
 
@@ -55,10 +61,10 @@ $csrfValue   = $csrfEnabled ? csrf_hash()  : '';
     <div class="row">
       <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-          <h4 class="mb-sm-0">Kalender Jadwal</h4>
+          <h4 class="mb-sm-0"><?= esc($calendarTitle) ?></h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= esc($dashboardUrl) ?>">Dashboard</a></li>
                     <li class="breadcrumb-item active">Kalender</li>
                 </ol>
             </div>
@@ -70,10 +76,12 @@ $csrfValue   = $csrfEnabled ? csrf_hash()  : '';
     <div class="card mb-3">
       <div class="card-body d-flex flex-wrap gap-2 justify-content-between align-items-center">
         <div class="d-flex gap-2">
-          <a class="btn btn-success" href="<?= $createUrl; ?>">
+          <?php if ($canCreate): ?>
+          <a class="btn btn-success" href="<?= esc($createUrl); ?>">
             <i class="bx bx-plus me-1"></i> Jadwal Baru
           </a>
-          <a class="btn btn-outline-secondary" href="<?= base_url('counselor/sessions'); ?>">
+          <?php endif; ?>
+          <a class="btn btn-outline-secondary" href="<?= esc($listUrl); ?>">
             <i class="bx bx-list-ul me-1"></i> Lihat Daftar Sesi
           </a>
         </div>
@@ -114,6 +122,7 @@ $csrfValue   = $csrfEnabled ? csrf_hash()  : '';
   }
 
   const canDrag   = <?= $canDrag ? 'true' : 'false' ?>;
+  const canCreate = <?= $canCreate ? 'true' : 'false' ?>;
   const eventsUrl = "<?= esc($eventsUrl) ?>";
   const reschUrl  = "<?= esc($reschUrl) ?>";
   const createUrl = "<?= esc($createUrl) ?>";
@@ -149,7 +158,7 @@ $csrfValue   = $csrfEnabled ? csrf_hash()  : '';
       right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
     },
     navLinks: true,
-    selectable: true,
+    selectable: canCreate,
     selectMirror: true,
     editable: canDrag,                  // drag-drop & resize
     droppable: false,
@@ -178,6 +187,7 @@ $csrfValue   = $csrfEnabled ? csrf_hash()  : '';
 
     // Pilih rentang -> ke form buat jadwal
     select: function(selection) {
+      if (!canCreate) return;
       // Kirim start/end ke form create sebagai query
       const startIso = selection.startStr;
       const endIso   = selection.endStr;

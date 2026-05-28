@@ -249,7 +249,7 @@ $studentCount = is_array($students) ? count($students) : 0;
                                         <i class="bi bi-search"></i>
                                     </span>
                                     <input type="text" id="studentSearch" class="form-control"
-                                           placeholder="Cari nama / NISN / NIS">
+                                           placeholder="Cari nama / NISN">
                                 </div>
                                 <select id="studentFilterGender" class="form-select form-select-sm" style="min-width: 140px;">
                                     <option value="">Semua</option>
@@ -270,7 +270,7 @@ $studentCount = is_array($students) ? count($students) : 0;
                                         <tr>
                                             <th style="width: 50px;">#</th>
                                             <th>Nama</th>
-                                            <th class="text-nowrap">NISN / NIS</th>
+                                            <th class="text-nowrap">NISN</th>
                                             <th class="text-center">JK</th>
                                             <th class="text-end text-nowrap">Poin</th>
                                             <th class="text-center">Status</th>
@@ -283,8 +283,8 @@ $studentCount = is_array($students) ? count($students) : 0;
                                             $searchText = strtolower(
                                                 trim(
                                                     ($s['full_name'] ?? '') . ' ' .
-                                                    ($s['nisn'] ?? '') . ' ' .
-                                                    ($s['nis'] ?? '')
+                                                    ($s['nik'] ?? '') . ' ' .
+                                                    ($s['nisn'] ?? '')
                                                 )
                                             );
                                         ?>
@@ -301,12 +301,12 @@ $studentCount = is_array($students) ? count($students) : 0;
                                                 </td>
                                                 <td class="text-nowrap small">
                                                     <div>
-                                                        NISN:
-                                                        <span class="fw-semibold"><?= esc($s['nisn'] ?? '-') ?></span>
+                                                        NIK:
+                                                        <span class="fw-semibold"><?= esc($s['nik'] ?? '-') ?></span>
                                                     </div>
                                                     <div>
-                                                        NIS:
-                                                        <span class="fw-semibold"><?= esc($s['nis'] ?? '-') ?></span>
+                                                        NISN:
+                                                        <span class="fw-semibold"><?= esc($s['nisn'] ?? '-') ?></span>
                                                     </div>
                                                 </td>
                                                 <td class="text-center">

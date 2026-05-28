@@ -352,7 +352,7 @@ class StudentController extends BaseKoordinatorController
             $exportData[] = [
                 'ID'                => $student['id'],
                 'NISN'              => $student['nisn'],
-                'NIS'               => $student['nis'],
+                'NIK'               => $student['nik'] ?? null,
                 'Nama Lengkap'      => $student['full_name'],
                 'Username'          => $student['username'],
                 'Email'             => $student['email'],
@@ -361,9 +361,16 @@ class StudentController extends BaseKoordinatorController
                 'Tingkat'           => $student['grade_level'] ?? '-',
                 'Tempat Lahir'      => $student['birth_place'] ?? '-',
                 'Tanggal Lahir'     => !empty($student['birth_date']) ? date('d/m/Y', strtotime($student['birth_date'])) : '-',
+                'Umur'              => student_age_text($student['birth_date'] ?? null),
                 'Agama'             => $student['religion'] ?? '-',
                 'Alamat'            => $student['address'] ?? '-',
                 'Telepon'           => $student['phone'] ?? '-',
+                'Kebutuhan Khusus'  => $student['special_needs'] ?? '-',
+                'Disabilitas'       => $student['disability'] ?? '-',
+                'Nomor KIP/PIP'     => $student['kip_pip_number'] ?? '-',
+                'Nama Ayah Kandung' => $student['father_name'] ?? '-',
+                'Nama Ibu Kandung'  => $student['mother_name'] ?? '-',
+                'Nama Wali'         => $student['guardian_name'] ?? '-',
                 'Status'            => $student['status'] ?? '-',
                 'Poin Pelanggaran'  => (int) ($student['total_violation_points'] ?? 0),
                 'Tanggal Masuk'     => !empty($student['admission_date']) ? date('d/m/Y', strtotime($student['admission_date'])) : '-',
@@ -422,7 +429,7 @@ class StudentController extends BaseKoordinatorController
                 'id'     => $student['id'],
                 'text'   => ($student['full_name'] ?? '-') . ' (' . ($student['nisn'] ?? '-') . ')',
                 'nisn'   => $student['nisn'] ?? '-',
-                'nis'    => $student['nis'] ?? '-',
+                'nik'    => $student['nik'] ?? '-',
                 'class'  => $student['class_name'] ?? '-',
                 'status' => $student['status'] ?? '-',
             ];
@@ -459,7 +466,7 @@ class StudentController extends BaseKoordinatorController
                 'id'        => $student['id'],
                 'user_id'   => $student['user_id'],
                 'nisn'      => $student['nisn'],
-                'nis'       => $student['nis'],
+                'nik'       => $student['nik'] ?? null,
                 'full_name' => $student['full_name'],
                 'gender'    => $student['gender'],
             ];
@@ -700,8 +707,8 @@ class StudentController extends BaseKoordinatorController
             $qb->groupStart()
                 ->like('u.full_name', $search)
                 ->orLike('u.email', $search)
-                ->orLike('s.nis', $search)
                 ->orLike('s.nisn', $search)
+                ->orLike('s.nik', $search)
             ->groupEnd();
         }
 

@@ -70,9 +70,6 @@ class Validation extends BaseConfig
         'valid_nisn' => [
             'valid_nisn' => 'NISN harus terdiri dari tepat 10 digit angka.',
         ],
-        'valid_nis' => [
-            'valid_nis' => 'NIS harus terdiri dari 4–20 digit angka.',
-        ],
         'valid_indo_date' => [
             '_default' => '{field} harus berformat tanggal Indonesia (dd-mm-yyyy atau dd/mm/yyyy)',
         ],
@@ -104,7 +101,7 @@ class Validation extends BaseConfig
             '_default' => '{field} harus 16 digit angka',
         ],
         'valid_grade_level' => [
-            '_default' => '{field} harus X, XI, atau XII',
+            '_default' => '{field} harus berupa tingkat kelas yang valid',
         ],
         'valid_semester' => [
             '_default' => '{field} harus Ganjil atau Genap',
@@ -196,9 +193,8 @@ class Validation extends BaseConfig
             ],
         ],
         'email' => [
-            'rules'  => 'required|valid_email|is_unique[users.email]',
+            'rules'  => 'permit_empty|valid_email|is_unique[users.email]',
             'errors' => [
-                'required'    => 'Email harus diisi',
                 'valid_email' => 'Format email tidak valid',
                 'is_unique'   => 'Email sudah digunakan',
             ],
@@ -247,11 +243,10 @@ class Validation extends BaseConfig
                 'is_unique' => 'NISN sudah terdaftar',
             ],
         ],
-        'nis' => [
-            'rules'  => 'required|valid_nis|is_unique[students.nis]',
+        'nik' => [
+            'rules'  => 'permit_empty|valid_nik|is_unique[students.nik]',
             'errors' => [
-                'required'  => 'NIS harus diisi',
-                'is_unique' => 'NIS sudah terdaftar',
+                'is_unique' => 'NIK sudah terdaftar',
             ],
         ],
         'full_name' => [

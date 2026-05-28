@@ -5,8 +5,8 @@
  * Counselor • Report Preview Table (AJAX partial)
  * - Render tabel fleksibel: mendukung rows numerik/associative
  * - Mendukung columns sebagai:
- *   (A) list label: ['NISN','NIS','NAMA', ...]
- *   (B) mapping key=>label: ['nisn'=>'NISN','nis'=>'NIS','full_name'=>'NAMA', ...]  (RECOMMENDED)
+ *   (A) list label: ['NIK','NISN','NAMA', ...]
+ *   (B) mapping key=>label: ['nik'=>'NIK','nisn'=>'NISN','full_name'=>'NAMA', ...]  (RECOMMENDED)
  * - Jika columns label tidak sama dengan key row, akan dicocokkan (case-insensitive + normalized + alias)
  */
 
@@ -32,11 +32,18 @@ $toAssoc = static function (array $arr): bool {
 
 // Alias umum: label tampilan -> kemungkinan key di row
 $aliases = [
+    'nik'       => ['nik'],
     'nisn'      => ['nisn'],
-    'nis'       => ['nis'],
     'nama'      => ['full_name', 'name', 'student_name', 'nama'],
     'jk'        => ['gender', 'sex', 'jenis_kelamin', 'jk'],
     'tgllahir'  => ['birth_date', 'dob', 'date_of_birth', 'tanggal_lahir', 'tgl_lahir'],
+    'umur'      => ['age', 'umur'],
+    'kebutuhankhusus' => ['special_needs'],
+    'disabilitas' => ['disability'],
+    'nomorkippip' => ['kip_pip_number'],
+    'namaayahkandung' => ['father_name'],
+    'namaibukandung' => ['mother_name'],
+    'namawali' => ['guardian_name'],
     'status'    => ['status'],
     'kelas'     => ['class_name', 'kelas', 'class'],
 

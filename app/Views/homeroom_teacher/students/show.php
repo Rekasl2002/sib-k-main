@@ -115,14 +115,20 @@ $upcomingSessions = is_array($upcomingSessions ?? null) ? $upcomingSessions : []
 // Data siswa utama
 $studentId   = (int) ($student['id'] ?? 0);
 $fullName    = trim((string) ($student['full_name'] ?? 'Siswa'));
-$nis         = trim((string) ($student['nis'] ?? ''));
 $nisn        = trim((string) ($student['nisn'] ?? ''));
+$nik         = trim((string) ($student['nik'] ?? ''));
 $gender      = $student['gender'] ?? null;
 $birthPlace  = $student['birth_place'] ?? null;
 $birthDate   = $student['birth_date'] ?? null;
 $religion    = $student['religion'] ?? null;
 $address     = $student['address'] ?? null;
 $status      = $student['status'] ?? 'Aktif';
+$specialNeeds = $student['special_needs'] ?? null;
+$disability = $student['disability'] ?? null;
+$kipPipNumber = $student['kip_pip_number'] ?? null;
+$fatherName = $student['father_name'] ?? null;
+$motherName = $student['mother_name'] ?? null;
+$guardianName = $student['guardian_name'] ?? null;
 
 // Info kelas & akademik
 $className      = $student['class_name'] ?? ($class['name'] ?? null);
@@ -280,12 +286,11 @@ $avatarSrc = user_avatar($photo);
                         <h5 class="mb-1"><?= esc($fullName) ?></h5>
 
                         <p class="text-muted mb-1">
-                            <?php if ($nisn !== '' || $nis !== ''): ?>
-                                NIS/NISN:
-                                <?= esc($nis !== '' ? $nis : '-') ?> /
+                            <?php if ($nisn !== ''): ?>
+                                NISN:
                                 <?= esc($nisn !== '' ? $nisn : '-') ?>
                             <?php else: ?>
-                                NIS/NISN belum terisi
+                                NISN belum terisi
                             <?php endif; ?>
                         </p>
 
@@ -511,6 +516,14 @@ $avatarSrc = user_avatar($photo);
                                                     <?= ! empty($address) ? nl2br(esc($address)) : '-' ?>
                                                 </td>
                                             </tr>
+                                            <tr>
+                                                <td class="text-muted"><i class="mdi mdi-account-heart me-1"></i>Kebutuhan Khusus</td>
+                                                <td class="fw-medium"><?= ! empty($specialNeeds) ? esc($specialNeeds) : '-' ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted"><i class="mdi mdi-wheelchair-accessibility me-1"></i>Disabilitas</td>
+                                                <td class="fw-medium"><?= ! empty($disability) ? esc($disability) : '-' ?></td>
+                                            </tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -532,10 +545,10 @@ $avatarSrc = user_avatar($photo);
                                         <tbody>
                                             <tr>
                                                 <td class="text-muted" style="width: 40%;">
-                                                    <i class="mdi mdi-numeric me-1"></i>NIS
+                                                    <i class="mdi mdi-numeric me-1"></i>NIK
                                                 </td>
                                                 <td class="fw-medium">
-                                                    <?= $nis !== '' ? esc($nis) : '-' ?>
+                                                    <?= $nik !== '' ? esc($nik) : '-' ?>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -544,6 +557,14 @@ $avatarSrc = user_avatar($photo);
                                                 </td>
                                                 <td class="fw-medium">
                                                     <?= $nisn !== '' ? esc($nisn) : '-' ?>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">
+                                                    <i class="mdi mdi-card-bulleted-outline me-1"></i>Nomor KIP/PIP
+                                                </td>
+                                                <td class="fw-medium">
+                                                    <?= ! empty($kipPipNumber) ? esc($kipPipNumber) : '-' ?>
                                                 </td>
                                             </tr>
                                             <tr>
@@ -579,6 +600,18 @@ $avatarSrc = user_avatar($photo);
                                                         <?= esc($status ?: 'Status tidak diketahui') ?>
                                                     </span>
                                                 </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted"><i class="mdi mdi-account-tie me-1"></i>Nama Ayah Kandung</td>
+                                                <td class="fw-medium"><?= ! empty($fatherName) ? esc($fatherName) : '-' ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted"><i class="mdi mdi-account-heart-outline me-1"></i>Nama Ibu Kandung</td>
+                                                <td class="fw-medium"><?= ! empty($motherName) ? esc($motherName) : '-' ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted"><i class="mdi mdi-account-supervisor me-1"></i>Nama Wali</td>
+                                                <td class="fw-medium"><?= ! empty($guardianName) ? esc($guardianName) : '-' ?></td>
                                             </tr>
                                         </tbody>
                                     </table>

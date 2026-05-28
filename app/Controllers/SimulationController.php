@@ -455,7 +455,7 @@ class SimulationController extends BaseController
                 'guru-bk' => [
                     'metrics' => [['label' => 'Siswa binaan', 'value' => '186'], ['label' => 'Perlu follow-up', 'value' => '9'], ['label' => 'Profil lengkap', 'value' => '87%']],
                     'steps' => ['Guru BK mencari siswa binaan', 'Membuka profil siswa', 'Menambah catatan pendampingan', 'Menjadwalkan tindak lanjut bila perlu'],
-                    'form' => ['Nama/NIS siswa', 'Jenis perhatian', 'Catatan pendampingan', 'Rencana tindak lanjut'],
+                    'form' => ['Nama/NISN siswa', 'Jenis perhatian', 'Catatan pendampingan', 'Rencana tindak lanjut'],
                     'action' => 'Simpan Catatan Simulasi',
                     'role_note' => 'Guru BK berfokus pada profil, riwayat, dan catatan pendampingan siswa binaan.',
                 ],
@@ -597,7 +597,7 @@ class SimulationController extends BaseController
                     'records' => [
                         ['Widget' => 'Sesi hari ini', 'Isi' => 'Jadwal konseling', 'Role' => 'Guru BK'],
                         ['Widget' => 'Kasus aktif', 'Isi' => 'Daftar perlu tindak lanjut', 'Role' => 'Guru BK'],
-                        ['Widget' => 'Pengaduan baru', 'Isi' => 'Antrian verifikasi', 'Role' => 'Guru BK'],
+                        ['Widget' => 'Kasus perlu verifikasi', 'Isi' => 'Antrian tindak lanjut', 'Role' => 'Guru BK'],
                     ],
                     'role_note' => 'Dashboard Guru BK menekankan pekerjaan harian dan tindak lanjut siswa.',
                 ],
@@ -659,16 +659,16 @@ class SimulationController extends BaseController
                 'metrics' => [['label' => 'Siswa aktif', 'value' => '620'], ['label' => 'Kelas', 'value' => '18'], ['label' => 'Profil lengkap', 'value' => '87%']],
                 'steps' => ['Mencari siswa', 'Membuka profil siswa', 'Memeriksa riwayat pendampingan', 'Menentukan tindak lanjut sesuai kewenangan'],
                 'records' => [
-                    ['NIS' => '2026001', 'Nama' => 'Ahmad Fajar Nugraha', 'Kelas' => 'XI MIPA 2', 'Poin' => '10'],
-                    ['NIS' => '2026002', 'Nama' => 'Putri Amanda Sari', 'Kelas' => 'XI IPS 1', 'Poin' => '0'],
-                    ['NIS' => '2026003', 'Nama' => 'Nadia Azzahra', 'Kelas' => 'XII MIPA 1', 'Poin' => '5'],
+                    ['NISN' => '0123456789', 'Nama' => 'Ahmad Fajar Nugraha', 'Kelas' => 'XI MIPA 2', 'Poin' => '10'],
+                    ['NISN' => '0123456790', 'Nama' => 'Putri Amanda Sari', 'Kelas' => 'XI IPS 1', 'Poin' => '0'],
+                    ['NISN' => '0123456791', 'Nama' => 'Nadia Azzahra', 'Kelas' => 'XII MIPA 1', 'Poin' => '5'],
                 ],
-                'form' => ['NIS/Nama siswa', 'Kelas', 'Filter status', 'Catatan'],
+                'form' => ['NISN/Nama siswa', 'Kelas', 'Filter status', 'Catatan'],
                 'action' => 'Tinjau Siswa Simulasi',
             ],
             'student-import' => [
                 'metrics' => [['label' => 'File contoh', 'value' => 'XLSX'], ['label' => 'Baris valid', 'value' => '48'], ['label' => 'Perlu koreksi', 'value' => '2']],
-                'steps' => ['Koordinator mengunduh template', 'Mengunggah file siswa', 'Sistem memvalidasi NIS/email/kelas', 'Koordinator mengonfirmasi impor'],
+                'steps' => ['Koordinator mengunduh template', 'Mengunggah file siswa', 'Sistem memvalidasi NISN/NIK/email/kelas', 'Koordinator mengonfirmasi impor'],
                 'records' => [
                     ['Baris' => '2', 'Nama' => 'Ahmad Fajar Nugraha', 'Status' => 'Valid'],
                     ['Baris' => '3', 'Nama' => 'Putri Amanda Sari', 'Status' => 'Valid'],

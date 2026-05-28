@@ -98,7 +98,7 @@ class ProfileController extends BaseController
                     s.id,
                     s.user_id,
                     s.nisn,
-                    s.nis,
+                    s.nisn,
                     s.class_id,
                     u.full_name,
                     c.class_name,
@@ -118,7 +118,7 @@ class ProfileController extends BaseController
                     s.user_id,
                     u.full_name,
                     s.nisn,
-                    s.nis,
+                    s.nisn,
                     s.class_id,
                     c.class_name,
                     c.grade_level,
@@ -343,23 +343,22 @@ class ProfileController extends BaseController
             }
 
             if ($f === 'email') {
-                if ($val === '') {
-                    return redirect()->to('/profile')->with('error', 'Email tidak boleh kosong.')->withInput();
-                }
-                if (!filter_var($val, FILTER_VALIDATE_EMAIL)) {
+                if ($val !== '' && !filter_var($val, FILTER_VALIDATE_EMAIL)) {
                     return redirect()->to('/profile')->with('error', 'Format email tidak valid.')->withInput();
                 }
                 // Cek unik (kecuali milik sendiri)
-                $dup = $this->db->table('users')
-                    ->select('id')
-                    ->where('LOWER(email)', strtolower($val))
-                    ->where('id !=', $uid)
-                    ->get()
-                    ->getRowArray();
-                if ($dup) {
-                    return redirect()->to('/profile')->with('error', 'Email sudah dipakai pengguna lain.')->withInput();
+                if ($val !== '') {
+                    $dup = $this->db->table('users')
+                        ->select('id')
+                        ->where('LOWER(email)', strtolower($val))
+                        ->where('id !=', $uid)
+                        ->get()
+                        ->getRowArray();
+                    if ($dup) {
+                        return redirect()->to('/profile')->with('error', 'Email sudah dipakai pengguna lain.')->withInput();
+                    }
+                    $val = strtolower($val);
                 }
-                $val = strtolower($val);
             }
 
             if ($f === 'phone' && $val !== '') {
@@ -368,7 +367,7 @@ class ProfileController extends BaseController
                 }
             }
 
-            $data[$f] = ($val === '' && $f === 'phone') ? null : $val;
+            $data[$f] = ($val === '' && in_array($f, ['email', 'phone'], true)) ? null : $val;
         }
 
         // Simpan foto & path relatif (public/)

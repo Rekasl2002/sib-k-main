@@ -47,12 +47,18 @@ class StudentModel extends Model
         'user_id',
         'class_id',
         'nisn',
-        'nis',
+        'nik',
         'gender',
         'birth_place',
         'birth_date',
         'religion',
         'address',
+        'special_needs',
+        'disability',
+        'kip_pip_number',
+        'father_name',
+        'mother_name',
+        'guardian_name',
         'parent_id',
         'admission_date',
         'status',
@@ -80,15 +86,21 @@ class StudentModel extends Model
     protected $validationRules = [
         'user_id'        => 'permit_empty|is_natural_no_zero|is_not_unique[users.id]|is_unique[students.user_id,id,{id}]',
         'nisn'           => 'permit_empty|numeric|exact_length[10]|is_unique[students.nisn,id,{id}]',
-        'nis'            => 'permit_empty|numeric|min_length[4]|max_length[20]|is_unique[students.nis,id,{id}]',
+        'nik'            => 'permit_empty|numeric|exact_length[16]|is_unique[students.nik,id,{id}]',
         'gender'         => 'permit_empty|in_list[L,P]',
         'birth_place'    => 'permit_empty|max_length[100]',
         'birth_date'     => 'permit_empty|valid_date[Y-m-d]',
         'religion'       => 'permit_empty|max_length[50]|in_list[Islam,Kristen,Katolik,Hindu,Buddha,Konghucu]',
         'address'        => 'permit_empty|max_length[255]',
+        'special_needs'  => 'permit_empty|max_length[100]',
+        'disability'     => 'permit_empty|max_length[100]',
+        'kip_pip_number' => 'permit_empty|max_length[50]',
+        'father_name'    => 'permit_empty|max_length[255]',
+        'mother_name'    => 'permit_empty|max_length[255]',
+        'guardian_name'  => 'permit_empty|max_length[255]',
         'parent_id'      => 'permit_empty|is_natural_no_zero|is_not_unique[users.id]',
         'admission_date' => 'permit_empty|valid_date[Y-m-d]',
-        'status'         => 'permit_empty|in_list[Aktif,Alumni,Pindah,Keluar]',
+        'status'         => 'permit_empty|in_list[Aktif,Alumni,Pindah,Keluar,Tidak Aktif]',
     ];
 
     protected $validationMessages = [
@@ -102,9 +114,9 @@ class StudentModel extends Model
             'is_unique'  => 'NISN sudah terdaftar',
             'numeric'    => 'NISN harus berupa angka',
         ],
-        'nis' => [
-            'required'  => 'NIS harus diisi',
-            'is_unique' => 'NIS sudah terdaftar',
+        'nik' => [
+            'is_unique' => 'NIK sudah terdaftar',
+            'numeric'   => 'NIK harus berupa angka',
         ],
         'gender' => [
             'required' => 'Jenis kelamin harus dipilih',
@@ -263,15 +275,6 @@ class StudentModel extends Model
             ->first();
     }
 
-    public function getByNIS($nis)
-    {
-        return $this->select('students.*, users.full_name AS full_name, users.email, users.phone, users.username')
-            ->join('users', 'users.id = students.user_id', 'left')
-            ->where('students.deleted_at', null)
-            ->where('students.nis', $nis)
-            ->first();
-    }
-
     /**
      * Get all students with details
      */
@@ -334,7 +337,6 @@ class StudentModel extends Model
             ->groupStart()
                 ->like('users.full_name', $keyword)
                 ->orLike('students.nisn', $keyword)
-                ->orLike('students.nis', $keyword)
                 ->orLike('classes.class_name', $keyword)
             ->groupEnd()
             ->where('students.deleted_at', null)

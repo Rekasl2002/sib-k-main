@@ -198,7 +198,7 @@ function staff_card(string $title, ?array $u, string $studentName, string $class
                 <div>
                     <div class="fw-semibold"><?= h($studentName) ?></div>
                     <div class="text-muted small">Kelas: <?= h($classLabel) ?></div>
-                    <div class="text-muted small">NIS: <?= h($student['nis'] ?? '—') ?> | NISN: <?= h($student['nisn'] ?? '—') ?></div>
+                    <div class="text-muted small">NIK: <?= h($student['nik'] ?? '—') ?> | NISN: <?= h($student['nisn'] ?? '—') ?></div>
                 </div>
             </div>
 

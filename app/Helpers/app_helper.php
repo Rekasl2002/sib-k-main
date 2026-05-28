@@ -131,6 +131,44 @@ if (!function_exists('indonesian_datetime')) {
     }
 }
 
+if (!function_exists('student_age_years')) {
+    function student_age_years($birthDate): ?int
+    {
+        if (empty($birthDate) || $birthDate === '0000-00-00') {
+            return null;
+        }
+
+        try {
+            $birth = new DateTime((string) $birthDate);
+            $today = new DateTime();
+            return $today->diff($birth)->y;
+        } catch (Throwable $e) {
+            return null;
+        }
+    }
+}
+
+if (!function_exists('student_age_text')) {
+    function student_age_text($birthDate): string
+    {
+        $age = student_age_years($birthDate);
+        return $age === null ? '-' : $age . ' tahun';
+    }
+}
+
+if (!function_exists('feature_violation_submissions_enabled')) {
+    function feature_violation_submissions_enabled(): bool
+    {
+        $value = env('features.violation_submissions', false);
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_BOOL);
+    }
+}
+
 if (!function_exists('format_number')) {
     /**
      * Format number to Indonesian format
@@ -249,18 +287,6 @@ if (!function_exists('generate_nisn')) {
     function generate_nisn()
     {
         return date('Y') . str_pad(mt_rand(1, 999999), 6, '0', STR_PAD_LEFT);
-    }
-}
-
-if (!function_exists('generate_nis')) {
-    /**
-     * Generate random NIS for demo purposes
-     * 
-     * @return string
-     */
-    function generate_nis()
-    {
-        return str_pad(mt_rand(1, 9999), 4, '0', STR_PAD_LEFT);
     }
 }
 

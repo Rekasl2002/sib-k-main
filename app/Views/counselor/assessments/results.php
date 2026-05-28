@@ -262,7 +262,7 @@
                 <div class="col-md-3">
                     <label class="form-label">Pencarian</label>
                     <div class="input-group">
-                        <input type="text" name="search" class="form-control" placeholder="Nama / NIS / NISN..." value="<?= esc($filters['search'] ?? '') ?>">
+                        <input type="text" name="search" class="form-control" placeholder="Nama / NISN..." value="<?= esc($filters['search'] ?? '') ?>">
                         <button class="btn btn-primary" type="submit">
                             <i class="fas fa-search"></i>
                         </button>
@@ -328,7 +328,7 @@
                             </th>
                             <th width="5%">No</th>
                             <th>Nama Siswa</th>
-                            <th>NIS / NISN</th>
+                            <th>NISN</th>
                             <th>Kelas</th>
                             <th class="text-center">Percobaan</th>
                             <th class="text-center">Status</th>
@@ -370,7 +370,7 @@
                                 }
 
                                 $isPassedVal = $result['is_passed'] ?? null; // 1/0/null
-                                $nisMixed    = $result['nis'] ?? $result['nisn'] ?? '-';
+                                $nisMixed    = $result['nisn'] ?? '-';
                             ?>
                             <tr>
                                 <td>

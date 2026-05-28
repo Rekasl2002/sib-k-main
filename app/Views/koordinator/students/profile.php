@@ -184,8 +184,8 @@ if (!empty($student['birth_date'])) {
                                                 </div>
                                             </div>
                                             <div class="flex-grow-1">
-                                                <p class="text-muted mb-1">NIS</p>
-                                                <h5 class="mb-0"><code><?= esc($student['nis'] ?? '-') ?></code></h5>
+                                                <p class="text-muted mb-1">NIK</p>
+                                                <h5 class="mb-0"><code><?= esc($student['nik'] ?? '-') ?></code></h5>
                                             </div>
                                         </div>
                                     </div>
@@ -316,6 +316,14 @@ if (!empty($student['birth_date'])) {
                                 </td>
                                 <td class="fw-medium"><?= !empty($student['address']) ? esc($student['address']) : '-' ?></td>
                             </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-account-heart me-1"></i>Kebutuhan Khusus</td>
+                                <td class="fw-medium"><?= !empty($student['special_needs']) ? esc($student['special_needs']) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-wheelchair-accessibility me-1"></i>Disabilitas</td>
+                                <td class="fw-medium"><?= !empty($student['disability']) ? esc($student['disability']) : '-' ?></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -357,9 +365,15 @@ if (!empty($student['birth_date'])) {
                             </tr>
                             <tr>
                                 <td class="text-muted">
-                                    <i class="mdi mdi-card-text me-1"></i>NIS
+                                    <i class="mdi mdi-card-text me-1"></i>NIK
                                 </td>
-                                <td class="fw-medium"><code><?= esc($student['nis'] ?? '-') ?></code></td>
+                                <td class="fw-medium"><code><?= esc($student['nik'] ?? '-') ?></code></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">
+                                    <i class="mdi mdi-card-bulleted-outline me-1"></i>Nomor KIP/PIP
+                                </td>
+                                <td class="fw-medium"><code><?= !empty($student['kip_pip_number']) ? esc($student['kip_pip_number']) : '-' ?></code></td>
                             </tr>
                             <tr>
                                 <td class="text-muted">
@@ -388,6 +402,18 @@ if (!empty($student['birth_date'])) {
                                         <?= $poin ?> Poin
                                     </span>
                                 </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-account-tie me-1"></i>Nama Ayah Kandung</td>
+                                <td class="fw-medium"><?= !empty($student['father_name']) ? esc($student['father_name']) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-account-heart-outline me-1"></i>Nama Ibu Kandung</td>
+                                <td class="fw-medium"><?= !empty($student['mother_name']) ? esc($student['mother_name']) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-account-supervisor me-1"></i>Nama Wali</td>
+                                <td class="fw-medium"><?= !empty($student['guardian_name']) ? esc($student['guardian_name']) : '-' ?></td>
                             </tr>
                         </tbody>
                     </table>

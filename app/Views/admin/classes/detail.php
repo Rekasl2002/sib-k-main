@@ -222,7 +222,7 @@ $femaleCount = is_array($genderStats) ? (int)($genderStats['P'] ?? 0) : 0;
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 60px;">No</th>
-                                <th style="width: 160px;">NIS</th>
+                                <th style="width: 160px;">NISN</th>
                                 <th>Nama Lengkap</th>
                                 <th style="width: 110px;">Gender</th>
                                 <th style="width: 120px;">Status</th>
@@ -240,7 +240,7 @@ $femaleCount = is_array($genderStats) ? (int)($genderStats['P'] ?? 0) : 0;
                                 <?php $no = 1; ?>
                                 <?php foreach ($students as $student): ?>
                                     <?php
-                                        $nis      = v($student, 'nis', '-');
+                                        $nisn      = v($student, 'nisn', '-');
                                         $name     = v($student, 'full_name', '-'); // dari join users.full_name
                                         $gender   = v($student, 'gender', '-');
                                         $status   = v($student, 'status', '-');
@@ -257,7 +257,7 @@ $femaleCount = is_array($genderStats) ? (int)($genderStats['P'] ?? 0) : 0;
                                     ?>
                                     <tr>
                                         <td class="text-center"><?= esc($no++) ?></td>
-                                        <td><?= esc($nis) ?></td>
+                                        <td><?= esc($nisn) ?></td>
                                         <td class="fw-semibold">
                                             <?= esc($name) ?>
                                         </td>

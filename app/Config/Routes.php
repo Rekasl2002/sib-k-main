@@ -49,6 +49,8 @@ $routes->setTranslateURIDashes(false);
 // Disarankan: matikan AutoRoute untuk keamanan (semua rute eksplisit)
 $routes->setAutoRoute(false);
 
+$featureViolationSubmissionsEnabled = filter_var(env('features.violation_submissions', false), FILTER_VALIDATE_BOOL);
+
 // -------------------------------
 // Default
 // -------------------------------
@@ -405,6 +407,16 @@ $routes->group('koordinator', [
             $routes->get('detail/(:num)', 'SessionController::show/$1', ['as' => 'koordinator.sessions.detail']);
             $routes->get('(:num)', 'SessionController::show/$1');
         });
+
+        // Kalender seluruh jadwal konseling
+        $routes->get('schedule', 'ScheduleController::index', [
+            'filter' => 'permission:view_counseling_sessions',
+            'as'     => 'koordinator.schedule'
+        ]);
+        $routes->get('schedule/events', 'ScheduleController::events', [
+            'filter' => 'permission:view_counseling_sessions',
+            'as'     => 'koordinator.schedule.events'
+        ]);
 
         // CASES / PELANGGARAN
         $routes->group('cases', function ($routes) {
@@ -1017,9 +1029,9 @@ $routes->group('homeroom', [
 $routes->group('student', [
     'filter'    => 'auth',
     'namespace' => 'App\Controllers\Student'
-], function ($routes) {
+], function ($routes) use ($featureViolationSubmissionsEnabled) {
 
-    $routes->group('', ['filter' => 'role:siswa,student'], function ($routes) {
+    $routes->group('', ['filter' => 'role:siswa,student'], function ($routes) use ($featureViolationSubmissionsEnabled) {
 
         $routes->get('/', 'DashboardController::index', [
             'filter' => 'permission:view_dashboard',
@@ -1049,21 +1061,23 @@ $routes->group('student', [
             'as'     => 'student.staff'
         ]);
 
-        // Pengaduan Pelanggaran (Violation Submissions) - milik sendiri
-        $routes->group('violation-submissions', [
-            'filter' => 'permission:submit_violation_submissions',
-        ], function ($routes) {
-            $routes->get('/', 'ViolationSubmissionsController::index', ['as' => 'student.violation_submissions.index']);
-            $routes->get('create', 'ViolationSubmissionsController::create', ['as' => 'student.violation_submissions.create']);
-            $routes->post('store', 'ViolationSubmissionsController::store', ['as' => 'student.violation_submissions.store']);
+        if ($featureViolationSubmissionsEnabled) {
+            // Pengaduan Pelanggaran (Violation Submissions) - milik sendiri
+            $routes->group('violation-submissions', [
+                'filter' => 'permission:submit_violation_submissions',
+            ], function ($routes) {
+                $routes->get('/', 'ViolationSubmissionsController::index', ['as' => 'student.violation_submissions.index']);
+                $routes->get('create', 'ViolationSubmissionsController::create', ['as' => 'student.violation_submissions.create']);
+                $routes->post('store', 'ViolationSubmissionsController::store', ['as' => 'student.violation_submissions.store']);
 
-            $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1', ['as' => 'student.violation_submissions.show']);
-            $routes->get('edit/(:num)', 'ViolationSubmissionsController::edit/$1', ['as' => 'student.violation_submissions.edit']);
-            $routes->post('update/(:num)', 'ViolationSubmissionsController::update/$1', ['as' => 'student.violation_submissions.update']);
+                $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1', ['as' => 'student.violation_submissions.show']);
+                $routes->get('edit/(:num)', 'ViolationSubmissionsController::edit/$1', ['as' => 'student.violation_submissions.edit']);
+                $routes->post('update/(:num)', 'ViolationSubmissionsController::update/$1', ['as' => 'student.violation_submissions.update']);
 
-            $routes->post('delete/(:num)', 'ViolationSubmissionsController::delete/$1', ['as' => 'student.violation_submissions.delete']);
-            $routes->get('delete/(:num)', 'ViolationSubmissionsController::delete/$1', ['as' => 'student.violation_submissions.delete.get']);
-        });
+                $routes->post('delete/(:num)', 'ViolationSubmissionsController::delete/$1', ['as' => 'student.violation_submissions.delete']);
+                $routes->get('delete/(:num)', 'ViolationSubmissionsController::delete/$1', ['as' => 'student.violation_submissions.delete.get']);
+            });
+        }
 
         // Jadwal/request konseling (pakai permission tabel: view_counseling_sessions)
         $routes->group('schedule', ['filter' => 'permission:view_counseling_sessions'], function ($routes) {
@@ -1119,9 +1133,9 @@ $routes->group('student', [
 $routes->group('parent', [
     'filter'    => 'auth',
     'namespace' => 'App\Controllers\Parents'
-], function ($routes) {
+], function ($routes) use ($featureViolationSubmissionsEnabled) {
 
-    $routes->group('', ['filter' => 'role:orang tua,parent'], function ($routes) {
+    $routes->group('', ['filter' => 'role:orang tua,parent'], function ($routes) use ($featureViolationSubmissionsEnabled) {
 
         $routes->get('dashboard', 'DashboardController::index', [
             'filter' => 'permission:view_dashboard',
@@ -1197,19 +1211,21 @@ $routes->group('parent', [
             ]);
         });
 
-        // Pengaduan Pelanggaran (milik sendiri) - gunakan permission tabel
-        $routes->group('violation-submissions', ['filter' => 'permission:submit_violation_submissions'], function ($routes) {
-            $routes->get('/', 'ViolationSubmissionsController::index');
-            $routes->get('create', 'ViolationSubmissionsController::create');
-            $routes->post('store', 'ViolationSubmissionsController::store');
+        if ($featureViolationSubmissionsEnabled) {
+            // Pengaduan Pelanggaran (milik sendiri) - gunakan permission tabel
+            $routes->group('violation-submissions', ['filter' => 'permission:submit_violation_submissions'], function ($routes) {
+                $routes->get('/', 'ViolationSubmissionsController::index');
+                $routes->get('create', 'ViolationSubmissionsController::create');
+                $routes->post('store', 'ViolationSubmissionsController::store');
 
-            $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1');
-            $routes->get('edit/(:num)', 'ViolationSubmissionsController::edit/$1');
-            $routes->post('update/(:num)', 'ViolationSubmissionsController::update/$1');
+                $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1');
+                $routes->get('edit/(:num)', 'ViolationSubmissionsController::edit/$1');
+                $routes->post('update/(:num)', 'ViolationSubmissionsController::update/$1');
 
-            $routes->post('delete/(:num)', 'ViolationSubmissionsController::delete/$1');
-            $routes->get('delete/(:num)', 'ViolationSubmissionsController::delete/$1'); // opsional
-        });
+                $routes->post('delete/(:num)', 'ViolationSubmissionsController::delete/$1');
+                $routes->get('delete/(:num)', 'ViolationSubmissionsController::delete/$1'); // opsional
+            });
+        }
 
         // Komunikasi
         $routes->group('communication', ['filter' => 'permission:send_messages'], function ($routes) {
@@ -1245,10 +1261,12 @@ $routes->group('simulation', ['filter' => 'auth'], function ($routes) {
 });
 
 // Prototype Fitur Skripsi
-$routes->group('prototype', ['filter' => 'auth'], function ($routes) {
+$routes->group('prototype', ['filter' => 'auth'], function ($routes) use ($featureViolationSubmissionsEnabled) {
     $routes->get('/', 'PrototypeController::index', ['as' => 'prototype.index']);
     $routes->get('progress/(:segment)', 'PrototypeController::progress/$1', ['as' => 'prototype.progress']);
-    $routes->get('violation-submissions', 'PrototypeController::violationSubmissions', ['as' => 'prototype.violation_submissions']);
+    if ($featureViolationSubmissionsEnabled) {
+        $routes->get('violation-submissions', 'PrototypeController::violationSubmissions', ['as' => 'prototype.violation_submissions']);
+    }
     $routes->get('notifications', 'PrototypeController::notifications', ['as' => 'prototype.notifications']);
     $routes->get('messages', 'PrototypeController::messages', ['as' => 'prototype.messages']);
     $routes->get('assessments', 'PrototypeController::assessments', ['as' => 'prototype.assessments']);

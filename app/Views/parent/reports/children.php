@@ -53,7 +53,7 @@
               <td>
                 <strong><?= esc($c['full_name']) ?></strong><br>
                 <small class="text-muted">
-                  NIS: <?= esc($c['nis'] ?? '-') ?>
+                  NISN: <?= esc($c['nisn'] ?? '-') ?>
                 </small>
               </td>
               <td>

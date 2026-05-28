@@ -77,7 +77,7 @@ class StudentController extends BaseController
                     's.id',
                     'u.full_name AS full_name',
                     's.nisn',
-                    's.nis',
+                    's.nisn',
                     's.gender',
                     's.total_violation_points',
                 ])

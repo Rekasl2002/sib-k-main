@@ -287,7 +287,7 @@ $valOrient = $valOrient ?? 'portrait';
         {value:'', label:'Default'},
         {value:'u.full_name', label:'Nama'},
         {value:'s.nisn', label:'NISN'},
-        {value:'s.nis', label:'NIS'},
+        {value:'s.nisn', label:'NISN'},
         {value:'c.class_name', label:'Kelas'},
         {value:'s.status', label:'Status'}
       ];

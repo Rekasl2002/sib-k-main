@@ -346,7 +346,7 @@ if ($target === 'Class' && !empty($assessment['target_class_name'])) {
                   <div class="fw-semibold"><?= esc($r['student_name'] ?? '-') ?></div>
                   <small class="text-muted">
                     <?= esc($r['class_name'] ?? '-') ?> ·
-                    NIS/NISN: <?= esc($r['nis'] ?? $r['nisn'] ?? '-') ?>
+                    NISN: <?= esc($r['nisn'] ?? '-') ?>
                   </small>
                 </div>
                 <span class="badge bg-success">

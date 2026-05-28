@@ -15,6 +15,8 @@
  * @author     Development Team
  * @created    2025-01-05
  */
+
+helper('app');
 ?>
 
 <!-- Start Page Content -->
@@ -258,32 +260,77 @@
                         Peran ini terdaftar sebagai siswa dalam sistem.
                     </div>
 
+                    <?php $sd = $user['student_data'] ?? []; ?>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="text-muted mb-1">NISN:</label>
-                                <p class="fw-medium"><?= esc($user['student_data']['nisn']) ?></p>
+                                <p class="fw-medium"><?= esc($sd['nisn'] ?? '-') ?></p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="text-muted mb-1">NIS:</label>
-                                <p class="fw-medium"><?= esc($user['student_data']['nis']) ?></p>
+                                <label class="text-muted mb-1">NIK:</label>
+                                <p class="fw-medium"><?= esc($sd['nik'] ?? '-') ?></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="text-muted mb-1">Tanggal Lahir / Umur:</label>
+                                <p class="fw-medium">
+                                    <?= !empty($sd['birth_date']) ? esc(date('d F Y', strtotime($sd['birth_date'])) . ' (' . student_age_text($sd['birth_date']) . ')') : '-' ?>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="text-muted mb-1">Nomor KIP/PIP:</label>
+                                <p class="fw-medium"><?= !empty($sd['kip_pip_number']) ? esc($sd['kip_pip_number']) : '-' ?></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="text-muted mb-1">Kebutuhan Khusus:</label>
+                                <p class="fw-medium"><?= !empty($sd['special_needs']) ? esc($sd['special_needs']) : '-' ?></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="text-muted mb-1">Disabilitas:</label>
+                                <p class="fw-medium"><?= !empty($sd['disability']) ? esc($sd['disability']) : '-' ?></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="text-muted mb-1">Nama Ayah Kandung:</label>
+                                <p class="fw-medium"><?= !empty($sd['father_name']) ? esc($sd['father_name']) : '-' ?></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="text-muted mb-1">Nama Ibu Kandung:</label>
+                                <p class="fw-medium"><?= !empty($sd['mother_name']) ? esc($sd['mother_name']) : '-' ?></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="text-muted mb-1">Nama Wali:</label>
+                                <p class="fw-medium"><?= !empty($sd['guardian_name']) ? esc($sd['guardian_name']) : '-' ?></p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="text-muted mb-1">Status Siswa:</label>
                                 <p class="fw-medium">
-                                    <span class="badge bg-<?= $user['student_data']['status'] == 'Aktif' ? 'success' : 'secondary' ?>">
-                                        <?= esc($user['student_data']['status']) ?>
+                                    <span class="badge bg-<?= ($sd['status'] ?? '') == 'Aktif' ? 'success' : 'secondary' ?>">
+                                        <?= esc($sd['status'] ?? '-') ?>
                                     </span>
                                 </p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <a href="<?= base_url('admin/students/profile/' . $user['student_data']['id']) ?>" class="btn btn-sm btn-primary">
+                                <a href="<?= base_url('admin/students/profile/' . ($sd['id'] ?? 0)) ?>" class="btn btn-sm btn-primary">
                                     <i class="mdi mdi-eye me-1"></i>Lihat Profil Siswa Lengkap
                                 </a>
                             </div>

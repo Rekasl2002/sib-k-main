@@ -211,7 +211,7 @@ class UserService
             $userData = [
                 'role_id'   => (int)($data['role_id'] ?? 0),
                 'username'  => trim((string)($data['username'] ?? '')),
-                'email'     => trim((string)($data['email'] ?? '')),
+                'email'     => trim((string)($data['email'] ?? '')) ?: null,
                 'password'  => (string)($data['password'] ?? ''), // model callback akan meng-hash
                 'full_name' => trim((string)($data['full_name'] ?? '')),
                 'phone'     => isset($data['phone']) ? trim((string)$data['phone']) : null,
@@ -232,10 +232,12 @@ class UserService
             }
 
             // Cek unik email & username
-            $existsEmail = $this->userModel->asArray()->where('email', $userData['email'])->first();
-            if ($existsEmail) {
-                $this->db->transRollback();
-                return ['success' => false, 'message' => 'Email sudah digunakan', 'user_id' => null];
+            if ($userData['email'] !== null) {
+                $existsEmail = $this->userModel->asArray()->where('email', $userData['email'])->first();
+                if ($existsEmail) {
+                    $this->db->transRollback();
+                    return ['success' => false, 'message' => 'Email sudah digunakan', 'user_id' => null];
+                }
             }
             $existsUsername = $this->userModel->asArray()->where('username', $userData['username'])->first();
             if ($existsUsername) {
@@ -259,21 +261,23 @@ class UserService
             if ((int)$userData['role_id'] === $studentRoleId) {
                 $student = (array)($data['student'] ?? []);
 
-                // Wajib: nisn & nis
+                // Wajib: NISN. NIK mengikuti format EMIS dan bersifat opsional.
                 $nisn = trim((string)($student['nisn'] ?? ''));
-                $nis  = trim((string)($student['nis']  ?? ''));
-                if ($nisn === '' || $nis === '') {
-                    throw new \RuntimeException('NISN dan NIS wajib diisi untuk user ber-peran Siswa.');
+                $nik  = trim((string)($student['nik']  ?? ''));
+                if ($nisn === '') {
+                    throw new \RuntimeException('NISN wajib diisi untuk user ber-peran Siswa.');
                 }
 
-                // Cek unik NISN / NIS
+                // Cek unik NISN / NIK
                 $dupNisn = $this->studentModel->asArray()->where('nisn', $nisn)->first();
                 if ($dupNisn) {
                     throw new \RuntimeException('NISN sudah terdaftar pada siswa lain.');
                 }
-                $dupNis = $this->studentModel->asArray()->where('nis', $nis)->first();
-                if ($dupNis) {
-                    throw new \RuntimeException('NIS sudah terdaftar pada siswa lain.');
+                if ($nik !== '') {
+                    $dupNik = $this->studentModel->asArray()->where('nik', $nik)->first();
+                    if ($dupNik) {
+                        throw new \RuntimeException('NIK sudah terdaftar pada siswa lain.');
+                    }
                 }
 
                 // Siapkan payload lengkap untuk tabel students
@@ -288,15 +292,20 @@ class UserService
 
                 $studentInsert = [
                     'user_id'    => $userId,
-                    'full_name'  => $userData['full_name'] ?: null,
                     'nisn'       => $nisn,
-                    'nis'        => $nis,
+                    'nik'        => $nik !== '' ? $nik : null,
                     'gender'     => $student['gender']   ?? null,
                     'class_id'   => $classId,
                     'birth_place'=> $birthPlace,
                     'birth_date' => $birthDate,
                     'religion'   => $religion,
                     'address'    => $address,
+                    'special_needs'  => $student['special_needs'] ?? null,
+                    'disability'     => $student['disability'] ?? null,
+                    'kip_pip_number' => $student['kip_pip_number'] ?? null,
+                    'father_name'    => $student['father_name'] ?? null,
+                    'mother_name'    => $student['mother_name'] ?? null,
+                    'guardian_name'  => $student['guardian_name'] ?? null,
                     'parent_id'  => $parentId,
                     'admission_date' => $admissionDate,
                     'status'     => $status,
@@ -352,7 +361,7 @@ class UserService
             $updateData = [
                 'role_id'   => $data['role_id'],
                 'username'  => $data['username'],
-                'email'     => $data['email'],
+                'email'     => trim((string)($data['email'] ?? '')) ?: null,
                 'full_name' => $data['full_name'],
                 'phone'     => $data['phone']    ?? null,
                 'is_active' => $data['is_active'] ?? 1,
@@ -370,9 +379,12 @@ class UserService
             }
 
             // Cek email unik jika berubah
-            if ($data['email'] !== $user['email']) {
+            $newEmail = $updateData['email'];
+            $oldEmail = !empty($user['email']) ? (string) $user['email'] : null;
+
+            if ($newEmail !== $oldEmail && $newEmail !== null) {
                 $exists = $this->userModel->asArray()
-                    ->where('email', $data['email'])
+                    ->where('email', $newEmail)
                     ->where('id !=', (int) $userId)
                     ->first();
 

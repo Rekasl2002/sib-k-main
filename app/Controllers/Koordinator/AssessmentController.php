@@ -89,7 +89,7 @@ class AssessmentController extends BaseController
 
     private function gradeOptions(): array
     {
-        return ['X' => 'X', 'XI' => 'XI', 'XII' => 'XII'];
+        return ['7' => '7', '8' => '8', '9' => '9', 'X' => 'X', 'XI' => 'XI', 'XII' => 'XII'];
     }
 
     private function getAllClasses(): array
@@ -110,7 +110,7 @@ class AssessmentController extends BaseController
     {
         $db = \Config\Database::connect();
         $qb = $db->table('students s')
-            ->select('s.id, s.full_name, COALESCE(s.nis, s.nisn) as nis, s.class_id, c.class_name, c.grade_level, c.major')
+            ->select('s.id, s.full_name, s.nisn, s.class_id, c.class_name, c.grade_level, c.major')
             ->join('classes c', 'c.id = s.class_id', 'left')
             ->where('s.status', 'Aktif');
 
@@ -768,7 +768,7 @@ class AssessmentController extends BaseController
             $students_by_class[$cn][] = [
                 'id'         => (int)$s['id'],
                 'full_name'  => $s['full_name'],
-                'nisn'       => $s['nis'] ?? null,
+                'nisn'       => $s['nisn'] ?? null,
                 'class_name' => $s['class_name'] ?? null,
             ];
         }
@@ -947,7 +947,7 @@ class AssessmentController extends BaseController
                 COALESCE(a.show_score_to_student, a.show_result_immediately) AS show_score_to_student,
                 s.full_name AS student_name,
                 s.nisn,
-                s.nis,
+                s.nisn,
                 c.class_name
             ")
             ->join('assessments a', 'a.id = r.assessment_id')
@@ -1154,11 +1154,11 @@ class AssessmentController extends BaseController
             : [];
 
         $fp = fopen('php://temp', 'w+');
-        fputcsv($fp, ['Student', 'NIS/NISN', 'Class', 'Status', 'Score', 'Passed', 'Submitted At', 'Graded At']);
+        fputcsv($fp, ['Student', 'NISN', 'Class', 'Status', 'Score', 'Passed', 'Submitted At', 'Graded At']);
 
         foreach ($rows as $r) {
             $student = $r['student_name'] ?? $r['full_name'] ?? '';
-            $nis     = $r['nisn'] ?? $r['nis'] ?? '';
+            $nisn    = $r['nisn'] ?? '';
             $class   = $r['class_name'] ?? '';
             $status  = $r['status'] ?? '';
             $score   = $r['score'] ?? $r['total_score'] ?? '';
@@ -1166,7 +1166,7 @@ class AssessmentController extends BaseController
             $subAt   = $r['submitted_at'] ?? $r['completed_at'] ?? '';
             $grAt    = $r['graded_at'] ?? '';
 
-            fputcsv($fp, [$student, $nis, $class, $status, $score, $passed, $subAt, $grAt]);
+            fputcsv($fp, [$student, $nisn, $class, $status, $score, $passed, $subAt, $grAt]);
         }
 
         rewind($fp);

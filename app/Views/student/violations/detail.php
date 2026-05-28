@@ -17,7 +17,6 @@ $violation = is_array($violation) ? $violation : (array) $violation;
 // Bangun $student dari data yang ada bila belum dikirim terpisah
 $student = $student ?? [
     'full_name'  => $violation['student_full_name'] ?? '',
-    'nis'        => $violation['student_nis'] ?? '',
     'nisn'       => $violation['student_nisn'] ?? '',
     'class_name' => $violation['class_name'] ?? '',
 ];
@@ -144,11 +143,9 @@ if (!empty($parentNotifiedAt)) {
                   <?php endif; ?>
                   <br>
                   <?php
-                  $nis  = trim((string) ($student['nis'] ?? ''));
                   $nisn = trim((string) ($student['nisn'] ?? ''));
                   ?>
-                  NIS/NISN:
-                  <?= esc($nis  !== '' ? $nis  : '-') ?> /
+                  NISN:
                   <?= esc($nisn !== '' ? $nisn : '-') ?>
                 </p>
               </div>

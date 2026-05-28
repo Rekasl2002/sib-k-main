@@ -145,7 +145,7 @@ if (!function_exists('slugify')) {
                                 <i class="fas fa-search"></i>
                             </span>
                             <input type="text" class="form-control" id="searchStudent"
-                                placeholder="Cari siswa berdasarkan nama atau NIS/NISN...">
+                                placeholder="Cari siswa berdasarkan nama atau NISN...">
                         </div>
                     </div>
 
@@ -510,7 +510,7 @@ if (!function_exists('slugify')) {
         }
     }
 
-    // Search functionality (name or nis/nisn)
+    // Search functionality (name or NISN)
     document.getElementById('searchStudent').addEventListener('input', function(e) {
         const searchTerm = (e.target.value || '').toLowerCase();
         const studentItems = document.querySelectorAll('.student-item');

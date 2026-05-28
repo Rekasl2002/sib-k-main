@@ -161,12 +161,11 @@ class AssessmentController extends BaseController
             return [];
         }
 
-        // Normalisasi NIS: gunakan COALESCE(nis, nisn) sebagai 'nis'
         return $this->studentModel
             ->select([
                 'students.id',
                 'u.full_name as full_name',
-                'COALESCE(students.nis, students.nisn) as nis',
+                'students.nisn',
                 'classes.class_name',
                 'classes.grade_level',
             ])
@@ -190,7 +189,7 @@ class AssessmentController extends BaseController
             ->select('
                 s.id,
                 COALESCE(u.full_name, "") as full_name,
-                COALESCE(s.nis, s.nisn) as nis,
+                s.nisn,
                 s.class_id,
                 c.class_name,
                 c.grade_level,
@@ -1017,7 +1016,7 @@ class AssessmentController extends BaseController
             $students_by_class[$cn][] = [
                 'id'         => (int)$s['id'],
                 'full_name'  => $s['full_name'],
-                'nisn'       => $s['nis'] ?? null,
+                'nisn'       => $s['nisn'] ?? null,
                 'class_name' => $s['class_name'] ?? null,
             ];
         }
@@ -1238,7 +1237,7 @@ class AssessmentController extends BaseController
                 COALESCE(a.show_score_to_student, a.show_result_immediately) AS show_score_to_student,
                 su.full_name AS student_name,
                 s.nisn,
-                s.nis,
+                s.nisn,
                 c.class_name
             ")
             ->join('assessments a', 'a.id = r.assessment_id AND a.deleted_at IS NULL', 'inner')

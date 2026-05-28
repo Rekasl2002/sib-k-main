@@ -141,7 +141,7 @@ class DashboardController extends BaseController
 
         return $this->sessionModel
             ->select('counseling_sessions.*,
-                      students.nisn, students.nis,
+                      students.nisn, students.nik,
                       users.full_name as student_name,
                       classes.class_name')
             ->join('students', 'students.id = counseling_sessions.student_id', 'left')
@@ -168,7 +168,7 @@ class DashboardController extends BaseController
 
         return $this->sessionModel
             ->select('counseling_sessions.*,
-                      students.nisn, students.nis,
+                      students.nisn, students.nik,
                       users.full_name as student_name,
                       classes.class_name')
             ->join('students', 'students.id = counseling_sessions.student_id', 'left')
@@ -196,7 +196,7 @@ class DashboardController extends BaseController
         $counselorId = (int) $counselorId;
 
         $students = $this->db->table('students')
-            ->select('students.id, students.nisn, students.nis, students.total_violation_points,
+            ->select('students.id, students.nisn, students.nik, students.total_violation_points,
                       users.full_name as student_name, users.email,
                       classes.class_name,
                       COUNT(DISTINCT counseling_sessions.id) as total_sessions')
@@ -213,7 +213,7 @@ class DashboardController extends BaseController
             ->where('students.status', 'Aktif')
             ->where('students.deleted_at', null) // ✅ tambah: jangan ambil siswa soft-deleted
             ->where('users.deleted_at', null)    // ✅ tambah: jangan ambil user soft-deleted
-            ->groupBy('students.id, students.nisn, students.nis, students.total_violation_points,
+            ->groupBy('students.id, students.nisn, students.nik, students.total_violation_points,
                        users.full_name, users.email, classes.class_name')
             ->having('COUNT(DISTINCT counseling_sessions.id) >', 0)
             ->orderBy('total_sessions', 'DESC')

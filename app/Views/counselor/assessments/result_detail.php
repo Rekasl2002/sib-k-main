@@ -106,7 +106,7 @@ $base = rtrim(base_url(), '/');
 $assessmentTitle = $result['assessment_title'] ?? 'Asesmen';
 $studentName     = $result['student_name']     ?? '-';
 $nisn            = $result['nisn']             ?? '-';
-$nis             = $result['nis']              ?? '-';
+$NISN             = $result['nisn']              ?? '-';
 $className       = $result['class_name']       ?? '-';
 
 $status          = (string)($result['status'] ?? '-');
@@ -180,7 +180,7 @@ $flashError   = session()->getFlashdata('error');
     </h4>
     <div class="text-muted">
       <i class="fas fa-user-graduate me-1"></i><?= h($studentName) ?>
-      <span class="mx-2">•</span>NIS: <?= h($nis) ?>
+      <span class="mx-2">•</span>NISN: <?= h($NISN) ?>
       <span class="mx-2">•</span>NISN: <?= h($nisn) ?>
       <span class="mx-2">•</span>Kelas: <?= h($className) ?>
     </div>

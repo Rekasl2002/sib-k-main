@@ -137,8 +137,8 @@ $statusOptions = ['Aktif','Alumni','Pindah','Keluar'];
                                 <td class="text-end"><code><?= $s('nisn') ?></code></td>
                             </tr>
                             <tr>
-                                <td class="text-muted">NIS</td>
-                                <td class="text-end"><code><?= $s('nis') ?></code></td>
+                                <td class="text-muted">NIK</td>
+                                <td class="text-end"><code><?= $s('nik') ?></code></td>
                             </tr>
                             <tr>
                                 <td class="text-muted">Poin Pelanggaran</td>
@@ -249,7 +249,7 @@ $statusOptions = ['Aktif','Alumni','Pindah','Keluar'];
                     <!-- Info: read-only fields -->
                     <div class="alert alert-warning" role="alert">
                         <i class="mdi mdi-alert-outline me-2"></i>
-                        <strong>Perhatian:</strong> Data lain seperti NIS/NISN, kelas, akun pengguna (username/email), dan data pribadi lain
+                        <strong>Perhatian:</strong> Data lain seperti NISN/NIK, kelas, akun pengguna (username/email), dan data pribadi lain
                         bersifat <strong>read-only</strong> untuk Guru BK. Hubungi Admin bila perlu perubahan.
                     </div>
 

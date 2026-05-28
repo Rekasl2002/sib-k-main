@@ -32,12 +32,12 @@ if (!empty($row['subject_student_id'])) {
     $row['subject_student_class_name'] ??
     ''
   ));
-  $nis   = trim((string)($row['subject_student_nis'] ?? ''));
+  $NISN   = trim((string)($row['subject_student_nisn'] ?? ''));
 
   $parts = [];
   if ($name !== '')  $parts[] = $name;
   if ($class !== '') $parts[] = $class;
-  if ($nis !== '')   $parts[] = 'NIS ' . $nis;
+  if ($NISN !== '')   $parts[] = 'NISN ' . $NISN;
 
   $subject = $parts ? implode(' • ', $parts) : '-';
 } else {

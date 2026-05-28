@@ -78,12 +78,18 @@ if (!function_exists('pdf_fmt_time')) {
     <table class="meta-table">
       <tr><th>Nama Lengkap</th><td><?= esc($student['full_name'] ?? '-') ?></td></tr>
       <tr>
-        <th>NIS / NISN</th>
+        <th>NIK / NISN</th>
         <td>
-          <?= esc($student['nis'] ?? '-') ?>
-          <?php if (!empty($student['nisn'])): ?> / <?= esc($student['nisn']) ?><?php endif; ?>
+          <?= esc(($student['nik'] ?? '-') . ' / ' . ($student['nisn'] ?? '-')) ?>
         </td>
       </tr>
+      <tr><th>Umur</th><td><?= esc(student_age_text($student['birth_date'] ?? null)) ?></td></tr>
+      <tr><th>Kebutuhan Khusus</th><td><?= esc($student['special_needs'] ?? '-') ?></td></tr>
+      <tr><th>Disabilitas</th><td><?= esc($student['disability'] ?? '-') ?></td></tr>
+      <tr><th>Nomor KIP/PIP</th><td><?= esc($student['kip_pip_number'] ?? '-') ?></td></tr>
+      <tr><th>Nama Ayah Kandung</th><td><?= esc($student['father_name'] ?? '-') ?></td></tr>
+      <tr><th>Nama Ibu Kandung</th><td><?= esc($student['mother_name'] ?? '-') ?></td></tr>
+      <tr><th>Nama Wali</th><td><?= esc($student['guardian_name'] ?? '-') ?></td></tr>
       <tr><th>Kelas</th><td><?= esc($student['class_name'] ?? '-') ?></td></tr>
       <tr>
         <th>Tingkat / Jurusan</th>

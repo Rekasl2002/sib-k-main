@@ -20,6 +20,9 @@
                 <?= date('Y') ?> ©
                 <?= setting('app_name', env('app.appName'), 'general') ?>
                 <?= setting('school_name', env('school.name'), 'general') ?>
+                <?php if (defined('ENVIRONMENT') && ENVIRONMENT === 'development'): ?>
+                    <span class="ms-2 text-warning fw-semibold">Aplikasi dalam Tahap Pembuatan/Pengembangan</span>
+                <?php endif; ?>
             </div>
             <div class="col-sm-6">
                 <div class="text-sm-end d-none d-sm-block">

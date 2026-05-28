@@ -272,7 +272,7 @@ $attendanceOptions = ['Hadir', 'Izin', 'Sakit', 'Tidak Hadir'];
                                     <thead>
                                         <tr>
                                             <th style="width: 48px;">#</th>
-                                            <th>NIS/NISN</th>
+                                            <th>NISN</th>
                                             <th>Nama</th>
                                             <th>Kehadiran</th>
                                             <th>Catatan Partisipasi</th>
@@ -282,8 +282,8 @@ $attendanceOptions = ['Hadir', 'Izin', 'Sakit', 'Tidak Hadir'];
                                     <tbody>
                                         <?php $i = 1; foreach ((array) $participants as $p): ?>
                                             <?php
-                                                // Fallback aman untuk kolom nama & NIS
-                                                $pNis   = $p['nis']  ?? ($p['nisn'] ?? '');
+                                                // Fallback aman untuk kolom nama & NISN
+                                                $pNis   = $p['nisn']  ?? '';
                                                 $pName  = $p['student_name'] ?? ($p['name'] ?? 'Tanpa Nama');
                                                 $pNote  = $p['participation_note'] ?? '';
                                                 $partId = (int)($p['participant_id'] ?? 0);

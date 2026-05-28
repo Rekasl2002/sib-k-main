@@ -12,8 +12,8 @@
  * - File Excel tetap punya kolom "Nama Lengkap" untuk mengisi users.full_name (bukan students.full_name).
  *
  * Update (2026-01-30):
- * - Header jadi fleksibel: bisa pakai Template A–Q atau file sekolah (kolom berbeda/kurang).
- * - Auto-fill: NIS dari NISN, email siswa/orangtua dari NISN, gender "Laki-Laki/Perempuan" -> L/P.
+ * - Header jadi fleksibel: bisa pakai template lama A-Q atau format EMIS sekolah.
+ * - Email siswa/orang tua opsional; username siswa dari NISN; gender "Laki-Laki/Perempuan" -> L/P.
  * - Mapping parent_name dari (Nama Wali -> Nama Ibu Kandung -> Nama Ayah Kandung).
  */
 
@@ -27,6 +27,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Cell\DataValidation;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 use App\Models\UserModel;
 use App\Models\StudentModel;
@@ -53,10 +54,10 @@ class ExcelImporter
      * Penanda nilai yang sudah muncul dalam 1 file import
      * untuk deteksi duplikat di dalam file itu sendiri.
      *
-     * @var array<string,int>
+     * @var array<string,string>
      */
     protected array $seenNisn   = [];
-    protected array $seenNis    = [];
+    protected array $seenNik    = [];
     protected array $seenEmails = [];
 
     /**
@@ -80,9 +81,9 @@ class ExcelImporter
      * Options:
      * - sheet_name: string (optional) pilih sheet tertentu
      * - sheet_index: int (optional) pilih sheet by index (0-based)
-     * - strict_headers: bool (default false) kalau true, wajib template A1..Q1 persis
-     * - default_email_domain: string (default "gmail.com")
+     * - strict_headers: bool (default false) kalau true, wajib format EMIS sekolah
      * - default_admission_date: string (default today Y-m-d)
+     * - auto_create_classes: bool (default true) buat kelas rombel jika belum ada
      *
      * @param string $filePath Path to Excel file
      * @param array  $options  Import options
@@ -93,34 +94,11 @@ class ExcelImporter
     {
         $this->resetResults();
         $this->seenNisn   = [];
-        $this->seenNis    = [];
+        $this->seenNik    = [];
         $this->seenEmails = [];
         $this->headerMap  = [];
 
         $spreadsheet = IOFactory::load($filePath);
-
-        // Pilih sheet (kalau file sekolah punya banyak sheet: Kelas 10 - A/B/C)
-        if (!empty($options['sheet_name'])) {
-            $worksheet = $spreadsheet->getSheetByName((string) $options['sheet_name']);
-            if (!$worksheet) {
-                throw new \Exception('Sheet "' . $options['sheet_name'] . '" tidak ditemukan pada file Excel.');
-            }
-        } elseif (isset($options['sheet_index'])) {
-            $idx = (int) $options['sheet_index'];
-            $worksheet = $spreadsheet->getSheet($idx);
-            if (!$worksheet) {
-                throw new \Exception('Sheet index ' . $idx . ' tidak valid pada file Excel.');
-            }
-        } else {
-            $worksheet = $spreadsheet->getActiveSheet();
-        }
-
-        $highestRow = $worksheet->getHighestRow();
-
-        // Validate / build header map
-        if (!$this->validateHeaders($worksheet, $options)) {
-            throw new \Exception('Header Excel tidak dikenali. Pastikan ada minimal: NISN/NIS, Nama, Tanggal Lahir, Jenis Kelamin.');
-        }
 
         $studentRole = $this->roleModel->where('role_name', 'Siswa')->first();
         if (!$studentRole) {
@@ -130,13 +108,71 @@ class ExcelImporter
         $parentRole = $this->roleModel->where('role_name', 'Orang Tua')->first();
         $parentRoleId = $parentRole ? (int) $parentRole['id'] : null;
 
+        $worksheets = $this->resolveWorksheets($spreadsheet, $options);
+        $validSheetCount = 0;
+
+        foreach ($worksheets as $worksheet) {
+            $this->headerMap = [];
+
+            if (!$this->validateHeaders($worksheet, $options)) {
+                $this->results['warnings'][] = 'Sheet "' . $worksheet->getTitle() . '" dilewati karena header tidak dikenali.';
+                continue;
+            }
+
+            $validSheetCount++;
+            $this->importWorksheet($worksheet, $options, (int) $studentRole['id'], $parentRoleId);
+        }
+
+        if ($validSheetCount === 0) {
+            throw new \Exception('Header Excel tidak dikenali. Pastikan ada minimal: NISN, Nama, Tanggal Lahir, Jenis Kelamin.');
+        }
+
+        return $this->results;
+    }
+
+    /**
+     * @return list<Worksheet>
+     */
+    protected function resolveWorksheets(Spreadsheet $spreadsheet, array $options): array
+    {
+        if (!empty($options['sheet_name'])) {
+            $worksheet = $spreadsheet->getSheetByName((string) $options['sheet_name']);
+            if (!$worksheet) {
+                throw new \Exception('Sheet "' . $options['sheet_name'] . '" tidak ditemukan pada file Excel.');
+            }
+
+            return [$worksheet];
+        }
+
+        if (isset($options['sheet_index'])) {
+            $idx = (int) $options['sheet_index'];
+            if ($idx < 0 || $idx >= $spreadsheet->getSheetCount()) {
+                throw new \Exception('Sheet index ' . $idx . ' tidak valid pada file Excel.');
+            }
+
+            return [$spreadsheet->getSheet($idx)];
+        }
+
+        $worksheets = [];
+        foreach ($spreadsheet->getWorksheetIterator() as $worksheet) {
+            $worksheets[] = $worksheet;
+        }
+
+        return $worksheets;
+    }
+
+    protected function importWorksheet(Worksheet $worksheet, array $options, int $studentRoleId, ?int $parentRoleId): void
+    {
+        $highestRow = (int) $worksheet->getHighestRow();
+
         for ($row = 2; $row <= $highestRow; $row++) {
             $this->results['total_rows']++;
 
             $this->db->transBegin();
 
             try {
-                $rowData = $this->extractRowData($worksheet, $row, $options);
+                $rowData  = $this->extractRowData($worksheet, $row, $options);
+                $rowLabel = $this->rowLabel($worksheet, $row);
 
                 if ($this->isEmptyRow($rowData)) {
                     $this->results['total_rows']--;
@@ -155,40 +191,40 @@ class ExcelImporter
                 $rowData['student_phone'] = $this->normalizePhone($rowData['student_phone']);
                 $rowData['parent_phone']  = $this->normalizePhone($rowData['parent_phone']);
 
-                // Deteksi duplikat di dalam file (NISN, NIS, Email siswa)
+                // Deteksi duplikat di dalam file (NISN, NIK, Email siswa jika ada)
                 $dupErrors = [];
 
                 if ($rowData['nisn'] !== '') {
                     if (isset($this->seenNisn[$rowData['nisn']])) {
                         $firstRow    = $this->seenNisn[$rowData['nisn']];
-                        $dupErrors[] = "NISN {$rowData['nisn']} duplikat di file (pertama di baris {$firstRow})";
+                        $dupErrors[] = "NISN {$rowData['nisn']} duplikat di file (pertama di {$firstRow})";
                     } else {
-                        $this->seenNisn[$rowData['nisn']] = $row;
+                        $this->seenNisn[$rowData['nisn']] = $rowLabel;
                     }
                 }
 
-                if ($rowData['nis'] !== '') {
-                    if (isset($this->seenNis[$rowData['nis']])) {
-                        $firstRow    = $this->seenNis[$rowData['nis']];
-                        $dupErrors[] = "NIS {$rowData['nis']} duplikat di file (pertama di baris {$firstRow})";
+                if ($rowData['nik'] !== '') {
+                    if (isset($this->seenNik[$rowData['nik']])) {
+                        $firstRow    = $this->seenNik[$rowData['nik']];
+                        $dupErrors[] = "NIK {$rowData['nik']} duplikat di file (pertama di {$firstRow})";
                     } else {
-                        $this->seenNis[$rowData['nis']] = $row;
+                        $this->seenNik[$rowData['nik']] = $rowLabel;
                     }
                 }
 
                 if ($rowData['email'] !== '') {
                     if (isset($this->seenEmails[$rowData['email']])) {
                         $firstRow    = $this->seenEmails[$rowData['email']];
-                        $dupErrors[] = "Email siswa {$rowData['email']} duplikat di file (pertama di baris {$firstRow})";
+                        $dupErrors[] = "Email siswa {$rowData['email']} duplikat di file (pertama di {$firstRow})";
                     } else {
-                        $this->seenEmails[$rowData['email']] = $row;
+                        $this->seenEmails[$rowData['email']] = $rowLabel;
                     }
                 }
 
                 if (!empty($dupErrors)) {
                     $this->db->transRollback();
                     $this->results['failed']++;
-                    $this->results['errors'][] = "Baris {$row}: " . implode(', ', $dupErrors);
+                    $this->results['errors'][] = "{$rowLabel}: " . implode(', ', $dupErrors);
                     continue;
                 }
 
@@ -197,16 +233,11 @@ class ExcelImporter
                 if (!$validation['valid']) {
                     $this->db->transRollback();
                     $this->results['failed']++;
-                    $this->results['errors'][] = "Baris {$row}: " . implode(', ', $validation['errors']);
+                    $this->results['errors'][] = "{$rowLabel}: " . implode(', ', $validation['errors']);
                     continue;
                 }
 
-                $this->processStudentImport(
-                    $rowData,
-                    (int) $studentRole['id'],
-                    $parentRoleId,
-                    $row
-                );
+                $this->processStudentImport($rowData, $studentRoleId, $parentRoleId, $row);
 
                 if ($this->db->transStatus() === false) {
                     $this->db->transRollback();
@@ -218,16 +249,19 @@ class ExcelImporter
             } catch (\Exception $e) {
                 $this->db->transRollback();
                 $this->results['failed']++;
-                $this->results['errors'][] = "Baris {$row}: " . $e->getMessage();
+                $this->results['errors'][] = $this->rowLabel($worksheet, $row) . ': ' . $e->getMessage();
             }
         }
+    }
 
-        return $this->results;
+    protected function rowLabel(Worksheet $worksheet, int $row): string
+    {
+        return 'Sheet "' . $worksheet->getTitle() . '" baris ' . $row;
     }
 
     /**
      * Validate Excel headers (flexible)
-     * - strict_headers=true: wajib template A1..Q1 persis
+     * - strict_headers=true: wajib template EMIS aplikasi atau format EMIS sekolah lama
      * - default: build headerMap dan cek minimal kolom penting
      */
     protected function validateHeaders(Worksheet $worksheet, array $options = []): bool
@@ -235,31 +269,63 @@ class ExcelImporter
         $strict = !empty($options['strict_headers']);
 
         if ($strict) {
-            $expectedHeaders = [
-                'A1' => 'NISN',
-                'B1' => 'NIS',
-                'C1' => 'Nama Lengkap',
-                'D1' => 'Email',
-                'E1' => 'Password',
-                'F1' => 'Jenis Kelamin',
-                'G1' => 'Tempat Lahir',
-                'H1' => 'Tanggal Lahir',
-                'I1' => 'Agama',
+            $expectedHeaderSets = [[
+                'A1' => 'No',
+                'B1' => 'Nama Lengkap',
+                'C1' => 'NISN',
+                'D1' => 'NIK',
+                'E1' => 'Tempat Lahir',
+                'F1' => 'Tanggal Lahir',
+                'G1' => 'Tingkat - Rombel',
+                'H1' => 'Status',
+                'I1' => 'Jenis Kelamin',
                 'J1' => 'Alamat',
-                'K1' => 'Kelas',
-                'L1' => 'Tanggal Masuk',
-                'M1' => 'Status',
-                'N1' => 'Nama Orang Tua',
-                'O1' => 'Email Orang Tua',
-                'P1' => 'No. HP Siswa',
-                'Q1' => 'No. HP Orang Tua',
-            ];
+                'K1' => 'No Telepon',
+                'L1' => 'Kebutuhan Khusus',
+                'M1' => 'Disabilitas',
+                'N1' => 'Nomor KIP/PIP',
+                'O1' => 'Nama Ayah Kandung',
+                'P1' => 'Nama Ibu Kandung',
+                'Q1' => 'Nama Wali',
+            ], [
+                'A1' => 'No',
+                'B1' => 'Nama Lengkap',
+                'C1' => 'NISN',
+                'D1' => 'NIK',
+                'E1' => 'Tempat Lahir',
+                'F1' => 'Tanggal Lahir',
+                'G1' => 'Tingkat - Rombel',
+                'H1' => 'Umur',
+                'I1' => 'Status',
+                'J1' => 'Jenis Kelamin',
+                'K1' => 'Alamat',
+                'L1' => 'No Telepon',
+                'M1' => 'Kebutuhan Khusus',
+                'N1' => 'Disabilitas',
+                'O1' => 'Nomor KIP/PIP',
+                'P1' => 'Nama Ayah Kandung',
+                'Q1' => 'Nama Ibu Kandung',
+                'R1' => 'Nama Wali',
+            ]];
 
-            foreach ($expectedHeaders as $cell => $expectedValue) {
-                $actualValue = trim((string) $worksheet->getCell($cell)->getValue());
-                if (strcasecmp($actualValue, $expectedValue) !== 0) {
-                    return false;
+            $matches = false;
+            foreach ($expectedHeaderSets as $expectedHeaders) {
+                $matches = true;
+                foreach ($expectedHeaders as $cell => $expectedValue) {
+                    $actualValue = trim((string) $worksheet->getCell($cell)->getValue());
+                    if (strcasecmp($actualValue, $expectedValue) !== 0) {
+                        $matches = false;
+                        break;
+                    }
                 }
+
+                if ($matches) {
+                    break;
+                }
+            }
+
+            if (!$matches) {
+                return false;
             }
 
             // Build headerMap juga supaya extract fleksibel tetap jalan
@@ -270,7 +336,7 @@ class ExcelImporter
         $this->headerMap = $this->buildHeaderMap($worksheet);
 
         // Minimal required (biar bisa auto-generate field lain)
-        $hasId = $this->hasAnyHeader(['NISN', 'NIS', 'NOMOR INDUK', 'NOMOR INDUK SISWA', 'NOMOR INDUK NASIONAL']);
+        $hasId = $this->hasAnyHeader(['NISN', 'NOMOR INDUK NASIONAL']);
         $hasName = $this->hasAnyHeader(['NAMA LENGKAP', 'NAMA', 'NAMA SISWA']);
         $hasBirthDate = $this->hasAnyHeader(['TANGGAL LAHIR', 'TGL LAHIR', 'LAHIR', 'DATE OF BIRTH']);
         $hasGender = $this->hasAnyHeader(['JENIS KELAMIN', 'JK', 'GENDER']);
@@ -348,8 +414,8 @@ class ExcelImporter
         $nisnRaw = $this->getCellByHeaderCandidates($worksheet, $row, [
             'NISN', 'Nomor Induk Nasional', 'Nomor Induk',
         ]);
-        $nisRaw = $this->getCellByHeaderCandidates($worksheet, $row, [
-            'NIS', 'Nomor Induk Siswa',
+        $nikRaw = $this->getCellByHeaderCandidates($worksheet, $row, [
+            'NIK', 'Nomor Induk Kependudukan',
         ]);
 
         // Nama
@@ -378,6 +444,16 @@ class ExcelImporter
         // Alamat
         $addressRaw = $this->getCellByHeaderCandidates($worksheet, $row, [
             'Alamat', 'Alamat Lengkap',
+        ]);
+
+        $specialNeedsRaw = $this->getCellByHeaderCandidates($worksheet, $row, [
+            'Kebutuhan Khusus',
+        ]);
+        $disabilityRaw = $this->getCellByHeaderCandidates($worksheet, $row, [
+            'Disabilitas',
+        ]);
+        $kipPipRaw = $this->getCellByHeaderCandidates($worksheet, $row, [
+            'Nomor KIP/PIP', 'No KIP/PIP', 'Nomor KIP', 'Nomor PIP',
         ]);
 
         // Telepon (sekolah biasanya cuma 1 kolom "No Telepon")
@@ -433,7 +509,7 @@ class ExcelImporter
 
         return [
             'nisn'           => $this->normalizeNumericString($nisnRaw),
-            'nis'            => $this->normalizeNumericString($nisRaw),
+            'nik'            => $this->normalizeNumericString($nikRaw),
             'full_name'      => trim((string) $nameRaw),
             'email'          => trim((string) $emailRaw),
             'password'       => trim((string) $passwordRaw),
@@ -442,6 +518,12 @@ class ExcelImporter
             'birth_date'     => $this->parseDate($birthDateRaw),
             'religion'       => trim((string) $religionRaw),
             'address'        => trim((string) $addressRaw),
+            'special_needs'  => trim((string) $specialNeedsRaw),
+            'disability'     => trim((string) $disabilityRaw),
+            'kip_pip_number' => $this->normalizeNumericString($kipPipRaw),
+            'father_name'    => trim((string) $ayah),
+            'mother_name'    => trim((string) $ibu),
+            'guardian_name'  => trim((string) $wali),
             'class_name'     => trim((string) $classRaw),
             'admission_date' => $this->parseDate($admissionRaw),
             'status'         => $statusNorm,
@@ -497,23 +579,19 @@ class ExcelImporter
      */
     protected function applyDefaultsAndNormalize(array &$rowData, int $rowNumber, array $options = []): void
     {
-        $domain = !empty($options['default_email_domain']) ? (string) $options['default_email_domain'] : 'gmail.com';
-        $defaultAdmission = !empty($options['default_admission_date']) ? (string) $options['default_admission_date'] : date('Y-m-d');
+        $defaultAdmission = !empty($options['default_admission_date'])
+            ? (string) $options['default_admission_date']
+            : $this->getDefaultAdmissionDate();
 
-        // 1) Normalisasi NISN / NIS (pad NISN supaya 10 digit kalau hilang nol depan)
+        // 1) Normalisasi NISN / NIK (pad NISN supaya 10 digit kalau hilang nol depan)
         $rowData['nisn'] = $this->normalizeIdDigits($rowData['nisn'], 10);
-        $rowData['nis']  = $this->normalizeIdDigits($rowData['nis'], 0);
-
-        // Jika NIS kosong -> pakai NISN (sesuai permintaan)
-        if ($rowData['nis'] === '' && $rowData['nisn'] !== '') {
-            $rowData['nis'] = $rowData['nisn'];
-        }
+        $rowData['nik']  = $this->normalizeIdDigits($rowData['nik'], 0);
 
         // 2) Gender: bisa "L", "P", "Laki-Laki", "Perempuan", dll
         $rowData['gender'] = $this->normalizeGenderValue($rowData['gender']);
 
         // 3) Status normalisasi ulang (biar aman)
-        $rowData['status'] = $rowData['status'] !== '' ? ucwords(strtolower($rowData['status'])) : 'Aktif';
+        $rowData['status'] = $this->normalizeStatusValue($rowData['status']);
 
         // 4) Admission date default jika kosong
         if (empty($rowData['admission_date'])) {
@@ -533,15 +611,14 @@ class ExcelImporter
             $rowData['_raw_parent_phone'] = $rawStudentPhone;
         }
 
-        // 6) Default email siswa/orangtua jika kosong
-        $baseId = $rowData['nisn'] !== '' ? $rowData['nisn'] : $rowData['nis'];
+        // 6) Email siswa/orangtua opsional. Jika ada, rapikan ke lowercase.
+        $baseId = $rowData['nisn'];
 
-        if ($rowData['email'] === '' && $baseId !== '') {
-            $rowData['email'] = $this->generateUniqueEmail($baseId . 'siswa', $domain, $rowNumber);
-        }
+        $rowData['email'] = $this->normalizeEmail($rowData['email']);
+        $rowData['parent_email'] = $this->normalizeEmail($rowData['parent_email']);
 
         // Parent name: kalau kosong, jangan dipaksa bikin akun parent
-        // Tapi kalau ada phone / ada nama, kita buat email default (sesuai permintaan)
+        // Tapi kalau ada phone / ada nama, kita buat nama akun parent tanpa memaksa email.
         $hasParentSignal = ($rowData['parent_name'] !== '')
             || (($rowData['_raw_parent_phone'] ?? '') !== '')
             || ($rowData['parent_phone'] !== '');
@@ -552,18 +629,15 @@ class ExcelImporter
             $this->results['warnings'][] = "Baris {$rowNumber}: Nama orang tua kosong, dibuat otomatis: {$rowData['parent_name']}";
         }
 
-        if ($hasParentSignal && $rowData['parent_email'] === '' && $baseId !== '') {
-            $rowData['parent_email'] = $this->generateUniqueEmail($baseId . 'orangtua', $domain, $rowNumber);
+        // Pastikan email parent tidak sama dengan email siswa jika dua-duanya diisi.
+        if ($rowData['email'] !== '' && $rowData['parent_email'] !== '' && $rowData['parent_email'] === $rowData['email']) {
+            $this->results['warnings'][] = "Baris {$rowNumber}: Email orang tua sama dengan email siswa, email orang tua dikosongkan.";
+            $rowData['parent_email'] = '';
         }
 
-        // Pastikan email parent tidak sama dengan email siswa
-        if ($rowData['parent_email'] !== '' && $rowData['parent_email'] === $rowData['email']) {
-            $rowData['parent_email'] = $this->generateUniqueEmail($baseId . 'orangtua' . $rowNumber, $domain, $rowNumber);
-        }
-
-        // 7) Class: jika ada tapi tidak ditemukan, jangan gagalkan import
+        // 7) Class: jika ada tapi tidak ditemukan, buat otomatis sesuai rombel sekolah.
         if (!empty($rowData['class_name'])) {
-            $resolved = $this->resolveClassNameIfExists($rowData['class_name']);
+            $resolved = $this->ensureClassExists($rowData['class_name'], $rowNumber, $options);
             if ($resolved === null) {
                 $this->results['warnings'][] = "Baris {$rowNumber}: Kelas '{$rowData['class_name']}' tidak ditemukan di DB, class_id dikosongkan (null).";
                 $rowData['class_name'] = '';
@@ -633,38 +707,171 @@ class ExcelImporter
         return '';
     }
 
-    protected function generateUniqueEmail(string $localPartBase, string $domain, int $rowNumber): string
+    protected function normalizeEmail(?string $value): string
     {
-        // bersihkan local part
-        $local = strtolower(trim($localPartBase));
-        $local = preg_replace('/[^a-z0-9]+/', '', $local);
-        if ($local === '') {
-            $local = 'user' . $rowNumber;
+        return strtolower(trim((string) ($value ?? '')));
+    }
+
+    protected function normalizeStatusValue(string $value): string
+    {
+        $v = strtolower(trim($value));
+        $v = preg_replace('/\s+/', ' ', (string) $v);
+
+        if ($v === '') {
+            return 'Aktif';
         }
 
-        $candidate = $local . '@' . $domain;
+        $map = [
+            'aktif'       => 'Aktif',
+            'alumni'      => 'Alumni',
+            'lulus'       => 'Alumni',
+            'pindah'      => 'Pindah',
+            'keluar'      => 'Keluar',
+            'nonaktif'    => 'Tidak Aktif',
+            'non aktif'   => 'Tidak Aktif',
+            'tidak aktif' => 'Tidak Aktif',
+        ];
 
-        // Hindari duplikat di file & DB
-        for ($i = 0; $i < 30; $i++) {
-            $try = $candidate;
-            if ($i > 0) {
-                $try = $local . $rowNumber . $i . '@' . $domain;
-            }
+        return $map[$v] ?? ucwords($v);
+    }
 
-            if (isset($this->seenEmails[$try])) {
-                continue;
-            }
+    protected function getDefaultAdmissionDate(): string
+    {
+        $activeYear = $this->db->table('academic_years')
+            ->select('start_date')
+            ->where('deleted_at', null)
+            ->where('is_active', 1)
+            ->orderBy('start_date', 'DESC')
+            ->get(1)
+            ->getRowArray();
 
-            $exists = $this->userModel->withDeleted()->where('email', $try)->first();
-            if ($exists) {
-                continue;
-            }
-
-            return $try;
+        if (!empty($activeYear['start_date'])) {
+            return (string) $activeYear['start_date'];
         }
 
-        // fallback keras
-        return $local . $rowNumber . uniqid() . '@' . $domain;
+        return date('Y-m-d');
+    }
+
+    protected function ensureClassExists(string $classInput, int $rowNumber, array $options = []): ?string
+    {
+        $input = trim($classInput);
+        if ($input === '') {
+            return null;
+        }
+
+        $resolved = $this->resolveClassNameIfExists($input);
+        if ($resolved !== null) {
+            return $resolved;
+        }
+
+        $autoCreate = !array_key_exists('auto_create_classes', $options) || (bool) $options['auto_create_classes'];
+        if (!$autoCreate) {
+            return null;
+        }
+
+        $academicYearId = $this->resolveAcademicYearId($options);
+        if ($academicYearId === null) {
+            $this->results['warnings'][] = "Baris {$rowNumber}: Kelas '{$input}' tidak dibuat karena tahun ajaran aktif tidak ditemukan.";
+            return null;
+        }
+
+        $gradeLevel = $this->inferGradeLevel($input);
+        if ($gradeLevel === null) {
+            $this->results['warnings'][] = "Baris {$rowNumber}: Kelas '{$input}' tidak dibuat karena tingkat kelas tidak bisa dibaca.";
+            return null;
+        }
+
+        $major = $this->inferMajor($input);
+        $now = date('Y-m-d H:i:s');
+
+        $payload = [
+            'academic_year_id' => $academicYearId,
+            'class_name'       => $input,
+            'grade_level'      => $gradeLevel,
+            'major'            => $major,
+            'max_students'     => 50,
+            'is_active'        => 1,
+            'created_at'       => $now,
+            'updated_at'       => $now,
+        ];
+
+        if (!$this->classModel->insert($payload)) {
+            $this->results['warnings'][] = "Baris {$rowNumber}: Kelas '{$input}' gagal dibuat: " . implode(', ', $this->classModel->errors());
+            return null;
+        }
+
+        $this->results['warnings'][] = "Baris {$rowNumber}: Kelas '{$input}' dibuat otomatis dari file impor.";
+        return $input;
+    }
+
+    protected function resolveAcademicYearId(array $options = []): ?int
+    {
+        if (!empty($options['academic_year_id'])) {
+            $row = $this->db->table('academic_years')
+                ->select('id')
+                ->where('id', (int) $options['academic_year_id'])
+                ->where('deleted_at', null)
+                ->get(1)
+                ->getRowArray();
+
+            if (!empty($row['id'])) {
+                return (int) $row['id'];
+            }
+        }
+
+        $row = $this->db->table('academic_years')
+            ->select('id')
+            ->where('deleted_at', null)
+            ->where('is_active', 1)
+            ->orderBy('start_date', 'DESC')
+            ->get(1)
+            ->getRowArray();
+
+        if (!empty($row['id'])) {
+            return (int) $row['id'];
+        }
+
+        $row = $this->db->table('academic_years')
+            ->select('id')
+            ->where('deleted_at', null)
+            ->orderBy('start_date', 'DESC')
+            ->get(1)
+            ->getRowArray();
+
+        return !empty($row['id']) ? (int) $row['id'] : null;
+    }
+
+    protected function inferGradeLevel(string $classInput): ?string
+    {
+        $input = strtoupper(trim($classInput));
+
+        if (preg_match('/KELAS\s*(\d{1,2})\b/', $input, $m)) {
+            $grade = (int) $m[1];
+            return $this->toRomanGrade($grade) ?? (string) $grade;
+        }
+
+        if (preg_match('/\b(7|8|9|10|11|12)\b/', $input, $m)) {
+            $grade = (int) $m[1];
+            return $this->toRomanGrade($grade) ?? (string) $grade;
+        }
+
+        if (preg_match('/\b(XII|XI|X)\b/', $input, $m)) {
+            return $m[1];
+        }
+
+        return null;
+    }
+
+    protected function inferMajor(string $classInput): ?string
+    {
+        $input = strtoupper($classInput);
+        foreach (['IPA', 'IPS', 'MIPA', 'BAHASA', 'AGAMA'] as $major) {
+            if (strpos($input, $major) !== false) {
+                return $major;
+            }
+        }
+
+        return null;
     }
 
     protected function resolveClassNameIfExists(string $classInput): ?string
@@ -724,8 +931,9 @@ class ExcelImporter
             }
         }
 
-        // Kalau score sangat rendah, anggap tidak ketemu
-        if ($best !== null && $bestScore >= 25) {
+        // Kalau score rendah, anggap tidak ketemu agar "Kelas 11 - A"
+        // tidak keliru masuk ke kelas lama seperti "XI-IPA-1".
+        if ($best !== null && $bestScore >= 40) {
             return $best;
         }
 
@@ -876,7 +1084,7 @@ class ExcelImporter
 
     protected function isEmptyRow(array $rowData): bool
     {
-        return empty($rowData['nisn']) && empty($rowData['nis']) && empty($rowData['full_name']);
+        return empty($rowData['nisn']) && empty($rowData['nik']) && empty($rowData['full_name']);
     }
 
     /**
@@ -893,23 +1101,19 @@ class ExcelImporter
         // Required fields
         if (empty($rowData['nisn'])) {
             $errors[] = 'NISN tidak boleh kosong';
-        } elseif (strlen($rowData['nisn']) < 10 || !ctype_digit($rowData['nisn'])) {
-            $errors[] = 'NISN minimal 10 digit angka';
+        } elseif (strlen($rowData['nisn']) !== 10 || !ctype_digit($rowData['nisn'])) {
+            $errors[] = 'NISN harus tepat 10 digit angka';
         }
 
-        if (empty($rowData['nis'])) {
-            $errors[] = 'NIS tidak boleh kosong';
-        } elseif (strlen($rowData['nis']) < 5) {
-            $errors[] = 'NIS minimal 5 karakter';
+        if (!empty($rowData['nik']) && (strlen($rowData['nik']) !== 16 || !ctype_digit($rowData['nik']))) {
+            $errors[] = 'NIK harus tepat 16 digit angka jika diisi';
         }
 
         if (empty($rowData['full_name'])) {
             $errors[] = 'Nama lengkap tidak boleh kosong';
         }
 
-        if (empty($rowData['email'])) {
-            $errors[] = 'Email tidak boleh kosong';
-        } elseif (!filter_var($rowData['email'], FILTER_VALIDATE_EMAIL)) {
+        if (!empty($rowData['email']) && !filter_var($rowData['email'], FILTER_VALIDATE_EMAIL)) {
             $errors[] = 'Format email tidak valid';
         }
 
@@ -921,11 +1125,9 @@ class ExcelImporter
             $errors[] = 'Tanggal masuk tidak boleh kosong atau formatnya tidak dikenali.';
         }
 
-        // Student phone: wajib
+        // Student phone: opsional, tapi jika ada harus valid.
         $rawStudentPhone = $rowData['_raw_student_phone'] ?? '';
-        if ($rawStudentPhone === '') {
-            $errors[] = 'No. HP siswa tidak boleh kosong';
-        } elseif ($rowData['student_phone'] === null) {
+        if ($rawStudentPhone !== '' && $rowData['student_phone'] === null) {
             $errors[] = 'Format No. HP siswa tidak valid. Gunakan hanya angka, boleh diawali +62.';
         } elseif (strlen($rowData['student_phone']) > 15) {
             $errors[] = 'No. HP siswa maksimal 15 karakter';
@@ -942,15 +1144,11 @@ class ExcelImporter
             if (empty($rowData['parent_name'])) {
                 $errors[] = 'Nama orang tua tidak boleh kosong jika data orang tua diisi';
             }
-            if (empty($rowData['parent_email'])) {
-                $errors[] = 'Email orang tua tidak boleh kosong jika data orang tua diisi';
-            } elseif (!filter_var($rowData['parent_email'], FILTER_VALIDATE_EMAIL)) {
+            if (!empty($rowData['parent_email']) && !filter_var($rowData['parent_email'], FILTER_VALIDATE_EMAIL)) {
                 $errors[] = 'Format email orang tua tidak valid';
             }
 
-            if ($rawParentPhone === '' && empty($rowData['parent_phone'])) {
-                $errors[] = 'No. HP orang tua tidak boleh kosong jika data orang tua diisi';
-            } elseif ($rowData['parent_phone'] === null) {
+            if ($rawParentPhone !== '' && $rowData['parent_phone'] === null) {
                 $errors[] = 'Format No. HP orang tua tidak valid. Gunakan hanya angka, boleh diawali +62.';
             } elseif (strlen($rowData['parent_phone']) > 15) {
                 $errors[] = 'No. HP orang tua maksimal 15 karakter';
@@ -963,7 +1161,7 @@ class ExcelImporter
         }
 
         // Status validation
-        $validStatus = ['Aktif', 'Alumni', 'Pindah', 'Keluar'];
+        $validStatus = ['Aktif', 'Alumni', 'Pindah', 'Keluar', 'Tidak Aktif'];
         if (!in_array($rowData['status'], $validStatus, true)) {
             $errors[] = 'Status harus salah satu dari: ' . implode(', ', $validStatus);
         }
@@ -978,23 +1176,26 @@ class ExcelImporter
             }
         }
 
-        // Check duplicate NIS di database (include soft deleted)
-        $existingNis = $this->studentModel->withDeleted()->where('nis', $rowData['nis'])->first();
-        if ($existingNis) {
-            if (!empty($existingNis['deleted_at'])) {
-                $errors[] = "NIS {$rowData['nis']} pernah ada (sudah dihapus). Pulihkan (restore) atau gunakan NIS lain.";
-            } else {
-                $errors[] = "NIS {$rowData['nis']} sudah terdaftar di database";
+        if (!empty($rowData['nik'])) {
+            $existingNik = $this->studentModel->withDeleted()->where('nik', $rowData['nik'])->first();
+            if ($existingNik) {
+                if (!empty($existingNik['deleted_at'])) {
+                    $errors[] = "NIK {$rowData['nik']} pernah ada (sudah dihapus). Pulihkan (restore) atau gunakan NIK lain.";
+                } else {
+                    $errors[] = "NIK {$rowData['nik']} sudah terdaftar di database";
+                }
             }
         }
 
         // Check duplicate email siswa di database (include soft deleted)
-        $existingEmail = $this->userModel->withDeleted()->where('email', $rowData['email'])->first();
-        if ($existingEmail) {
-            if (!empty($existingEmail['deleted_at'])) {
-                $errors[] = "Email {$rowData['email']} pernah dipakai (sudah dihapus). Pulihkan (restore) atau gunakan email lain.";
-            } else {
-                $errors[] = "Email {$rowData['email']} sudah terdaftar di database";
+        if (!empty($rowData['email'])) {
+            $existingEmail = $this->userModel->withDeleted()->where('email', $rowData['email'])->first();
+            if ($existingEmail) {
+                if (!empty($existingEmail['deleted_at'])) {
+                    $errors[] = "Email {$rowData['email']} pernah dipakai (sudah dihapus). Pulihkan (restore) atau gunakan email lain.";
+                } else {
+                    $errors[] = "Email {$rowData['email']} sudah terdaftar di database";
+                }
             }
         }
 
@@ -1012,6 +1213,54 @@ class ExcelImporter
         ];
     }
 
+    protected function findExistingParent(array $rowData): ?array
+    {
+        if (!empty($rowData['parent_email'])) {
+            return $this->userModel->withDeleted()
+                ->where('email', $rowData['parent_email'])
+                ->first();
+        }
+
+        if (!empty($rowData['parent_name']) && !empty($rowData['parent_phone'])) {
+            return $this->userModel->withDeleted()
+                ->where('full_name', $rowData['parent_name'])
+                ->where('phone', $rowData['parent_phone'])
+                ->first();
+        }
+
+        return null;
+    }
+
+    protected function generateUniqueUsername(string $base, string $fallback): string
+    {
+        $local = strtolower(trim($base));
+        $local = preg_replace('/[^a-z0-9._-]+/', '_', (string) $local);
+        $local = trim((string) $local, '._-');
+
+        if ($local === '') {
+            $local = strtolower(trim($fallback));
+            $local = preg_replace('/[^a-z0-9._-]+/', '_', (string) $local);
+            $local = trim((string) $local, '._-');
+        }
+
+        if ($local === '') {
+            $local = 'user';
+        }
+
+        $local = substr($local, 0, 90);
+        $candidate = $local;
+
+        for ($i = 0; $i < 100; $i++) {
+            $try = $i === 0 ? $candidate : substr($candidate, 0, 85) . '_' . $i;
+            $exists = $this->userModel->withDeleted()->where('username', $try)->first();
+            if (!$exists) {
+                return $try;
+            }
+        }
+
+        return substr($candidate, 0, 75) . '_' . uniqid();
+    }
+
     /**
      * Process student import
      */
@@ -1023,7 +1272,7 @@ class ExcelImporter
             $classId = $class ? (int) $class['id'] : null;
         }
 
-        $username = $rowData['nisn'];
+        $username = $this->generateUniqueUsername($rowData['nisn'] ?: $rowData['nik'] ?: ('siswa' . $rowNumber), 'siswa');
 
         // Build base password from birth date (DDMMYYYY) atau fallback
         $birthPassword = null;
@@ -1047,10 +1296,10 @@ class ExcelImporter
         $userData = [
             'role_id'   => $studentRoleId,
             'username'  => $username,
-            'email'     => $rowData['email'],
+            'email'     => $rowData['email'] !== '' ? $rowData['email'] : null,
             'password'  => $plainPassword,
             'full_name' => $rowData['full_name'],
-            'phone'     => $rowData['student_phone'],
+            'phone'     => $rowData['student_phone'] !== '' ? $rowData['student_phone'] : null,
             'is_active' => 1,
         ];
 
@@ -1062,14 +1311,14 @@ class ExcelImporter
 
         // Create parent account if parent info provided
         $parentId = null;
-        $hasParent = !empty($rowData['parent_name']) && !empty($rowData['parent_email']);
+        $hasParent = !empty($rowData['parent_name']) || !empty($rowData['parent_email']) || !empty($rowData['parent_phone']);
 
         if ($hasParent) {
-            $existingParent = $this->userModel->withDeleted()->where('email', $rowData['parent_email'])->first();
+            $existingParent = $this->findExistingParent($rowData);
 
             if ($existingParent) {
                 if (!empty($existingParent['deleted_at'])) {
-                    throw new \Exception("Email orang tua {$rowData['parent_email']} pernah dipakai (sudah dihapus). Pulihkan (restore) atau gunakan email lain.");
+                    throw new \Exception('Akun orang tua pernah dipakai (sudah dihapus). Pulihkan (restore) atau gunakan data orang tua lain.');
                 }
 
                 $parentId = (int) $existingParent['id'];
@@ -1080,19 +1329,20 @@ class ExcelImporter
                     ]);
                 }
 
-                $this->results['warnings'][] = "Baris {$rowNumber}: Email orang tua sudah terdaftar, menggunakan akun yang ada.";
+                $this->results['warnings'][] = "Baris {$rowNumber}: Akun orang tua sudah terdaftar, menggunakan akun yang ada.";
             } else {
                 if ($parentRoleId === null) {
                     $this->results['warnings'][] = "Baris {$rowNumber}: Role 'Orang Tua' tidak ditemukan, akun orang tua tidak dibuat. Data parent di student dibiarkan kosong.";
                     $parentId = null;
                 } else {
+                    $parentUsernameBase = $rowData['parent_name'] . '_' . substr((string) $rowData['nisn'], -4);
                     $parentData = [
                         'role_id'   => $parentRoleId,
-                        'username'  => strtolower(str_replace(' ', '_', $rowData['parent_name'])) . '_' . substr((string) $rowData['nisn'], -4),
-                        'email'     => $rowData['parent_email'],
+                        'username'  => $this->generateUniqueUsername($parentUsernameBase, 'ortu' . $rowNumber),
+                        'email'     => $rowData['parent_email'] !== '' ? $rowData['parent_email'] : null,
                         'password'  => $plainPassword,
                         'full_name' => $rowData['parent_name'],
-                        'phone'     => $rowData['parent_phone'],
+                        'phone'     => $rowData['parent_phone'] !== '' ? $rowData['parent_phone'] : null,
                         'is_active' => 1,
                     ];
 
@@ -1109,12 +1359,18 @@ class ExcelImporter
             'user_id'                => $userId,
             'class_id'               => $classId,
             'nisn'                   => $rowData['nisn'],
-            'nis'                    => $rowData['nis'],
+            'nik'                    => $rowData['nik'] !== '' ? $rowData['nik'] : null,
             'gender'                 => $rowData['gender'],
             'birth_place'            => $rowData['birth_place'] ?: null,
             'birth_date'             => $rowData['birth_date'],
             'religion'               => $rowData['religion'] ?: null,
             'address'                => $rowData['address'] ?: null,
+            'special_needs'          => $rowData['special_needs'] ?: null,
+            'disability'             => $rowData['disability'] ?: null,
+            'kip_pip_number'         => $rowData['kip_pip_number'] ?: null,
+            'father_name'            => $rowData['father_name'] ?: null,
+            'mother_name'            => $rowData['mother_name'] ?: null,
+            'guardian_name'          => $rowData['guardian_name'] ?: null,
             'parent_id'              => $parentId,
             'admission_date'         => $rowData['admission_date'],
             'status'                 => $rowData['status'],
@@ -1127,31 +1383,32 @@ class ExcelImporter
     }
 
     /**
-     * Generate Excel template for student import (tetap sama)
+     * Generate Excel template mengikuti format EMIS sekolah.
      */
     public function generateTemplate(?string $savePath = null): string
     {
         $spreadsheet = new Spreadsheet();
         $sheet       = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Kelas 12 - A');
 
         $headers = [
-            'NISN',
-            'NIS',
+            'No',
             'Nama Lengkap',
-            'Email',
-            'Password',
-            'Jenis Kelamin',
+            'NISN',
+            'NIK',
             'Tempat Lahir',
             'Tanggal Lahir',
-            'Agama',
-            'Alamat',
-            'Kelas',
-            'Tanggal Masuk',
+            'Tingkat - Rombel',
             'Status',
-            'Nama Orang Tua',
-            'Email Orang Tua',
-            'No. HP Siswa',
-            'No. HP Orang Tua',
+            'Jenis Kelamin',
+            'Alamat',
+            'No Telepon',
+            'Kebutuhan Khusus',
+            'Disabilitas',
+            'Nomor KIP/PIP',
+            'Nama Ayah Kandung',
+            'Nama Ibu Kandung',
+            'Nama Wali',
         ];
 
         $sheet->fromArray($headers, null, 'A1');
@@ -1170,47 +1427,48 @@ class ExcelImporter
         }
 
         $sampleData = [
-            '1234567890',
-            '001',
-            'Ahmad Fauzi',
-            'ahmad.fauzi@example.com',
-            '',
-            'L',
-            'Bandung',
-            '15-05-2008',
-            'Islam',
-            'Jl. Contoh No. 123',
-            'X-IPA-1',
-            '01-07-2024',
+            '1',
+            'Nama Siswa Contoh',
+            '1000000003',
+            '1000000000000003',
+            'BANDUNG',
+            '2007-09-19',
+            'Kelas 12 - A',
             'Aktif',
-            'Bapak Ahmad',
-            'bapak.ahmad@example.com',
-            '081234567890',
-            '081298765432',
+            'Perempuan',
+            'Kp. Contoh, BANJARAN, KABUPATEN BANDUNG, JAWA BARAT, 40377',
+            '6281234567890',
+            'Tidak Ada',
+            'Tidak Ada',
+            '',
+            'NAMA AYAH',
+            'NAMA IBU',
+            'NAMA WALI',
         ];
 
         $sheet->fromArray([$sampleData], null, 'A2');
+        $sheet->setCellValueExplicit('C2', '1000000003', DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('D2', '1000000000000003', DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('K2', '6281234567890', DataType::TYPE_STRING);
 
         foreach (range('A', 'Q') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
         $sheet->getCell('A4')->setValue('PETUNJUK:');
-        $sheet->getCell('A5')->setValue('1. Semua kolom sudah di-set sebagai TEKS. Jangan ubah format sel.');
-        $sheet->getCell('A6')->setValue('2. NISN & NIS: isi tanpa spasi. Nol di depan akan dipertahankan karena format TEKS.');
-        $sheet->getCell('A7')->setValue('3. Tanggal Lahir & Tanggal Masuk: gunakan DD-MM-YYYY atau DD/MM/YYYY atau DDMMYYYY.');
-        $sheet->getCell('A8')->setValue('4. Status: Aktif, Alumni, Pindah, atau Keluar.');
-        $sheet->getCell('A9')->setValue("5. Password: kosongkan untuk menggunakan default (tanggal lahir DDMMYYYY), atau 'password123' jika tanggal lahir kosong/tidak valid.");
-        $sheet->getCell('A10')->setValue('6. Kelas: harus sesuai dengan nama kelas yang sudah terdaftar di sistem.');
-        $sheet->getCell('A11')->setValue('7. No. HP: isi seperti 081234567890. Karena format TEKS, nol di depan tidak akan hilang.');
-        $sheet->getCell('A12')->setValue('8. Jika menyalin dari file lain, pastikan Paste Values saja (tanpa membawa format angka dari file lama).');
-        $sheet->getCell('A13')->setValue('9. Jika orang tua memiliki lebih dari satu anak, gunakan email orang tua yang sama untuk semua anak agar akun orang tua tidak dibuat ganda.');
-        $sheet->getCell('A14')->setValue("10. Password Orang Tua akan mengikuti password anak (tanggal lahir atau 'password123').");
+        $sheet->getCell('A5')->setValue('1. Template ini mengikuti format file EMIS sekolah, tanpa kolom Umur. Umur dihitung otomatis dari Tanggal Lahir.');
+        $sheet->getCell('A6')->setValue('2. Minimal data yang perlu ada: NISN, Nama Lengkap, Tanggal Lahir, Jenis Kelamin. NIK opsional mengikuti isi file EMIS.');
+        $sheet->getCell('A7')->setValue('3. Email tidak wajib dan tidak ada di format EMIS ini. Login siswa memakai username/NISN.');
+        $sheet->getCell('A8')->setValue('4. Tanggal Lahir boleh YYYY-MM-DD seperti file EMIS, atau DD-MM-YYYY / DD/MM/YYYY / DDMMYYYY.');
+        $sheet->getCell('A9')->setValue('5. Tingkat - Rombel boleh seperti "Kelas 12 - A"; sistem akan membuat kelas otomatis jika belum ada.');
+        $sheet->getCell('A10')->setValue('6. No Telepon opsional. Jika diisi boleh 08, 62, atau +62; sistem akan menormalkan ke 08.');
+        $sheet->getCell('A11')->setValue('7. Nama Wali akan dipakai sebagai prioritas orang tua, lalu Nama Ibu Kandung, lalu Nama Ayah Kandung.');
+        $sheet->getCell('A12')->setValue("8. Password default akun siswa/orang tua memakai tanggal lahir DDMMYYYY, atau 'password123' bila tanggal lahir tidak valid.");
 
         $maxRow = 500;
 
-        $genderList = '"L,P"';
-        $genderDv = $sheet->getCell('F2')->getDataValidation();
+        $genderList = '"Laki-laki,Perempuan,L,P"';
+        $genderDv = $sheet->getCell('I2')->getDataValidation();
         $genderDv->setType(DataValidation::TYPE_LIST);
         $genderDv->setErrorStyle(DataValidation::STYLE_WARNING);
         $genderDv->setAllowBlank(false);
@@ -1218,17 +1476,17 @@ class ExcelImporter
         $genderDv->setShowErrorMessage(true);
         $genderDv->setShowDropDown(true);
         $genderDv->setErrorTitle('Nilai tidak sesuai');
-        $genderDv->setError('Pilih salah satu dari daftar L atau P, atau lanjutkan dengan hati-hati.');
+        $genderDv->setError('Pilih salah satu dari daftar jenis kelamin, atau lanjutkan dengan hati-hati.');
         $genderDv->setPromptTitle('Pilih Jenis Kelamin');
-        $genderDv->setPrompt('Gunakan L untuk Laki-laki, P untuk Perempuan.');
+        $genderDv->setPrompt('Gunakan Laki-laki/Perempuan, atau L/P.');
         $genderDv->setFormula1($genderList);
 
         for ($row = 2; $row <= $maxRow; $row++) {
-            $sheet->getCell('F' . $row)->setDataValidation(clone $genderDv);
+            $sheet->getCell('I' . $row)->setDataValidation(clone $genderDv);
         }
 
-        $statusList = '"Aktif,Alumni,Pindah,Keluar"';
-        $statusDv = $sheet->getCell('M2')->getDataValidation();
+        $statusList = '"Aktif,Tidak Aktif,Alumni,Pindah,Keluar"';
+        $statusDv = $sheet->getCell('H2')->getDataValidation();
         $statusDv->setType(DataValidation::TYPE_LIST);
         $statusDv->setErrorStyle(DataValidation::STYLE_WARNING);
         $statusDv->setAllowBlank(false);
@@ -1238,31 +1496,11 @@ class ExcelImporter
         $statusDv->setErrorTitle('Status tidak dikenal');
         $statusDv->setError('Pilih salah satu status yang tersedia, atau lanjutkan dengan hati-hati.');
         $statusDv->setPromptTitle('Pilih Status Siswa');
-        $statusDv->setPrompt('Status: Aktif, Alumni, Pindah, atau Keluar.');
+        $statusDv->setPrompt('Status: Aktif, Tidak Aktif, Alumni, Pindah, atau Keluar.');
         $statusDv->setFormula1($statusList);
 
         for ($row = 2; $row <= $maxRow; $row++) {
-            $sheet->getCell('M' . $row)->setDataValidation(clone $statusDv);
-        }
-
-        $religions = ['Islam', 'Kristen', 'Katolik', 'Hindu', 'Buddha', 'Konghucu', 'Lainnya'];
-        $religionList = '"' . implode(',', $religions) . '"';
-
-        $religionDv = $sheet->getCell('I2')->getDataValidation();
-        $religionDv->setType(DataValidation::TYPE_LIST);
-        $religionDv->setErrorStyle(DataValidation::STYLE_WARNING);
-        $religionDv->setAllowBlank(true);
-        $religionDv->setShowInputMessage(true);
-        $religionDv->setShowErrorMessage(true);
-        $religionDv->setShowDropDown(true);
-        $religionDv->setErrorTitle('Agama tidak ada di daftar');
-        $religionDv->setError('Pilih salah satu dari daftar, atau lanjutkan jika memang perlu isi lain.');
-        $religionDv->setPromptTitle('Pilih Agama');
-        $religionDv->setPrompt('Pilih agama dari daftar, atau ketik manual jika tidak tersedia.');
-        $religionDv->setFormula1($religionList);
-
-        for ($row = 2; $row <= $maxRow; $row++) {
-            $sheet->getCell('I' . $row)->setDataValidation(clone $religionDv);
+            $sheet->getCell('H' . $row)->setDataValidation(clone $statusDv);
         }
 
         $classRecords = $this->classModel
@@ -1270,12 +1508,13 @@ class ExcelImporter
             ->orderBy('class_name', 'ASC')
             ->findAll();
 
-        $classNames = [];
+        $classNames = ['Kelas 12 - A', 'Kelas 12 - B', 'Kelas 12 - C'];
         foreach ($classRecords as $cls) {
             if (!empty($cls['class_name'])) {
                 $classNames[] = $cls['class_name'];
             }
         }
+        $classNames = array_values(array_unique($classNames));
 
         if (!empty($classNames)) {
             $safeClassNames = array_map(static function ($v) {
@@ -1284,21 +1523,23 @@ class ExcelImporter
 
             $classList = '"' . implode(',', $safeClassNames) . '"';
 
-            $classDv = $sheet->getCell('K2')->getDataValidation();
-            $classDv->setType(DataValidation::TYPE_LIST);
-            $classDv->setErrorStyle(DataValidation::STYLE_WARNING);
-            $classDv->setAllowBlank(true);
-            $classDv->setShowInputMessage(true);
-            $classDv->setShowErrorMessage(true);
-            $classDv->setShowDropDown(true);
-            $classDv->setErrorTitle('Kelas tidak terdaftar');
-            $classDv->setError('Pilih kelas yang sudah ada di sistem, atau lanjutkan dengan hati-hati.');
-            $classDv->setPromptTitle('Pilih Kelas');
-            $classDv->setPrompt('Pilih kelas sesuai kelas yang terdaftar di sistem.');
-            $classDv->setFormula1($classList);
+            if (strlen($classList) <= 255) {
+                $classDv = $sheet->getCell('G2')->getDataValidation();
+                $classDv->setType(DataValidation::TYPE_LIST);
+                $classDv->setErrorStyle(DataValidation::STYLE_WARNING);
+                $classDv->setAllowBlank(true);
+                $classDv->setShowInputMessage(true);
+                $classDv->setShowErrorMessage(true);
+                $classDv->setShowDropDown(true);
+                $classDv->setErrorTitle('Kelas tidak terdaftar');
+                $classDv->setError('Pilih kelas yang sudah ada di sistem, atau lanjutkan dengan hati-hati.');
+                $classDv->setPromptTitle('Pilih Rombel');
+                $classDv->setPrompt('Contoh: Kelas 12 - A. Jika belum ada, sistem akan membuat kelas otomatis saat impor.');
+                $classDv->setFormula1($classList);
 
-            for ($row = 2; $row <= $maxRow; $row++) {
-                $sheet->getCell('K' . $row)->setDataValidation(clone $classDv);
+                for ($row = 2; $row <= $maxRow; $row++) {
+                    $sheet->getCell('G' . $row)->setDataValidation(clone $classDv);
+                }
             }
         }
 
