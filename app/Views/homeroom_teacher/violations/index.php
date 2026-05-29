@@ -39,7 +39,14 @@ $violations = $violations ?? [];
 $students   = $students   ?? [];
 $categories = $categories ?? [];
 $filters    = $filters    ?? [];
+$classes    = $classes    ?? [];
 $class      = rowa($class ?? $homeroom_class ?? []);
+$selectedClassId = $selectedClassId ?? ($filters['class_id'] ?? '');
+$showClassColumn = count($classes) > 1 && empty($filters['class_id']);
+$createUrl = base_url('homeroom/violations/create');
+if (!empty($filters['class_id'])) {
+    $createUrl .= '?class_id=' . rawurlencode((string) $filters['class_id']);
+}
 ?>
 
 <div class="row">
@@ -93,13 +100,15 @@ $class      = rowa($class ?? $homeroom_class ?? []);
                     <small class="text-muted">
                         Kelas Perwalian:
                         <strong><?= h($class['class_name'] ?? '-') ?></strong>
-                        <?php if (!empty($class['year_name'])): ?>
+                        <?php if (!empty($class['total_classes'])): ?>
+                            (<?= (int) $class['total_classes'] ?> kelas)
+                        <?php elseif (!empty($class['year_name'])): ?>
                             (<?= h($class['year_name']) ?> · Semester <?= h($class['semester'] ?? '-') ?>)
                         <?php endif; ?>
                     </small>
                 </div>
                 <div class="mt-2 mt-md-0">
-                    <a href="<?= base_url('homeroom/violations/create') ?>" class="btn btn-danger">
+                    <a href="<?= esc($createUrl) ?>" class="btn btn-danger">
                         <i class="mdi mdi-plus-circle-outline me-1"></i> Tambah Pelanggaran
                     </a>
                 </div>
@@ -107,6 +116,21 @@ $class      = rowa($class ?? $homeroom_class ?? []);
 
             <div class="card-body">
                 <form method="get" action="<?= current_url() ?>" class="row g-3 align-items-end">
+
+                    <!-- Kelas -->
+                    <div class="col-md-3">
+                        <label class="form-label">Kelas</label>
+                        <select name="class_id" class="form-select">
+                            <option value="">Semua Kelas Perwalian</option>
+                            <?php foreach ($classes as $cls): ?>
+                                <?php $cls = rowa($cls); ?>
+                                <option value="<?= esc($cls['id']) ?>"
+                                    <?= (string)($filters['class_id'] ?? '') === (string)($cls['id'] ?? '') ? 'selected' : '' ?>>
+                                    <?= esc($cls['class_name'] ?? '-') ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
 
                     <!-- Siswa -->
                     <div class="col-md-3">
@@ -241,6 +265,9 @@ $class      = rowa($class ?? $homeroom_class ?? []);
                                 <tr>
                                     <th style="width: 5%;">#</th>
                                     <th>Siswa</th>
+                                    <?php if ($showClassColumn): ?>
+                                        <th>Kelas</th>
+                                    <?php endif; ?>
                                     <th>Kategori</th>
                                     <th>Tingkat</th>
                                     <th>Tanggal</th>
@@ -284,6 +311,9 @@ $class      = rowa($class ?? $homeroom_class ?? []);
                                                 NISN: <?= h($v['nisn'] ?? '-') ?>
                                             </small>
                                         </td>
+                                        <?php if ($showClassColumn): ?>
+                                            <td><?= h($v['class_name'] ?? '-') ?></td>
+                                        <?php endif; ?>
                                         <td>
                                             <div><?= h($v['category_name'] ?? '-') ?></div>
                                             <?php if (!empty($v['point_deduction'])): ?>

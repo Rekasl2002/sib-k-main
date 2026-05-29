@@ -69,16 +69,24 @@ class ViolationController extends BaseController
         }
         $userId = (int) $userId;
 
-        // Get homeroom teacher's class
-        $class = $this->getHomeroomClass($userId);
+        $classes = $this->getHomeroomClasses($userId);
 
-        if (!$class) {
+        if (!$classes) {
             return redirect()->to('/homeroom/dashboard')
                 ->with('error', 'Anda belum ditugaskan sebagai wali kelas.');
         }
 
+        $requestedClassId = $this->request->getGet('class_id')
+            ? (int) $this->request->getGet('class_id')
+            : null;
+        $selectedClass = $requestedClassId ? $this->resolveClassFromList($classes, $requestedClassId) : null;
+        $selectedClassId = $selectedClass ? (int) $selectedClass['id'] : null;
+        $visibleClassIds = $selectedClassId ? [$selectedClassId] : $this->classIds($classes);
+        $class = $selectedClass ?: $this->summarizeClasses($classes);
+
         // Get filter parameters
         $filters = [
+            'class_id'       => $selectedClassId ? (string) $selectedClassId : '',
             'student_id'     => $this->request->getGet('student_id'),
             'category_id'    => $this->request->getGet('category_id'),
             'severity_level' => $this->request->getGet('severity_level'),
@@ -89,15 +97,16 @@ class ViolationController extends BaseController
         ];
 
         // Get violations with filters
-        $violations = $this->getViolations($class['id'], $filters);
+        $violations = $this->getViolations($visibleClassIds, $filters);
 
-        // Get students in class for filter
-        $students = $this->getClassStudents($class['id']);
+        // Get students in visible classes for filter
+        $students = $this->getClassStudents($visibleClassIds);
 
         // Get violation categories for filter
         $categories = $this->categoryModel
             ->asArray()
             ->where('deleted_at', null)
+            ->where('is_active', 1)
             ->orderBy('severity_level', 'ASC')
             ->orderBy('category_name', 'ASC')
             ->findAll();
@@ -113,6 +122,8 @@ class ViolationController extends BaseController
                 ['title' => 'Dashboard',   'url' => base_url('homeroom/dashboard')],
                 ['title' => 'Kasus & Pelanggaran', 'url' => '#', 'active' => true],
             ],
+            'classes'        => $classes,
+            'selectedClassId' => $selectedClassId,
             'class'          => $class,
             'homeroom_class' => $class,
             'violations'     => $violations,
@@ -144,12 +155,21 @@ class ViolationController extends BaseController
         }
         $userId = (int) $userId;
 
-        // Get homeroom teacher's class
-        $class = $this->getHomeroomClass($userId);
+        $classes = $this->getHomeroomClasses($userId);
+
+        if (!$classes) {
+            return redirect()->to('/homeroom/dashboard')
+                ->with('error', 'Anda belum ditugaskan sebagai wali kelas.');
+        }
+
+        $requestedClassId = $this->request->getGet('class_id')
+            ? (int) $this->request->getGet('class_id')
+            : (old('class_id') ? (int) old('class_id') : null);
+        $class = $this->resolveClassFromList($classes, $requestedClassId);
 
         if (!$class) {
             return redirect()->to('/homeroom/dashboard')
-                ->with('error', 'Anda belum ditugaskan sebagai wali kelas.');
+                ->with('error', 'Kelas perwalian tidak ditemukan.');
         }
 
         // Get students in class
@@ -160,6 +180,7 @@ class ViolationController extends BaseController
         $categories = $this->categoryModel
             ->asArray()
             ->where('deleted_at', null)
+            ->where('is_active', 1)
             ->where('severity_level', 'Ringan')
             ->orderBy('severity_level', 'ASC')
             ->orderBy('category_name', 'ASC')
@@ -191,6 +212,8 @@ class ViolationController extends BaseController
                 ['title' => 'Kasus & Pelanggaran', 'url' => base_url('homeroom/violations')],
                 ['title' => 'Tambah Kasus & Pelanggaran',      'url' => '#', 'active' => true],
             ],
+            'classes'           => $classes,
+            'selectedClassId'   => (int) $class['id'],
             'class'             => $class,
             'homeroom_class'    => $class,
             'students'          => $students,
@@ -223,10 +246,9 @@ class ViolationController extends BaseController
         }
         $userId = (int) $userId;
 
-        // Get homeroom teacher's class
-        $class = $this->getHomeroomClass($userId);
+        $classes = $this->getHomeroomClasses($userId);
 
-        if (!$class) {
+        if (!$classes) {
             return redirect()->to('/homeroom/dashboard')
                 ->with('error', 'Anda belum ditugaskan sebagai wali kelas.');
         }
@@ -239,8 +261,10 @@ class ViolationController extends BaseController
                 ->with('error', 'Data pelanggaran tidak ditemukan.');
         }
 
+        $class = $this->resolveClassFromList($classes, (int) $violation['class_id']);
+
         // Pastikan pelanggaran milik kelas perwalian
-        if ((int) $violation['class_id'] !== (int) $class['id']) {
+        if (!$class) {
             return redirect()->to('/homeroom/violations')
                 ->with('error', 'Anda tidak memiliki akses untuk mengubah data ini.');
         }
@@ -256,6 +280,7 @@ class ViolationController extends BaseController
         $categories = $this->categoryModel
             ->asArray()
             ->where('deleted_at', null)
+            ->where('is_active', 1)
             ->where('severity_level', 'Ringan')
             ->orderBy('severity_level', 'ASC')
             ->orderBy('category_name', 'ASC')
@@ -286,6 +311,8 @@ class ViolationController extends BaseController
                 ['title' => 'Kasus & Pelanggaran', 'url' => base_url('homeroom/violations')],
                 ['title' => 'Edit Kasus & Pelanggaran',        'url' => '#', 'active' => true],
             ],
+            'classes'           => $classes,
+            'selectedClassId'   => (int) $class['id'],
             'class'             => $class,
             'homeroom_class'    => $class,
             'violation'         => $violation,
@@ -317,12 +344,21 @@ class ViolationController extends BaseController
         }
         $userId = (int) $userId;
 
-        // Get homeroom teacher's class
-        $class = $this->getHomeroomClass($userId);
+        $classes = $this->getHomeroomClasses($userId);
+
+        if (!$classes) {
+            return redirect()->to('/homeroom/dashboard')
+                ->with('error', 'Anda belum ditugaskan sebagai wali kelas.');
+        }
+
+        $postedClassId = $this->request->getPost('class_id')
+            ? (int) $this->request->getPost('class_id')
+            : null;
+        $class = $this->resolveClassFromList($classes, $postedClassId);
 
         if (!$class) {
             return redirect()->to('/homeroom/dashboard')
-                ->with('error', 'Anda belum ditugaskan sebagai wali kelas.');
+                ->with('error', 'Kelas perwalian tidak ditemukan.');
         }
 
         // Validation rules
@@ -436,6 +472,7 @@ class ViolationController extends BaseController
             ->asArray()
             ->where('id', $categoryId)
             ->where('deleted_at', null)
+            ->where('is_active', 1)
             ->first();
 
         if (!$category) {
@@ -643,10 +680,9 @@ class ViolationController extends BaseController
         }
         $userId = (int) $userId;
 
-        // Get homeroom teacher's class
-        $class = $this->getHomeroomClass($userId);
+        $classes = $this->getHomeroomClasses($userId);
 
-        if (!$class) {
+        if (!$classes) {
             return redirect()->to('/homeroom/dashboard')
                 ->with('error', 'Anda belum ditugaskan sebagai wali kelas.');
         }
@@ -659,8 +695,10 @@ class ViolationController extends BaseController
                 ->with('error', 'Data pelanggaran tidak ditemukan.');
         }
 
+        $class = $this->resolveClassFromList($classes, (int) $current['class_id']);
+
         // Pastikan pelanggaran milik kelas perwalian
-        if ((int) $current['class_id'] !== (int) $class['id']) {
+        if (!$class) {
             return redirect()->to('/homeroom/violations')
                 ->with('error', 'Anda tidak memiliki akses untuk mengubah data ini.');
         }
@@ -747,6 +785,7 @@ class ViolationController extends BaseController
             ->asArray()
             ->where('id', $categoryId)
             ->where('deleted_at', null)
+            ->where('is_active', 1)
             ->first();
 
         if (!$category) {
@@ -919,6 +958,68 @@ class ViolationController extends BaseController
     }
 
     /**
+     * Soft-delete violation (Ringan only).
+     *
+     * @param int $id
+     * @return \CodeIgniter\HTTP\RedirectResponse
+     */
+    public function delete($id)
+    {
+        if (!is_logged_in() || !is_homeroom_teacher()) {
+            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
+        }
+
+        $userId = auth_id();
+        if (!$userId) {
+            return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
+        }
+
+        $classes = $this->getHomeroomClasses((int) $userId);
+        if (!$classes) {
+            return redirect()->to('/homeroom/dashboard')
+                ->with('error', 'Anda belum ditugaskan sebagai wali kelas.');
+        }
+
+        $violation = $this->getViolationDetail((int) $id);
+        if (!$violation) {
+            return redirect()->to('/homeroom/violations')
+                ->with('error', 'Data pelanggaran tidak ditemukan.');
+        }
+
+        if (!$this->resolveClassFromList($classes, (int) $violation['class_id'])) {
+            return redirect()->to('/homeroom/violations')
+                ->with('error', 'Anda tidak memiliki akses untuk menghapus data ini.');
+        }
+
+        if (($violation['severity_level'] ?? 'Sedang') !== 'Ringan') {
+            return redirect()->to('/homeroom/violations/detail/' . (int) $id)
+                ->with('error', 'Wali kelas hanya dapat menghapus pelanggaran dengan tingkat Ringan.');
+        }
+
+        try {
+            if (!$this->violationModel->delete((int) $id)) {
+                return redirect()->back()
+                    ->with('error', 'Data pelanggaran belum berhasil dihapus.');
+            }
+
+            $studentId = (int) ($violation['student_id'] ?? 0);
+            if ($studentId > 0 && method_exists($this->violationModel, 'getStudentTotalPoints')) {
+                $this->studentModel->update($studentId, [
+                    'total_violation_points' => max(0, (int) $this->violationModel->getStudentTotalPoints($studentId)),
+                ]);
+            }
+
+            return redirect()->to('/homeroom/violations')
+                ->with('success', 'Data pelanggaran ringan berhasil dihapus.');
+        } catch (\Throwable $e) {
+            log_message('error', '[HOMEROOM VIOLATION DELETE] ' . $e->getMessage());
+
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menghapus data. Silakan coba lagi.');
+        }
+    }
+
+    /**
      * Show violation detail
      *
      * @param int $id
@@ -938,10 +1039,9 @@ class ViolationController extends BaseController
         }
         $userId = (int) $userId;
 
-        // Get homeroom teacher's class
-        $class = $this->getHomeroomClass($userId);
+        $classes = $this->getHomeroomClasses($userId);
 
-        if (!$class) {
+        if (!$classes) {
             return redirect()->to('/homeroom/dashboard')
                 ->with('error', 'Anda belum ditugaskan sebagai wali kelas.');
         }
@@ -954,8 +1054,10 @@ class ViolationController extends BaseController
                 ->with('error', 'Data pelanggaran tidak ditemukan.');
         }
 
+        $class = $this->resolveClassFromList($classes, (int) $violation['class_id']);
+
         // Verify violation belongs to homeroom class
-        if ((int) $violation['class_id'] !== (int) $class['id']) {
+        if (!$class) {
             return redirect()->to('/homeroom/violations')
                 ->with('error', 'Anda tidak memiliki akses ke data ini.');
         }
@@ -978,6 +1080,8 @@ class ViolationController extends BaseController
                 ['title' => 'Kasus & Pelanggaran', 'url' => base_url('homeroom/violations')],
                 ['title' => 'Detail Kasus & Pelanggaran',      'url' => '#', 'active' => true],
             ],
+            'classes'        => $classes,
+            'selectedClassId' => (int) $class['id'],
             'class'          => $class,
             'homeroom_class' => $class,
             'violation'      => $violation,
@@ -995,7 +1099,12 @@ class ViolationController extends BaseController
      * @param int $userId
      * @return array|null
      */
-    private function getHomeroomClass($userId)
+    private function getHomeroomClass($userId, ?int $classId = null)
+    {
+        return $this->resolveClassFromList($this->getHomeroomClasses((int) $userId), $classId);
+    }
+
+    private function getHomeroomClasses(int $userId): array
     {
         try {
             return $this->db->table('classes')
@@ -1003,14 +1112,78 @@ class ViolationController extends BaseController
                 ->join('academic_years', 'academic_years.id = classes.academic_year_id')
                 ->where('classes.homeroom_teacher_id', $userId)
                 ->where('classes.deleted_at', null)
+                ->where('classes.is_active', 1)
                 ->where('academic_years.is_active', 1)
-                ->orderBy('classes.created_at', 'DESC')
+                ->orderBy('classes.id', 'ASC')
                 ->get()
-                ->getRowArray();
+                ->getResultArray();
         } catch (\Exception $e) {
-            log_message('error', '[HOMEROOM VIOLATION] Get class error: ' . $e->getMessage());
+            log_message('error', '[HOMEROOM VIOLATION] Get classes error: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    private function resolveClassFromList(array $classes, ?int $classId = null): ?array
+    {
+        if (!$classes) {
             return null;
         }
+
+        if ($classId) {
+            foreach ($classes as $class) {
+                if ((int) ($class['id'] ?? 0) === $classId) {
+                    return $class;
+                }
+            }
+
+            return null;
+        }
+
+        return $classes[0];
+    }
+
+    private function classIds(array $classes): array
+    {
+        $ids = [];
+
+        foreach ($classes as $class) {
+            $id = (int) ($class['id'] ?? 0);
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    private function normalizeClassIds($classIds): array
+    {
+        if (!is_array($classIds)) {
+            $classIds = [$classIds];
+        }
+
+        $ids = [];
+        foreach ($classIds as $id) {
+            $id = (int) $id;
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    private function summarizeClasses(array $classes): array
+    {
+        $first = $classes[0] ?? [];
+
+        return [
+            'id'            => null,
+            'class_name'    => count($classes) > 1 ? 'Semua Kelas Perwalian' : (string) ($first['class_name'] ?? '-'),
+            'year_name'     => $first['year_name'] ?? null,
+            'semester'      => $first['semester'] ?? null,
+            'total_classes' => count($classes),
+        ];
     }
 
     /**
@@ -1019,21 +1192,37 @@ class ViolationController extends BaseController
      * @param int $classId
      * @return array
      */
-    private function getClassStudents($classId)
+    private function getClassStudents($classIds)
     {
+        $classIds = $this->normalizeClassIds($classIds);
+        if (!$classIds) {
+            return [];
+        }
+
         try {
-            return $this->db->table('students')
+            $builder = $this->db->table('students')
                 ->select([
                     'students.id',
                     'students.nisn',
+                    'students.class_id',
+                    'classes.class_name',
                     // FIX: students.full_name sudah dihapus -> ambil dari users.full_name
                     "users.full_name AS full_name",
                 ])
                 ->join('users', 'users.id = students.user_id AND users.deleted_at IS NULL', 'left')
-                ->where('students.class_id', $classId)
+                ->join('classes', 'classes.id = students.class_id AND classes.deleted_at IS NULL', 'left')
                 ->where('students.deleted_at', null)
                 // Hanya siswa berstatus aktif yang boleh dilaporkan oleh wali kelas
-                ->whereIn('students.status', ['active', 'Active', 'aktif', 'Aktif'])
+                ->whereIn('students.status', ['active', 'Active', 'aktif', 'Aktif']);
+
+            if (count($classIds) === 1) {
+                $builder->where('students.class_id', $classIds[0]);
+            } else {
+                $builder->whereIn('students.class_id', $classIds);
+            }
+
+            return $builder
+                ->orderBy('classes.id', 'ASC')
                 ->orderBy('users.full_name', 'ASC')
                 ->get()
                 ->getResultArray();
@@ -1050,8 +1239,13 @@ class ViolationController extends BaseController
      * @param array $filters
      * @return array
      */
-    private function getViolations($classId, $filters = [])
+    private function getViolations($classIds, $filters = [])
     {
+        $classIds = $this->normalizeClassIds($classIds);
+        if (!$classIds) {
+            return [];
+        }
+
         try {
             $builder = $this->db->table('violations v')
                 ->select("
@@ -1060,16 +1254,24 @@ class ViolationController extends BaseController
                     s.id AS student_id,
                     su.full_name AS student_name,
                     s.nisn,
+                    s.class_id,
+                    c.class_name,
                     vc.id AS category_id, vc.category_name, vc.severity_level, vc.point_deduction,
                     u.full_name AS reported_by_name
                 ")
                 ->join('students s', 's.id = v.student_id')
                 ->join('users su', 'su.id = s.user_id AND su.deleted_at IS NULL', 'left')
+                ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
                 ->join('violation_categories vc', 'vc.id = v.category_id')
                 ->join('users u', 'u.id = v.reported_by AND u.deleted_at IS NULL', 'left') // left biar aman kalau data lama kosong
-                ->where('s.class_id', $classId)
                 ->where('s.deleted_at', null)
                 ->where('v.deleted_at', null);
+
+            if (count($classIds) === 1) {
+                $builder->where('s.class_id', $classIds[0]);
+            } else {
+                $builder->whereIn('s.class_id', $classIds);
+            }
 
             // Apply filters
             if (!empty($filters['student_id'])) {

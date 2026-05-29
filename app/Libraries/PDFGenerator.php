@@ -2,8 +2,6 @@
 
 namespace App\Libraries;
 
-use Dompdf\Dompdf;
-use Dompdf\Options;
 use Config\Services;
 
 /**
@@ -23,7 +21,7 @@ use Config\Services;
  */
 class PDFGenerator
 {
-    protected Options $options;
+    protected $options = null;
 
     protected string $paper = 'A4';
     protected string $orientation = 'portrait';
@@ -37,7 +35,12 @@ class PDFGenerator
 
     public function __construct(?array $opt = null)
     {
-        $this->options = new Options();
+        if (! self::isAvailable()) {
+            return;
+        }
+
+        $optionsClass = '\\Dompdf\\Options';
+        $this->options = new $optionsClass();
 
         // Default options (aman & kompatibel)
         $this->options->set('isRemoteEnabled', true);
@@ -94,6 +97,20 @@ class PDFGenerator
         }
     }
 
+    public static function isAvailable(): bool
+    {
+        return class_exists('\\Dompdf\\Dompdf') && class_exists('\\Dompdf\\Options');
+    }
+
+    protected function assertAvailable(): void
+    {
+        if (! self::isAvailable() || $this->options === null) {
+            throw new \RuntimeException(
+                'Fitur PDF belum tersedia karena paket Dompdf belum terpasang atau autoload Composer belum dimuat.'
+            );
+        }
+    }
+
     public function setPaper(string $paper = 'A4', string $orientation = 'portrait'): self
     {
         $this->paper = $paper;
@@ -120,6 +137,8 @@ class PDFGenerator
         ?string $paper = null,
         ?string $orientation = null
     ) {
+        $this->assertAvailable();
+
         $renderer = Services::renderer();
 
         // setData default-nya escape, tapi view report biasanya sudah pakai esc() manual.
@@ -151,6 +170,8 @@ class PDFGenerator
         string $paper = 'A4',
         string $orientation = 'portrait'
     ): string {
+        $this->assertAvailable();
+
         $renderer = Services::renderer();
         $html = $renderer->setData($data)->render($view);
 
@@ -173,6 +194,8 @@ class PDFGenerator
      */
     public function render(string $html, string $paper = 'A4', string $orientation = 'portrait'): string
     {
+        $this->assertAvailable();
+
         $dompdf = $this->makeDompdf($paper, $orientation);
         $dompdf->loadHtml($html, 'UTF-8');
         $dompdf->render();
@@ -187,9 +210,12 @@ class PDFGenerator
     // ============================
 
     /** Buat instance Dompdf yang konsisten dengan base path & opsi. */
-    protected function makeDompdf(string $paper, string $orientation): Dompdf
+    protected function makeDompdf(string $paper, string $orientation)
     {
-        $dompdf = new Dompdf($this->options);
+        $this->assertAvailable();
+
+        $dompdfClass = '\\Dompdf\\Dompdf';
+        $dompdf = new $dompdfClass($this->options);
 
         // Base path penting untuk asset relatif (CSS/IMG) dalam HTML.
         if (method_exists($dompdf, 'setBasePath')) {
@@ -202,7 +228,7 @@ class PDFGenerator
     }
 
     /** Tambahkan footer halaman adaptif jika template tersedia. */
-    protected function applyFooter(Dompdf $dompdf): void
+    protected function applyFooter($dompdf): void
     {
         if (!$this->footerText) {
             return;

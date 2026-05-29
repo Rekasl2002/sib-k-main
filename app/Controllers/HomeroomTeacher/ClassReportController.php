@@ -15,12 +15,11 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 class ClassReportController extends BaseController
 {
     protected ReportService $report;
-    protected PDFGenerator $pdf;
+    protected ?PDFGenerator $pdf = null;
 
     public function __construct()
     {
         $this->report = new ReportService();
-        $this->pdf    = new PDFGenerator();
 
         if (function_exists('helper')) {
             try {
@@ -160,11 +159,26 @@ class ClassReportController extends BaseController
                 ->setFileName($filename . '.xlsx');
         }
 
+        if (! PDFGenerator::isAvailable()) {
+            return redirect()->to('/homeroom/reports')
+                ->with(
+                    'error',
+                    'Fitur unduh PDF belum tersedia karena paket Dompdf belum terpasang di server. Unduh Excel tetap dapat digunakan.'
+                );
+        }
+
         $html = view($this->pdfView(), [
             'data' => $data,
         ]);
 
-        $bin = $this->pdf->render($html, $paper, $orientation);
+        try {
+            $bin = $this->pdf()->render($html, $paper, $orientation);
+        } catch (\Throwable $e) {
+            log_message('error', '[HOMEROOM REPORT PDF] ' . $e->getMessage());
+
+            return redirect()->to('/homeroom/reports')
+                ->with('error', 'PDF belum bisa dibuat. Silakan coba unduh Excel atau periksa instalasi Dompdf di server.');
+        }
 
         return $this->response
             ->setHeader('Content-Type', 'application/pdf')
@@ -232,6 +246,15 @@ class ClassReportController extends BaseController
         }
 
         return (int)$id;
+    }
+
+    private function pdf(): PDFGenerator
+    {
+        if ($this->pdf === null) {
+            $this->pdf = new PDFGenerator();
+        }
+
+        return $this->pdf;
     }
 
     private function normalizeDate($value): ?string

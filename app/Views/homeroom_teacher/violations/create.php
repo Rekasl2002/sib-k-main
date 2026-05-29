@@ -14,6 +14,8 @@
 
 $homeroomClass     = $homeroom_class ?? $class ?? [];
 $students          = $students ?? [];
+$classes           = $classes ?? [];
+$selectedClassId   = $selectedClassId ?? ($homeroomClass['id'] ?? '');
 $groupedCategories = $groupedCategories ?? [];
 $errors            = session('errors') ?? [];
 ?>
@@ -110,6 +112,28 @@ $errors            = session('errors') ?? [];
                             </div>
                         </div>
                     </div>
+
+
+                    <?php if (count($classes) > 1): ?>
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label required">Kelas Perwalian</label>
+                                <select name="class_id" id="classSelect" class="form-select" required>
+                                    <?php foreach ($classes as $cls): ?>
+                                        <option value="<?= esc($cls['id']) ?>"
+                                            <?= (string) old('class_id', $selectedClassId) === (string) ($cls['id'] ?? '') ? 'selected' : '' ?>>
+                                            <?= esc($cls['class_name'] ?? '-') ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <small class="text-muted">
+                                    Pilih kelas terlebih dahulu agar daftar siswa sesuai kelas.
+                                </small>
+                            </div>
+                        </div>
+                    <?php else: ?>
+                        <input type="hidden" name="class_id" value="<?= esc($selectedClassId) ?>">
+                    <?php endif; ?>
 
 
                     <!-- Student Selection -->
@@ -301,12 +325,20 @@ $errors            = session('errors') ?? [];
 <?= $this->section('scripts') ?>
 <script>
     (function () {
+        const classSelect = document.getElementById('classSelect');
         const select = document.getElementById('categorySelect');
         const infoDiv = document.getElementById('categoryInfo');
         const severitySpan = document.getElementById('categorySeverity');
         const pointsSpan = document.getElementById('categoryPoints');
         const descP = document.getElementById('categoryDescription');
 
+        if (classSelect) {
+            classSelect.addEventListener('change', function () {
+                const url = new URL(window.location.href);
+                url.searchParams.set('class_id', classSelect.value);
+                window.location.href = url.toString();
+            });
+        }
 
         if (!select || !infoDiv) {
             return;
