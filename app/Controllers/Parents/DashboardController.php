@@ -38,7 +38,7 @@ class DashboardController extends BaseController
                   WHERE v.student_id = s.id
                     AND v.deleted_at IS NULL) AS violations_count,
 
-                (SELECT COALESCE(SUM(COALESCE(vc.point_deduction, vc.points, 0)), 0)
+                (SELECT COALESCE(SUM(COALESCE(vc.point_deduction, 0)), 0)
                    FROM violations v
               LEFT JOIN violation_categories vc ON vc.id = v.category_id
                   WHERE v.student_id = s.id
@@ -177,7 +177,7 @@ class DashboardController extends BaseController
                     v.student_id,
                     v.violation_date,
                     v.description,
-                    COALESCE(vc.point_deduction, vc.points, 0) AS points,
+                    COALESCE(vc.point_deduction, 0) AS points,
                     vc.category_name,
                     su.full_name AS full_name
                 ")

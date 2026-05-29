@@ -677,14 +677,14 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           </li>
           <?php endif; ?>
 
-          <?php if ($__permSendMessages): ?>
+          <!-- <?php if ($__permSendMessages): ?>
           <li>
             <a href="<?= base_url('parent/communication') ?>" class="waves-effect<?= $__active('parent/communication*') ?>">
               <i class="mdi mdi-email-outline"></i>
-              <span>Komunikasi</span>
+              <span>Komunikasi</span> 
             </a>
           </li>
-          <?php endif; ?>
+          <?php endif; ?>-->
 
           <?php if ($__enableCareerInfo && $__permViewCareerInfo): ?>
           <li>

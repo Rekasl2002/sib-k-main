@@ -230,6 +230,8 @@ class DashboardController extends BaseStudentController
             'upcomingSessions' => $upcomingSessions,
             'assessments'      => $assessments,
             'recentResults'    => $recentResults,
+            'currentUser'      => $currentUser,
+            'activeAcademic'   => $activeAcademic,
         ]);
     }
 
