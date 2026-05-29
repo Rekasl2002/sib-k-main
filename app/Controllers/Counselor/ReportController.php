@@ -26,12 +26,11 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 class ReportController extends BaseController
 {
     protected ReportService $report;
-    protected PDFGenerator $pdf;
+    protected ?PDFGenerator $pdf = null;
 
     public function __construct()
     {
         $this->report = new ReportService();
-        $this->pdf    = new PDFGenerator();
 
         // aman walau sudah di-autoload di BaseController
         if (function_exists('helper')) {
@@ -133,7 +132,7 @@ class ReportController extends BaseController
      */
     public function download()
     {
-        if ($redir = $this->ensurePerm('generate_reports', '/counselor/reports', 'Anda tidak punya izin untuk mengunduh laporan.')) {
+        if ($redir = $this->ensurePerm('generate_reports_individual', '/counselor/reports', 'Anda tidak punya izin untuk mengunduh laporan.')) {
             return $redir;
         }
 
@@ -148,7 +147,14 @@ class ReportController extends BaseController
             $format = 'pdf';
         }
 
-        [$title, $columns, $rows] = $this->buildPayload($f, $counselorId);
+        try {
+            [$title, $columns, $rows] = $this->buildPayload($f, $counselorId);
+        } catch (\Throwable $e) {
+            log_message('error', '[COUNSELOR REPORT PAYLOAD] ' . $e->getMessage());
+
+            return redirect()->to('/counselor/reports')
+                ->with('error', 'Gagal menyiapkan data laporan: ' . $e->getMessage());
+        }
 
         $filename = $this->safeFilename(
             'laporan_' . ($f['type'] ?: 'report') . '_' .
@@ -156,7 +162,14 @@ class ReportController extends BaseController
         );
 
         if ($format === 'xlsx') {
-            $tmpPath = $this->buildTableXlsx($title, $columns, $rows, $filename, $f);
+            try {
+                $tmpPath = $this->buildTableXlsx($title, $columns, $rows, $filename, $f);
+            } catch (\Throwable $e) {
+                log_message('error', '[COUNSELOR REPORT XLSX] ' . $e->getMessage());
+
+                return redirect()->to('/counselor/reports')
+                    ->with('error', 'Gagal membuat Excel: ' . $e->getMessage());
+            }
 
             register_shutdown_function(static function () use ($tmpPath) {
                 @unlink($tmpPath);
@@ -167,6 +180,14 @@ class ReportController extends BaseController
                 ->setFileName($filename . '.xlsx');
         }
 
+        if (! PDFGenerator::isAvailable()) {
+            return redirect()->to('/counselor/reports')
+                ->with(
+                    'error',
+                    'Fitur unduh PDF belum tersedia karena paket Dompdf belum terpasang di server. Unduh Excel tetap dapat digunakan.'
+                );
+        }
+
         // PDF
         $html = view('counselor/reports/partials/table_pdf', [
             'title'   => $title,
@@ -175,7 +196,14 @@ class ReportController extends BaseController
             'filters' => $f,
         ]);
 
-        $bin = $this->pdf->render($html, $paper, $orientation);
+        try {
+            $bin = $this->pdf()->render($html, $paper, $orientation);
+        } catch (\Throwable $e) {
+            log_message('error', '[COUNSELOR REPORT PDF] ' . $e->getMessage());
+
+            return redirect()->to('/counselor/reports')
+                ->with('error', 'Gagal membuat PDF: ' . $e->getMessage());
+        }
 
         return $this->response
             ->setHeader('Content-Type', 'application/pdf')
@@ -319,6 +347,15 @@ class ReportController extends BaseController
             'university_choices',
         ];
         return in_array($type, $allowed, true) ? $type : 'sessions';
+    }
+
+    private function pdf(): PDFGenerator
+    {
+        if ($this->pdf === null) {
+            $this->pdf = new PDFGenerator();
+        }
+
+        return $this->pdf;
     }
 
     private function safeFilename(string $name): string

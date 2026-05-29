@@ -4,7 +4,7 @@
  *
  * Koordinator BK • Laporan Agregat
  * - Filter + AJAX preview
- * - Export PDF/XLSX (izin: generate_reports)
+ * - Export PDF/XLSX (izin: generate_reports_aggregate)
  * - UI: preset periode, chips ringkasan, simpan filter
  */
 
@@ -32,7 +32,7 @@ $valOrient  = $valOrient ?? 'portrait';
 // permission opsional (kalau helper ada)
 $canDownload = true;
 if (function_exists('has_permission')) {
-    $canDownload = has_permission('generate_reports');
+    $canDownload = has_permission('generate_reports_aggregate');
 }
 
 function optLabel(array $rows, string $id, string $idKey, string $labelKey, string $fallbackPrefix): string
@@ -473,7 +473,9 @@ $downloadUrlBase = route_to('koordinator.reports.download');
   });
 
   btnReset.addEventListener('click', resetForm);
-  btnCopy.addEventListener('click', copyLink);
+  if (btnCopy) {
+    btnCopy.addEventListener('click', copyLink);
+  }
 
   // Optional: auto preview kalau URL punya ?autopreview=1
   const params = new URLSearchParams(window.location.search);

@@ -14,12 +14,11 @@ use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 class ReportController extends BaseKoordinatorController
 {
     protected ReportService $report;
-    protected PDFGenerator $pdf;
+    protected ?PDFGenerator $pdf = null;
 
     public function __construct()
     {
         $this->report = new ReportService();
-        $this->pdf    = new PDFGenerator();
 
         helper(['url', 'form', 'text', 'number', 'date']);
     }
@@ -167,12 +166,20 @@ class ReportController extends BaseKoordinatorController
                     ->setFileName($filename . '.xlsx');
             }
 
+            if (! PDFGenerator::isAvailable()) {
+                return redirect()->to('/koordinator/reports')
+                    ->with(
+                        'error',
+                        'Fitur unduh PDF belum tersedia karena paket Dompdf belum terpasang di server. Unduh Excel tetap dapat digunakan.'
+                    );
+            }
+
             // PDF default
             $html = view('koordinator/reports/partials/aggregate_pdf', [
                 'data' => $data,
             ]);
 
-            $bin = $this->pdf->render($html, $paper, $orientation);
+            $bin = $this->pdf()->render($html, $paper, $orientation);
 
             return $this->response
                 ->setHeader('Content-Type', 'application/pdf')
@@ -205,6 +212,15 @@ class ReportController extends BaseKoordinatorController
             'counselor_id' => $this->request->getGet('counselor_id') ? (int) $this->request->getGet('counselor_id') : null,
             'category_id'  => $this->request->getGet('category_id') ? (int) $this->request->getGet('category_id') : null,
         ];
+    }
+
+    private function pdf(): PDFGenerator
+    {
+        if ($this->pdf === null) {
+            $this->pdf = new PDFGenerator();
+        }
+
+        return $this->pdf;
     }
 
     private function safeFilename(string $name): string

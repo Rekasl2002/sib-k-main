@@ -29,6 +29,11 @@ $valAssessmentId = $valAssessmentId ?? ($valAssess ?? '');
 
 $valPaper  = $valPaper ?? 'A4';
 $valOrient = $valOrient ?? 'portrait';
+
+$canDownload = true;
+if (function_exists('has_permission')) {
+    $canDownload = has_permission('generate_reports_individual');
+}
 ?>
 
 <div class="row">
@@ -44,6 +49,18 @@ $valOrient = $valOrient ?? 'portrait';
     </div>
   </div>
 </div>
+
+<?php if (session()->getFlashdata('error')): ?>
+  <div class="alert alert-danger">
+    <?= esc(session()->getFlashdata('error')) ?>
+  </div>
+<?php endif; ?>
+
+<?php if (session()->getFlashdata('success')): ?>
+  <div class="alert alert-success">
+    <?= esc(session()->getFlashdata('success')) ?>
+  </div>
+<?php endif; ?>
 
 <div class="row">
   <div class="col-xl-4">
@@ -64,9 +81,9 @@ $valOrient = $valOrient ?? 'portrait';
           <div class="col-12">
             <label class="form-label">Jenis Laporan</label>
             <select name="type" class="form-select" id="typeSelect">
-              <option value="students" <?= $valType==='students'?'selected':'' ?>>Data Siswa (Binaan)</option>
-              <option value="sessions" <?= $valType==='sessions'?:'' ?>>Sesi Konseling</option>
-              <option value="violations" <?= $valType==='violations'?:'' ?>>Kasus & Pelanggaran</option>
+              <option value="students" <?= $valType === 'students' ? 'selected' : '' ?>>Data Siswa (Binaan)</option>
+              <option value="sessions" <?= $valType === 'sessions' ? 'selected' : '' ?>>Sesi Konseling</option>
+              <option value="violations" <?= $valType === 'violations' ? 'selected' : '' ?>>Kasus & Pelanggaran</option>
               <!--<option value="assessments" <?= $valType==='assessments'?:'' ?>>Asesmen</option>
               <option value="career" <?= $valType==='career'?:'' ?>>Info Karir</option>
               <option value="universities" <?= $valType==='universities'?:'' ?>>Info Perguruan Tinggi</option>
@@ -175,11 +192,11 @@ $valOrient = $valOrient ?? 'portrait';
               <i class="fas fa-eye me-1"></i> Pratinjau
             </button>
 
-            <a id="dlPdf" class="btn btn-outline-secondary" href="#">
+            <a id="dlPdf" class="btn btn-outline-secondary" href="#" <?= $canDownload ? '' : 'aria-disabled="true"' ?>>
               <i class="fas fa-file-pdf me-1"></i> PDF
             </a>
 
-            <a id="dlXlsx" class="btn btn-outline-success" href="#">
+            <a id="dlXlsx" class="btn btn-outline-success" href="#" <?= $canDownload ? '' : 'aria-disabled="true"' ?>>
               <i class="fas fa-file-excel me-1"></i> Excel
             </a>
           </div>
@@ -224,6 +241,7 @@ $valOrient = $valOrient ?? 'portrait';
 
   const INIT_STATUS = "<?= esc($valStatus) ?>";
   const INIT_SORTBY = "<?= esc($valSortBy) ?>";
+  const canDownload = <?= $canDownload ? 'true' : 'false' ?>;
 
   const downloadBase = "<?= route_to('counselor.reports.download') ?>";
 
@@ -235,6 +253,21 @@ $valOrient = $valOrient ?? 'portrait';
 
   function syncDownloadLinks() {
     const q = qs();
+    if (!canDownload) {
+      dlPdf.href = '#';
+      dlXlsx.href = '#';
+      dlPdf.classList.add('disabled');
+      dlXlsx.classList.add('disabled');
+      dlPdf.setAttribute('tabindex', '-1');
+      dlXlsx.setAttribute('tabindex', '-1');
+      return;
+    }
+
+    dlPdf.classList.remove('disabled');
+    dlXlsx.classList.remove('disabled');
+    dlPdf.removeAttribute('tabindex');
+    dlXlsx.removeAttribute('tabindex');
+
     dlPdf.href  = downloadBase + "?" + q + "&format=pdf";
     dlXlsx.href = downloadBase + "?" + q + "&format=xlsx";
   }
