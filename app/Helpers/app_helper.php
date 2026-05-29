@@ -159,13 +159,9 @@ if (!function_exists('student_age_text')) {
 if (!function_exists('feature_violation_submissions_enabled')) {
     function feature_violation_submissions_enabled(): bool
     {
-        $value = env('features.violation_submissions', false);
-
-        if (is_bool($value)) {
-            return $value;
-        }
-
-        return filter_var($value, FILTER_VALIDATE_BOOL);
+        // Fitur ini belum siap dipakai, jadi jangan tampilkan menu dan jangan buka akses
+        // controller walaupun ada environment lama yang mengaktifkan flag.
+        return false;
     }
 }
 

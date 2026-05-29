@@ -40,7 +40,7 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Role: Wali Kelas (id: 4)
-        $waliKelasPermissions = [6, 7, 12, 13, 15, 18, 24, 25, 26];
+        $waliKelasPermissions = [5, 6, 7, 12, 13, 15, 18, 24, 25, 26];
         foreach ($waliKelasPermissions as $perm) {
             $data[] = [
                 'role_id'       => 4,
@@ -50,7 +50,7 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Role: Siswa (id: 5)
-        $siswaPermissions = [9, 13, 14, 15, 17, 27];
+        $siswaPermissions = [5, 9, 13, 14, 15, 17, 27];
         foreach ($siswaPermissions as $perm) {
             $data[] = [
                 'role_id'       => 5,
@@ -60,7 +60,7 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Role: Orang Tua (id: 6)
-        $orangTuaPermissions = [7, 12, 13, 15, 17, 24, 25, 27];
+        $orangTuaPermissions = [5, 7, 12, 13, 15, 17, 24, 25, 27];
         foreach ($orangTuaPermissions as $perm) {
             $data[] = [
                 'role_id'       => 6,
@@ -79,8 +79,8 @@ class RolePermissionSeeder extends Seeder
         echo "  - Admin: 27 permissions\n";
         echo "  - Koordinator BK: 19 permissions\n";
         echo "  - Guru BK: 17 permissions\n";
-        echo "  - Wali Kelas: 9 permissions\n";
-        echo "  - Siswa: 6 permissions\n";
-        echo "  - Orang Tua: 8 permissions\n";
+        echo "  - Wali Kelas: 10 permissions\n";
+        echo "  - Siswa: 7 permissions\n";
+        echo "  - Orang Tua: 9 permissions\n";
     }
 }

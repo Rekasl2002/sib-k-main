@@ -208,12 +208,12 @@ class DatabaseSeeder extends Seeder
                 'generate_reports_individual', 'send_messages', 'view_career_info',
             ],
             5 => [
-                'view_dashboard', 'take_assessments', 'schedule_counseling',
+                'view_dashboard', 'view_counseling_sessions', 'take_assessments', 'schedule_counseling',
                 'send_messages', 'view_career_info', 'view_violations',
                 'view_student_portfolio',
             ],
             6 => [
-                'view_dashboard', 'send_messages', 'view_career_info', 'view_violations',
+                'view_dashboard', 'view_counseling_sessions', 'send_messages', 'view_career_info', 'view_violations',
                 'view_reports_individual', 'generate_reports_individual',
                 'view_student_portfolio',
             ],

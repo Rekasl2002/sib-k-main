@@ -90,10 +90,11 @@ if (!function_exists('violation_status_badge_class')) {
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-8">
-                            <h4 class="text-white mb-2">Selamat Datang, <?= esc($currentUser['full_name']) ?>!</h4>
+                            <h4 class="text-white mb-2">Selamat Datang, <?= esc($currentUser['full_name'] ?? 'Wali Kelas') ?>!</h4>
                             <p class="text-white-50 mb-0">
-                                Anda adalah Wali Kelas <strong><?= esc($class['class_name']) ?></strong> -
-                                Tahun Ajaran <?= esc($class['year_name']) ?> Semester <?= esc($class['semester']) ?>
+                                Anda adalah Wali Kelas
+                                <strong><?= !empty($class['is_multiple']) ? esc(($class['class_count'] ?? 0) . ' kelas: ' . ($class['class_name'] ?? '-')) : esc($class['class_name'] ?? '-') ?></strong> -
+                                Tahun Ajaran <?= esc($class['year_name'] ?? '-') ?> Semester <?= esc($class['semester'] ?? '-') ?>
                             </p>
                         </div>
                         <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -325,7 +326,9 @@ if (!function_exists('violation_status_badge_class')) {
                                                     </div>
                                                     <div>
                                                         <h6 class="mb-0 font-size-14"><?= esc($violation['student_name']) ?></h6>
-                                                        <small class="text-muted"><?= esc($violation['nisn']) ?></small>
+                                                        <small class="text-muted">
+                                                            NIK: <?= esc($violation['nik'] ?? '-') ?> | NISN: <?= esc($violation['nisn'] ?? '-') ?>
+                                                        </small>
                                                     </div>
                                                 </div>
                                             </td>
@@ -404,8 +407,10 @@ if (!function_exists('violation_status_badge_class')) {
                                             <h6 class="mb-1 font-size-14">
                                                 <?= esc($student['full_name'] ?? $student['student_name'] ?? 'Tanpa Nama') ?>
                                             </h6>
-                                            <?php if (!empty($student['nisn'])): ?>
-                                                <small class="text-muted d-block"><?= esc($student['nisn']) ?></small>
+                                            <?php if (!empty($student['nik']) || !empty($student['nisn'])): ?>
+                                                <small class="text-muted d-block">
+                                                    NIK: <?= esc($student['nik'] ?? '-') ?> | NISN: <?= esc($student['nisn'] ?? '-') ?>
+                                                </small>
                                             <?php endif; ?>
 
                                             <?php if (!empty($student['status'])): ?>
@@ -467,7 +472,9 @@ if (!function_exists('violation_status_badge_class')) {
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="mb-1 font-size-14"><?= esc($student['full_name']) ?></h6>
-                                            <small class="text-muted"><?= esc($student['nisn']) ?></small>
+                                            <small class="text-muted">
+                                                NIK: <?= esc($student['nik'] ?? '-') ?> | NISN: <?= esc($student['nisn'] ?? '-') ?>
+                                            </small>
                                         </div>
                                         <div class="flex-shrink-0 text-end">
                                             <h6 class="mb-0 text-<?= $student['total_points'] >= 75 ? 'danger' : 'warning' ?>">

@@ -110,8 +110,10 @@ class AssessmentController extends BaseController
     {
         $db = \Config\Database::connect();
         $qb = $db->table('students s')
-            ->select('s.id, s.full_name, s.nisn, s.class_id, c.class_name, c.grade_level, c.major')
+            ->select('s.id, u.full_name AS full_name, s.nisn, s.class_id, c.class_name, c.grade_level, c.major')
+            ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'left')
             ->join('classes c', 'c.id = s.class_id', 'left')
+            ->where('s.deleted_at', null)
             ->where('s.status', 'Aktif');
 
         $target = (string)($assessment['target_audience'] ?? 'All');
@@ -123,7 +125,7 @@ class AssessmentController extends BaseController
 
         return $qb->orderBy('c.grade_level', 'ASC')
             ->orderBy('c.class_name', 'ASC')
-            ->orderBy('s.full_name', 'ASC');
+            ->orderBy('u.full_name', 'ASC');
     }
 
     /**
@@ -945,13 +947,13 @@ class AssessmentController extends BaseController
                     CASE WHEN a.use_passing_score = 1 THEN 'pass_fail' ELSE 'score_only' END
                 ) AS evaluation_mode,
                 COALESCE(a.show_score_to_student, a.show_result_immediately) AS show_score_to_student,
-                s.full_name AS student_name,
-                s.nisn,
+                u.full_name AS student_name,
                 s.nisn,
                 c.class_name
             ")
             ->join('assessments a', 'a.id = r.assessment_id')
             ->join('students s', 's.id = r.student_id')
+            ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'left')
             ->join('classes c', 'c.id = s.class_id', 'left')
             ->where('r.id', (int)$resultId)
             ->where('r.assessment_id', (int)$assessmentId)

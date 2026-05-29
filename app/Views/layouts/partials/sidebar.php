@@ -610,7 +610,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           </li>
           <?php endif; ?>
 
-          <?php if ($__permViewCounselingSessions): ?>
+          <?php if ($__permViewCounselingSessions || $__permViewCounselingSchedule): ?>
           <li>
             <a href="<?= base_url('student/schedule') ?>" class="waves-effect<?= $__active('student/schedule*') ?>">
               <i class="mdi mdi-calendar"></i>

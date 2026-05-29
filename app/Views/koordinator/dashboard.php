@@ -146,13 +146,13 @@ foreach ($violationsData as $row) {
                         </div>
                         <div class="col-md-4 text-md-end mt-3 mt-md-0">
                             <div class="d-grid gap-2">
-                                <a href="<?= base_url('homeroom/violations/create') ?>" class="btn btn-light">
+                                <a href="<?= base_url('koordinator/cases/create') ?>" class="btn btn-light">
                                     <i class="mdi mdi-alert-circle-outline me-1"></i> Laporkan Pelanggaran
                                 </a>
-                                <a href="<?= base_url('homeroom/violations') ?>" class="btn btn-light">
+                                <a href="<?= base_url('koordinator/cases') ?>" class="btn btn-light">
                                     <i class="mdi mdi-format-list-bulleted me-1"></i> Lihat Semua Pelanggaran
                                 </a>
-                                <a href="<?= base_url('homeroom/reports') ?>" class="btn btn-light">
+                                <a href="<?= base_url('koordinator/reports') ?>" class="btn btn-light">
                                     <i class="mdi mdi-file-chart me-1"></i> Lihat Laporan
                                 </a>
                             </div>

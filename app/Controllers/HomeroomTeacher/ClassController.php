@@ -66,6 +66,46 @@ class ClassController extends BaseController
         }
     }
 
+    private function classIds(array $classes): array
+    {
+        $ids = [];
+        foreach ($classes as $class) {
+            $id = (int) ($class['id'] ?? 0);
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    private function summarizeClasses(array $classes): array
+    {
+        if (count($classes) <= 1) {
+            return $classes[0] ?? [];
+        }
+
+        $summary = $classes[0];
+        $summary['id'] = null;
+        $summary['is_multiple'] = true;
+        $summary['class_count'] = count($classes);
+        $summary['class_name'] = implode(', ', array_map(static function ($row) {
+            return (string) ($row['class_name'] ?? '-');
+        }, $classes));
+
+        $grades = array_values(array_unique(array_filter(array_map(static function ($row) {
+            return (string) ($row['grade_level'] ?? '');
+        }, $classes))));
+        $summary['grade_level'] = count($grades) === 1 ? $grades[0] : 'Beragam';
+
+        $majors = array_values(array_unique(array_filter(array_map(static function ($row) {
+            return (string) ($row['major'] ?? '');
+        }, $classes))));
+        $summary['major'] = count($majors) === 1 ? $majors[0] : '';
+
+        return $summary;
+    }
+
     /**
      * GET /homeroom/my-class
      * Tampilan ringkas kelas perwalian untuk Wali Kelas (role_id = 4)
@@ -127,12 +167,20 @@ class ClassController extends BaseController
             $builder->where('c.academic_year_id', (int)$activeYear['id']);
         }
 
-        $class = $builder->get()->getRowArray();
+        $classes = $builder
+            ->orderBy('c.grade_level', 'ASC')
+            ->orderBy('c.class_name', 'ASC')
+            ->orderBy('c.id', 'ASC')
+            ->get()
+            ->getResultArray();
+        $class = $this->summarizeClasses($classes);
+        $classIds = $this->classIds($classes);
 
-        if (!$class) {
+        if (empty($classIds)) {
             return view('homeroom_teacher/class/my_class', [
                 'pageTitle'            => 'Kelas Binaan',
                 'class'                => null,
+                'classes'              => [],
                 'activeYear'           => $activeYear,
                 'stats'                => null,
                 'students'             => [],
@@ -151,13 +199,17 @@ class ClassController extends BaseController
                 's.user_id',
                 'u.full_name AS full_name',
                 's.gender',
+                's.nik',
                 's.nisn',
-                's.nisn',
+                's.birth_date',
                 's.total_violation_points',
                 's.status',
+                'c.class_name',
+                'c.grade_level',
             ])
             ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'left')
-            ->where('s.class_id', (int)$class['id'])
+            ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
+            ->whereIn('s.class_id', $classIds)
             ->where('s.status', 'Aktif');
 
         // Soft delete guard untuk students
@@ -182,7 +234,7 @@ class ClassController extends BaseController
                 "SUM(CASE WHEN s.gender = 'P' THEN 1 ELSE 0 END) AS total_female",
                 'COALESCE(AVG(s.total_violation_points),0) AS avg_points',
             ])
-            ->where('s.class_id', (int)$class['id'])
+            ->whereIn('s.class_id', $classIds)
             ->where('s.status', 'Aktif');
 
         try {
@@ -208,11 +260,15 @@ class ClassController extends BaseController
                 'vc.category_name',
                 'vc.point_deduction',
                 'su.full_name AS student_name',
+                's.nik AS student_nik',
+                's.nisn AS student_nisn',
+                'c.class_name',
             ])
             ->join('students s', 's.id = v.student_id', 'left')
             ->join('users su', 'su.id = s.user_id AND su.deleted_at IS NULL', 'left')
+            ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
             ->join('violation_categories vc', 'vc.id = v.category_id', 'left')
-            ->where('s.class_id', (int)$class['id'])
+            ->whereIn('s.class_id', $classIds)
             ->where('v.deleted_at', null)
             ->orderBy('v.violation_date', 'DESC')
             ->orderBy('v.created_at', 'DESC')
@@ -230,10 +286,14 @@ class ClassController extends BaseController
                 's.user_id',
                 'u.full_name AS full_name',
                 's.gender',
-                's.total_violation_points'
+                's.nik',
+                's.nisn',
+                's.total_violation_points',
+                'c.class_name',
             ])
             ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'left')
-            ->where('s.class_id', (int)$class['id'])
+            ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
+            ->whereIn('s.class_id', $classIds)
             ->where('s.status', 'Aktif')
             ->where('s.total_violation_points >', 0);
 
@@ -253,6 +313,8 @@ class ClassController extends BaseController
         return view('homeroom_teacher/class/my_class', [
             'pageTitle'            => 'Kelas Binaan',
             'class'                => $class,
+            'classes'              => $classes,
+            'classIds'             => $classIds,
             'activeYear'           => $activeYear,
             'stats'                => $stats,
             'students'             => $students,

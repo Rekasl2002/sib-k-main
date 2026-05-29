@@ -69,6 +69,7 @@ $stats                = rowa($stats ?? null);
 $students             = $students ?? [];
 $recentViolations     = $recentViolations ?? [];
 $topViolationStudents = $topViolationStudents ?? [];
+$isMultipleClass      = ! empty($class['is_multiple']);
 
 $studentCount = is_array($students) ? count($students) : 0;
 ?>
@@ -87,7 +88,7 @@ $studentCount = is_array($students) ? count($students) : 0;
 
                     <?php if (! empty($class)) : ?>
                         <div class="text-muted small mt-1">
-                            <?= esc($class['class_name'] ?? '-') ?>
+                            <?= $isMultipleClass ? esc(($class['class_count'] ?? 0) . ' kelas: ' . ($class['class_name'] ?? '-')) : esc($class['class_name'] ?? '-') ?>
                             <?php if (! empty($class['grade_level'])) : ?>
                                 · Kelas <?= esc($class['grade_level']) ?>
                             <?php endif; ?>
@@ -147,7 +148,9 @@ $studentCount = is_array($students) ? count($students) : 0;
                                 <ul class="list-unstyled mb-0 small">
                                     <li class="mb-2">
                                         <span class="text-muted">Nama Kelas</span><br>
-                                        <span class="fw-semibold"><?= esc($class['class_name'] ?? '-') ?></span>
+                                        <span class="fw-semibold">
+                                            <?= $isMultipleClass ? esc(($class['class_count'] ?? 0) . ' kelas: ' . ($class['class_name'] ?? '-')) : esc($class['class_name'] ?? '-') ?>
+                                        </span>
                                     </li>
                                     <li class="mb-2">
                                         <span class="text-muted">Tingkat</span><br>
@@ -249,7 +252,7 @@ $studentCount = is_array($students) ? count($students) : 0;
                                         <i class="bi bi-search"></i>
                                     </span>
                                     <input type="text" id="studentSearch" class="form-control"
-                                           placeholder="Cari nama / NISN">
+                                           placeholder="Cari nama / NIK / NISN">
                                 </div>
                                 <select id="studentFilterGender" class="form-select form-select-sm" style="min-width: 140px;">
                                     <option value="">Semua</option>
@@ -284,7 +287,8 @@ $studentCount = is_array($students) ? count($students) : 0;
                                                 trim(
                                                     ($s['full_name'] ?? '') . ' ' .
                                                     ($s['nik'] ?? '') . ' ' .
-                                                    ($s['nisn'] ?? '')
+                                                    ($s['nisn'] ?? '') . ' ' .
+                                                    ($s['class_name'] ?? '')
                                                 )
                                             );
                                         ?>
@@ -297,6 +301,11 @@ $studentCount = is_array($students) ? count($students) : 0;
                                                     <div class="fw-semibold">
                                                         <?= esc($s['full_name'] ?? '-') ?>
                                                     </div>
+                                                    <?php if ($isMultipleClass): ?>
+                                                        <small class="text-muted">
+                                                            <?= esc($s['class_name'] ?? '-') ?>
+                                                        </small>
+                                                    <?php endif; ?>
                                                     <!-- ✅ DIHAPUS: tampilan ID (internal) -->
                                                 </td>
                                                 <td class="text-nowrap small">
@@ -361,6 +370,11 @@ $studentCount = is_array($students) ? count($students) : 0;
                                                 <div class="fw-semibold">
                                                     <?= esc($v['student_name'] ?? '-') ?>
                                                 </div>
+                                                <?php if ($isMultipleClass && ! empty($v['class_name'])) : ?>
+                                                    <div class="text-muted">
+                                                        <?= esc($v['class_name']) ?>
+                                                    </div>
+                                                <?php endif; ?>
                                                 <div class="text-muted">
                                                     <?= esc($v['category_name'] ?? '-') ?>
                                                     <?php if (! empty($v['severity_level'])) : ?>
@@ -425,6 +439,9 @@ $studentCount = is_array($students) ? count($students) : 0;
                                             </div>
                                             <div class="text-muted">
                                                 <?= genderLabel($ts['gender'] ?? null) ?>
+                                                <?php if ($isMultipleClass && ! empty($ts['class_name'])): ?>
+                                                    - <?= esc($ts['class_name']) ?>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                         <span class="<?= pointsBadgeClass($ts['total_violation_points'] ?? 0) ?>">

@@ -16,6 +16,46 @@ class StudentController extends BaseController
         $this->db = \Config\Database::connect();
     }
 
+    private function classIds(array $classes): array
+    {
+        $ids = [];
+        foreach ($classes as $class) {
+            $id = (int) ($class['id'] ?? 0);
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+        }
+
+        return array_values(array_unique($ids));
+    }
+
+    private function summarizeClasses(array $classes): array
+    {
+        if (count($classes) <= 1) {
+            return $classes[0] ?? [];
+        }
+
+        $summary = $classes[0];
+        $summary['id'] = null;
+        $summary['is_multiple'] = true;
+        $summary['class_count'] = count($classes);
+        $summary['class_name'] = implode(', ', array_map(static function ($row) {
+            return (string) ($row['class_name'] ?? '-');
+        }, $classes));
+
+        $grades = array_values(array_unique(array_filter(array_map(static function ($row) {
+            return (string) ($row['grade_level'] ?? '');
+        }, $classes))));
+        $summary['grade_level'] = count($grades) === 1 ? $grades[0] : 'Beragam';
+
+        $majors = array_values(array_unique(array_filter(array_map(static function ($row) {
+            return (string) ($row['major'] ?? '');
+        }, $classes))));
+        $summary['major'] = count($majors) === 1 ? $majors[0] : '';
+
+        return $summary;
+    }
+
     /**
      * GET /homeroom/students
      * Daftar siswa di kelas perwalian wali kelas yang login.
@@ -66,23 +106,33 @@ class StudentController extends BaseController
             $builder->where('c.academic_year_id', (int)$activeYear['id']);
         }
 
-        $class = $builder->get()->getRowArray();
+        $classes = $builder
+            ->orderBy('c.grade_level', 'ASC')
+            ->orderBy('c.class_name', 'ASC')
+            ->orderBy('c.id', 'ASC')
+            ->get()
+            ->getResultArray();
+        $class = $this->summarizeClasses($classes);
+        $classIds = $this->classIds($classes);
 
         // Daftar siswa aktif
         // NOTE: kolom students.full_name sudah dihapus -> ambil dari users.full_name
         $students = [];
-        if ($class) {
+        if (!empty($classIds)) {
             $studentsQ = $this->db->table('students s')
                 ->select([
                     's.id',
                     'u.full_name AS full_name',
-                    's.nisn',
+                    's.nik',
                     's.nisn',
                     's.gender',
                     's.total_violation_points',
+                    'c.class_name',
+                    'c.grade_level',
                 ])
                 ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'left')
-                ->where('s.class_id', (int)$class['id'])
+                ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
+                ->whereIn('s.class_id', $classIds)
                 ->where('s.status', 'Aktif');
 
             // Soft delete guard (jika kolom ada)
@@ -102,6 +152,8 @@ class StudentController extends BaseController
             'pageTitle'  => 'Daftar Siswa Kelas Saya',
             'activeYear' => $activeYear,
             'class'      => $class,
+            'classes'    => $classes,
+            'classIds'   => $classIds,
             'students'   => $students,
         ]);
     }
@@ -156,9 +208,16 @@ class StudentController extends BaseController
             $builder->where('c.academic_year_id', (int)$activeYear['id']);
         }
 
-        $class = $builder->get()->getRowArray();
+        $classes = $builder
+            ->orderBy('c.grade_level', 'ASC')
+            ->orderBy('c.class_name', 'ASC')
+            ->orderBy('c.id', 'ASC')
+            ->get()
+            ->getResultArray();
+        $class = $this->summarizeClasses($classes);
+        $classIds = $this->classIds($classes);
 
-        if (!$class) {
+        if (empty($classIds)) {
             return redirect()
                 ->route('homeroom.students')
                 ->with('error', 'Anda belum memiliki kelas aktif.');
@@ -182,7 +241,7 @@ class StudentController extends BaseController
             ->join('classes c', 'c.id = s.class_id', 'left')
             ->join('academic_years ay', 'ay.id = c.academic_year_id', 'left')
             ->where('s.id', (int)$id)
-            ->where('s.class_id', (int)$class['id']); // pastikan milik kelas wali ini
+            ->whereIn('s.class_id', $classIds); // pastikan milik kelas wali ini
 
         // Soft delete guard untuk students (jika kolom ada)
         try {
@@ -295,6 +354,8 @@ class StudentController extends BaseController
             'pageTitle'        => 'Detail Siswa',
             'student'          => $student,
             'class'            => $class,
+            'classes'          => $classes,
+            'classIds'         => $classIds,
             'activeYear'       => $activeYear,
             'stats'            => $stats,
             'recentViolations' => $recentViolations,

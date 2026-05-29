@@ -122,13 +122,21 @@ if (!function_exists('badgeClass')) {
         <div class="card">
           <div class="card-body">
             <div class="row g-3">
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <div class="p-3 bg-light rounded">
                   <div class="fw-semibold">Kelas</div>
                   <div><?= v($student ?? [],'class_name','-') ?></div>
                 </div>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3">
+                <div class="p-3 bg-light rounded">
+                  <div class="fw-semibold">NIK / NISN</div>
+                  <div class="small">
+                    <?= v($student ?? [], 'nik', '-') ?> / <?= v($student ?? [], 'nisn', '-') ?>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3">
                 <div class="p-3 bg-light rounded">
                   <div class="fw-semibold">Tahun Ajaran Aktif</div>
                   <div>
@@ -140,7 +148,7 @@ if (!function_exists('badgeClass')) {
                   </div>
                 </div>
               </div>
-              <div class="col-md-4">
+              <div class="col-md-3">
                 <div class="p-3 bg-light rounded">
                   <div class="fw-semibold">Poin Pelanggaran</div>
                   <div><?= v($student ?? [],'total_violation_points',0) ?></div>

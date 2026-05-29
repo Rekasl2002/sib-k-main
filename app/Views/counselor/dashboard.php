@@ -437,7 +437,7 @@ $violationByCategory = $violationByCategory ?? [];
                         <table class="table table-hover table-nowrap align-middle mb-0">
                             <thead class="table-light">
                             <tr>
-                                <th>NISN</th>
+                                <th>NIK / NISN</th>
                                 <th>Nama</th>
                                 <th>Kelas</th>
                                 <th>Sesi</th>
@@ -447,7 +447,10 @@ $violationByCategory = $violationByCategory ?? [];
                             <tbody>
                             <?php foreach (array_slice($assignedStudents, 0, 5) as $student): ?>
                                 <tr>
-                                    <td><?= esc($student['nisn'] ?? '-') ?></td>
+                                    <td>
+                                        <small class="d-block">NIK: <?= esc($student['nik'] ?? '-') ?></small>
+                                        <small class="text-muted">NISN: <?= esc($student['nisn'] ?? '-') ?></small>
+                                    </td>
                                     <td>
                                         <h6 class="mb-0"><?= esc($student['student_name'] ?? '-') ?></h6>
                                     </td>

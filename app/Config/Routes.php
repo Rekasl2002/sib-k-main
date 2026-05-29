@@ -49,7 +49,9 @@ $routes->setTranslateURIDashes(false);
 // Disarankan: matikan AutoRoute untuk keamanan (semua rute eksplisit)
 $routes->setAutoRoute(false);
 
-$featureViolationSubmissionsEnabled = filter_var(env('features.violation_submissions', false), FILTER_VALIDATE_BOOL);
+// Fitur Pengaduan Pelanggaran belum dipakai di aplikasi produksi, jadi route-nya
+// dimatikan penuh agar tidak bisa diakses lewat URL langsung.
+$featureViolationSubmissionsEnabled = false;
 
 // -------------------------------
 // Default
@@ -1079,8 +1081,9 @@ $routes->group('student', [
             });
         }
 
-        // Jadwal/request konseling (pakai permission tabel: view_counseling_sessions)
-        $routes->group('schedule', ['filter' => 'permission:view_counseling_sessions'], function ($routes) {
+        // Jadwal/request konseling: kompatibel dengan permission lama schedule_counseling
+        // dan permission baru view_counseling_sessions.
+        $routes->group('schedule', ['filter' => 'permission:any,view_counseling_sessions,schedule_counseling'], function ($routes) {
             $routes->get('/', 'ScheduleController::index', ['as' => 'student.schedule']);
             $routes->get('request', 'ScheduleController::requestForm', ['as' => 'student.schedule.request']);
             $routes->post('request', 'ScheduleController::storeRequest', ['as' => 'student.schedule.store']);
@@ -1189,11 +1192,11 @@ $routes->group('parent', [
 
             // Jadwal/sesi anak
             $routes->get('(:num)/sessions', 'ChildController::sessions/$1', [
-                'filter' => 'permission:view_counseling_sessions',
+                'filter' => 'permission:any,view_counseling_sessions,view_student_portfolio',
                 'as'     => 'parent.children.sessions'
             ]);
             $routes->get('(:num)/sessions/(:num)', 'ChildController::sessionDetail/$1/$2', [
-                'filter' => 'permission:view_counseling_sessions',
+                'filter' => 'permission:any,view_counseling_sessions,view_student_portfolio',
                 'as'     => 'parent.children.sessions.detail'
             ]);
 
