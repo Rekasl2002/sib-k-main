@@ -175,7 +175,7 @@ $creatorName = $career['created_by_name'] ?? null;
 
       <div class="mb-3">
         <a href="<?= site_url('parent/career') ?>" class="btn btn-light">
-          Kembali ke daftar karir
+          Kembali ke daftar karier
         </a>
       </div>
     </div>

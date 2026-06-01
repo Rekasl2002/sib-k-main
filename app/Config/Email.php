@@ -120,19 +120,31 @@ class Email extends BaseConfig
     public bool $DSN = false;
 
     public function __construct()
-{
-    parent::__construct();
+    {
+        parent::__construct();
 
-    helper('settings');
-    $this->fromEmail = setting('from_email', env('email.fromEmail'), 'mail');
-    $this->fromName  = setting('from_name',  env('email.fromName','SIB-K'), 'mail');
+        helper('settings');
 
-    // Host/port/crypto override bila diisi
-    $host  = setting('host','', 'mail'); if ($host) $this->SMTPHost = $host;
-    $port  = (int) setting('port',0,'mail'); if ($port>0) $this->SMTPPort = $port;
-    $crypt = setting('crypto','', 'mail'); if ($crypt!=='') $this->SMTPCrypto = $crypt;
+        $mailSetting = static function (string $key, $default) {
+            if (ENVIRONMENT === 'testing') {
+                return $default;
+            }
 
-    // Username/password tetap dari .env (jangan simpan di DB)
-}
+            return setting($key, $default, 'mail');
+        };
+
+        $this->protocol   = (string) $mailSetting('protocol', env('email.protocol', $this->protocol));
+        $this->fromEmail  = (string) $mailSetting('from_email', env('email.fromEmail', $this->fromEmail));
+        $this->fromName   = (string) $mailSetting('from_name', env('email.fromName', 'SIB-K'));
+        $this->SMTPHost   = (string) $mailSetting('host', env('email.SMTPHost', $this->SMTPHost));
+        $this->SMTPUser   = (string) env('email.SMTPUser', $this->SMTPUser);
+        $this->SMTPPass   = (string) env('email.SMTPPass', $this->SMTPPass);
+        $this->SMTPPort   = (int) $mailSetting('port', env('email.SMTPPort', $this->SMTPPort));
+        $this->SMTPCrypto = (string) $mailSetting('crypto', env('email.SMTPCrypto', $this->SMTPCrypto));
+        $this->SMTPTimeout = (int) env('email.SMTPTimeout', $this->SMTPTimeout);
+        $this->mailType   = (string) $mailSetting('mail_type', env('email.mailType', $this->mailType));
+        $this->charset    = (string) env('email.charset', $this->charset);
+        $this->wordWrap   = filter_var(env('email.wordWrap', $this->wordWrap), FILTER_VALIDATE_BOOL);
+    }
 
 }

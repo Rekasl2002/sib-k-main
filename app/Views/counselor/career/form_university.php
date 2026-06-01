@@ -258,7 +258,7 @@ $logoSrc = $srcOld !== null
       </div>
 
       <div class="mb-3">
-        <label class="form-label">Perkiraan Biaya Kuliah</label>
+        <label class="form-label">Perkiraan Biaya Studi Lanjut</label>
         <textarea name="tuition_range" class="form-control" rows="2"
                   placeholder="contoh: 8-15 juta/semester"><?= esc(oldv('tuition_range', $career['tuition_range'] ?? '')) ?></textarea>
       </div>

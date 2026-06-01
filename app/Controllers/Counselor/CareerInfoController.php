@@ -24,13 +24,13 @@ class CareerInfoController extends BaseController
         helper(['form', 'permission', 'url']);
     }
 
-    /** Halaman utama: tab daftar karir & universitas (default tab: careers) */
+    /** Halaman utama: tab daftar karier & universitas (default tab: careers) */
     public function index()
     {
         require_permission('manage_career_info');
 
         // ------------------------------
-        // Filters untuk Karir (careers)
+        // Filters untuk Karier (careers)
         // ------------------------------
         $careerFilters = [
             'q'      => $this->request->getGet('q'),
@@ -102,7 +102,7 @@ class CareerInfoController extends BaseController
     }
 
     /**
-     * Rekap pilihan karir & perguruan tinggi siswa
+     * Rekap pilihan karier & studi lanjut siswa
      * URL: /counselor/career-info/student-choices
      */
     public function studentChoices()
@@ -129,7 +129,7 @@ class CareerInfoController extends BaseController
         $uniPager      = null;
 
         // -------------------------------------------------------------
-        // Data pilihan KARIR siswa
+        // Data pilihan karier siswa
         // -------------------------------------------------------------
         if ($hasCareerTbl) {
             $cb = $this->careers
@@ -324,14 +324,14 @@ class CareerInfoController extends BaseController
         $this->careers->insert($payload);
 
         return redirect()->to(route_to('counselor.career.index') . '?tab=careers')
-            ->with('success', 'Pilihan karir berhasil ditambahkan.');
+            ->with('success', 'Pilihan karier berhasil ditambahkan.');
     }
 
     public function editCareer(int $id)
     {
         require_permission('manage_career_info');
 
-        // Ambil data karir + nama pembuat (users.full_name)
+        // Ambil data karier + nama pembuat (users.full_name)
         $career = $this->careers
             ->select('career_options.*, creator.full_name AS created_by_name')
             ->join('users AS creator', 'creator.id = career_options.created_by', 'left')
@@ -340,7 +340,7 @@ class CareerInfoController extends BaseController
 
         if (! $career) {
             return redirect()->to(route_to('counselor.career.index') . '?tab=careers')
-                ->with('error', 'Data karir tidak ditemukan.');
+                ->with('error', 'Data karier tidak ditemukan.');
         }
 
         // decode JSON untuk ditampilkan di form
@@ -368,7 +368,7 @@ class CareerInfoController extends BaseController
         $career = $this->careers->find($id);
         if (! $career) {
             return redirect()->to(route_to('counselor.career.index') . '?tab=careers')
-                ->with('error', 'Data karir tidak ditemukan.');
+                ->with('error', 'Data karier tidak ditemukan.');
         }
 
         $rules = [
@@ -391,7 +391,7 @@ class CareerInfoController extends BaseController
         $this->careers->update($id, $payload);
 
         return redirect()->to(route_to('counselor.career.index') . '?tab=careers')
-            ->with('success', 'Pilihan karir berhasil diperbarui.');
+            ->with('success', 'Pilihan karier berhasil diperbarui.');
     }
 
     public function deleteCareer(int $id)
@@ -404,7 +404,7 @@ class CareerInfoController extends BaseController
         }
 
         return redirect()->to(route_to('counselor.career.index') . '?tab=careers')
-            ->with('success', 'Pilihan karir berhasil dihapus.');
+            ->with('success', 'Pilihan karier berhasil dihapus.');
     }
 
     public function toggleCareer(int $id)
@@ -414,14 +414,14 @@ class CareerInfoController extends BaseController
         $career = $this->careers->find($id);
         if (! $career) {
             return redirect()->to(route_to('counselor.career.index') . '?tab=careers')
-                ->with('error', 'Data karir tidak ditemukan.');
+                ->with('error', 'Data karier tidak ditemukan.');
         }
 
         $newStatus = (int) ($career['is_active'] ?? 0) === 1 ? 0 : 1;
         $this->careers->update($id, ['is_active' => $newStatus]);
 
         return redirect()->to(route_to('counselor.career.index') . '?tab=careers')
-            ->with('success', 'Status karir berhasil diubah.');
+            ->with('success', 'Status karier berhasil diubah.');
     }
 
     public function toggleCareerPublic(int $id)
@@ -431,13 +431,13 @@ class CareerInfoController extends BaseController
         $career = $this->careers->find($id);
         if (! $career) {
             return redirect()->to(route_to('counselor.career.index') . '?tab=careers')
-                ->with('error', 'Data karir tidak ditemukan.');
+                ->with('error', 'Data karier tidak ditemukan.');
         }
 
         $new = (int) ($career['is_public'] ?? 0) === 1 ? 0 : 1;
         $this->careers->update($id, ['is_public' => $new]);
 
-        $msg = $new ? 'Karir dipublikasikan.' : 'Karir di-set private.';
+        $msg = $new ? 'Karier dipublikasikan.' : 'Karier di-set private.';
         return redirect()->to(route_to('counselor.career.index') . '?tab=careers')
             ->with('success', $msg);
     }

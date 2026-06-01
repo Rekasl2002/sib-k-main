@@ -85,9 +85,9 @@ if (function_exists('has_permission')) {
               <option value="sessions" <?= $valType === 'sessions' ? 'selected' : '' ?>>Sesi Konseling</option>
               <option value="violations" <?= $valType === 'violations' ? 'selected' : '' ?>>Kasus & Pelanggaran</option>
               <!--<option value="assessments" <?= $valType==='assessments'?:'' ?>>Asesmen</option>
-              <option value="career" <?= $valType==='career'?:'' ?>>Info Karir</option>
+              <option value="career" <?= $valType==='career'?:'' ?>>Fitur Info Karier dan Info Studi Lanjut</option>
               <option value="universities" <?= $valType==='universities'?:'' ?>>Info Perguruan Tinggi</option>
-              <option value="career_choices" <?= $valType==='career_choices'?:'' ?>>Pilihan Karir Siswa</option>
+              <option value="career_choices" <?= $valType==='career_choices'?:'' ?>>Pilihan Karier Siswa</option>
               <option value="university_choices" <?= $valType==='university_choices'?:'' ?>>Pilihan PT Siswa</option>-->
             </select>
           </div>
@@ -422,7 +422,7 @@ if (function_exists('has_permission')) {
     if (type === 'career_choices') {
       sortOptions = [
         {value:'', label:'Default'},
-        {value:'co.title', label:'Karir'},
+        {value:'co.title', label:'Karier'},
         {value:'students_count', label:'Jumlah Siswa'},
         {value:'saved_count', label:'Jumlah Pilihan'}
       ];

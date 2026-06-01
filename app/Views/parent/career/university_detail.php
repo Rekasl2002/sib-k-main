@@ -138,7 +138,7 @@ $backUrl   = $backUrl ?? site_url('parent/career?tab=universities');
             <dt>Informasi Penerimaan</dt>
             <dd><?= nl2br(esc($u['admission_info'] ?? 'Belum ada informasi penerimaan.')) ?></dd>
 
-            <dt class="mt-2">Kisaran Biaya Kuliah</dt>
+            <dt class="mt-2">Kisaran Biaya Studi Lanjut</dt>
             <dd><?= nl2br(esc($u['tuition_range'] ?? 'Belum ada informasi biaya.')) ?></dd>
 
             <dt class="mt-2">Beasiswa</dt>

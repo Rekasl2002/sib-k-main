@@ -1,7 +1,7 @@
 <?php
 /**
  * File Path: app/Views/homeroom_teacher/career/index.php
- * Halaman utama Info Karir/Kuliah (Wali Kelas)
+ * Halaman utama Fitur Info Karier dan Info Studi Lanjut (Wali Kelas)
  *
  * Variabel:
  * - $careers, $careerPager, $careerFilters
@@ -16,7 +16,7 @@ $flashSuccess = session()->getFlashdata('success');
 $flashError   = session()->getFlashdata('error');
 $req          = service('request');
 
-// Prefill filter karir
+// Prefill filter karier
 $careerFilters = $careerFilters ?? [
     'q'      => $req->getGet('q'),
     'sector' => $req->getGet('sector'),
@@ -40,9 +40,9 @@ $uniFilters = [
 
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
       <div>
-        <h4 class="mb-1">Info Karir & Perguruan Tinggi</h4>
+        <h4 class="mb-1">Fitur Info Karier dan Info Studi Lanjut</h4>
         <p class="text-muted mb-0">
-          Referensi untuk mendampingi perencanaan karir dan studi lanjut siswa di kelas perwalian Anda.
+          Referensi untuk mendampingi perencanaan karier dan studi lanjut siswa di kelas perwalian Anda.
         </p>
       </div>
     </div>
@@ -60,7 +60,7 @@ $uniFilters = [
         <li class="nav-item">
           <a class="nav-link <?= ($activeTab === 'careers' ? 'active' : '') ?>"
              href="<?= site_url('homeroom/career-info?tab=careers') ?>">
-            Karir
+            Karier
           </a>
         </li>
         <li class="nav-item">
@@ -74,14 +74,22 @@ $uniFilters = [
       <div class="d-flex align-items-center gap-2">
         <!-- Rekap pilihan siswa -->
         <a href="<?= route_to('homeroom.career.choices') ?>" class="btn btn-outline-secondary btn-sm shadow-sm">
-          <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Karir &amp; PT Siswa
+          <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Karier dan Studi Lanjut Siswa
         </a>
-        <!-- Tidak ada tombol tambah di versi wali kelas -->
+        <?php if ($activeTab === 'careers'): ?>
+          <a href="<?= site_url('homeroom/career-info/careers/create') ?>" class="btn btn-success btn-sm shadow-sm">
+            <i class="mdi mdi-plus me-1"></i> Tambah Karier
+          </a>
+        <?php else: ?>
+          <a href="<?= site_url('homeroom/career-info/universities/create') ?>" class="btn btn-success btn-sm shadow-sm">
+            <i class="mdi mdi-plus me-1"></i> Tambah Info Studi Lanjut
+          </a>
+        <?php endif; ?>
       </div>
     </div>
 
     <div class="tab-content">
-      <!-- TAB: Karir -->
+      <!-- TAB: Karier -->
       <div class="tab-pane <?= ($activeTab === 'careers' ? 'active show' : '') ?>" id="tab-careers">
 
         <div class="card">
@@ -136,12 +144,13 @@ $uniFilters = [
                 <thead class="table-light">
                   <tr>
                     <th>#</th>
-                    <th>Judul Karir</th>
+                    <th>Judul Karier</th>
                     <th>Sektor</th>
                     <th>Min. Pendidikan</th>
                     <th>Dibuat Oleh</th>
                     <th>Status</th>
                     <th>Publik</th>
+                    <th>Aksi</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -168,11 +177,28 @@ $uniFilters = [
                           <span class="badge bg-warning text-dark">Internal</span>
                         <?php endif; ?>
                       </td>
+                      <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                          <a href="<?= site_url('homeroom/career-info/careers/edit/' . (int)$career['id']) ?>" class="btn btn-outline-primary">Edit</a>
+                          <form method="post" action="<?= site_url('homeroom/career-info/careers/toggle/' . (int)$career['id']) ?>">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-outline-warning">Status</button>
+                          </form>
+                          <form method="post" action="<?= site_url('homeroom/career-info/careers/publish/' . (int)$career['id']) ?>">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-outline-info">Publikasi</button>
+                          </form>
+                          <form method="post" action="<?= site_url('homeroom/career-info/careers/delete/' . (int)$career['id']) ?>" onsubmit="return confirm('Hapus info karier ini?')">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-outline-danger">Hapus</button>
+                          </form>
+                        </div>
+                      </td>
                     </tr>
                   <?php endforeach; ?>
                 <?php else: ?>
                   <tr>
-                    <td colspan="7" class="text-center text-muted">Belum ada data karir.</td>
+                    <td colspan="8" class="text-center text-muted">Belum ada data karier.</td>
                   </tr>
                 <?php endif; ?>
                 </tbody>
@@ -239,6 +265,7 @@ $uniFilters = [
                     <th>Dibuat Oleh</th>
                     <th>Status</th>
                     <th>Publik</th>
+                    <th>Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -268,11 +295,28 @@ $uniFilters = [
                             <span class="badge bg-warning text-dark">Internal</span>
                         <?php endif; ?>
                         </td>
+                        <td>
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="<?= site_url('homeroom/career-info/universities/edit/' . (int)$univ['id']) ?>" class="btn btn-outline-primary">Edit</a>
+                            <form method="post" action="<?= site_url('homeroom/career-info/universities/toggle/' . (int)$univ['id']) ?>">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-outline-warning">Status</button>
+                            </form>
+                            <form method="post" action="<?= site_url('homeroom/career-info/universities/publish/' . (int)$univ['id']) ?>">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-outline-info">Publikasi</button>
+                            </form>
+                            <form method="post" action="<?= site_url('homeroom/career-info/universities/delete/' . (int)$univ['id']) ?>" onsubmit="return confirm('Hapus info studi lanjut ini?')">
+                            <?= csrf_field() ?>
+                            <button type="submit" class="btn btn-outline-danger">Hapus</button>
+                            </form>
+                        </div>
+                        </td>
                     </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
                     <tr>
-                    <td colspan="7" class="text-center text-muted">Belum ada data universitas.</td>
+                    <td colspan="8" class="text-center text-muted">Belum ada data universitas.</td>
                     </tr>
                 <?php endif; ?>
                 </tbody>

@@ -7,11 +7,11 @@
   <div class="container-fluid">
 
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
-      <h4 class="mb-0">Pilihan Karir & Perguruan Tinggi Siswa</h4>
+      <h4 class="mb-0">Pilihan Karier dan Studi Lanjut Siswa</h4>
 
       <div class="d-flex gap-2">
         <a href="<?= route_to('counselor.career.index') ?>" class="btn btn-light btn-sm">
-          &laquo; Kembali ke Info Karir & PT
+          &laquo; Kembali ke Fitur Info Karier dan Info Studi Lanjut
         </a>
       </div>
     </div>
@@ -26,7 +26,7 @@
       </div>
     <?php endif; ?>
 
-    <!-- Sub-tab Karir vs Perguruan Tinggi -->
+    <!-- Sub-tab Karier vs Perguruan Tinggi -->
     <ul class="nav nav-tabs mb-3">
       <li class="nav-item">
         <a class="nav-link <?= $activeTab === 'careers' ? 'active' : '' ?>"
@@ -36,7 +36,7 @@
              . '&sort=' . urlencode((string)($filters['sort'] ?? ''))
              . '&per_page=' . urlencode((string)($filters['per_page'] ?? 10))
            ) ?>">
-          Karir
+          Karier
         </a>
       </li>
       <li class="nav-item">
@@ -61,7 +61,7 @@
 
           <div class="col-md-4 col-sm-6">
             <label class="form-label">
-              Cari Siswa / NISN / <?= $activeTab === 'careers' ? 'Karir' : 'Perguruan Tinggi' ?>
+              Cari Siswa / NISN / <?= $activeTab === 'careers' ? 'Karier' : 'Perguruan Tinggi' ?>
             </label>
             <input type="text"
                    name="q"
@@ -96,7 +96,7 @@
 
               <?php if ($activeTab === 'careers'): ?>
                 <option value="career" <?= ($filters['sort'] ?? '') === 'career' ? 'selected' : '' ?>>
-                  Nama karir
+                  Nama karier
                 </option>
               <?php else: ?>
                 <option value="name" <?= ($filters['sort'] ?? '') === 'name' ? 'selected' : '' ?>>
@@ -129,19 +129,19 @@
           </div>
         </form>
 
-        <!-- Tabel Karir -->
+        <!-- Tabel Karier -->
         <?php if ($activeTab === 'careers'): ?>
 
           <?php if (! $hasCareerTable): ?>
             <div class="alert alert-info mb-0">
               Tabel <code>student_saved_careers</code> belum tersedia di database.
               Halaman ini akan menampilkan data setelah tabel tersebut dibuat
-              dan siswa mulai menyimpan pilihan karir.
+              dan siswa mulai menyimpan pilihan karier.
             </div>
 
           <?php elseif (empty($careerChoices)): ?>
             <div class="alert alert-warning mb-0">
-              Belum ada siswa yang menyimpan pilihan karir sesuai filter.
+              Belum ada siswa yang menyimpan pilihan karier sesuai filter.
             </div>
 
           <?php else: ?>
@@ -152,7 +152,7 @@
                     <th>Siswa</th>
                     <th>NISN</th>
                     <th>Kelas</th>
-                    <th>Karir</th>
+                    <th>Karier</th>
                     <th>Sektor</th>
                     <th>Min. Pendidikan</th>
                     <th>Disimpan</th>

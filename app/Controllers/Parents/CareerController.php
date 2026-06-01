@@ -5,7 +5,7 @@
  *
  * Parent • Career & University Info
  * Orang tua dapat:
- * - Menjelajahi Info Karir & Perguruan Tinggi (publik, sama seperti siswa)
+ * - Menjelajahi Fitur Info Karier dan Info Studi Lanjut (publik, sama seperti siswa)
  * - Melihat, menambahkan, dan menghapus item tersimpan milik anak-anaknya
  *   (dipilih via dropdown child_id)
  */
@@ -390,7 +390,7 @@ class CareerController extends BaseParentController
         // Simpan karier untuk anak
         $exists = $this->getPublicCareer($id);
         if (!$exists) {
-            return $this->respondBack(400, 'Karir tidak valid atau belum dipublikasikan.');
+            return $this->respondBack(400, 'Karier tidak valid atau belum dipublikasikan.');
         }
 
         if ($this->db->tableExists('student_saved_careers')) {
@@ -411,7 +411,7 @@ class CareerController extends BaseParentController
         }
 
         $toUrl = '/parent/career/saved?child_id=' . $activeChildId . '&tab=careers';
-        return $this->respondForward(200, 'Pilihan karir disimpan untuk anak.', $toUrl);
+        return $this->respondForward(200, 'Pilihan karier disimpan untuk anak.', $toUrl);
     }
 
     /**
@@ -443,7 +443,7 @@ class CareerController extends BaseParentController
         }
 
         $toUrl = '/parent/career/saved?child_id=' . $activeChildId . '&tab=careers';
-        return $this->respondForward(200, 'Pilihan karir dihapus dari daftar anak.', $toUrl);
+        return $this->respondForward(200, 'Pilihan karier dihapus dari daftar anak.', $toUrl);
     }
 
     // ---------------------------------------------------------------------

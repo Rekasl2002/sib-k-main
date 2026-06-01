@@ -55,7 +55,7 @@ class ViolationSubmissionsModel extends Model
      * Jika kamu sudah validasi penuh di controller/service, ini tetap aman.
      */
     protected $validationRules = [
-        'reporter_type'      => 'required|in_list[student,parent]',
+        'reporter_type'      => 'required|in_list[student,parent,homeroom]',
         'reporter_user_id'   => 'required|is_natural_no_zero',
 
         // Minimal wajib supaya laporan tidak kosong

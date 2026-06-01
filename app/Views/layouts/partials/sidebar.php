@@ -27,9 +27,7 @@ $__enableCareerInfo         = false;
 $__enableCommonMenu         = false;
 
 // ✅ Fitur baru: Pengaduan Pelanggaran (Violation Submissions)
-$__enableViolationSubmissions = function_exists('feature_violation_submissions_enabled')
-    ? feature_violation_submissions_enabled()
-    : false;
+$__enableViolationSubmissions = false;
 
 // Ambil user & role (aman)
 $user = function_exists('auth_user')
@@ -404,7 +402,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           <li>
             <a href="<?= base_url('koordinator/career-info') ?>" class="waves-effect<?= $__active('koordinator/career-info*') ?>">
               <i class="mdi mdi-school-outline"></i>
-              <span>Info Karir/Kuliah</span>
+              <span>Fitur Info Karier dan Info Studi Lanjut</span>
             </a>
           </li>
           <?php endif; ?>
@@ -489,7 +487,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           <li>
             <a href="<?= base_url('counselor/career-info') ?>" class="waves-effect<?= $__active('counselor/career-info*') ?>">
               <i class="mdi mdi-school-outline"></i>
-              <span>Info Karir/Kuliah</span>
+              <span>Fitur Info Karier dan Info Studi Lanjut</span>
             </a>
           </li>
           <?php endif; ?>
@@ -556,7 +554,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           <li>
             <a href="<?= base_url('homeroom/career-info') ?>" class="waves-effect<?= $__active('homeroom/career-info*') ?>">
               <i class="mdi mdi-briefcase-outline"></i>
-              <span>Info Karir &amp; Kuliah</span>
+              <span>Fitur Info Karier dan Info Studi Lanjut</span>
             </a>
           </li>
           <?php endif; ?>
@@ -632,7 +630,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           <li>
             <a href="<?= base_url('student/career') ?>" class="waves-effect<?= $__active('student/career*') ?>">
               <i class="mdi mdi-school-outline"></i>
-              <span>Info Karir/Kuliah</span>
+              <span>Fitur Info Karier dan Info Studi Lanjut</span>
             </a>
           </li>
           <?php endif; ?>
@@ -690,7 +688,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           <li>
             <a href="<?= base_url('parent/career') ?>" class="waves-effect<?= $__active('parent/career*') ?>">
               <i class="mdi mdi-school-outline"></i>
-              <span>Info Karir/Kuliah</span>
+              <span>Fitur Info Karier dan Info Studi Lanjut</span>
             </a>
           </li>
           <?php endif; ?>

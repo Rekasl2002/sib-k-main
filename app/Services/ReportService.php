@@ -553,7 +553,7 @@ class ReportService
         ];
     }
 
-    /** Info Karir */
+    /** Fitur Info Karier dan Info Studi Lanjut */
     public function career(array $filter): array
     {
         $b = $this->db->table('career_options')
@@ -614,7 +614,7 @@ class ReportService
     }
 
     /**
-     * Laporan Pilihan Karir Siswa (berbasis Info Karir)
+     * Laporan Pilihan Karier Siswa (berbasis Fitur Info Karier dan Info Studi Lanjut)
      * - Dibatasi hanya pada siswa binaan Guru BK terkait.
      */
     public function careerChoices(array $filter, int $counselorId): array
@@ -682,7 +682,7 @@ class ReportService
     }
 
     /**
-     * Laporan Pilihan Perguruan Tinggi Siswa (berbasis Info PT)
+     * Laporan Pilihan Studi Lanjut Siswa (berbasis Info PT)
      * - Dibatasi hanya pada siswa binaan Guru BK terkait.
      */
     public function universityChoices(array $filter, int $counselorId): array

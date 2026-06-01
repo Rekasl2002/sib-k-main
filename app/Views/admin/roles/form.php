@@ -32,7 +32,7 @@
                     <div class="mb-3">
                         <label for="role_name" class="form-label">Nama Role</label>
                         <input type="text" id="role_name" class="form-control"
-                            value="<?= esc($role['name'] ?? '') ?>"
+                            value="<?= esc($role['role_name'] ?? '') ?>"
                             placeholder="Contoh: Administrator" disabled>
                     </div>
 

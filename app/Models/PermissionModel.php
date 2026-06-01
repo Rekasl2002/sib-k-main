@@ -27,8 +27,6 @@ class PermissionModel extends Model
     protected $protectFields    = true;
 
     protected $allowedFields = [
-        'key',
-        'name',
         'permission_name',
         'description',
     ];

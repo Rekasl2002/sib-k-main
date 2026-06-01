@@ -354,7 +354,7 @@ SQL,
             <<<'SQL'
 CREATE TABLE violation_submissions (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    reporter_type ENUM('student', 'parent') NOT NULL,
+    reporter_type ENUM('student', 'parent', 'homeroom') NOT NULL,
     reporter_user_id INT UNSIGNED NOT NULL,
     subject_student_id INT UNSIGNED NULL,
     subject_other_name VARCHAR(190) NULL,

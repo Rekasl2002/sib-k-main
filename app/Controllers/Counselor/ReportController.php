@@ -268,7 +268,7 @@ class ReportController extends BaseController
                 break;
 
             case 'career_choices':
-                $title = 'Laporan Pilihan Karir Siswa';
+                $title = 'Laporan Pilihan Karier Siswa';
                 $out = $this->report->careerChoices($filter, $counselorId);
                 $columns = $out['columns'] ?? [];
                 $rows    = $out['rows'] ?? [];

@@ -19,7 +19,7 @@
     <div class="col-lg-6">
         <div class="card">
             <div class="card-body">
-                <h4 class="card-title mb-4">Pengaturan Hak Akses - <?= esc($role['name']) ?></h4>
+                <h4 class="card-title mb-4">Pengaturan Hak Akses - <?= esc($role['role_name'] ?? '') ?></h4>
 
                 <p class="text-muted">
                     Daftar hak akses di bawah ini merupakan contoh data statis. Implementasikan logika

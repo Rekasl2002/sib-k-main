@@ -318,6 +318,11 @@
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         <i class="fas fa-check-circle me-2"></i>
                         <?= esc(session()->getFlashdata('success')) ?>
+                        <?php if (session()->getFlashdata('reset_link')): ?>
+                            <div class="small mt-2">
+                                Link reset lokal: <a href="<?= esc(session()->getFlashdata('reset_link'), 'attr') ?>">Reset password</a>
+                            </div>
+                        <?php endif; ?>
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 <?php endif; ?>
@@ -400,12 +405,12 @@
                         <i class="fas fa-sign-in-alt me-2"></i> Masuk
                     </button>
 
-                    <!-- Forgot Password 
+                    <!-- Forgot Password -->
                     <div class="forgot-password">
                         <a href="<?= base_url('forgot-password') ?>">
                             <i class="fas fa-question-circle me-1"></i> Lupa Password?
                         </a>
-                    </div>-->
+                    </div>
                 </form>
 
                 <!-- Footer -->

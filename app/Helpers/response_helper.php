@@ -320,7 +320,7 @@ if (!function_exists('api_response')) {
      * @param string $redirect_url Redirect URL for non-AJAX
      * @return mixed
      */
-    function api_response(bool $success, string $message, $data = null, string $redirect_url = null)
+    function api_response(bool $success, string $message, $data = null, ?string $redirect_url = null)
     {
         if (is_json_request()) {
             return $success
@@ -376,7 +376,7 @@ if (!function_exists('download_file')) {
      * @param string $filename Download filename
      * @return \CodeIgniter\HTTP\ResponseInterface
      */
-    function download_file(string $filepath, string $filename = null)
+    function download_file(string $filepath, ?string $filename = null)
     {
         return ResponseHelper::download($filepath, $filename);
     }

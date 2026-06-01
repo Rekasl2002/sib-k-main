@@ -95,7 +95,7 @@ if (!function_exists('badgeClass')) {
                         </p>
 
                         <p class="text-white-50 mb-0">
-                            Akses data pribadi, jadwal konseling, riwayat kasus ringkas, asesmen, serta portal informasi karir & perguruan tinggi.
+                            Akses data pribadi, jadwal konseling, riwayat kasus ringkas, asesmen, serta fitur info karier dan info studi lanjut.
                         </p>
                     </div>
 

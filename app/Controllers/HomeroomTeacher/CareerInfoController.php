@@ -3,9 +3,9 @@
 /**
  * File Path: app/Controllers/HomeroomTeacher/CareerInfoController.php
  *
- * Wali Kelas • Info Karir & Perguruan Tinggi
- * - Melihat daftar career_options & university_info (READ ONLY)
- * - Melihat rekap pilihan karir & universitas siswa per kelas perwalian
+ * Wali Kelas - Fitur Info Karier dan Info Studi Lanjut
+ * - Mengelola dan melihat daftar career_options & university_info
+ * - Melihat rekap pilihan karier & universitas siswa per kelas perwalian
  */
 
 namespace App\Controllers\HomeroomTeacher;
@@ -28,7 +28,7 @@ class CareerInfoController extends BaseController
         $this->db           = db_connect();
 
         // FIX: pastikan helper auth + permission tersedia
-        helper(['auth', 'permission']);
+        helper(['auth', 'permission', 'form', 'url']);
     }
 
     /**
@@ -60,17 +60,16 @@ class CareerInfoController extends BaseController
     }
 
     /**
-     * Halaman utama Info Karir & Perguruan Tinggi (Wali Kelas)
+     * Halaman utama Fitur Info Karier dan Info Studi Lanjut (Wali Kelas)
      * Tampilan & filter meniru Counselor\CareerInfoController::index(),
      * tapi hanya READ dan view diarahkan ke homeroom_teacher.
      */
     public function index()
     {
-        // Ganti 'view_career_info' sesuai permission yang dipakai untuk Wali Kelas
-        require_permission('view_career_info');
+        require_permission(['manage_career_info', 'view_career_info']);
 
         // ------------------------------
-        // Filters untuk Karir (careers)
+        // Filters untuk Karier (careers)
         // ------------------------------
         $careerFilters = [
             'q'      => $this->request->getGet('q'),
@@ -142,14 +141,13 @@ class CareerInfoController extends BaseController
     }
 
     /**
-     * Rekap pilihan Karir & Universitas siswa UNTUK SATU KELAS PERWALIAN
+     * Rekap pilihan Karier & Universitas siswa UNTUK SATU KELAS PERWALIAN
      * - Logika mirip Counselor\CareerInfoController::studentChoices()
      * - class_id SELALU dipaksa = kelas perwalian wali kelas yang login
      */
     public function studentChoices()
     {
-        // Ganti 'view_career_info' sesuai permission baca yang kamu pakai
-        require_permission('view_career_info');
+        require_permission(['manage_career_info', 'view_career_info']);
 
         $req       = $this->request;
         $activeTab = $req->getGet('tab') === 'universities' ? 'universities' : 'careers';
@@ -176,7 +174,7 @@ class CareerInfoController extends BaseController
         $uniPager      = null;
 
         // -------------------------------------------------------------
-        // Data pilihan KARIR siswa (hanya siswa kelas perwalian)
+        // Data pilihan karier siswa (hanya siswa kelas perwalian)
         // -------------------------------------------------------------
         if ($hasCareerTbl) {
             $cb = $this->careers
@@ -324,5 +322,301 @@ class CareerInfoController extends BaseController
         ];
 
         return view('homeroom_teacher/career/student_choices', $data);
+    }
+
+    public function createCareer()
+    {
+        require_permission('manage_career_info');
+
+        return view('homeroom_teacher/career/form_career', [
+            'title'  => 'Tambah Info Karier',
+            'mode'   => 'create',
+            'career' => [],
+            'errors' => session('errors') ?? [],
+        ]);
+    }
+
+    public function storeCareer()
+    {
+        require_permission('manage_career_info');
+
+        if (!$this->validate([
+            'title'       => 'required|min_length[3]',
+            'description' => 'required|min_length[10]',
+            'is_active'   => 'required|in_list[0,1]',
+            'is_public'   => 'permit_empty|in_list[0,1]',
+        ])) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $payload = $this->buildCareerPayload();
+        $payload['created_by'] = (int) session('user_id');
+        $this->careers->insert($payload);
+
+        return redirect()->to(site_url('homeroom/career-info?tab=careers'))
+            ->with('success', 'Info karier berhasil ditambahkan.');
+    }
+
+    public function editCareer(int $id)
+    {
+        require_permission('manage_career_info');
+
+        $career = $this->careers->find($id);
+        if (!$career) {
+            return redirect()->to(site_url('homeroom/career-info?tab=careers'))
+                ->with('error', 'Info karier tidak ditemukan.');
+        }
+
+        $career['required_skills_array'] = !empty($career['required_skills'])
+            ? (json_decode($career['required_skills'], true) ?: [])
+            : [];
+
+        return view('homeroom_teacher/career/form_career', [
+            'title'  => 'Edit Info Karier',
+            'mode'   => 'edit',
+            'career' => $career,
+            'errors' => session('errors') ?? [],
+        ]);
+    }
+
+    public function updateCareer(int $id)
+    {
+        require_permission('manage_career_info');
+
+        if (!$this->careers->find($id)) {
+            return redirect()->to(site_url('homeroom/career-info?tab=careers'))
+                ->with('error', 'Info karier tidak ditemukan.');
+        }
+
+        if (!$this->validate([
+            'title'       => 'required|min_length[3]',
+            'description' => 'required|min_length[10]',
+            'is_active'   => 'required|in_list[0,1]',
+            'is_public'   => 'permit_empty|in_list[0,1]',
+        ])) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $this->careers->update($id, $this->buildCareerPayload());
+
+        return redirect()->to(site_url('homeroom/career-info?tab=careers'))
+            ->with('success', 'Info karier berhasil diperbarui.');
+    }
+
+    public function deleteCareer(int $id)
+    {
+        require_permission('manage_career_info');
+
+        if ($this->careers->find($id)) {
+            $this->careers->delete($id);
+        }
+
+        return redirect()->to(site_url('homeroom/career-info?tab=careers'))
+            ->with('success', 'Info karier berhasil dihapus.');
+    }
+
+    public function toggleCareer(int $id)
+    {
+        require_permission('manage_career_info');
+
+        $career = $this->careers->find($id);
+        if (!$career) {
+            return redirect()->to(site_url('homeroom/career-info?tab=careers'))
+                ->with('error', 'Info karier tidak ditemukan.');
+        }
+
+        $this->careers->update($id, ['is_active' => (int)($career['is_active'] ?? 0) === 1 ? 0 : 1]);
+
+        return redirect()->to(site_url('homeroom/career-info?tab=careers'))
+            ->with('success', 'Status info karier berhasil diubah.');
+    }
+
+    public function toggleCareerPublic(int $id)
+    {
+        require_permission('manage_career_info');
+
+        $career = $this->careers->find($id);
+        if (!$career) {
+            return redirect()->to(site_url('homeroom/career-info?tab=careers'))
+                ->with('error', 'Info karier tidak ditemukan.');
+        }
+
+        $this->careers->update($id, ['is_public' => (int)($career['is_public'] ?? 0) === 1 ? 0 : 1]);
+
+        return redirect()->to(site_url('homeroom/career-info?tab=careers'))
+            ->with('success', 'Publikasi info karier berhasil diubah.');
+    }
+
+    public function universities()
+    {
+        require_permission(['manage_career_info', 'view_career_info']);
+
+        return redirect()->to(site_url('homeroom/career-info?tab=universities'));
+    }
+
+    public function createUniversity()
+    {
+        require_permission('manage_career_info');
+
+        return view('homeroom_teacher/career/form_university', [
+            'title' => 'Tambah Info Studi Lanjut',
+            'mode'  => 'create',
+            'uni'   => [],
+            'errors'=> session('errors') ?? [],
+        ]);
+    }
+
+    public function storeUniversity()
+    {
+        require_permission('manage_career_info');
+
+        if (!$this->validate([
+            'university_name' => 'required|min_length[3]',
+            'website'         => 'permit_empty|valid_url',
+            'is_active'       => 'required|in_list[0,1]',
+            'is_public'       => 'permit_empty|in_list[0,1]',
+        ])) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $payload = $this->buildUniversityPayload();
+        $payload['created_by'] = (int) session('user_id');
+        $this->universities->insert($payload);
+
+        return redirect()->to(site_url('homeroom/career-info?tab=universities'))
+            ->with('success', 'Info studi lanjut berhasil ditambahkan.');
+    }
+
+    public function editUniversity(int $id)
+    {
+        require_permission('manage_career_info');
+
+        $uni = $this->universities->find($id);
+        if (!$uni) {
+            return redirect()->to(site_url('homeroom/career-info?tab=universities'))
+                ->with('error', 'Info studi lanjut tidak ditemukan.');
+        }
+
+        return view('homeroom_teacher/career/form_university', [
+            'title' => 'Edit Info Studi Lanjut',
+            'mode'  => 'edit',
+            'uni'   => $uni,
+            'errors'=> session('errors') ?? [],
+        ]);
+    }
+
+    public function updateUniversity(int $id)
+    {
+        require_permission('manage_career_info');
+
+        if (!$this->universities->find($id)) {
+            return redirect()->to(site_url('homeroom/career-info?tab=universities'))
+                ->with('error', 'Info studi lanjut tidak ditemukan.');
+        }
+
+        if (!$this->validate([
+            'university_name' => 'required|min_length[3]',
+            'website'         => 'permit_empty|valid_url',
+            'is_active'       => 'required|in_list[0,1]',
+            'is_public'       => 'permit_empty|in_list[0,1]',
+        ])) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $this->universities->update($id, $this->buildUniversityPayload());
+
+        return redirect()->to(site_url('homeroom/career-info?tab=universities'))
+            ->with('success', 'Info studi lanjut berhasil diperbarui.');
+    }
+
+    public function deleteUniversity(int $id)
+    {
+        require_permission('manage_career_info');
+
+        if ($this->universities->find($id)) {
+            $this->universities->delete($id);
+        }
+
+        return redirect()->to(site_url('homeroom/career-info?tab=universities'))
+            ->with('success', 'Info studi lanjut berhasil dihapus.');
+    }
+
+    public function toggleUniversity(int $id)
+    {
+        require_permission('manage_career_info');
+
+        $uni = $this->universities->find($id);
+        if (!$uni) {
+            return redirect()->to(site_url('homeroom/career-info?tab=universities'))
+                ->with('error', 'Info studi lanjut tidak ditemukan.');
+        }
+
+        $this->universities->update($id, ['is_active' => (int)($uni['is_active'] ?? 0) === 1 ? 0 : 1]);
+
+        return redirect()->to(site_url('homeroom/career-info?tab=universities'))
+            ->with('success', 'Status info studi lanjut berhasil diubah.');
+    }
+
+    public function toggleUniversityPublic(int $id)
+    {
+        require_permission('manage_career_info');
+
+        $uni = $this->universities->find($id);
+        if (!$uni) {
+            return redirect()->to(site_url('homeroom/career-info?tab=universities'))
+                ->with('error', 'Info studi lanjut tidak ditemukan.');
+        }
+
+        $this->universities->update($id, ['is_public' => (int)($uni['is_public'] ?? 0) === 1 ? 0 : 1]);
+
+        return redirect()->to(site_url('homeroom/career-info?tab=universities'))
+            ->with('success', 'Publikasi info studi lanjut berhasil diubah.');
+    }
+
+    protected function buildCareerPayload(): array
+    {
+        $skills = array_values(array_filter(array_map('trim', (array)$this->request->getPost('skills'))));
+
+        return [
+            'title'           => trim((string)$this->request->getPost('title')),
+            'sector'          => trim((string)$this->request->getPost('sector')) ?: null,
+            'min_education'   => trim((string)$this->request->getPost('min_education')) ?: null,
+            'description'     => trim((string)$this->request->getPost('description')),
+            'required_skills' => $skills ? json_encode($skills, JSON_UNESCAPED_SLASHES) : null,
+            'pathways'        => trim((string)$this->request->getPost('pathways')) ?: null,
+            'avg_salary_idr'  => $this->request->getPost('avg_salary_idr') ?: null,
+            'demand_level'    => (int)($this->request->getPost('demand_level') ?: 0),
+            'is_active'       => (int)$this->request->getPost('is_active'),
+            'is_public'       => (int)($this->request->getPost('is_public') ?? 0),
+        ];
+    }
+
+    protected function buildUniversityPayload(): array
+    {
+        return [
+            'university_name' => trim((string)$this->request->getPost('university_name')),
+            'alias'           => trim((string)$this->request->getPost('alias')) ?: null,
+            'accreditation'   => trim((string)$this->request->getPost('accreditation')) ?: null,
+            'location'        => trim((string)$this->request->getPost('location')) ?: null,
+            'website'         => $this->normalizeUrl($this->request->getPost('website')),
+            'description'     => trim((string)$this->request->getPost('description')) ?: null,
+            'admission_info'  => trim((string)$this->request->getPost('admission_info')) ?: null,
+            'tuition_range'   => trim((string)$this->request->getPost('tuition_range')) ?: null,
+            'logo'            => $this->normalizeUrl($this->request->getPost('logo')),
+            'is_active'       => (int)$this->request->getPost('is_active'),
+            'is_public'       => (int)($this->request->getPost('is_public') ?? 0),
+        ];
+    }
+
+    protected function normalizeUrl($url): ?string
+    {
+        $url = trim((string)$url);
+        if ($url === '') {
+            return null;
+        }
+        if (!preg_match('~^https?://~i', $url)) {
+            $url = 'https://' . ltrim($url, '/');
+        }
+        return filter_var($url, FILTER_VALIDATE_URL) ? $url : null;
     }
 }

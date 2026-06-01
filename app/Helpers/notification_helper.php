@@ -38,6 +38,10 @@ if (!function_exists('send_notification')) {
         try {
             $db = \Config\Database::connect();
 
+            if (!notification_allowed($user_id, $type)) {
+                return true;
+            }
+
             // Prepare notification data
             $notificationData = [
                 'user_id'    => $user_id,
@@ -55,6 +59,52 @@ if (!function_exists('send_notification')) {
         } catch (\Exception $e) {
             log_message('error', '[NOTIFICATION] Failed to send: ' . $e->getMessage());
             return false;
+        }
+    }
+}
+
+if (!function_exists('notification_allowed')) {
+    function notification_allowed(int $user_id, string $type): bool
+    {
+        if ($user_id <= 0) {
+            return false;
+        }
+
+        try {
+            $db = \Config\Database::connect();
+            $global = $db->table('settings')
+                ->select('value')
+                ->where('group', 'notifications')
+                ->where('key', 'enable_internal')
+                ->where('deleted_at', null)
+                ->get()
+                ->getRowArray();
+
+            if ($global && in_array(strtolower((string)$global['value']), ['0', 'false', 'off', 'no'], true)) {
+                return false;
+            }
+
+            $row = $db->table('settings')
+                ->select('value')
+                ->where('group', 'notification_preferences')
+                ->where('key', 'user_' . $user_id)
+                ->where('deleted_at', null)
+                ->get()
+                ->getRowArray();
+
+            if (!$row || empty($row['value'])) {
+                return true;
+            }
+
+            $prefs = json_decode((string)$row['value'], true);
+            if (!is_array($prefs) || !array_key_exists($type, $prefs)) {
+                return true;
+            }
+
+            return (bool)$prefs[$type];
+        } catch (\Throwable $e) {
+            log_message('error', '[NOTIFICATION] Failed to read preferences: ' . $e->getMessage());
+            return true;
         }
     }
 }
@@ -329,6 +379,7 @@ if (!function_exists('notification_icon')) {
             'assessment' => 'mdi mdi-clipboard-text',
             'violation'  => 'mdi mdi-alert-octagon',
             'message'    => 'mdi mdi-message-text',
+            'password_reset' => 'mdi mdi-lock-reset',
         ];
         return $icons[$type] ?? 'mdi mdi-bell';
     }
@@ -346,6 +397,7 @@ if (!function_exists('notification_color')) {
             'assessment' => 'purple',
             'violation'  => 'danger',
             'message'    => 'success',
+            'password_reset' => 'warning',
         ];
         return $colors[$type] ?? 'secondary';
     }

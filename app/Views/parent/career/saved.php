@@ -36,7 +36,7 @@ $activeChildId = $activeChildId ?? null;
     <div class="card-body pb-0">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div>
-          <h4 class="mb-0">Pilihan Karir & Kuliah Anak</h4>
+          <h4 class="mb-0">Pilihan Fitur Info Karier dan Info Studi Lanjut Anak</h4>
           <div class="small text-muted">
             Orang tua dapat melihat dan mengatur daftar karier serta perguruan tinggi yang disimpan untuk anak.
           </div>
@@ -95,7 +95,7 @@ $activeChildId = $activeChildId ?? null;
           <?php elseif (empty($careers)): ?>
             <div class="alert alert-info mb-0">
               Belum ada karier yang disimpan untuk anak ini.
-              Anda dapat menambah dari halaman <a href="<?= site_url('parent/career?child_id=' . (int)$activeChildId) ?>">Info Karir & Kuliah</a>.
+              Anda dapat menambah dari halaman <a href="<?= site_url('parent/career?child_id=' . (int)$activeChildId) ?>">Fitur Info Karier dan Info Studi Lanjut</a>.
             </div>
           <?php else: ?>
             <div class="row g-3">

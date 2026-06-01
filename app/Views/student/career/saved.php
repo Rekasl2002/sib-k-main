@@ -72,7 +72,7 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
           <?php if (empty($careers)): ?>
             <div class="alert alert-info mb-0">
               Belum ada karier yang kamu simpan.
-              Coba eksplor di menu <a href="<?= site_url('student/career') ?>">Info Karir & Kuliah</a>.
+              Coba eksplor di halaman <a href="<?= site_url('student/career') ?>">Fitur Info Karier dan Info Studi Lanjut</a>.
             </div>
           <?php else: ?>
             <div class="row g-3">

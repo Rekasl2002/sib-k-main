@@ -1,7 +1,7 @@
 <?php
 /**
  * File Path: app/Views/counselor/career/index.php
- * Halaman utama Info Karir/Kuliah (Guru BK)
+ * Halaman utama Fitur Info Karier dan Info Studi Lanjut (Guru BK)
  *
  * Variabel yang diharapkan dari Controller:
  * - $careers, $careerPager, $careerFilters (array)
@@ -21,7 +21,7 @@ $errors       = session('errors') ?? [];
 $req = service('request');
 $activeTab = $activeTab ?? ($req->getGet('tab') ?: 'careers');
 
-// Prefill filter karir (fallback bila $careerFilters tidak ada)
+// Prefill filter karier (fallback bila $careerFilters tidak ada)
 $careerFilters = $careerFilters ?? [
     'q'      => $req->getGet('q'),
     'sector' => $req->getGet('sector'),
@@ -44,7 +44,7 @@ $uniFilters = [
 
 <div class="d-flex align-items-center justify-content-between mb-3">
   <h4 class="mb-0">
-    <i class="mdi mdi-school-outline me-2"></i>Info Karir & Kuliah
+    <i class="mdi mdi-school-outline me-2"></i>Fitur Info Karier dan Info Studi Lanjut
   </h4>
 </div>
 
@@ -61,7 +61,7 @@ $uniFilters = [
     <li class="nav-item">
       <a class="nav-link <?= ($activeTab === 'careers' ? 'active' : '') ?>"
          href="<?= site_url('counselor/career-info?tab=careers') ?>">
-        <i class="mdi mdi-briefcase-outline me-1"></i>Pilihan Karir
+        <i class="mdi mdi-briefcase-outline me-1"></i>Pilihan Karier
       </a>
     </li>
     <li class="nav-item">
@@ -72,14 +72,14 @@ $uniFilters = [
     </li>
   </ul>
   <div class="d-flex align-items-center gap-2">
-    <!-- Tombol baru: rekap pilihan karir & PT siswa -->
+    <!-- Tombol baru: rekap pilihan karier & PT siswa -->
     <a href="<?= route_to('counselor.career.choices') ?>" class="btn btn-outline-secondary btn-sm shadow-sm">
-      <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Karir & PT Siswa
+      <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Karier dan Studi Lanjut Siswa
     </a>
 
     <?php if ($activeTab === 'careers'): ?>
       <a href="<?= route_to('counselor.career.create') ?>" class="btn btn-success btn-sm shadow-sm">
-        <i class="mdi mdi-plus me-1"></i> Tambah Karir
+        <i class="mdi mdi-plus me-1"></i> Tambah Karier
       </a>
     <?php else: ?>
       <a href="<?= route_to('counselor.university.create') ?>" class="btn btn-success btn-sm shadow-sm">
@@ -90,19 +90,19 @@ $uniFilters = [
 </div>
 
 <div class="tab-content">
-  <!-- TAB: Karir -->
+  <!-- TAB: Karier -->
   <div class="tab-pane fade <?= ($activeTab === 'careers' ? 'show active' : '') ?>">
     <div class="card">
       <div class="card-body">
 
-        <!-- Filter Karir -->
+        <!-- Filter Karier -->
         <div class="mb-3">
           <form class="d-flex flex-wrap gap-2" method="get" action="<?= site_url('counselor/career-info') ?>">
             <input type="hidden" name="tab" value="careers">
 
             <div class="input-group">
               <input type="text" name="q" class="form-control form-control-sm"
-                     placeholder="Cari judul karir..."
+                     placeholder="Cari judul karier..."
                      value="<?= esc($careerFilters['q'] ?? '') ?>">
             </div>
 
@@ -158,7 +158,7 @@ $uniFilters = [
             </button>
           </form>
         </div>
-        <!-- /Filter Karir -->
+        <!-- /Filter Karier -->
 
         <div class="table-responsive">
           <table class="table table-sm table-hover align-middle">
@@ -216,21 +216,21 @@ $uniFilters = [
                         <i class="mdi mdi-pencil"></i>
                       </a>
                       <form action="<?= route_to('counselor.career.toggle', $c['id']) ?>"
-                            method="post" onsubmit="return confirm('Ubah status karir ini?')">
+                            method="post" onsubmit="return confirm('Ubah status karier ini?')">
                         <?= csrf_field() ?>
                         <button class="btn btn-outline-warning" type="submit" title="Toggle Aktif">
                           <i class="mdi mdi-toggle-switch"></i>
                         </button>
                       </form>
                       <form action="<?= route_to('counselor.career.publish', $c['id']) ?>"
-                            method="post" onsubmit="return confirm('Ubah status publikasi karir ini?')">
+                            method="post" onsubmit="return confirm('Ubah status publikasi karier ini?')">
                         <?= csrf_field() ?>
                         <button class="btn btn-outline-info" type="submit" title="Toggle Publikasi">
                           <i class="mdi mdi-earth"></i>
                         </button>
                       </form>
                       <form action="<?= route_to('counselor.career.delete', $c['id']) ?>"
-                            method="post" onsubmit="return confirm('Hapus data karir ini?')">
+                            method="post" onsubmit="return confirm('Hapus data karier ini?')">
                         <?= csrf_field() ?>
                         <button class="btn btn-outline-danger" type="submit" title="Hapus">
                           <i class="mdi mdi-delete"></i>
@@ -242,7 +242,7 @@ $uniFilters = [
               <?php endforeach; ?>
             <?php else: ?>
               <tr>
-                <td colspan="8" class="text-center text-muted">Belum ada data karir.</td>
+                <td colspan="8" class="text-center text-muted">Belum ada data karier.</td>
               </tr>
             <?php endif; ?>
             </tbody>
@@ -258,14 +258,14 @@ $uniFilters = [
       </div>
     </div>
   </div>
-  <!-- /TAB: Karir -->
+  <!-- /TAB: Karier -->
 
   <!-- TAB: Universitas -->
   <div class="tab-pane fade <?= ($activeTab === 'universities' ? 'show active' : '') ?>">
     <div class="card">
       <div class="card-body">
 
-        <!-- Filter Universitas (disamakan dengan Karir) -->
+        <!-- Filter Universitas (disamakan dengan Karier) -->
         <div class="mb-3">
           <form class="d-flex flex-wrap gap-2" method="get" action="<?= site_url('counselor/career-info/universities') ?>">
             <input type="hidden" name="tab" value="universities">

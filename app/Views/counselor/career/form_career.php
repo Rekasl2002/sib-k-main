@@ -26,7 +26,7 @@ function oldv($key, $default = '')
 <div class="d-flex align-items-center justify-content-between mb-3">
     <h4 class="mb-0">
         <i class="mdi mdi-briefcase-outline me-2"></i>
-        <?= $isEdit ? 'Edit Pilihan Karir' : 'Tambah Pilihan Karir' ?>
+        <?= $isEdit ? 'Edit Pilihan Karier' : 'Tambah Pilihan Karier' ?>
     </h4>
     <a href="<?= site_url('counselor/career-info?tab=careers') ?>" class="btn btn-sm btn-secondary">
         &larr; Kembali
@@ -43,7 +43,7 @@ function oldv($key, $default = '')
             <?= csrf_field() ?>
 
             <div class="mb-3">
-                <label class="form-label">Judul Karir <span class="text-danger">*</span></label>
+                <label class="form-label">Judul Karier <span class="text-danger">*</span></label>
                 <input type="text" name="title" class="form-control"
                        value="<?= esc(oldv('title', $career['title'] ?? '')) ?>">
                 <?php if (!empty($errors['title'])): ?>

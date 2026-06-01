@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\ViolationSubmissionsModel;
+use App\Models\ViolationModel;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\HTTP\Files\UploadedFile;
 
@@ -22,6 +23,8 @@ class ViolationSubmissionService
     {
         $this->model = new ViolationSubmissionsModel();
         $this->db    = db_connect();
+
+        helper(['notification', 'url']);
     }
 
     /**
@@ -49,6 +52,172 @@ class ViolationSubmissionService
         $builder->orderBy('vs.created_at', 'DESC');
 
         return $builder->get()->getResultArray();
+    }
+
+    /**
+     * List submission untuk petugas BK sesuai alur tinjau pada diagram.
+     */
+    public function listForReviewer(array $filters = []): array
+    {
+        $builder = $this->reviewerBuilder();
+
+        $status = trim((string)($filters['status'] ?? ''));
+        if ($status !== '') {
+            $builder->where('vs.status', $status);
+        }
+
+        $reporterType = trim((string)($filters['reporter_type'] ?? ''));
+        if ($reporterType !== '') {
+            $builder->where('vs.reporter_type', $reporterType);
+        }
+
+        $q = trim((string)($filters['q'] ?? ''));
+        if ($q !== '') {
+            $builder->groupStart()
+                ->like('ru.full_name', $q)
+                ->orLike('su.full_name', $q)
+                ->orLike('ss.nisn', $q)
+                ->orLike('vs.subject_other_name', $q)
+                ->orLike('vs.description', $q)
+                ->groupEnd();
+        }
+
+        return $builder
+            ->orderBy('vs.created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Detail submission untuk Guru BK/Koordinator BK.
+     */
+    public function getDetailForReviewer(int $id): ?array
+    {
+        $row = $this->reviewerBuilder()
+            ->where('vs.id', $id)
+            ->get()
+            ->getRowArray();
+
+        if (!$row) {
+            return null;
+        }
+
+        $row['evidence_json'] = $this->normalizeEvidence($row['evidence_json'] ?? null);
+        return $row;
+    }
+
+    /**
+     * Ubah status tinjauan tanpa konversi.
+     */
+    public function reviewStatus(int $id, string $status, string $notes, int $handledBy): array
+    {
+        $allowed = ['Ditinjau', 'Ditolak', 'Diterima'];
+        if (!in_array($status, $allowed, true)) {
+            return ['success' => false, 'message' => 'Status pengaduan tidak valid.'];
+        }
+
+        $row = $this->getDetailForReviewer($id);
+        if (!$row) {
+            return ['success' => false, 'message' => 'Pengaduan tidak ditemukan.'];
+        }
+
+        $ok = $this->model->update($id, [
+            'status'       => $status,
+            'handled_by'   => $handledBy ?: null,
+            'handled_at'   => date('Y-m-d H:i:s'),
+            'review_notes' => $notes !== '' ? $notes : null,
+        ]);
+
+        if (!$ok) {
+            return ['success' => false, 'message' => 'Gagal memperbarui status pengaduan.'];
+        }
+
+        $this->notifyReporter($id, (int)($row['reporter_user_id'] ?? 0), (string)($row['reporter_type'] ?? ''), $status, $notes);
+
+        return ['success' => true, 'message' => 'Status pengaduan diperbarui.'];
+    }
+
+    /**
+     * Konversi pengaduan menjadi kasus pelanggaran.
+     */
+    public function convertToViolation(int $id, int $handledBy, string $notes = ''): array
+    {
+        $row = $this->getDetailForReviewer($id);
+        if (!$row) {
+            return ['success' => false, 'message' => 'Pengaduan tidak ditemukan.'];
+        }
+
+        if ((string)($row['status'] ?? '') === 'Dikonversi' && !empty($row['converted_violation_id'])) {
+            return [
+                'success'      => true,
+                'message'      => 'Pengaduan sudah dikonversi.',
+                'violation_id' => (int)$row['converted_violation_id'],
+            ];
+        }
+
+        $studentId  = (int)($row['subject_student_id'] ?? 0);
+        $categoryId = (int)($row['category_id'] ?? 0);
+
+        if ($studentId <= 0) {
+            return ['success' => false, 'message' => 'Pengaduan belum memiliki siswa terlapor terdaftar, sehingga belum bisa dikonversi.'];
+        }
+        if ($categoryId <= 0) {
+            return ['success' => false, 'message' => 'Pengaduan belum memiliki kategori pelanggaran, sehingga belum bisa dikonversi.'];
+        }
+
+        $evidence = $this->normalizeEvidence($row['evidence_json'] ?? null);
+        $noteText = trim($notes);
+        $systemNote = 'Dikonversi dari pengaduan pelanggaran #' . $id;
+        if ($noteText !== '') {
+            $systemNote .= '. Catatan: ' . $noteText;
+        }
+
+        $violationModel = new ViolationModel();
+        $violationId = $violationModel->insert([
+            'student_id'      => $studentId,
+            'category_id'     => $categoryId,
+            'violation_date'  => $row['occurred_date'] ?: date('Y-m-d'),
+            'violation_time'  => $row['occurred_time'] ?: null,
+            'location'        => $row['location'] ?: null,
+            'description'     => (string)($row['description'] ?? ''),
+            'witness'         => $row['witness'] ?: null,
+            'evidence'        => $evidence ? json_encode($evidence, JSON_UNESCAPED_SLASHES) : null,
+            'reported_by'     => (int)($row['reporter_user_id'] ?? 0),
+            'handled_by'      => $handledBy ?: null,
+            'status'          => 'Dilaporkan',
+            'resolution_notes'=> null,
+            'notes'           => $systemNote,
+        ], true);
+
+        if (!$violationId) {
+            return [
+                'success' => false,
+                'message' => 'Gagal mengonversi pengaduan menjadi pelanggaran.',
+                'errors'  => $violationModel->errors(),
+            ];
+        }
+
+        $this->model->update($id, [
+            'status'                 => 'Dikonversi',
+            'handled_by'             => $handledBy ?: null,
+            'handled_at'             => date('Y-m-d H:i:s'),
+            'review_notes'           => $noteText !== '' ? $noteText : 'Pengaduan dikonversi menjadi kasus pelanggaran.',
+            'converted_violation_id' => (int)$violationId,
+        ]);
+
+        $this->notifyReporter(
+            $id,
+            (int)($row['reporter_user_id'] ?? 0),
+            (string)($row['reporter_type'] ?? ''),
+            'Dikonversi',
+            $noteText
+        );
+
+        return [
+            'success'      => true,
+            'message'      => 'Pengaduan berhasil dikonversi menjadi kasus pelanggaran.',
+            'violation_id' => (int)$violationId,
+        ];
     }
 
     /**
@@ -106,7 +275,13 @@ class ViolationSubmissionService
         $data['status'] = $data['status'] ?? 'Diajukan';
 
         $this->model->insert($data);
-        return (int) $this->model->getInsertID();
+        $newId = (int) $this->model->getInsertID();
+
+        if ($newId > 0) {
+            $this->notifyBkStaff($newId, (string)($data['description'] ?? ''));
+        }
+
+        return $newId;
     }
 
     /**
@@ -314,5 +489,88 @@ class ViolationSubmissionService
         $walker($files);
 
         return $out;
+    }
+
+    protected function reviewerBuilder()
+    {
+        $builder = $this->db->table('violation_submissions vs');
+        $builder->select([
+            'vs.*',
+            'vc.category_name',
+            'vc.severity_level',
+            'ru.full_name AS reporter_name',
+            'rr.role_name AS reporter_role',
+            'hu.full_name AS handled_by_name',
+            'su.full_name AS subject_student_name',
+            'ss.nisn AS subject_student_nisn',
+            'c.class_name AS subject_student_class',
+        ]);
+        $builder->join('violation_categories vc', 'vc.id = vs.category_id', 'left');
+        $builder->join('users ru', 'ru.id = vs.reporter_user_id', 'left');
+        $builder->join('roles rr', 'rr.id = ru.role_id', 'left');
+        $builder->join('users hu', 'hu.id = vs.handled_by', 'left');
+        $builder->join('students ss', 'ss.id = vs.subject_student_id', 'left');
+        $builder->join('users su', 'su.id = ss.user_id', 'left');
+        $builder->join('classes c', 'c.id = ss.class_id', 'left');
+        $builder->where('vs.deleted_at', null);
+
+        return $builder;
+    }
+
+    protected function notifyBkStaff(int $submissionId, string $description): void
+    {
+        try {
+            $rows = $this->db->table('users u')
+                ->select('u.id, r.role_name')
+                ->join('roles r', 'r.id = u.role_id', 'inner')
+                ->whereIn('r.role_name', ['Guru BK', 'Koordinator BK'])
+                ->where('u.is_active', 1)
+                ->where('u.deleted_at', null)
+                ->get()
+                ->getResultArray();
+
+            $preview = trim(mb_substr(strip_tags($description), 0, 90));
+            foreach ($rows as $row) {
+                $role = strtolower((string)($row['role_name'] ?? ''));
+                $prefix = str_contains($role, 'koordinator') ? 'koordinator' : 'counselor';
+                send_notification(
+                    (int)$row['id'],
+                    'Pengaduan Pelanggaran Baru',
+                    $preview !== '' ? $preview : 'Ada pengaduan pelanggaran baru yang perlu ditinjau.',
+                    'violation_submission',
+                    ['submission_id' => $submissionId],
+                    site_url($prefix . '/violation-submissions/show/' . $submissionId)
+                );
+            }
+        } catch (\Throwable $e) {
+            log_message('error', 'notifyBkStaff violation submission failed: ' . $e->getMessage());
+        }
+    }
+
+    protected function notifyReporter(int $submissionId, int $reporterUserId, string $reporterType, string $status, string $notes = ''): void
+    {
+        if ($reporterUserId <= 0) {
+            return;
+        }
+
+        $prefix = match ($reporterType) {
+            'parent'   => 'parent',
+            'homeroom' => 'homeroom',
+            default    => 'student',
+        };
+
+        $message = 'Status pengaduan Anda: ' . $status . '.';
+        if (trim($notes) !== '') {
+            $message .= ' Catatan: ' . trim($notes);
+        }
+
+        send_notification(
+            $reporterUserId,
+            'Update Status Pengaduan',
+            $message,
+            'violation_submission',
+            ['submission_id' => $submissionId, 'status' => $status],
+            site_url($prefix . '/violation-submissions/show/' . $submissionId)
+        );
     }
 }

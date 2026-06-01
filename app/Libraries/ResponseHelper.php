@@ -272,7 +272,7 @@ class ResponseHelper
      * @param string $filename Download filename
      * @return ResponseInterface
      */
-    public static function download(string $filepath, string $filename = null): ResponseInterface
+    public static function download(string $filepath, ?string $filename = null): ResponseInterface
     {
         if (!file_exists($filepath)) {
             return self::notFound('File not found');

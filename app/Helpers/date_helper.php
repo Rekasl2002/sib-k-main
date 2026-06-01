@@ -360,7 +360,7 @@ if (!function_exists('date_diff_in_days')) {
      * @param string $date2 Second date (default: today)
      * @return int Number of days
      */
-    function date_diff_in_days(string $date1, string $date2 = null): int
+    function date_diff_in_days(string $date1, ?string $date2 = null): int
     {
         $timestamp1 = strtotime($date1);
         $timestamp2 = $date2 ? strtotime($date2) : time();

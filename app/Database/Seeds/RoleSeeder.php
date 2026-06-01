@@ -40,7 +40,7 @@ class RoleSeeder extends Seeder
             [
                 'id'          => 5,
                 'role_name'   => 'Siswa',
-                'description' => 'Siswa - Mengakses layanan konseling dan informasi karir',
+                'description' => 'Siswa - Mengakses layanan konseling dan informasi karier',
                 'created_at'  => date('Y-m-d H:i:s'),
                 'updated_at'  => date('Y-m-d H:i:s'),
             ],

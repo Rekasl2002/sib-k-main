@@ -56,9 +56,9 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
     <div class="card-body pb-0">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div>
-          <h4 class="mb-0">Info Karir & Kuliah</h4>
+          <h4 class="mb-0">Fitur Info Karier dan Info Studi Lanjut</h4>
           <div class="small text-muted">
-            Jelajahi pilihan karir dan perguruan tinggi yang sudah dikurasi oleh Guru BK.
+            Jelajahi pilihan karier dan perguruan tinggi yang sudah dikurasi oleh Guru BK.
           </div>
         </div>
         <div class="d-flex gap-2">
@@ -72,7 +72,7 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
         <li class="nav-item">
           <a class="nav-link <?= ($activeTab === 'careers' ? 'active' : '') ?>"
              href="<?= site_url('student/career?tab=careers') ?>">
-            <i class="mdi mdi-briefcase-outline me-1"></i>Pilihan Karir
+            <i class="mdi mdi-briefcase-outline me-1"></i>Pilihan Karier
           </a>
         </li>
         <li class="nav-item">
@@ -86,12 +86,12 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
   </div>
 
   <div class="tab-content">
-    <!-- TAB: Pilihan Karir -->
+    <!-- TAB: Pilihan Karier -->
     <div class="tab-pane fade <?= ($activeTab === 'careers' ? 'show active' : '') ?>">
       <div class="card shadow-sm">
         <div class="card-body">
 
-          <!-- Filter Karir -->
+          <!-- Filter Karier -->
           <form class="row g-2 align-items-end mb-3" method="get" action="<?= site_url('student/career') ?>">
             <input type="hidden" name="tab" value="careers">
 
@@ -101,7 +101,7 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
                 type="text"
                 name="q"
                 class="form-control"
-                placeholder="Cari judul atau deskripsi karir..."
+                placeholder="Cari judul atau deskripsi karier..."
                 value="<?= esc($filters['q'] ?? '') ?>"
               >
             </div>
@@ -164,7 +164,7 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
             </div>
           </form>
 
-          <!-- Grid kartu karir -->
+          <!-- Grid kartu karier -->
           <div class="row g-3">
             <?php if (empty($careers)): ?>
               <div class="col-12">
@@ -280,7 +280,7 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
         </div>
       </div>
     </div>
-    <!-- /TAB: Pilihan Karir -->
+    <!-- /TAB: Pilihan Karier -->
 
     <!-- TAB: Info Perguruan Tinggi -->
     <div class="tab-pane fade <?= ($activeTab === 'universities' ? 'show active' : '') ?>">

@@ -751,7 +751,7 @@ if (! function_exists('prototype_status_tone')) {
       <div class="col-xl-4">
         <div class="card proto-card h-100">
           <div class="card-header bg-white">
-            <h5 class="mb-0">Referensi Kuliah</h5>
+            <h5 class="mb-0">Referensi Studi Lanjut</h5>
           </div>
           <div class="card-body" id="careerReferenceList">
             <?php foreach ($universities as $university): ?>
@@ -1256,7 +1256,7 @@ if (! function_exists('prototype_status_tone')) {
         );
       }
 
-      setPrototypeStage('hasil', 'Referensi karier/kuliah baru tampil di daftar simulasi.');
+      setPrototypeStage('hasil', 'Referensi karier dan studi lanjut baru tampil di daftar simulasi.');
       showNotice('Referensi "' + name + '" ditambahkan oleh mode Guru BK.', 'success');
     });
   }

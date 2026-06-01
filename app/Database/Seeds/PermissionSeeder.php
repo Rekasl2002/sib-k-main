@@ -24,8 +24,8 @@ class PermissionSeeder extends Seeder
             ['id' => 13, 'permission_name' => 'send_messages', 'description' => 'Kirim pesan internal', 'created_at' => date('Y-m-d H:i:s')],
             ['id' => 14, 'permission_name' => 'schedule_counseling', 'description' => 'Jadwalkan konseling', 'created_at' => date('Y-m-d H:i:s')],
             ['id' => 15, 'permission_name' => 'view_dashboard', 'description' => 'Akses dashboard sesuai role', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 16, 'permission_name' => 'manage_career_info', 'description' => 'Kelola informasi karir dan universitas', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 17, 'permission_name' => 'view_career_info', 'description' => 'Lihat informasi karir dan universitas', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 16, 'permission_name' => 'manage_career_info', 'description' => 'Kelola fitur info karier dan info studi lanjut', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 17, 'permission_name' => 'view_career_info', 'description' => 'Lihat fitur info karier dan info studi lanjut', 'created_at' => date('Y-m-d H:i:s')],
             ['id' => 18, 'permission_name' => 'manage_sanctions', 'description' => 'Kelola sanksi pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
             ['id' => 19, 'permission_name' => 'import_export_data', 'description' => 'Import/Export data via Excel', 'created_at' => date('Y-m-d H:i:s')],
             ['id' => 20, 'permission_name' => 'view_all_students', 'description' => 'Lihat semua data siswa', 'created_at' => date('Y-m-d H:i:s')],
@@ -36,6 +36,11 @@ class PermissionSeeder extends Seeder
             ['id' => 25, 'permission_name' => 'generate_reports_individual', 'description' => 'Unduh/generate laporan individual siswa', 'created_at' => date('Y-m-d H:i:s')],
             ['id' => 26, 'permission_name' => 'manage_light_violations', 'description' => 'Kelola pelanggaran ringan untuk wali kelas', 'created_at' => date('Y-m-d H:i:s')],
             ['id' => 27, 'permission_name' => 'submit_violation_submissions', 'description' => 'Ajukan laporan/pengaduan pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 28, 'permission_name' => 'view_violation_submissions', 'description' => 'Lihat pengaduan pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 29, 'permission_name' => 'review_violation_submissions', 'description' => 'Tinjau pengaduan pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 30, 'permission_name' => 'manage_violation_submissions', 'description' => 'Kelola pengaduan pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 31, 'permission_name' => 'convert_violation_submissions', 'description' => 'Konversi pengaduan menjadi kasus pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
+            ['id' => 32, 'permission_name' => 'access_simulation_suite', 'description' => 'Akses halaman prototipe dan simulasi', 'created_at' => date('Y-m-d H:i:s')],
         ];
 
         // Truncate table first
@@ -44,6 +49,6 @@ class PermissionSeeder extends Seeder
         // Insert batch data
         $this->db->table('permissions')->insertBatch($data);
 
-        echo "✓ Permissions seeded successfully!\n";
+        echo "OK Permissions seeded successfully!\n";
     }
 }

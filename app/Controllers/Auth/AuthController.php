@@ -17,6 +17,7 @@ namespace App\Controllers\Auth;
 
 use App\Controllers\BaseController;
 use App\Libraries\AuthLibrary;
+use App\Services\PasswordResetRequestService;
 use App\Models\UserModel;
 use CodeIgniter\HTTP\RedirectResponse;
 
@@ -214,11 +215,55 @@ class AuthController extends BaseController
     }
 
     /**
-     * Send password reset link
-     * 
-     * @return RedirectResponse
+     * Process forgot password request.
+     *
+     * Default mode creates an Admin follow-up request. SMTP mode can send a reset link later.
      */
     public function sendResetLink()
+    {
+        if ($this->passwordResetMode() === 'smtp_link') {
+            return $this->sendEmailResetLink();
+        }
+
+        return $this->sendAdminResetRequest();
+    }
+
+    private function sendAdminResetRequest(): RedirectResponse
+    {
+        $rules = [
+            'email' => 'permit_empty|valid_email|max_length[255]',
+            'phone' => 'permit_empty|max_length[30]',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('errors', $this->validator->getErrors());
+        }
+
+        $email = trim((string) $this->request->getPost('email'));
+        $phone = $this->normalizePhone((string) $this->request->getPost('phone'));
+
+        if ($email === '' && $phone === '') {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Isi email atau nomor telepon yang dapat dihubungi.');
+        }
+
+        $user = $this->findUserByResetContact($email, $phone);
+
+        (new PasswordResetRequestService())->createAdminRequest(
+            $email !== '' ? $email : null,
+            $phone !== '' ? $phone : null,
+            $user,
+            $this->request
+        );
+
+        return redirect()->to('/login')
+            ->with('success', 'Permintaan reset password telah diteruskan ke Admin. Silakan tunggu konfirmasi dari pihak sekolah.');
+    }
+
+    private function sendEmailResetLink(): RedirectResponse
     {
         $rules = [
             'email' => 'required|valid_email',
@@ -236,9 +281,8 @@ class AuthController extends BaseController
         $user = $this->userModel->where('email', $email)->first();
 
         if (!$user) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', 'Email tidak ditemukan dalam sistem.');
+            return redirect()->to('/login')
+                ->with('success', 'Jika email terdaftar, instruksi reset password akan dikirim.');
         }
 
         // Generate reset token
@@ -254,10 +298,181 @@ class AuthController extends BaseController
             'expires_at' => $expiry,
         ]);
 
-        // Send email (implement email service)
-        // For now, just show success message
+        $resetUrl = site_url('reset-password/' . $token);
+
+        $sent = (new PasswordResetRequestService())->sendResetLinkEmail($user, $resetUrl);
+        if ($sent) {
+            return redirect()->to('/login')
+                ->with('success', 'Jika email terdaftar, instruksi reset password akan dikirim.');
+        }
+
+        $redirect = redirect()->to('/login')
+            ->with('success', 'Permintaan reset password diproses. Jika pengiriman email belum aktif, hubungi Admin sekolah.');
+
+        if ($this->envBool('password_reset.showLocalLink', false)) {
+            $redirect->with('reset_link', $resetUrl);
+        }
+
+        return $redirect;
+    }
+
+    /**
+     * Display reset password page
+     *
+     * @param string $token
+     * @return string|RedirectResponse
+     */
+    public function resetPassword(string $token)
+    {
+        if ($this->authLib->isLoggedIn()) {
+            return redirect()->to($this->authLib->getRedirectPath());
+        }
+
+        $reset = $this->findValidPasswordReset($token);
+        if (!$reset) {
+            return redirect()->to('/forgot-password')
+                ->with('error', 'Token reset password tidak valid atau sudah kedaluwarsa.');
+        }
+
+        return view('auth/reset_password', [
+            'title'      => 'Reset Password - SIB-K',
+            'schoolName' => setting('general.school_name', env('school.name')),
+            'token'      => $token,
+            'email'      => $reset['email'],
+        ]);
+    }
+
+    /**
+     * Process password reset
+     *
+     * @return RedirectResponse
+     */
+    public function doResetPassword(): RedirectResponse
+    {
+        $rules = [
+            'token'            => 'required',
+            'password'         => 'required|min_length[6]',
+            'password_confirm' => 'required|matches[password]',
+        ];
+
+        if (!$this->validate($rules)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('errors', $this->validator->getErrors());
+        }
+
+        $token = (string) $this->request->getPost('token');
+        $reset = $this->findValidPasswordReset($token);
+        if (!$reset) {
+            return redirect()->to('/forgot-password')
+                ->with('error', 'Token reset password tidak valid atau sudah kedaluwarsa.');
+        }
+
+        $user = $this->userModel
+            ->where('email', $reset['email'])
+            ->where('deleted_at', null)
+            ->first();
+
+        if (!$user) {
+            return redirect()->to('/forgot-password')
+                ->with('error', 'Akun untuk token reset password tidak ditemukan.');
+        }
+
+        $ok = $this->userModel->update((int) $user['id'], [
+            'password' => (string) $this->request->getPost('password'),
+        ]);
+
+        if (!$ok) {
+            return redirect()->back()
+                ->with('error', 'Gagal memperbarui password. Silakan coba lagi.');
+        }
+
+        $db = \Config\Database::connect();
+        $db->table('password_resets')
+            ->where('email', $reset['email'])
+            ->delete();
+
         return redirect()->to('/login')
-            ->with('success', 'Link reset password telah dikirim ke email Anda. Silakan cek inbox atau spam folder.');
+            ->with('success', 'Password berhasil diperbarui. Silakan login dengan password baru.');
+    }
+
+    /**
+     * Cari token reset password yang masih berlaku.
+     */
+    private function findValidPasswordReset(string $token): ?array
+    {
+        if ($token === '') {
+            return null;
+        }
+
+        $db = \Config\Database::connect();
+        if (!$db->tableExists('password_resets')) {
+            return null;
+        }
+
+        $rows = $db->table('password_resets')
+            ->where('expires_at >=', date('Y-m-d H:i:s'))
+            ->orderBy('created_at', 'DESC')
+            ->get()
+            ->getResultArray();
+
+        foreach ($rows as $row) {
+            if (!empty($row['token']) && password_verify($token, (string) $row['token'])) {
+                return $row;
+            }
+        }
+
+        return null;
+    }
+
+    private function findUserByResetContact(string $email, string $phone): ?array
+    {
+        if ($email === '' && $phone === '') {
+            return null;
+        }
+
+        $builder = $this->userModel
+            ->where('deleted_at', null)
+            ->groupStart();
+
+        if ($email !== '') {
+            $builder->where('email', $email);
+        }
+
+        if ($phone !== '') {
+            $builder->orWhere('phone', $phone);
+            $digitsOnly = preg_replace('/\D+/', '', $phone);
+            if ($digitsOnly && $digitsOnly !== $phone) {
+                $builder->orWhere('phone', $digitsOnly);
+            }
+        }
+
+        return $builder->groupEnd()->first();
+    }
+
+    private function normalizePhone(string $phone): string
+    {
+        $phone = trim($phone);
+        $phone = preg_replace('/[^\d+]/', '', $phone) ?? '';
+
+        return substr($phone, 0, 30);
+    }
+
+    private function passwordResetMode(): string
+    {
+        $mode = strtolower(trim((string) env('password_reset.mode', 'admin_request')));
+
+        return in_array($mode, ['admin_request', 'smtp_link'], true) ? $mode : 'admin_request';
+    }
+
+    private function envBool(string $key, bool $default): bool
+    {
+        $value = env($key, $default);
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        return in_array(strtolower((string) $value), ['1', 'true', 'yes', 'on'], true);
     }
 
     /**

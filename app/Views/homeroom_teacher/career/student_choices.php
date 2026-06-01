@@ -8,15 +8,15 @@
 
     <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
       <div>
-        <h4 class="mb-1">Pilihan Karir & Perguruan Tinggi Siswa</h4>
+        <h4 class="mb-1">Pilihan Karier dan Studi Lanjut Siswa</h4>
         <p class="text-muted mb-0">
-          Rekap pilihan karir dan perguruan tinggi siswa di kelas perwalian Anda.
+          Rekap pilihan karier dan studi lanjut siswa di kelas perwalian Anda.
         </p>
       </div>
 
       <div class="d-flex gap-2">
         <a href="<?= route_to('homeroom.career.index') ?>" class="btn btn-light btn-sm">
-          &laquo; Kembali ke Info Karir &amp; PT
+          &laquo; Kembali ke Fitur Info Karier dan Info Studi Lanjut
         </a>
       </div>
     </div>
@@ -34,7 +34,7 @@
              . '&sort=' . urlencode((string)($filters['sort'] ?? ''))
              . '&per_page=' . urlencode((string)($filters['per_page'] ?? 10))
            ) ?>">
-          Karir
+          Karier
         </a>
       </li>
       <li class="nav-item">
@@ -59,7 +59,7 @@
             <label class="form-label">Cari Siswa / Kelas / Pilihan</label>
             <input type="text" name="q" value="<?= esc($filters['q'] ?? '') ?>"
                    class="form-control form-control-sm"
-                   placeholder="Nama siswa / NISN / kelas / judul karir / universitas">
+                   placeholder="Nama siswa / NISN / kelas / judul karier / universitas">
           </div>
 
           <div class="col-md-3">
@@ -113,7 +113,7 @@
 
       <div class="card">
         <div class="card-body">
-          <h5 class="mb-3">Pilihan Karir Siswa</h5>
+          <h5 class="mb-3">Pilihan Karier Siswa</h5>
 
           <div class="table-responsive">
             <table class="table table-sm align-middle table-bordered">
@@ -123,7 +123,7 @@
                 <th>Siswa</th>
                 <th>NISN</th>
                 <th>Kelas</th>
-                <th>Judul Karir</th>
+                <th>Judul Karier</th>
                 <th>Sektor</th>
                 <th>Min. Pendidikan</th>
                 <th>Tanggal Simpan</th>
@@ -151,7 +151,7 @@
               <?php else: ?>
                 <tr>
                   <td colspan="8" class="text-center text-muted">
-                    Belum ada pilihan karir yang disimpan oleh siswa di kelas ini.
+                    Belum ada pilihan karier yang disimpan oleh siswa di kelas ini.
                   </td>
                 </tr>
               <?php endif; ?>
@@ -171,7 +171,7 @@
 
       <div class="card">
         <div class="card-body">
-          <h5 class="mb-3">Pilihan Perguruan Tinggi Siswa</h5>
+          <h5 class="mb-3">Pilihan Studi Lanjut Siswa</h5>
 
           <div class="table-responsive">
             <table class="table table-sm align-middle table-bordered">

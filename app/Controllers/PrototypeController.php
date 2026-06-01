@@ -366,14 +366,14 @@ class PrototypeController extends BaseController
                 'outcome'     => 'Guru BK menugaskan asesmen, siswa mengisi, sistem menampilkan ringkasan hasil dan rekomendasi awal.',
             ],
             'career' => [
-                'title'       => 'Info Karier dan Kuliah',
-                'short_title' => 'Karier/Kuliah',
+                'title'       => 'Fitur Info Karier dan Info Studi Lanjut',
+                'short_title' => 'Karier/Studi Lanjut',
                 'url'         => 'prototype/career',
                 'icon'        => 'mdi mdi-school-outline',
                 'tone'        => 'info',
                 'roles'       => 'Siswa, Orang Tua, Wali Kelas, Guru BK',
                 'role_modes'  => ['guru-bk', 'wali-kelas', 'siswa', 'orang-tua'],
-                'outcome'     => 'Referensi karier/kuliah dikelola Guru BK, siswa menyimpan pilihan, dan pihak pendamping melihat arah minat.',
+                'outcome'     => 'Referensi karier dan studi lanjut dikelola Guru BK, siswa menyimpan pilihan, dan pihak pendamping melihat arah minat.',
             ],
         ];
 
@@ -509,7 +509,7 @@ class PrototypeController extends BaseController
                     'can_manage' => true,
                     'can_save' => false,
                     'can_delete' => false,
-                    'role_note' => 'Guru BK menambahkan referensi karier/kuliah dan melihat pilihan yang disimpan siswa.',
+                    'role_note' => 'Guru BK menambahkan referensi karier dan studi lanjut serta melihat pilihan yang disimpan siswa.',
                     'saved_by_students' => [
                         ['student' => 'Nadia Azzahra', 'class' => 'XI MIPA 2', 'choice' => 'Bimbingan dan Konseling', 'type' => 'Program Studi'],
                         ['student' => 'Ahmad Fajar', 'class' => 'XI MIPA 2', 'choice' => 'Analis Data Pendidikan', 'type' => 'Karier'],
@@ -537,7 +537,7 @@ class PrototypeController extends BaseController
                     'can_manage' => false,
                     'can_save' => false,
                     'can_delete' => false,
-                    'role_note' => 'Orang tua melihat referensi dan pilihan karier/kuliah yang disimpan anak.',
+                    'role_note' => 'Orang tua melihat referensi dan pilihan karier serta studi lanjut yang disimpan anak.',
                     'saved' => ['Bimbingan dan Konseling', 'Teknologi Informasi'],
                 ],
             ],

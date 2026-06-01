@@ -168,7 +168,7 @@ class CareerController extends BaseStudentController
                 $uniBuilder = $uniBuilder->orderBy('university_name', 'ASC');
             }
 
-            // Pagination terpisah agar tidak bentrok dengan daftar karir
+            // Pagination terpisah agar tidak bentrok dengan daftar karier
             $universities = $uniBuilder->paginate(9, 'universities');
             $uniPager     = $this->unis->pager;
         }
@@ -308,10 +308,10 @@ class CareerController extends BaseStudentController
         // Simpan karier (logika lama)
         // ------------------------------
 
-        // validasi ID karir publik
+        // validasi ID karier publik
         $exists = $this->getPublicCareer($id);
         if (!$exists) {
-            return $this->respondBack(400, 'Karir tidak valid atau belum dipublikasikan.');
+            return $this->respondBack(400, 'Karier tidak valid atau belum dipublikasikan.');
         }
 
         // Jika ada tabel student_saved_careers, simpan ke DB
@@ -339,7 +339,7 @@ class CareerController extends BaseStudentController
             }
         }
 
-        return $this->respondForward(200, 'Karir disimpan.', '/student/career/saved');
+        return $this->respondForward(200, 'Karier disimpan.', '/student/career/saved');
     }
 
     /**

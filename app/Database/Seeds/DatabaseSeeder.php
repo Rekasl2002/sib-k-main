@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
      */
     private array $truncateOrder = [
         'email_verifications',
+        'password_reset_requests',
         'password_resets',
         'simulation_access_grants',
         'student_saved_universities',
@@ -124,7 +125,6 @@ class DatabaseSeeder extends Seeder
             'view_counseling_sessions' => 'Lihat sesi konseling',
             'manage_violations' => 'Kelola kasus pelanggaran',
             'view_violations' => 'Lihat kasus pelanggaran',
-            'manage_sanctions' => 'Kelola sanksi pelanggaran',
             'manage_assessments' => 'Kelola asesmen',
             'take_assessments' => 'Mengerjakan asesmen',
             'view_student_portfolio' => 'Lihat portofolio siswa',
@@ -133,8 +133,9 @@ class DatabaseSeeder extends Seeder
             'send_messages' => 'Kirim pesan internal',
             'schedule_counseling' => 'Ajukan atau jadwalkan konseling',
             'view_dashboard' => 'Akses dashboard sesuai role',
-            'manage_career_info' => 'Kelola informasi karier dan kuliah',
-            'view_career_info' => 'Lihat informasi karier dan kuliah',
+            'manage_career_info' => 'Kelola fitur info karier dan info studi lanjut',
+            'view_career_info' => 'Lihat fitur info karier dan info studi lanjut',
+            'manage_sanctions' => 'Kelola sanksi pelanggaran',
             'import_export_data' => 'Import dan export data',
             'view_all_students' => 'Lihat semua data siswa',
             'manage_settings' => 'Kelola pengaturan aplikasi',
@@ -177,45 +178,41 @@ class DatabaseSeeder extends Seeder
      */
     private function seedRolePermissions(array $permissionMap, string $now): void
     {
-        $disabledPermissions = [
-            'submit_violation_submissions',
-            'view_violation_submissions',
-            'review_violation_submissions',
-            'manage_violation_submissions',
-            'convert_violation_submissions',
-        ];
-
         $sets = [
-            1 => array_values(array_diff(array_keys($permissionMap), $disabledPermissions)),
+            1 => array_keys($permissionMap),
             2 => [
                 'view_dashboard', 'manage_users', 'view_all_students', 'manage_academic_data',
                 'manage_counseling_sessions', 'view_counseling_sessions', 'manage_violations',
                 'view_violations', 'manage_sanctions', 'manage_assessments', 'manage_career_info',
                 'view_career_info', 'send_messages', 'view_reports_aggregate',
                 'generate_reports_aggregate', 'view_reports_individual', 'generate_reports_individual',
-                'import_export_data',
+                'import_export_data', 'view_violation_submissions', 'review_violation_submissions',
+                'manage_violation_submissions', 'convert_violation_submissions',
             ],
             3 => [
                 'view_dashboard', 'view_all_students', 'manage_counseling_sessions',
                 'view_counseling_sessions', 'manage_violations', 'view_violations',
                 'manage_sanctions', 'manage_assessments', 'manage_career_info',
                 'view_career_info', 'send_messages', 'view_reports_individual',
-                'generate_reports_individual',
+                'generate_reports_individual', 'view_violation_submissions',
+                'review_violation_submissions', 'manage_violation_submissions',
+                'convert_violation_submissions',
             ],
             4 => [
                 'view_dashboard', 'view_all_students', 'view_counseling_sessions',
                 'view_violations', 'manage_light_violations', 'view_reports_individual',
-                'generate_reports_individual', 'send_messages', 'view_career_info',
+                'generate_reports_individual', 'send_messages', 'manage_career_info', 'view_career_info',
+                'submit_violation_submissions',
             ],
             5 => [
                 'view_dashboard', 'view_counseling_sessions', 'take_assessments', 'schedule_counseling',
                 'send_messages', 'view_career_info', 'view_violations',
-                'view_student_portfolio',
+                'view_student_portfolio', 'submit_violation_submissions',
             ],
             6 => [
                 'view_dashboard', 'view_counseling_sessions', 'send_messages', 'view_career_info', 'view_violations',
                 'view_reports_individual', 'generate_reports_individual',
-                'view_student_portfolio',
+                'view_student_portfolio', 'submit_violation_submissions',
             ],
         ];
 

@@ -159,9 +159,9 @@ if (!function_exists('student_age_text')) {
 if (!function_exists('feature_violation_submissions_enabled')) {
     function feature_violation_submissions_enabled(): bool
     {
-        // Fitur ini belum siap dipakai, jadi jangan tampilkan menu dan jangan buka akses
-        // controller walaupun ada environment lama yang mengaktifkan flag.
-        return false;
+        // Fitur dibuka untuk akses langsung lewat URL tersembunyi.
+        // Sidebar tetap mengatur visibilitasnya sendiri agar tidak muncul sebagai menu umum.
+        return true;
     }
 }
 

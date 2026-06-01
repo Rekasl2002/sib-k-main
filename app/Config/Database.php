@@ -132,26 +132,28 @@ class Database extends Config
 
         // Test Database Configuration
         if (ENVIRONMENT === 'testing') {
+            $tests = $this->tests;
+
             $this->tests = [
-                'DSN'         => '',
-                'hostname'    => env('database.tests.hostname', 'localhost'),
-                'username'    => env('database.tests.username', 'root'),
-                'password'    => env('database.tests.password', ''),
-                'database'    => env('database.tests.database', 'sibk_testing'),
-                'DBDriver'    => env('database.tests.DBDriver', 'MySQLi'),
-                'DBPrefix'    => env('database.tests.DBPrefix', 'test_'),
+                'DSN'         => env('database.tests.DSN', $tests['DSN']),
+                'hostname'    => env('database.tests.hostname', $tests['hostname']),
+                'username'    => env('database.tests.username', $tests['username']),
+                'password'    => env('database.tests.password', $tests['password']),
+                'database'    => env('database.tests.database', $tests['database']),
+                'DBDriver'    => env('database.tests.DBDriver', $tests['DBDriver']),
+                'DBPrefix'    => env('database.tests.DBPrefix', $tests['DBPrefix']),
                 'pConnect'    => false,
-                'DBDebug'     => true,
-                'charset'     => env('database.tests.charset', 'utf8mb4'),
-                'DBCollat'    => env('database.tests.DBCollat', 'utf8mb4_general_ci'),
-                'swapPre'     => '',
-                'encrypt'     => false,
-                'compress'    => false,
-                'strictOn'    => false,
+                'DBDebug'     => filter_var(env('database.tests.DBDebug', $tests['DBDebug']), FILTER_VALIDATE_BOOL),
+                'charset'     => env('database.tests.charset', $tests['charset']),
+                'DBCollat'    => env('database.tests.DBCollat', $tests['DBCollat']),
+                'swapPre'     => env('database.tests.swapPre', $tests['swapPre']),
+                'encrypt'     => filter_var(env('database.tests.encrypt', $tests['encrypt']), FILTER_VALIDATE_BOOL),
+                'compress'    => filter_var(env('database.tests.compress', $tests['compress']), FILTER_VALIDATE_BOOL),
+                'strictOn'    => filter_var(env('database.tests.strictOn', $tests['strictOn']), FILTER_VALIDATE_BOOL),
                 'failover'    => [],
-                'port'        => (int) env('database.tests.port', 3306),
-                'foreignKeys' => true,
-                'busyTimeout' => 1000,
+                'port'        => (int) env('database.tests.port', $tests['port']),
+                'foreignKeys' => filter_var(env('database.tests.foreignKeys', $tests['foreignKeys']), FILTER_VALIDATE_BOOL),
+                'busyTimeout' => (int) env('database.tests.busyTimeout', $tests['busyTimeout']),
             ];
         }
     }

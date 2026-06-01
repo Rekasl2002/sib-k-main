@@ -49,9 +49,9 @@ $routes->setTranslateURIDashes(false);
 // Disarankan: matikan AutoRoute untuk keamanan (semua rute eksplisit)
 $routes->setAutoRoute(false);
 
-// Fitur Pengaduan Pelanggaran belum dipakai di aplikasi produksi, jadi route-nya
-// dimatikan penuh agar tidak bisa diakses lewat URL langsung.
-$featureViolationSubmissionsEnabled = false;
+// Fitur Pengaduan Pelanggaran dibuka sebagai hidden URL.
+// Jangan tampilkan di sidebar; pengguna hanya mengakses jika mengetahui URL-nya.
+$featureViolationSubmissionsEnabled = true;
 
 // -------------------------------
 // Default
@@ -307,6 +307,31 @@ $routes->group('koordinator', [
             'as'     => 'koordinator.dashboard'
         ]);
 
+        $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'NotificationController::index', ['as' => 'koordinator.notifications']);
+            $routes->get('unread', 'NotificationController::unread', ['as' => 'koordinator.notifications.unread']);
+            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'koordinator.notifications.preferences']);
+            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'koordinator.notifications.preferences.update']);
+            $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'koordinator.notifications.read']);
+            $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'koordinator.notifications.read_all']);
+            $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'koordinator.notifications.delete']);
+            $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'koordinator.notifications.count']);
+        });
+
+        $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
+            $routes->get('/', 'MessageController::index', ['as' => 'koordinator.messages']);
+            $routes->get('inbox', 'MessageController::inbox', ['as' => 'koordinator.messages.inbox']);
+            $routes->get('sent', 'MessageController::sent', ['as' => 'koordinator.messages.sent']);
+            $routes->get('compose', 'MessageController::compose', ['as' => 'koordinator.messages.compose']);
+            $routes->post('send', 'MessageController::send', ['as' => 'koordinator.messages.send']);
+            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'koordinator.messages.detail']);
+            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'koordinator.messages.edit']);
+            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'koordinator.messages.update']);
+            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'koordinator.messages.reply']);
+            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'koordinator.messages.delete']);
+            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'koordinator.messages.read']);
+        });
+
         // USER MANAGEMENT (izin: manage_users)
         $routes->group('users', ['filter' => 'permission:manage_users'], function ($routes) {
             $routes->get('/', 'UserController::index', ['as' => 'koordinator.users.index']);
@@ -478,6 +503,21 @@ $routes->group('koordinator', [
             $routes->get('detail/(:num)', static fn($id) => redirect()->to('/koordinator/cases/detail/' . $id));
         });
 
+        $routes->group('violation-submissions', [
+            'filter' => 'permission:any,view_violation_submissions,review_violation_submissions,manage_violation_submissions',
+        ], function ($routes) {
+            $routes->get('/', 'ViolationSubmissionsController::index', ['as' => 'koordinator.violation_submissions.index']);
+            $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1', ['as' => 'koordinator.violation_submissions.show']);
+            $routes->post('update-status/(:num)', 'ViolationSubmissionsController::updateStatus/$1', [
+                'filter' => 'permission:any,review_violation_submissions,manage_violation_submissions',
+                'as'     => 'koordinator.violation_submissions.update_status',
+            ]);
+            $routes->post('convert/(:num)', 'ViolationSubmissionsController::convert/$1', [
+                'filter' => 'permission:any,convert_violation_submissions,manage_violation_submissions',
+                'as'     => 'koordinator.violation_submissions.convert',
+            ]);
+        });
+
         // SANCTIONS
         $routes->group('sanctions', function ($routes) {
             $routes->post('create/(:num)', 'SanctionController::store/$1', [
@@ -569,6 +609,11 @@ $routes->group('koordinator', [
             $routes->post('(:num)/results/(:num)/delete', 'AssessmentController::deleteResult/$1/$2', ['as' => 'koordinator.assessments.results.delete']);
         });
 
+        $routes->group('career-info', ['filter' => 'permission:any,manage_career_info,view_career_info'], function ($routes) {
+            $routes->get('/', 'CareerInfoController::index', ['as' => 'koordinator.career.index']);
+            $routes->get('student-choices', 'CareerInfoController::studentChoices', ['as' => 'koordinator.career.choices']);
+        });
+
         // Reports:
         // - Koordinator akses agregat -> view_reports_aggregate
         // - Download agregat -> generate_reports_aggregate
@@ -576,7 +621,7 @@ $routes->group('koordinator', [
             $routes->get('/', 'ReportController::index', ['as' => 'koordinator.reports']);
             $routes->get('preview', 'ReportController::preview', ['as' => 'koordinator.reports.preview']);
 
-            $routes->match(['get', 'post'], 'download', 'ReportController::download', [
+            $routes->match(['GET', 'POST'], 'download', 'ReportController::download', [
                 'filter' => 'permission:generate_reports_aggregate',
                 'as'     => 'koordinator.reports.download',
             ]);
@@ -604,6 +649,31 @@ $routes->group('counselor', [
             'filter' => 'permission:view_dashboard',
             'as'     => 'counselor.dashboard.stats'
         ]);
+
+        $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'NotificationController::index', ['as' => 'counselor.notifications']);
+            $routes->get('unread', 'NotificationController::unread', ['as' => 'counselor.notifications.unread']);
+            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'counselor.notifications.preferences']);
+            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'counselor.notifications.preferences.update']);
+            $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'counselor.notifications.read']);
+            $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'counselor.notifications.read_all']);
+            $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'counselor.notifications.delete']);
+            $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'counselor.notifications.count']);
+        });
+
+        $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
+            $routes->get('/', 'MessageController::index', ['as' => 'counselor.messages']);
+            $routes->get('inbox', 'MessageController::inbox', ['as' => 'counselor.messages.inbox']);
+            $routes->get('sent', 'MessageController::sent', ['as' => 'counselor.messages.sent']);
+            $routes->get('compose', 'MessageController::compose', ['as' => 'counselor.messages.compose']);
+            $routes->post('send', 'MessageController::send', ['as' => 'counselor.messages.send']);
+            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'counselor.messages.detail']);
+            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'counselor.messages.edit']);
+            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'counselor.messages.update']);
+            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'counselor.messages.reply']);
+            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'counselor.messages.delete']);
+            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'counselor.messages.read']);
+        });
 
         // Sessions: list/detail pakai view, CRUD pakai manage
         $routes->group('sessions', function ($routes) {
@@ -810,6 +880,21 @@ $routes->group('counselor', [
             ]);
         });
 
+        $routes->group('violation-submissions', [
+            'filter' => 'permission:any,view_violation_submissions,review_violation_submissions,manage_violation_submissions',
+        ], function ($routes) {
+            $routes->get('/', 'ViolationSubmissionsController::index', ['as' => 'counselor.violation_submissions.index']);
+            $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1', ['as' => 'counselor.violation_submissions.show']);
+            $routes->post('update-status/(:num)', 'ViolationSubmissionsController::updateStatus/$1', [
+                'filter' => 'permission:any,review_violation_submissions,manage_violation_submissions',
+                'as'     => 'counselor.violation_submissions.update_status',
+            ]);
+            $routes->post('convert/(:num)', 'ViolationSubmissionsController::convert/$1', [
+                'filter' => 'permission:any,convert_violation_submissions,manage_violation_submissions',
+                'as'     => 'counselor.violation_submissions.convert',
+            ]);
+        });
+
         // Assessments
         $routes->group('assessments', ['filter' => 'permission:manage_assessments'], function ($routes) {
             $routes->get('/', 'AssessmentController::index', ['as' => 'counselor.assessments']);
@@ -828,7 +913,7 @@ $routes->group('counselor', [
             $routes->get('(:num)/assign', 'AssessmentController::assign/$1', ['as' => 'counselor.assessments.assign']);
             $routes->post('(:num)/assign/process', 'AssessmentController::processAssign/$1', ['as' => 'counselor.assessments.assign.process']);
             $routes->post('(:num)/assign/sync', 'AssessmentController::syncAssignments/$1', ['as' => 'counselor.assessments.assign.sync']);
-            $routes->post('(:num)/assign/revoke', 'AssessmentController::revokeAssignments/$1', ['as' => 'counselor.assessments.assign.revoke']);
+            $routes->post('(:num)/assign/revoke', 'AssessmentController::revokeAssign/$1', ['as' => 'counselor.assessments.assign.revoke']);
 
             $routes->get('(:num)/results', 'AssessmentController::results/$1', ['as' => 'counselor.assessments.results']);
             $routes->get('(:num)/results/(:num)', 'AssessmentController::resultDetail/$1/$2', ['as' => 'counselor.assessments.result.detail']);
@@ -929,6 +1014,31 @@ $routes->group('homeroom', [
             'as'     => 'homeroom.dashboard.stats'
         ]);
 
+        $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'NotificationController::index', ['as' => 'homeroom.notifications']);
+            $routes->get('unread', 'NotificationController::unread', ['as' => 'homeroom.notifications.unread']);
+            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'homeroom.notifications.preferences']);
+            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'homeroom.notifications.preferences.update']);
+            $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'homeroom.notifications.read']);
+            $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'homeroom.notifications.read_all']);
+            $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'homeroom.notifications.delete']);
+            $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'homeroom.notifications.count']);
+        });
+
+        $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
+            $routes->get('/', 'MessageController::index', ['as' => 'homeroom.messages']);
+            $routes->get('inbox', 'MessageController::inbox', ['as' => 'homeroom.messages.inbox']);
+            $routes->get('sent', 'MessageController::sent', ['as' => 'homeroom.messages.sent']);
+            $routes->get('compose', 'MessageController::compose', ['as' => 'homeroom.messages.compose']);
+            $routes->post('send', 'MessageController::send', ['as' => 'homeroom.messages.send']);
+            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'homeroom.messages.detail']);
+            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'homeroom.messages.edit']);
+            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'homeroom.messages.update']);
+            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'homeroom.messages.reply']);
+            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'homeroom.messages.delete']);
+            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'homeroom.messages.read']);
+        });
+
         // Pelanggaran:
         // - Lihat -> view_violations
         // - Kelola pelanggaran ringan -> manage_light_violations (sesuai tabel permissions)
@@ -964,11 +1074,21 @@ $routes->group('homeroom', [
             ]);
         });
 
+        $routes->group('violation-submissions', ['filter' => 'permission:submit_violation_submissions'], function ($routes) {
+            $routes->get('/', 'ViolationSubmissionsController::index', ['as' => 'homeroom.violation_submissions.index']);
+            $routes->get('create', 'ViolationSubmissionsController::create', ['as' => 'homeroom.violation_submissions.create']);
+            $routes->post('store', 'ViolationSubmissionsController::store', ['as' => 'homeroom.violation_submissions.store']);
+            $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1', ['as' => 'homeroom.violation_submissions.show']);
+            $routes->get('edit/(:num)', 'ViolationSubmissionsController::edit/$1', ['as' => 'homeroom.violation_submissions.edit']);
+            $routes->post('update/(:num)', 'ViolationSubmissionsController::update/$1', ['as' => 'homeroom.violation_submissions.update']);
+            $routes->post('delete/(:num)', 'ViolationSubmissionsController::delete/$1', ['as' => 'homeroom.violation_submissions.delete']);
+        });
+
         // Reports (wali kelas -> individual)
         $routes->group('reports', ['filter' => 'permission:view_reports_individual'], function ($routes) {
             $routes->get('/', 'ClassReportController::index', ['as' => 'homeroom.reports']);
             $routes->get('preview', 'ClassReportController::preview', ['as' => 'homeroom.reports.preview']);
-            $routes->match(['get', 'post'], 'download', 'ClassReportController::download', [
+            $routes->match(['GET', 'POST'], 'download', 'ClassReportController::download', [
                 'filter' => 'permission:generate_reports_individual',
                 'as'     => 'homeroom.reports.download'
             ]);
@@ -1015,11 +1135,71 @@ $routes->group('homeroom', [
 
         // Career info: sesuai tabel permissions, wali kelas masuk kategori "manage_career_info"
         $routes->get('career-info', 'CareerInfoController::index', [
-            'filter' => 'permission:manage_career_info',
+            'filter' => 'permission:any,view_career_info,manage_career_info',
             'as'     => 'homeroom.career.index'
         ]);
-        $routes->get('career-info/student-choices', 'CareerInfoController::studentChoices', [
+        $routes->get('career-info/careers/create', 'CareerInfoController::createCareer', [
             'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.career.create'
+        ]);
+        $routes->post('career-info/careers/store', 'CareerInfoController::storeCareer', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.career.store'
+        ]);
+        $routes->get('career-info/careers/edit/(:num)', 'CareerInfoController::editCareer/$1', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.career.edit'
+        ]);
+        $routes->post('career-info/careers/update/(:num)', 'CareerInfoController::updateCareer/$1', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.career.update'
+        ]);
+        $routes->post('career-info/careers/delete/(:num)', 'CareerInfoController::deleteCareer/$1', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.career.delete'
+        ]);
+        $routes->post('career-info/careers/toggle/(:num)', 'CareerInfoController::toggleCareer/$1', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.career.toggle'
+        ]);
+        $routes->post('career-info/careers/publish/(:num)', 'CareerInfoController::toggleCareerPublic/$1', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.career.publish'
+        ]);
+        $routes->get('career-info/universities', 'CareerInfoController::universities', [
+            'filter' => 'permission:any,view_career_info,manage_career_info',
+            'as'     => 'homeroom.university.index'
+        ]);
+        $routes->get('career-info/universities/create', 'CareerInfoController::createUniversity', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.university.create'
+        ]);
+        $routes->post('career-info/universities/store', 'CareerInfoController::storeUniversity', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.university.store'
+        ]);
+        $routes->get('career-info/universities/edit/(:num)', 'CareerInfoController::editUniversity/$1', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.university.edit'
+        ]);
+        $routes->post('career-info/universities/update/(:num)', 'CareerInfoController::updateUniversity/$1', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.university.update'
+        ]);
+        $routes->post('career-info/universities/delete/(:num)', 'CareerInfoController::deleteUniversity/$1', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.university.delete'
+        ]);
+        $routes->post('career-info/universities/toggle/(:num)', 'CareerInfoController::toggleUniversity/$1', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.university.toggle'
+        ]);
+        $routes->post('career-info/universities/publish/(:num)', 'CareerInfoController::toggleUniversityPublic/$1', [
+            'filter' => 'permission:manage_career_info',
+            'as'     => 'homeroom.university.publish'
+        ]);
+        $routes->get('career-info/student-choices', 'CareerInfoController::studentChoices', [
+            'filter' => 'permission:any,view_career_info,manage_career_info',
             'as'     => 'homeroom.career.choices'
         ]);
     });
@@ -1043,6 +1223,31 @@ $routes->group('student', [
             'filter' => 'permission:view_dashboard',
             'as'     => 'student.dashboard'
         ]);
+
+        $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'NotificationController::index', ['as' => 'student.notifications']);
+            $routes->get('unread', 'NotificationController::unread', ['as' => 'student.notifications.unread']);
+            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'student.notifications.preferences']);
+            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'student.notifications.preferences.update']);
+            $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'student.notifications.read']);
+            $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'student.notifications.read_all']);
+            $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'student.notifications.delete']);
+            $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'student.notifications.count']);
+        });
+
+        $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
+            $routes->get('/', 'MessageController::index', ['as' => 'student.messages']);
+            $routes->get('inbox', 'MessageController::inbox', ['as' => 'student.messages.inbox']);
+            $routes->get('sent', 'MessageController::sent', ['as' => 'student.messages.sent']);
+            $routes->get('compose', 'MessageController::compose', ['as' => 'student.messages.compose']);
+            $routes->post('send', 'MessageController::send', ['as' => 'student.messages.send']);
+            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'student.messages.detail']);
+            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'student.messages.edit']);
+            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'student.messages.update']);
+            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'student.messages.reply']);
+            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'student.messages.delete']);
+            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'student.messages.read']);
+        });
 
         // Data pribadi siswa
         $routes->get('profile', 'ProfileController::index', [
@@ -1097,7 +1302,7 @@ $routes->group('student', [
             $routes->get('/', 'AssessmentController::available', ['as' => 'student.assessments']);
             $routes->get('available', 'AssessmentController::available', ['as' => 'student.assessments.available']);
             $routes->get('take/(:num)', 'AssessmentController::take/$1', ['as' => 'student.assessments.take']);
-            $routes->match(['get', 'post'], 'start/(:num)', 'AssessmentController::start/$1', ['as' => 'student.assessments.start']);
+            $routes->match(['GET', 'POST'], 'start/(:num)', 'AssessmentController::start/$1', ['as' => 'student.assessments.start']);
             $routes->get('resume/(:num)', 'AssessmentController::resume/$1', ['as' => 'student.assessments.resume']);
             $routes->post('submit/(:num)', 'AssessmentController::submit/$1', ['as' => 'student.assessments.submit']);
             $routes->get('results', 'AssessmentController::results', ['as' => 'student.assessments.results']);
@@ -1144,6 +1349,31 @@ $routes->group('parent', [
             'filter' => 'permission:view_dashboard',
             'as'     => 'parent.dashboard'
         ]);
+
+        $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'NotificationController::index', ['as' => 'parent.notifications']);
+            $routes->get('unread', 'NotificationController::unread', ['as' => 'parent.notifications.unread']);
+            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'parent.notifications.preferences']);
+            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'parent.notifications.preferences.update']);
+            $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'parent.notifications.read']);
+            $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'parent.notifications.read_all']);
+            $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'parent.notifications.delete']);
+            $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'parent.notifications.count']);
+        });
+
+        $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
+            $routes->get('/', 'MessageController::index', ['as' => 'parent.messages']);
+            $routes->get('inbox', 'MessageController::inbox', ['as' => 'parent.messages.inbox']);
+            $routes->get('sent', 'MessageController::sent', ['as' => 'parent.messages.sent']);
+            $routes->get('compose', 'MessageController::compose', ['as' => 'parent.messages.compose']);
+            $routes->post('send', 'MessageController::send', ['as' => 'parent.messages.send']);
+            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'parent.messages.detail']);
+            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'parent.messages.edit']);
+            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'parent.messages.update']);
+            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'parent.messages.reply']);
+            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'parent.messages.delete']);
+            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'parent.messages.read']);
+        });
 
         $routes->get('profile', static fn() => redirect()->to('/profile'), [
             'filter' => 'permission:view_dashboard',

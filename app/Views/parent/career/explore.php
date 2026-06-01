@@ -54,9 +54,9 @@ $activeChildId = $activeChildId ?? null;
     <div class="card-body pb-0">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div>
-          <h4 class="mb-0">Info Karir & Kuliah</h4>
+          <h4 class="mb-0">Fitur Info Karier dan Info Studi Lanjut</h4>
           <div class="small text-muted">
-            Orang tua dapat melihat informasi karir dan perguruan tinggi yang dikurasi Guru BK
+            Orang tua dapat melihat informasi karier dan perguruan tinggi yang dikurasi Guru BK
             sebagai bahan diskusi dengan anak.
           </div>
         </div>
@@ -89,7 +89,7 @@ $activeChildId = $activeChildId ?? null;
         <li class="nav-item">
           <a class="nav-link <?= ($activeTab === 'careers' ? 'active' : '') ?>"
              href="<?= site_url('parent/career?tab=careers' . ($activeChildId ? '&child_id=' . (int)$activeChildId : '')) ?>">
-            <i class="mdi mdi-briefcase-outline me-1"></i>Pilihan Karir
+            <i class="mdi mdi-briefcase-outline me-1"></i>Pilihan Karier
           </a>
         </li>
         <li class="nav-item">
@@ -103,12 +103,12 @@ $activeChildId = $activeChildId ?? null;
   </div>
 
   <div class="tab-content">
-    <!-- TAB: Pilihan Karir -->
+    <!-- TAB: Pilihan Karier -->
     <div class="tab-pane fade <?= ($activeTab === 'careers' ? 'show active' : '') ?>">
       <div class="card shadow-sm">
         <div class="card-body">
 
-          <!-- Filter Karir -->
+          <!-- Filter Karier -->
           <form class="row g-2 align-items-end mb-3" method="get" action="<?= site_url('parent/career') ?>">
             <input type="hidden" name="tab" value="careers">
             <?php if ($activeChildId): ?>
@@ -121,7 +121,7 @@ $activeChildId = $activeChildId ?? null;
                 type="text"
                 name="q"
                 class="form-control"
-                placeholder="Cari judul atau deskripsi karir..."
+                placeholder="Cari judul atau deskripsi karier..."
                 value="<?= esc($filters['q'] ?? '') ?>"
               >
             </div>

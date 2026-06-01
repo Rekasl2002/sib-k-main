@@ -60,9 +60,9 @@ function filter_label_type(?string $type): string
         'sessions'           => 'Sesi Konseling',
         'violations'         => 'Pelanggaran (Binaan)',
         'assessments'        => 'Asesmen (Binaan)',
-        'career'             => 'Info Karir',
+        'career'             => 'Fitur Info Karier dan Info Studi Lanjut',
         'universities'       => 'Info Perguruan Tinggi',
-        'career_choices'     => 'Pilihan Karir Siswa',
+        'career_choices'     => 'Pilihan Karier Siswa',
         'university_choices' => 'Pilihan PT Siswa',
         default              => $type !== '' ? $type : 'sessions',
     };
