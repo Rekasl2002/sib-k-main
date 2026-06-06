@@ -57,12 +57,14 @@ class ClassReportController extends BaseController
 
         $valPaper  = $this->normalizePaper((string)($req->getGet('paper') ?: 'A4'));
         $valOrient = $this->normalizeOrientation((string)($req->getGet('orientation') ?: 'portrait'));
+        $students  = $resolvedClassId ? $this->report->studentOptionsForClass($resolvedClassId) : [];
 
         $noClassAssigned = empty($classes);
 
         return view('homeroom_teacher/reports/index', [
             'pageTitle' => 'Laporan Kelas',
             'classes'   => $classes,
+            'students'  => $students,
 
             'valFrom'   => $valFrom,
             'valTo'     => $valTo,
@@ -70,6 +72,8 @@ class ClassReportController extends BaseController
 
             'valPaper'  => $valPaper,
             'valOrient' => $valOrient,
+            'valMode'   => (string)($req->getGet('mode') ?: 'class_summary'),
+            'valStudent'=> (string)($req->getGet('student_id') ?? ''),
 
             'noClassAssigned' => $noClassAssigned,
         ]);
@@ -92,6 +96,16 @@ class ClassReportController extends BaseController
                     . '<b>Belum ada kelas binaan.</b> Akun Wali Kelas ini belum di-assign ke kelas manapun.'
                     . '</div>'
                 );
+        }
+
+        if (($f['mode'] ?? 'class_summary') === 'student_individual') {
+            $out = $this->buildIndividualPayload($f);
+
+            return view('counselor/reports/partials/table', [
+                'title' => $out['title'],
+                'columns' => $out['columns'],
+                'rows' => $out['rows'],
+            ]);
         }
 
         $data = $this->report->schoolAggregate(
@@ -129,6 +143,39 @@ class ClassReportController extends BaseController
 
         if (!in_array($format, ['pdf', 'xlsx'], true)) {
             $format = 'pdf';
+        }
+
+        if (($f['mode'] ?? 'class_summary') === 'student_individual') {
+            $out = $this->buildIndividualPayload($f);
+            $filename = $this->safeFilename('laporan_individu_' . ($f['student_id'] ?: 'siswa') . '_' . ($f['date_from'] ?: 'all') . '_' . ($f['date_to'] ?: 'all'));
+
+            if ($format === 'xlsx') {
+                $tmpPath = $this->buildTableXlsx($out['title'], $out['columns'], $out['rows'], $filename);
+                register_shutdown_function(static function () use ($tmpPath) {
+                    @unlink($tmpPath);
+                });
+
+                return $this->response->download($tmpPath, null)->setFileName($filename . '.xlsx');
+            }
+
+            if (! PDFGenerator::isAvailable()) {
+                return redirect()->to('/homeroom/reports')
+                    ->with('error', 'Fitur unduh PDF belum tersedia karena paket Dompdf belum terpasang di server. Unduh Excel tetap dapat digunakan.');
+            }
+
+            $html = view('counselor/reports/partials/table_pdf', [
+                'title' => $out['title'],
+                'columns' => $out['columns'],
+                'rows' => $out['rows'],
+                'filters' => $f,
+            ]);
+
+            $bin = $this->pdf()->render($html, $paper, $orientation);
+
+            return $this->response
+                ->setHeader('Content-Type', 'application/pdf')
+                ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '.pdf"')
+                ->setBody($bin);
         }
 
         $data = $this->report->schoolAggregate(
@@ -207,6 +254,34 @@ class ClassReportController extends BaseController
             'date_from' => $dateFrom,
             'date_to'   => $dateTo,
             'class_id'  => $classId,
+            'mode'      => (string)($this->request->getVar('mode') ?: 'class_summary'),
+            'student_id'=> $this->request->getVar('student_id') ? (int)$this->request->getVar('student_id') : null,
+        ];
+    }
+
+    private function buildIndividualPayload(array $f): array
+    {
+        $studentId = (int)($f['student_id'] ?? 0);
+        $classId = (int)($f['class_id'] ?? 0);
+        $allowed = $classId > 0
+            ? array_map(static fn ($r) => (int)($r['id'] ?? 0), $this->report->studentOptionsForClass($classId))
+            : [];
+
+        if ($studentId <= 0 || !in_array($studentId, $allowed, true)) {
+            return [
+                'title' => 'Laporan Individu Siswa',
+                'columns' => ['Tanggal', 'Kategori', 'Kegiatan', 'Status', 'Catatan'],
+                'rows' => [],
+            ];
+        }
+
+        $out = $this->report->studentIndividualTable($studentId, $f['date_from'] ?? null, $f['date_to'] ?? null);
+        $student = $out['student'] ?? [];
+
+        return [
+            'title' => 'Laporan Individu Siswa - ' . (string)($student['full_name'] ?? 'Siswa'),
+            'columns' => $out['columns'] ?? [],
+            'rows' => $out['rows'] ?? [],
         ];
     }
 
@@ -367,10 +442,6 @@ class ClassReportController extends BaseController
             ['Total Siswa', (string)($kpi['students_total'] ?? 0)],
             ['Total Sesi', (string)($kpi['sessions_total'] ?? 0)],
             ['Total Durasi (menit)', (string)($kpi['sessions_duration_total'] ?? 0)],
-            ['Total Pelanggaran', (string)($kpi['violations_total'] ?? 0)],
-            ['Total Poin', (string)($kpi['violations_points_total'] ?? 0)],
-            ['Kasus Aktif', (string)($kpi['violations_active'] ?? 0)],
-            ['Total Sanksi', (string)($kpi['sanctions_total'] ?? 0)],
             ['Asesmen Assigned', (string)($kpi['assessments_assigned'] ?? 0)],
             ['Asesmen Completed', (string)($kpi['assessments_completed'] ?? 0)],
             ['Avg Score (%)', (string)($kpi['assessments_avg_percentage'] ?? 0)],
@@ -417,49 +488,6 @@ class ClassReportController extends BaseController
             }, $data['sessions']['byCounselor'] ?? [])
         );
 
-        $vioSheet = $spreadsheet->createSheet();
-        $vioSheet->setTitle('Violations');
-
-        $this->writeTable(
-            $vioSheet,
-            1,
-            ['Level', 'Jumlah', 'Total Poin'],
-            array_map(static function ($r) {
-                return [
-                    (string)($r['label'] ?? ''),
-                    (string)($r['count'] ?? 0),
-                    (string)($r['points'] ?? 0),
-                ];
-            }, $data['violations']['byLevel'] ?? [])
-        );
-
-        $start = 1 + 2 + max(1, count($data['violations']['byLevel'] ?? [])) + 2;
-
-        $this->writeTable(
-            $vioSheet,
-            $start,
-            ['Kategori', 'Jumlah', 'Total Poin'],
-            array_map(static function ($r) {
-                return [
-                    (string)($r['label'] ?? ''),
-                    (string)($r['count'] ?? 0),
-                    (string)($r['points'] ?? 0),
-                ];
-            }, $data['violations']['byCategory'] ?? [])
-        );
-
-        $sanSheet = $spreadsheet->createSheet();
-        $sanSheet->setTitle('Sanctions');
-
-        $this->writeTable(
-            $sanSheet,
-            1,
-            ['Jenis Sanksi', 'Jumlah'],
-            array_map(static function ($r) {
-                return [(string)($r['label'] ?? ''), (string)($r['count'] ?? 0)];
-            }, $data['sanctions']['byType'] ?? [])
-        );
-
         $assSheet = $spreadsheet->createSheet();
         $assSheet->setTitle('Assessments');
 
@@ -476,6 +504,31 @@ class ClassReportController extends BaseController
                 ];
             }, $data['assessments']['byAssessment'] ?? [])
         );
+
+        $tmpPath = WRITEPATH . 'uploads/' . $filename . '.xlsx';
+        @mkdir(dirname($tmpPath), 0775, true);
+
+        (new Xlsx($spreadsheet))->save($tmpPath);
+
+        return $tmpPath;
+    }
+
+    private function buildTableXlsx(string $title, array $columns, array $rows, string $filename): string
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Report');
+
+        $sheet->setCellValueExplicit('A1', 'Judul', DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('B1', $title, DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('A2', 'Dibuat', DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('B2', date('Y-m-d H:i:s'), DataType::TYPE_STRING);
+
+        $this->writeTable($sheet, 4, $columns ?: ['Data'], array_map(static function ($row) {
+            return is_array($row)
+                ? array_map(static fn ($value) => is_scalar($value) ? (string)$value : json_encode($value, JSON_UNESCAPED_UNICODE), array_values($row))
+                : [(string)$row];
+        }, $rows));
 
         $tmpPath = WRITEPATH . 'uploads/' . $filename . '.xlsx';
         @mkdir(dirname($tmpPath), 0775, true);

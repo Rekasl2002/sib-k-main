@@ -243,8 +243,6 @@ $restricted = ($roleName === 'Orang Tua' || $roleName === 'Siswa');
                     <div class="text-nowrap ms-3">
                       <a class="btn btn-sm btn-outline-primary"
                         href="<?= route_to('parent.children.profile', $c['id']) ?>">Profil</a>
-                      <a class="btn btn-sm btn-outline-danger"
-                        href="<?= route_to('parent.children.violations', $c['id']) ?>">Pelanggaran</a>
                       <a class="btn btn-sm btn-outline-secondary"
                         href="<?= route_to('parent.children.sessions', $c['id']) ?>">Konseling</a>
                     </div>

@@ -225,7 +225,6 @@ abstract class BaseRoleNotificationController extends BaseController
         return [
             'message'              => 'Pesan internal',
             'violation_submission' => 'Pengaduan pelanggaran',
-            'violation'            => 'Kasus pelanggaran',
             'assessment'           => 'Asesmen',
             'career'               => 'Fitur info karier dan info studi lanjut',
             'session'              => 'Sesi konseling',

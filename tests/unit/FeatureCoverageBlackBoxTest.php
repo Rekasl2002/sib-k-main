@@ -21,7 +21,6 @@ final class FeatureCoverageBlackBoxTest extends CIUnitTestCase
             'Manajemen Siswa' => ['students', 'studentcontroller'],
             'Impor Siswa' => ['students/import', 'do-import', 'download-template'],
             'Manajemen Sesi Konseling' => ['sessions', 'sessioncontroller'],
-            'Manajemen Kasus dan Pelanggaran' => ['cases', 'violations', 'casecontroller'],
             'Pengaturan Aplikasi' => ['settings', 'settingcontroller'],
             'Laporan' => ['reports', 'reportcontroller'],
             'Dashboard' => ['dashboard', 'dashboardcontroller'],

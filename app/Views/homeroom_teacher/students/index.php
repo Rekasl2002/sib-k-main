@@ -42,7 +42,6 @@ $isMultipleClass = ! empty($class['is_multiple']);
                 <th class="d-none d-sm-table-cell">NIK</th>
                 <th class="d-none d-md-table-cell">NISN</th>
                 <th class="text-center">JK</th>
-                <th class="text-end">Poin</th>
                 <th style="width:7rem"></th>
               </tr>
             </thead>
@@ -55,14 +54,13 @@ $isMultipleClass = ! empty($class['is_multiple']);
                   <td class="d-none d-sm-table-cell"><?= esc($st['nik'] ?? '-'); ?></td>
                   <td class="d-none d-md-table-cell"><?= esc($st['nisn'] ?? '-'); ?></td>
                   <td class="text-center"><?= esc($st['gender'] ?? '-'); ?></td>
-                  <td class="text-end fw-semibold"><?= (int)($st['total_violation_points'] ?? 0); ?></td>
                   <td class="text-end">
                     <a class="btn btn-sm btn-outline-primary" href="<?= site_url('homeroom/students/'.$st['id']); ?>">Detail</a>
                   </td>
                 </tr>
               <?php endforeach; else: ?>
                 <tr>
-                  <td colspan="<?= $isMultipleClass ? 8 : 7 ?>" class="text-center text-muted">Belum ada siswa aktif pada kelas ini.</td>
+                  <td colspan="<?= $isMultipleClass ? 7 : 6 ?>" class="text-center text-muted">Belum ada siswa aktif pada kelas ini.</td>
                 </tr>
               <?php endif; ?>
             </tbody>

@@ -1,198 +1,135 @@
-<!-- app/Views/parent/child/sessions.php -->
+<!-- app/Views/student/schedule/request.php -->
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
 <?php
-// Helpers kecil agar view tahan banting untuk array/objek & styling status
-if (!function_exists('rowa')) {
-  function rowa($r): array { return is_array($r) ? $r : (is_object($r) ? (array)$r : []); }
-}
-if (!function_exists('v')) {
-  function v($r, $k, $d='') { $a = rowa($r); return esc($a[$k] ?? $d); }
-}
-if (!function_exists('badgeClass')) {
-  function badgeClass($status) {
-    $s = strtolower((string)$status);
-    return match (true) {
-      str_contains($s,'dijadwalkan') => 'bg-info',
-      str_contains($s,'proses')      => 'bg-primary',
-      str_contains($s,'selesai')     => 'bg-success',
-      str_contains($s,'batal')       => 'bg-danger',
-      str_contains($s,'tidak hadir') => 'bg-warning',
-      default                        => 'bg-secondary',
-    };
-  }
-}
-
-$today = date('Y-m-d');
-
-// Normalisasi sumber data
-$all = [];
-if (!empty($sessions) && is_array($sessions)) {
-  foreach ($sessions as $s) { $all[] = rowa($s); }
-}
-
-// Bagi menjadi Mendatang & Riwayat (logika sama dengan student/schedule/index.php)
-$upcoming = [];
-$history  = [];
-foreach ($all as $it) {
-  $date  = $it['session_date'] ?? null;
-  $stat  = strtolower((string)($it['status'] ?? ''));
-  $isFutureOrToday = $date && $date >= $today;
-  $isOngoingStatus = str_contains($stat,'dijadwalkan') || str_contains($stat,'proses');
-
-  if (($isFutureOrToday && $isOngoingStatus)) {
-    $upcoming[] = $it;
-  } else {
-    $history[] = $it;
-  }
-}
-
-$studentId   = (int) (($student['id'] ?? 0));
-$studentName = (string) ($student['full_name'] ?? 'Anak');
+$today = $today ?? date('Y-m-d');
+$hasClassAndCounselor = !empty($classId) && !empty($defaultCounselor);
+$errors = session()->getFlashdata('errors') ?? [];
+$errors = is_array($errors) ? $errors : [];
 ?>
 
-<div class="page-content">
-  <div class="container-fluid">
-
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <h4 class="mb-0">Jadwal Konseling • <?= esc($studentName) ?></h4>
-      <div class="d-flex gap-2">
-        <a class="btn btn-light"
-           href="<?= base_url('parent/child/'.$studentId.'/sessions?range=past&perPage=50') ?>">
-          Riwayat Lengkap
-        </a>
-        <!-- Orang Tua tidak memiliki tombol "Ajukan Konseling" -->
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0">Ajukan Sesi Konseling</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item">
+            <a href="<?= base_url('student/dashboard') ?>">Dashboard</a>
+          </li>
+          <li class="breadcrumb-item">
+            <a href="<?= route_to('student.schedule') ?>">Sesi Konseling</a>
+          </li>
+          <li class="breadcrumb-item active">Ajukan Sesi</li>
+        </ol>
       </div>
     </div>
+  </div>
+</div>
 
-    <?php if (session('success')): ?>
-      <div class="alert alert-success"><?= esc(session('success')) ?></div>
-    <?php elseif (session('error')): ?>
-      <div class="alert alert-danger"><?= esc(session('error')) ?></div>
-    <?php endif; ?>
+<?php if (session()->getFlashdata('success')): ?>
+  <div class="alert alert-success">
+    <?= esc(session()->getFlashdata('success')) ?>
+  </div>
+<?php endif; ?>
 
-    <!-- Mendatang & Berlangsung -->
-    <div class="card mb-3">
-      <div class="card-body">
-        <h5 class="card-title mb-3">Mendatang & Berlangsung</h5>
-        <?php if (!empty($upcoming)): ?>
-          <div class="table-responsive">
-            <table class="table table-striped align-middle">
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Waktu</th>
-                  <th>Jenis</th>
-                  <th>Topik</th>
-                  <th>Lokasi</th>
-                  <th>Status</th>
-                  <th style="width: 110px;">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-              <?php foreach ($upcoming as $s): ?>
-                <?php
-                  $id   = (int)($s['id'] ?? 0);
-                  $time = trim((string)($s['session_time'] ?? ''));
-                  // Jika format HH:MM:SS, ambil HH:MM saja
-                  $timeLabel = ($time !== '' && strlen($time) >= 5) ? substr($time, 0, 5) : ($time !== '' ? $time : '-');
-                ?>
-                <tr>
-                  <td><?= v($s,'session_date','-') ?></td>
-                  <td><?= esc($timeLabel) ?></td>
-                  <td><?= v($s,'session_type','-') ?></td>
-                  <td><?= v($s,'topic','-') ?></td>
-                  <td><?= v($s,'location','-') ?: '-' ?></td>
-                  <td>
-                    <span class="badge <?= badgeClass($s['status'] ?? '') ?>">
-                      <?= v($s,'status','-') ?>
-                    </span>
-                  </td>
-                  <td>
-                    <?php if ($id > 0): ?>
-                      <a href="<?= route_to('parent.children.sessions.detail', $studentId, $id) ?>"
-                         class="btn btn-sm btn-outline-primary">
-                        <i class="mdi mdi-eye"></i> Detail
-                      </a>
-                    <?php else: ?>
-                      <span class="text-muted">-</span>
-                    <?php endif; ?>
-                  </td>
-                </tr>
-              <?php endforeach; ?>
-              </tbody>
-            </table>
-          </div>
-        <?php else: ?>
-          <p class="text-muted mb-0">Belum ada jadwal yang akan datang.</p>
-        <?php endif; ?>
-      </div>
-    </div>
+<?php if (session()->getFlashdata('error')): ?>
+  <div class="alert alert-danger">
+    <?= esc(session()->getFlashdata('error')) ?>
+  </div>
+<?php endif; ?>
 
-    <!-- Riwayat Singkat (pada halaman ini) -->
+<?php if (!empty($errors)): ?>
+  <div class="alert alert-danger">
+    <div class="fw-semibold mb-1">Periksa kembali input:</div>
+    <ul class="mb-0">
+      <?php foreach ($errors as $message): ?>
+        <li><?= esc($message) ?></li>
+      <?php endforeach; ?>
+    </ul>
+  </div>
+<?php endif; ?>
+
+<?php if (!$hasClassAndCounselor): ?>
+  <div class="alert alert-warning">
+    Kelas Anda belum dikaitkan dengan Guru BK, sehingga pengajuan sesi belum dapat dikirim.
+  </div>
+<?php endif; ?>
+
+<div class="row">
+  <div class="col-lg-8">
     <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Form Pengajuan</h5>
+      </div>
       <div class="card-body">
-        <h5 class="card-title mb-3">Riwayat</h5>
-        <?php if (!empty($history)): ?>
-          <div class="table-responsive">
-            <table class="table table-striped align-middle">
-              <thead>
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Waktu</th>
-                  <th>Jenis</th>
-                  <th>Topik</th>
-                  <th>Lokasi</th>
-                  <th>Status</th>
-                  <th style="width: 110px;">Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-              <?php foreach ($history as $s): ?>
-                <?php
-                  $id   = (int)($s['id'] ?? 0);
-                  $time = trim((string)($s['session_time'] ?? ''));
-                  $timeLabel = ($time !== '' && strlen($time) >= 5) ? substr($time, 0, 5) : ($time !== '' ? $time : '-');
-                ?>
-                <tr>
-                  <td><?= v($s,'session_date','-') ?></td>
-                  <td><?= esc($timeLabel) ?></td>
-                  <td><?= v($s,'session_type','-') ?></td>
-                  <td><?= v($s,'topic','-') ?></td>
-                  <td><?= v($s,'location','-') ?: '-' ?></td>
-                  <td>
-                    <span class="badge <?= badgeClass($s['status'] ?? '') ?>">
-                      <?= v($s,'status','-') ?>
-                    </span>
-                  </td>
-                  <td>
-                    <?php if ($id > 0): ?>
-                      <a href="<?= route_to('parent.children.sessions.detail', $studentId, $id) ?>"
-                         class="btn btn-sm btn-outline-primary">
-                        <i class="mdi mdi-eye"></i> Detail
-                      </a>
-                    <?php else: ?>
-                      <span class="text-muted">-</span>
-                    <?php endif; ?>
-                  </td>
-                </tr>
-              <?php endforeach; ?>
-              </tbody>
-            </table>
+        <form action="<?= route_to('student.schedule.store') ?>" method="post" autocomplete="off">
+          <?= csrf_field() ?>
+
+          <div class="mb-3">
+            <label for="session_date" class="form-label">Tanggal Konseling <span class="text-danger">*</span></label>
+            <input
+              type="date"
+              id="session_date"
+              name="session_date"
+              class="form-control"
+              value="<?= esc(old('session_date', $today)) ?>"
+              min="<?= esc($today) ?>"
+              required
+              <?= !$hasClassAndCounselor ? 'disabled' : '' ?>
+            >
           </div>
-          <div class="text-end">
-            <a class="btn btn-sm btn-light"
-               href="<?= base_url('parent/child/'.$studentId.'/sessions?range=past&perPage=50') ?>">
-              Lihat Riwayat Lengkap
-            </a>
+
+          <div class="mb-3">
+            <label for="session_time" class="form-label">Waktu yang Diinginkan</label>
+            <input
+              type="time"
+              id="session_time"
+              name="session_time"
+              class="form-control"
+              value="<?= esc(old('session_time')) ?>"
+              <?= !$hasClassAndCounselor ? 'disabled' : '' ?>
+            >
+            <div class="form-text">Boleh dikosongkan jika ingin dijadwalkan oleh Guru BK.</div>
           </div>
-        <?php else: ?>
-          <p class="text-muted mb-0">Belum ada riwayat jadwal.</p>
-        <?php endif; ?>
+
+          <div class="mb-3">
+            <label for="topic" class="form-label">Topik Konseling <span class="text-danger">*</span></label>
+            <input
+              type="text"
+              id="topic"
+              name="topic"
+              class="form-control"
+              value="<?= esc(old('topic')) ?>"
+              maxlength="255"
+              placeholder="Contoh: Konseling akademik, pribadi, atau rencana studi"
+              required
+              <?= !$hasClassAndCounselor ? 'disabled' : '' ?>
+            >
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label">Uraian Singkat</label>
+            <textarea
+              id="description"
+              name="description"
+              class="form-control"
+              rows="5"
+              placeholder="Ceritakan singkat hal yang ingin dibahas"
+              <?= !$hasClassAndCounselor ? 'disabled' : '' ?>
+            ><?= esc(old('description')) ?></textarea>
+          </div>
+
+          <div class="d-flex gap-2">
+            <a href="<?= route_to('student.schedule') ?>" class="btn btn-light">Kembali</a>
+            <button type="submit" class="btn btn-primary" <?= !$hasClassAndCounselor ? 'disabled' : '' ?>>
+              <i class="mdi mdi-send-outline me-1"></i> Kirim Pengajuan
+            </button>
+          </div>
+        </form>
       </div>
     </div>
-
   </div>
 </div>
 

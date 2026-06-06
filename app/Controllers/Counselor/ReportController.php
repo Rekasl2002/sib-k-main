@@ -81,12 +81,14 @@ class ReportController extends BaseController
 
         // jenis laporan default
         $valType = (string)($this->request->getGet('type') ?: 'sessions');
+        $students = $this->report->studentOptionsForCounselor($counselorId);
 
         return view('counselor/reports/index', [
             'pageTitle'   => 'Laporan',
 
             'classes'     => $classes,
             'assessments' => $assessments,
+            'students'    => $students,
 
             'valFrom'     => $valFrom,
             'valTo'       => $valTo,
@@ -99,6 +101,7 @@ class ReportController extends BaseController
             'valType'     => $valType,
             'valPaper'    => $valPaper,
             'valOrient'   => $valOrient,
+            'valStudent'  => (string)($this->request->getGet('student_id') ?? ''),
 
             // untuk report asesmen
             'valAssessmentId' => (string)($this->request->getGet('assessment_id') ?? ''),
@@ -233,6 +236,7 @@ class ReportController extends BaseController
             'sort_by'       => $f['sort_by'],
             'sort_dir'      => $f['sort_dir'],
             'assessment_id' => $f['assessment_id'],
+            'student_id'    => $f['student_id'],
         ];
 
         switch ($type) {
@@ -250,9 +254,21 @@ class ReportController extends BaseController
                 $rows    = $out['rows'] ?? [];
                 break;
 
-            case 'violations':
-                $title = 'Laporan Pelanggaran (Binaan)';
-                $out = $this->report->violations($filter, $counselorId);
+            case 'student_individual':
+                $studentId = (int)($filter['student_id'] ?? 0);
+                $allowedIds = $this->report->counselorStudentIds($counselorId, $filter['class_id'] ?? null);
+
+                if ($studentId <= 0 || !in_array($studentId, $allowedIds, true)) {
+                    $title = 'Laporan Individu Siswa';
+                    $columns = ['Tanggal', 'Kategori', 'Kegiatan', 'Status', 'Catatan'];
+                    $rows = [];
+                    break;
+                }
+
+                $out = $this->report->studentIndividualTable($studentId, $filter['date_from'] ?? null, $filter['date_to'] ?? null);
+                $student = $out['student'] ?? [];
+                $name = (string)($student['full_name'] ?? 'Siswa');
+                $title = 'Laporan Individu Siswa - ' . $name;
                 $columns = $out['columns'] ?? [];
                 $rows    = $out['rows'] ?? [];
                 break;
@@ -332,6 +348,7 @@ class ReportController extends BaseController
 
             // khusus asesmen
             'assessment_id' => $this->request->getGet('assessment_id') ? (int)$this->request->getGet('assessment_id') : null,
+            'student_id'    => $this->request->getGet('student_id') ? (int)$this->request->getGet('student_id') : null,
         ];
     }
 
@@ -341,7 +358,7 @@ class ReportController extends BaseController
         $allowed = [
             'students',
             'sessions',
-            'violations',
+            'student_individual',
             'assessments',
             'career_choices',
             'university_choices',

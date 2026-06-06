@@ -17,14 +17,15 @@ helper(['url']);
 
 $classes    = $classes ?? [];
 $counselors = $counselors ?? [];
-$categories = $categories ?? [];
+$students   = $students ?? [];
 
 $valFrom    = $valFrom ?? date('Y-m-01');
 $valTo      = $valTo ?? date('Y-m-d');
 
 $valClass     = $valClass ?? '';
 $valCounselor = $valCounselor ?? '';
-$valCategory  = $valCategory ?? '';
+$valMode      = $valMode ?? 'aggregate';
+$valStudent   = $valStudent ?? '';
 
 $valPaper   = $valPaper ?? 'A4';
 $valOrient  = $valOrient ?? 'portrait';
@@ -46,7 +47,6 @@ function optLabel(array $rows, string $id, string $idKey, string $labelKey, stri
 }
 $classLabel     = $valClass ? optLabel($classes, $valClass, 'id', 'class_name', 'Kelas') : '';
 $counselorLabel = $valCounselor ? optLabel($counselors, $valCounselor, 'id', 'full_name', 'User') : '';
-$categoryLabel  = $valCategory ? optLabel($categories, $valCategory, 'id', 'category_name', 'Kategori') : '';
 
 $previewUrlBase  = route_to('koordinator.reports.preview');
 $downloadUrlBase = route_to('koordinator.reports.download');
@@ -92,6 +92,14 @@ $downloadUrlBase = route_to('koordinator.reports.download');
         <form id="aggForm" method="get" action="<?= $previewUrlBase ?>" class="row g-3" novalidate>
 
           <!-- Preset -->
+          <div class="col-12">
+            <label class="form-label">Mode Laporan</label>
+            <select name="mode" class="form-select" id="modeSelect">
+              <option value="aggregate" <?= $valMode === 'aggregate' ? 'selected' : '' ?>>Agregat Sekolah/Kelas</option>
+              <option value="student_individual" <?= $valMode === 'student_individual' ? 'selected' : '' ?>>Individu Siswa</option>
+            </select>
+          </div>
+
           <div class="col-12">
             <div class="d-flex flex-wrap gap-2">
               <button type="button" class="btn btn-sm btn-outline-secondary" data-preset="this_month">
@@ -151,20 +159,20 @@ $downloadUrlBase = route_to('koordinator.reports.download');
                 </option>
               <?php endforeach; ?>
             </select>
-            <div class="form-text">Filter ini akan mempersempit rekap sesi/sanksi/asesmen sesuai pembuat/penanggung jawab.</div>
+            <div class="form-text">Filter ini akan mempersempit rekap sesi dan asesmen sesuai pembuat/penanggung jawab.</div>
           </div>
 
-          <div class="col-12">
-            <label class="form-label">Kategori Pelanggaran (opsional)</label>
-            <select name="category_id" class="form-select">
-              <option value="">Semua Kategori</option>
-              <?php foreach ($categories as $cat): ?>
-                <option value="<?= esc($cat['id']) ?>" <?= (string)$cat['id'] === (string)$valCategory ? 'selected' : '' ?>>
-                  <?= esc($cat['category_name'] ?? ('Kategori #'.$cat['id'])) ?>
+          <div class="col-12" id="studentWrap">
+            <label class="form-label">Siswa</label>
+            <select name="student_id" class="form-select">
+              <option value="">Pilih Siswa</option>
+              <?php foreach ($students as $s): ?>
+                <option value="<?= esc($s['id']) ?>" <?= (string)$s['id'] === (string)$valStudent ? 'selected' : '' ?>>
+                  <?= esc(($s['full_name'] ?? '-') . ' - ' . ($s['class_name'] ?? '-') . ' - NISN ' . ($s['nisn'] ?? '-')) ?>
                 </option>
               <?php endforeach; ?>
             </select>
-            <div class="form-text">Filter ini mempengaruhi bagian rekap pelanggaran.</div>
+            <div class="form-text">Digunakan untuk mode laporan individu.</div>
           </div>
 
           <!-- PDF options -->
@@ -244,8 +252,8 @@ $downloadUrlBase = route_to('koordinator.reports.download');
             <?php if ($counselorLabel): ?>
               <span class="badge bg-light text-dark border">BK: <?= esc($counselorLabel) ?></span>
             <?php endif; ?>
-            <?php if ($categoryLabel): ?>
-              <span class="badge bg-light text-dark border">Kategori: <?= esc($categoryLabel) ?></span>
+            <?php if ($valMode === 'student_individual'): ?>
+              <span class="badge bg-light text-dark border">Mode: Individu Siswa</span>
             <?php endif; ?>
           </div>
         </div>
@@ -275,6 +283,8 @@ $downloadUrlBase = route_to('koordinator.reports.download');
   const dateFrom  = document.getElementById('dateFrom');
   const dateTo    = document.getElementById('dateTo');
   const dateHint  = document.getElementById('dateHint');
+  const modeSelect = document.getElementById('modeSelect');
+  const studentWrap = document.getElementById('studentWrap');
 
   const canDownload = <?= $canDownload ? 'true' : 'false' ?>;
 
@@ -317,6 +327,13 @@ $downloadUrlBase = route_to('koordinator.reports.download');
 
     dlPdf.href  = downloadBase + "?" + q + "&format=pdf";
     dlXlsx.href = downloadBase + "?" + q + "&format=xlsx";
+  }
+
+  function syncMode() {
+    const isIndividual = modeSelect && modeSelect.value === 'student_individual';
+    if (studentWrap) {
+      studentWrap.classList.toggle('d-none', !isIndividual);
+    }
   }
 
   function saveFilters() {
@@ -420,10 +437,12 @@ $downloadUrlBase = route_to('koordinator.reports.download');
     // kosongkan scope opsional
     const classSel = form.querySelector('[name="class_id"]');
     const csel     = form.querySelector('[name="counselor_id"]');
-    const catSel   = form.querySelector('[name="category_id"]');
+    const modeSel  = form.querySelector('[name="mode"]');
+    const studentSel = form.querySelector('[name="student_id"]');
     if (classSel) classSel.value = '';
     if (csel) csel.value = '';
-    if (catSel) catSel.value = '';
+    if (modeSel) modeSel.value = 'aggregate';
+    if (studentSel) studentSel.value = '';
 
     // default export options
     const paper = form.querySelector('[name="paper"]');
@@ -432,6 +451,7 @@ $downloadUrlBase = route_to('koordinator.reports.download');
     if (orient) orient.value = 'portrait';
 
     setDateHint();
+    syncMode();
     syncDownloadLinks();
     saveFilters();
     preview.innerHTML = '<div class="text-muted">Filter direset. Klik <b>Pratinjau</b> untuk memuat data.</div>';
@@ -455,12 +475,14 @@ $downloadUrlBase = route_to('koordinator.reports.download');
   // init
   loadFilters();          // restore last used filter
   setDateHint();
+  syncMode();
   syncDownloadLinks();
 
   // events
   form.addEventListener('submit', loadPreview);
   form.addEventListener('change', function(){
     setDateHint();
+    syncMode();
     syncDownloadLinks();
     saveFilters();
   });

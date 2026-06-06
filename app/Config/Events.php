@@ -5,7 +5,6 @@ namespace Config;
 use CodeIgniter\Events\Events;
 use CodeIgniter\Exceptions\FrameworkException;
 use CodeIgniter\HotReloader\HotReloader;
-use App\Libraries\NotificationService;
 
 /*
  * --------------------------------------------------------------------
@@ -54,17 +53,4 @@ Events::on('pre_system', static function (): void {
         }
     }
 });
-
-
-// Auto-notif saat pelanggaran dibuat/jadwal konseling terbentuk
-Events::on('violation_reported', static function(array $d){
-    helper('notification');
-    if (!empty($d['counselor_id'])) {
-        send_notification((int)$d['counselor_id'], 'Pelanggaran Baru', $d['category_name'].' dilaporkan oleh '.$d['class_name'], 'warning', [
-            'violation_id' => (int)$d['violation_id']
-        ]);
-    }
-});
-
-
 

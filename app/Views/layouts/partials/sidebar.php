@@ -184,11 +184,6 @@ $__permViewCounselingSessions    = $__can('view_counseling_sessions');
 $__permManageCounselingSessions  = $__can('manage_counseling_sessions');
 
 $__permViewCounselingSchedule    = $__canAny(['view_counseling_schedule', 'schedule_counseling']); // kompatibilitas
-$__permViewViolations            = $__can('view_violations');
-$__permManageViolations          = $__can('manage_violations');
-$__permManageLightViolations     = $__can('manage_light_violations');
-
-$__permManageSanctions           = $__can('manage_sanctions');
 
 $__permViewReports               = $__can('view_reports');
 $__permViewReportsAggregate      = $__canAny(['view_reports_aggregate']);
@@ -222,8 +217,7 @@ $__permViewStaffInfo             = $__can('view_staff_info');
 $__permSubmitVS = $__can('submit_violation_submissions');
 $__permManageVS = $__canAny([
     'review_violation_submissions',
-    'manage_violation_submissions',
-    'convert_violation_submissions'
+    'manage_violation_submissions'
 ]);
 
 $__showStudentVS = $__enableViolationSubmissions && ($__isStudent || $__permSubmitVS);
@@ -367,12 +361,11 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           <?php
             $__showKoordinatorBK = $__canAny([
                 'view_counseling_sessions','manage_counseling_sessions',
-                'view_violations','manage_violations',
                 'manage_assessments','take_assessments'
             ]) || $__showStaffVS;
           ?>
           <?php if ($__showKoordinatorBK): ?>
-          <li class="<?= $__mm(['koordinator/sessions*','koordinator/schedule*','koordinator/cases*','koordinator/assessments*','koordinator/violation-submissions*']) ?>">
+          <li class="<?= $__mm(['koordinator/sessions*','koordinator/schedule*','koordinator/assessments*','koordinator/violation-submissions*']) ?>">
             <a href="javascript:void(0);" class="has-arrow waves-effect">
               <i class="mdi mdi-clipboard-text"></i>
               <span>Layanan BK</span>
@@ -381,10 +374,6 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
               <?php if ($__canAny(['view_counseling_sessions','manage_counseling_sessions'])): ?>
                 <li><a href="<?= base_url('koordinator/sessions') ?>">Sesi Konseling</a></li>
                 <li><a href="<?= base_url('koordinator/schedule') ?>">Kalender</a></li>
-              <?php endif; ?>
-
-              <?php if ($__canAny(['view_violations','manage_violations'])): ?>
-                <li><a href="<?= base_url('koordinator/cases') ?>">Kasus & Pelanggaran</a></li>
               <?php endif; ?>
 
               <?php if ($__showStaffVS && $__permViewViolationSubmissions): ?>
@@ -456,15 +445,6 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           </li>
           <?php endif; ?>
 
-          <?php if ($__canAny(['view_violations','manage_violations'])): ?>
-          <li>
-            <a href="<?= base_url('counselor/cases') ?>" class="waves-effect<?= $__active('counselor/cases*') ?>">
-              <i class="mdi mdi-alert-circle"></i>
-              <span>Kasus & Pelanggaran</span>
-            </a>
-          </li>
-          <?php endif; ?>
-
           <?php if ($__showStaffVS && $__permViewViolationSubmissions): ?>
           <li>
             <a href="<?= base_url('counselor/violation-submissions') ?>" class="waves-effect<?= $__active('counselor/violation-submissions*') ?>">
@@ -528,15 +508,6 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
             <a href="<?= base_url('homeroom/sessions') ?>" class="waves-effect<?= $__active('homeroom/sessions*') ?>">
               <i class="mdi mdi-calendar-check"></i>
               <span>Sesi Konseling</span>
-            </a>
-          </li>
-          <?php endif; ?>
-
-          <?php if ($__canAny(['view_violations','manage_light_violations'])): ?>
-          <li>
-            <a href="<?= base_url('homeroom/violations') ?>" class="waves-effect<?= $__active('homeroom/violations*') ?>">
-              <i class="mdi mdi-alert-circle"></i>
-              <span>Kasus & Pelanggaran</span>
             </a>
           </li>
           <?php endif; ?>
@@ -613,15 +584,6 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
             <a href="<?= base_url('student/schedule') ?>" class="waves-effect<?= $__active('student/schedule*') ?>">
               <i class="mdi mdi-calendar"></i>
               <span>Sesi Konseling</span>
-            </a>
-          </li>
-          <?php endif; ?>
-
-          <?php if ($__permViewViolations): ?>
-          <li>
-            <a href="<?= base_url('student/violations') ?>" class="waves-effect<?= $__active('student/violations*') ?>">
-              <i class="mdi mdi-alert-circle"></i>
-              <span>Kasus & Pelanggaran</span>
             </a>
           </li>
           <?php endif; ?>

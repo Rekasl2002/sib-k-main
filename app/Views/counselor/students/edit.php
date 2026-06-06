@@ -140,13 +140,6 @@ $statusOptions = ['Aktif','Alumni','Pindah','Keluar'];
                                 <td class="text-muted">NIK</td>
                                 <td class="text-end"><code><?= $s('nik') ?></code></td>
                             </tr>
-                            <tr>
-                                <td class="text-muted">Poin Pelanggaran</td>
-                                <td class="text-end">
-                                    <?php $p = (int) ($student['total_violation_points'] ?? 0); $pc = $p>0?'danger':'success'; ?>
-                                    <span class="badge bg-<?= $pc ?>"><?= $p ?></span>
-                                </td>
-                            </tr>
                             <?php if (!empty($student['created_at'])): ?>
                             <tr>
                                 <td class="text-muted">Terdaftar</td>

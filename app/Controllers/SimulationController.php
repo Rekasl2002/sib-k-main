@@ -348,16 +348,6 @@ class SimulationController extends BaseController
                 'role_modes'  => ['koordinator-bk', 'guru-bk', 'wali-kelas', 'siswa', 'orang-tua'],
                 'summary'     => 'Simulasi jadwal, pengajuan, persetujuan, catatan sesi, dan status tindak lanjut.',
             ],
-            'violations' => [
-                'title'       => 'Kasus dan Pelanggaran',
-                'short_title' => 'Kasus/Pelanggaran',
-                'url'         => 'simulation/violations',
-                'icon'        => 'mdi mdi-alert-circle',
-                'tone'        => 'danger',
-                'roles'       => 'Guru BK, Koordinator BK, Wali Kelas, Siswa, Orang Tua',
-                'role_modes'  => ['koordinator-bk', 'guru-bk', 'wali-kelas', 'siswa', 'orang-tua'],
-                'summary'     => 'Simulasi pencatatan, pemantauan status kasus, dan riwayat pelanggaran sesuai hak akses peran.',
-            ],
             'reports' => [
                 'title'       => 'Laporan',
                 'short_title' => 'Laporan',
@@ -447,7 +437,7 @@ class SimulationController extends BaseController
             'students' => [
                 'koordinator-bk' => [
                     'metrics' => [['label' => 'Siswa aktif', 'value' => '620'], ['label' => 'Kelas dipantau', 'value' => '18'], ['label' => 'Perlu perhatian', 'value' => '12']],
-                    'steps' => ['Koordinator memilih kelas atau guru BK', 'Meninjau daftar siswa lintas kelas', 'Melihat ringkasan kasus dan sesi', 'Mengarahkan tindak lanjut ke Guru BK'],
+                    'steps' => ['Koordinator memilih kelas atau guru BK', 'Meninjau daftar siswa lintas kelas', 'Melihat ringkasan sesi dan pendampingan', 'Mengarahkan tindak lanjut ke Guru BK'],
                     'form' => ['Cari siswa/kelas', 'Filter Guru BK', 'Prioritas pendampingan', 'Catatan koordinasi'],
                     'action' => 'Tinjau Siswa Simulasi',
                     'role_note' => 'Koordinator BK melihat cakupan lintas kelas dan mengarahkan tindak lanjut.',
@@ -460,8 +450,8 @@ class SimulationController extends BaseController
                     'role_note' => 'Guru BK berfokus pada profil, riwayat, dan catatan pendampingan siswa binaan.',
                 ],
                 'wali-kelas' => [
-                    'metrics' => [['label' => 'Siswa kelas', 'value' => '32'], ['label' => 'Poin aktif', 'value' => '15'], ['label' => 'Perlu koordinasi', 'value' => '3']],
-                    'steps' => ['Wali kelas membuka kelas binaan', 'Memilih siswa', 'Melihat ringkasan disiplin dan konseling', 'Mengirim catatan ke Guru BK'],
+                    'metrics' => [['label' => 'Siswa kelas', 'value' => '32'], ['label' => 'Catatan kelas', 'value' => '15'], ['label' => 'Perlu koordinasi', 'value' => '3']],
+                    'steps' => ['Wali kelas membuka kelas binaan', 'Memilih siswa', 'Melihat ringkasan kelas dan konseling', 'Mengirim catatan ke Guru BK'],
                     'form' => ['Siswa kelas', 'Kondisi kelas', 'Catatan wali kelas', 'Tujuan koordinasi'],
                     'action' => 'Kirim Catatan Kelas Simulasi',
                     'role_note' => 'Wali kelas hanya melihat siswa kelas binaan dan mengirim catatan koordinasi.',
@@ -512,48 +502,6 @@ class SimulationController extends BaseController
                     'role_note' => 'Orang tua hanya mengajukan dan memantau sesi terkait anaknya.',
                 ],
             ],
-            'violations' => [
-                'koordinator-bk' => [
-                    'steps' => ['Koordinator melihat kasus aktif', 'Memfilter tingkat urgensi', 'Menugaskan Guru BK', 'Memantau penyelesaian'],
-                    'form' => ['Filter kelas', 'Status kasus', 'Guru BK penanggung jawab', 'Catatan koordinasi'],
-                    'action' => 'Pantau Kasus Simulasi',
-                    'role_note' => 'Koordinator BK memantau kasus lintas kelas dan penanggung jawabnya.',
-                ],
-                'guru-bk' => [
-                    'steps' => ['Guru BK membuka kasus', 'Menentukan kategori dan poin', 'Menambahkan tindak lanjut', 'Menutup kasus bila selesai'],
-                    'form' => ['Siswa', 'Kategori', 'Tanggal kejadian', 'Kronologi', 'Tindak lanjut'],
-                    'action' => 'Proses Kasus Simulasi',
-                    'role_note' => 'Guru BK memproses kasus dan mengelola tindak lanjut siswa.',
-                ],
-                'wali-kelas' => [
-                    'steps' => ['Wali kelas mencatat pelanggaran ringan', 'Menulis kronologi', 'Mengirim ke Guru BK bila perlu', 'Memantau status siswa kelas'],
-                    'form' => ['Siswa kelas', 'Pelanggaran ringan', 'Tanggal', 'Kronologi', 'Catatan wali kelas'],
-                    'action' => 'Catat Pelanggaran Ringan Simulasi',
-                    'role_note' => 'Wali kelas hanya mencatat pelanggaran ringan dan melihat status kelas binaan.',
-                ],
-                'siswa' => [
-                    'metrics' => [['label' => 'Poin aktif', 'value' => '10'], ['label' => 'Kasus selesai', 'value' => '1'], ['label' => 'Tindak lanjut', 'value' => '1']],
-                    'steps' => ['Siswa membuka riwayat', 'Melihat detail pelanggaran', 'Membaca tindak lanjut', 'Menghubungi Guru BK bila perlu'],
-                    'records' => [
-                        ['Tanggal' => '12 Mei 2026', 'Kategori' => 'Kedisiplinan', 'Poin' => '10', 'Status' => 'Tindak lanjut'],
-                        ['Tanggal' => '3 Mei 2026', 'Kategori' => 'Ketertiban', 'Poin' => '0', 'Status' => 'Selesai'],
-                    ],
-                    'form' => ['Filter status', 'Periode awal', 'Periode akhir'],
-                    'action' => 'Lihat Riwayat Simulasi',
-                    'role_note' => 'Siswa hanya melihat riwayat dan tindak lanjut miliknya.',
-                ],
-                'orang-tua' => [
-                    'metrics' => [['label' => 'Poin anak', 'value' => '10'], ['label' => 'Kasus aktif', 'value' => '1'], ['label' => 'Notifikasi', 'value' => '2']],
-                    'steps' => ['Orang tua memilih anak', 'Melihat riwayat pelanggaran', 'Membaca tindak lanjut', 'Mengajukan konsultasi bila perlu'],
-                    'records' => [
-                        ['Anak' => 'Nadia Azzahra', 'Kategori' => 'Kedisiplinan', 'Poin' => '10', 'Status' => 'Tindak lanjut'],
-                        ['Anak' => 'Nadia Azzahra', 'Kategori' => 'Ketertiban', 'Poin' => '0', 'Status' => 'Selesai'],
-                    ],
-                    'form' => ['Anak', 'Filter status', 'Periode awal', 'Periode akhir'],
-                    'action' => 'Lihat Riwayat Anak Simulasi',
-                    'role_note' => 'Orang tua hanya melihat riwayat dan tindak lanjut anaknya.',
-                ],
-            ],
             'reports' => [
                 'koordinator-bk' => [
                     'form' => ['Jenis laporan agregat', 'Periode awal', 'Periode akhir', 'Kelas/Guru BK', 'Format'],
@@ -575,7 +523,7 @@ class SimulationController extends BaseController
                     'steps' => ['Orang tua memilih anak', 'Memilih periode laporan', 'Sistem menampilkan ringkasan', 'Laporan dapat dicetak'],
                     'records' => [
                         ['Laporan' => 'Ringkasan anak', 'Scope' => 'Individual', 'Status' => 'Siap preview'],
-                        ['Laporan' => 'Riwayat pelanggaran', 'Scope' => 'Anak', 'Status' => 'Siap cetak'],
+                        ['Laporan' => 'Riwayat sesi konseling', 'Scope' => 'Anak', 'Status' => 'Siap cetak'],
                     ],
                     'form' => ['Anak', 'Periode awal', 'Periode akhir', 'Jenis laporan', 'Format'],
                     'action' => 'Preview Laporan Anak Simulasi',
@@ -584,20 +532,20 @@ class SimulationController extends BaseController
             ],
             'dashboard' => [
                 'koordinator-bk' => [
-                    'metrics' => [['label' => 'Siswa', 'value' => '620'], ['label' => 'Sesi bulan ini', 'value' => '38'], ['label' => 'Kasus aktif', 'value' => '7']],
+                    'metrics' => [['label' => 'Siswa', 'value' => '620'], ['label' => 'Sesi bulan ini', 'value' => '38'], ['label' => 'Tindak lanjut', 'value' => '7']],
                     'records' => [
                         ['Widget' => 'Cakupan siswa', 'Isi' => 'Total dan status siswa aktif', 'Role' => 'Koordinator BK'],
-                        ['Widget' => 'Beban Guru BK', 'Isi' => 'Jumlah sesi dan kasus', 'Role' => 'Koordinator BK'],
-                        ['Widget' => 'Prioritas layanan', 'Isi' => 'Kasus perlu perhatian', 'Role' => 'Koordinator BK'],
+                        ['Widget' => 'Beban Guru BK', 'Isi' => 'Jumlah sesi dan tindak lanjut', 'Role' => 'Koordinator BK'],
+                        ['Widget' => 'Prioritas layanan', 'Isi' => 'Siswa perlu perhatian', 'Role' => 'Koordinator BK'],
                     ],
                     'role_note' => 'Dashboard Koordinator BK menekankan monitoring lintas kelas dan beban layanan.',
                 ],
                 'guru-bk' => [
-                    'metrics' => [['label' => 'Siswa binaan', 'value' => '186'], ['label' => 'Sesi hari ini', 'value' => '4'], ['label' => 'Kasus aktif', 'value' => '5']],
+                    'metrics' => [['label' => 'Siswa binaan', 'value' => '186'], ['label' => 'Sesi hari ini', 'value' => '4'], ['label' => 'Tindak lanjut', 'value' => '5']],
                     'records' => [
                         ['Widget' => 'Sesi hari ini', 'Isi' => 'Jadwal konseling', 'Role' => 'Guru BK'],
-                        ['Widget' => 'Kasus aktif', 'Isi' => 'Daftar perlu tindak lanjut', 'Role' => 'Guru BK'],
-                        ['Widget' => 'Kasus perlu verifikasi', 'Isi' => 'Antrian tindak lanjut', 'Role' => 'Guru BK'],
+                        ['Widget' => 'Tindak lanjut aktif', 'Isi' => 'Daftar perlu tindak lanjut', 'Role' => 'Guru BK'],
+                        ['Widget' => 'Perlu verifikasi', 'Isi' => 'Antrian tindak lanjut', 'Role' => 'Guru BK'],
                     ],
                     'role_note' => 'Dashboard Guru BK menekankan pekerjaan harian dan tindak lanjut siswa.',
                 ],
@@ -606,16 +554,16 @@ class SimulationController extends BaseController
                     'records' => [
                         ['Widget' => 'Kelas binaan', 'Isi' => 'Ringkasan siswa kelas', 'Role' => 'Wali Kelas'],
                         ['Widget' => 'Catatan BK', 'Isi' => 'Info perlu koordinasi', 'Role' => 'Wali Kelas'],
-                        ['Widget' => 'Pelanggaran ringan', 'Isi' => 'Catatan kelas', 'Role' => 'Wali Kelas'],
+                        ['Widget' => 'Catatan kelas', 'Isi' => 'Info perlu koordinasi', 'Role' => 'Wali Kelas'],
                     ],
                     'role_note' => 'Dashboard Wali Kelas menampilkan kelas binaan dan koordinasi dengan Guru BK.',
                 ],
                 'siswa' => [
-                    'metrics' => [['label' => 'Jadwal konseling', 'value' => '1'], ['label' => 'Poin aktif', 'value' => '10'], ['label' => 'Notifikasi', 'value' => '2']],
+                    'metrics' => [['label' => 'Jadwal konseling', 'value' => '1'], ['label' => 'Catatan BK', 'value' => '10'], ['label' => 'Notifikasi', 'value' => '2']],
                     'records' => [
                         ['Widget' => 'Profil saya', 'Isi' => 'Status data siswa', 'Role' => 'Siswa'],
                         ['Widget' => 'Jadwal saya', 'Isi' => 'Sesi konseling', 'Role' => 'Siswa'],
-                        ['Widget' => 'Riwayat saya', 'Isi' => 'Pelanggaran dan tindak lanjut', 'Role' => 'Siswa'],
+                        ['Widget' => 'Riwayat saya', 'Isi' => 'Sesi dan tindak lanjut', 'Role' => 'Siswa'],
                     ],
                     'form' => ['Rentang waktu', 'Prioritas widget'],
                     'role_note' => 'Dashboard Siswa hanya menampilkan data miliknya.',
@@ -659,9 +607,9 @@ class SimulationController extends BaseController
                 'metrics' => [['label' => 'Siswa aktif', 'value' => '620'], ['label' => 'Kelas', 'value' => '18'], ['label' => 'Profil lengkap', 'value' => '87%']],
                 'steps' => ['Mencari siswa', 'Membuka profil siswa', 'Memeriksa riwayat pendampingan', 'Menentukan tindak lanjut sesuai kewenangan'],
                 'records' => [
-                    ['NISN' => '0123456789', 'Nama' => 'Ahmad Fajar Nugraha', 'Kelas' => 'XI MIPA 2', 'Poin' => '10'],
-                    ['NISN' => '0123456790', 'Nama' => 'Putri Amanda Sari', 'Kelas' => 'XI IPS 1', 'Poin' => '0'],
-                    ['NISN' => '0123456791', 'Nama' => 'Nadia Azzahra', 'Kelas' => 'XII MIPA 1', 'Poin' => '5'],
+                    ['NISN' => '0123456789', 'Nama' => 'Ahmad Fajar Nugraha', 'Kelas' => 'XI MIPA 2', 'Catatan BK' => 'Perlu follow-up'],
+                    ['NISN' => '0123456790', 'Nama' => 'Putri Amanda Sari', 'Kelas' => 'XI IPS 1', 'Catatan BK' => 'Stabil'],
+                    ['NISN' => '0123456791', 'Nama' => 'Nadia Azzahra', 'Kelas' => 'XII MIPA 1', 'Catatan BK' => 'Pantau progres'],
                 ],
                 'form' => ['NISN/Nama siswa', 'Kelas', 'Filter status', 'Catatan'],
                 'action' => 'Tinjau Siswa Simulasi',
@@ -688,22 +636,11 @@ class SimulationController extends BaseController
                 'form' => ['Siswa', 'Guru BK', 'Jenis sesi', 'Tanggal', 'Catatan awal'],
                 'action' => 'Jadwalkan Sesi Simulasi',
             ],
-            'violations' => [
-                'metrics' => [['label' => 'Kasus aktif', 'value' => '7'], ['label' => 'Ringan', 'value' => '5'], ['label' => 'Perlu tindak lanjut', 'value' => '2']],
-                'steps' => ['Membuka data kasus', 'Meninjau kategori dan poin', 'Melihat atau menambah tindak lanjut', 'Riwayat terlihat sesuai hak akses'],
-                'records' => [
-                    ['ID' => 'KAS-001', 'Siswa' => 'Rafi Maulana', 'Kategori' => 'Ketertiban', 'Status' => 'Diproses'],
-                    ['ID' => 'KAS-002', 'Siswa' => 'Ahmad Fajar', 'Kategori' => 'Kedisiplinan', 'Status' => 'Selesai'],
-                    ['ID' => 'KAS-003', 'Siswa' => 'Kelompok XI IPS 1', 'Kategori' => 'Perundungan verbal', 'Status' => 'Tindak lanjut'],
-                ],
-                'form' => ['Siswa', 'Kategori', 'Tanggal kejadian', 'Kronologi', 'Tindak lanjut'],
-                'action' => 'Proses Kasus Simulasi',
-            ],
             'reports' => [
                 'metrics' => [['label' => 'Jenis laporan', 'value' => '6'], ['label' => 'Format', 'value' => 'PDF'], ['label' => 'Preview', 'value' => 'Aktif']],
                 'steps' => ['Pengguna memilih jenis laporan', 'Filter periode/siswa/kelas diisi', 'Sistem menampilkan pratinjau', 'Laporan diunduh atau dicetak'],
                 'records' => [
-                    ['Laporan' => 'Pelanggaran siswa', 'Scope' => 'Individual', 'Status' => 'Siap preview'],
+                    ['Laporan' => 'Individu siswa', 'Scope' => 'Individual', 'Status' => 'Siap preview'],
                     ['Laporan' => 'Rekap kelas', 'Scope' => 'Agregat', 'Status' => 'Siap preview'],
                     ['Laporan' => 'Sesi konseling', 'Scope' => 'Periode', 'Status' => 'Siap ekspor'],
                 ],
@@ -711,7 +648,7 @@ class SimulationController extends BaseController
                 'action' => 'Tampilkan Preview Simulasi',
             ],
             'dashboard' => [
-                'metrics' => [['label' => 'Siswa', 'value' => '620'], ['label' => 'Sesi bulan ini', 'value' => '38'], ['label' => 'Kasus aktif', 'value' => '7']],
+                'metrics' => [['label' => 'Siswa', 'value' => '620'], ['label' => 'Sesi bulan ini', 'value' => '38'], ['label' => 'Tindak lanjut', 'value' => '7']],
                 'steps' => ['User login', 'Dashboard memuat statistik sesuai role', 'Aktivitas terbaru ditampilkan', 'Shortcut mengarahkan ke fitur utama'],
                 'records' => [
                     ['Widget' => 'Statistik siswa', 'Isi' => 'Total dan siswa aktif', 'Role' => 'Koordinator'],

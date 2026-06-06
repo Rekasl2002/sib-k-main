@@ -29,7 +29,7 @@ class DashboardController extends BaseStudentController
          */
         $student = $this->db->table('students s')
             ->select(
-                's.id as student_id, u.full_name as full_name, s.nisn, s.nik, s.class_id, s.total_violation_points,' .
+                's.id as student_id, u.full_name as full_name, s.nisn, s.nik, s.class_id,' .
                 'c.class_name, c.grade_level, c.major'
             )
             ->join('users u', 'u.id = s.user_id', 'left')

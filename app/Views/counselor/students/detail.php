@@ -5,7 +5,6 @@
 <?php
     /** @var array $student */
 
-    $points = (int) ($student['total_violation_points'] ?? 0);
 
     // Label gender rapi
     $genderLabel = '-';
@@ -67,10 +66,6 @@
                         </p>
                         <span class="badge bg-<?= esc($statusClass) ?> me-1">
                             <?= esc($status !== '' ? $status : 'Status tidak diketahui') ?>
-                        </span>
-
-                        <span class="badge bg-<?= $points > 0 ? 'danger' : 'success' ?>">
-                            Poin Pelanggaran: <?= $points ?>
                         </span>
                     </div>
                 </div>
@@ -213,23 +208,6 @@
             </div>
         </div>
 
-        <!-- Ringkasan pelanggaran (menggunakan total_violation_points) -->
-        <div class="card">
-            <div class="card-body">
-                <h6 class="text-muted mb-3">Ringkasan Pelanggaran</h6>
-
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span>Total Poin Pelanggaran</span>
-                    <span class="badge bg-<?= $points > 0 ? 'danger' : 'success' ?> fs-6">
-                        <?= $points ?>
-                    </span>
-                </div>
-
-                <p class="mb-0 text-muted small">
-                    Nilai ini diakumulasi dari seluruh pelanggaran aktif siswa berdasarkan kategori pelanggaran.
-                </p>
-            </div>
-        </div>
     </div>
 </div>
 

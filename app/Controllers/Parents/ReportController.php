@@ -45,15 +45,9 @@ class ReportController extends BaseParentController
             ->get()
             ->getResultArray();
 
-        $violationStats = [];
-        foreach ($children as $child) {
-            $violationStats[$child['id']] = $this->getViolationQuickStats((int) $child['id']);
-        }
-
         return view('parent/reports/children', [
-            'title'          => 'Laporan Anak',
-            'children'       => $children,
-            'violationStats' => $violationStats,
+            'title'    => 'Laporan Anak',
+            'children' => $children,
         ]);
     }
 
@@ -128,9 +122,7 @@ class ReportController extends BaseParentController
             $parentName = (string) session('full_name');
         }
 
-        $violationSummary = $this->getViolationSummaryForReport($studentId);
-        $violations       = $this->getViolationDetailsForReport($studentId);
-        $sessions         = $this->getSessionSummaryForReport($studentId);
+        $sessions = $this->getSessionSummaryForReport($studentId);
 
         $docTitle = 'Laporan Anak - ' . ($student['full_name'] ?? 'Tanpa Nama');
         if (!empty($parentName) && $parentName !== 'Orang Tua') {
@@ -141,8 +133,6 @@ class ReportController extends BaseParentController
             'title'            => $docTitle,
             'pageTitle'        => $isPdf ? 'Laporan Anak' : 'Lihat/Cetak Laporan Anak',
             'student'          => $student,
-            'violationSummary' => $violationSummary,
-            'violations'       => $violations,
             'sessions'         => $sessions,
             'today'            => Time::today('Asia/Jakarta')->toDateString(),
             'parentName'       => $parentName,
@@ -198,68 +188,6 @@ class ReportController extends BaseParentController
             ->getRowArray();
 
         return $row ?: null;
-    }
-
-    protected function getViolationQuickStats(int $studentId): array
-    {
-        $row = $this->db->table('violations v')
-            ->select('COUNT(v.id) AS total_violations, COALESCE(SUM(vc.point_deduction), 0) AS total_points')
-            ->join('violation_categories vc', 'vc.id = v.category_id', 'left')
-            ->where('v.student_id', $studentId)
-            ->where('v.deleted_at', null)
-            ->get()
-            ->getRowArray();
-
-        return [
-            'total_violations' => (int) ($row['total_violations'] ?? 0),
-            'total_points'     => (int) ($row['total_points'] ?? 0),
-        ];
-    }
-
-    protected function getViolationSummaryForReport(int $studentId): array
-    {
-        $stats = $this->getViolationQuickStats($studentId);
-
-        $last = $this->db->table('violations v')
-            ->select('v.violation_date')
-            ->where('v.student_id', $studentId)
-            ->where('v.deleted_at', null)
-            ->orderBy('v.violation_date', 'DESC')
-            ->orderBy('v.id', 'DESC')
-            ->get()
-            ->getRowArray();
-
-        return [
-            'total_violations'    => $stats['total_violations'],
-            'total_points'        => $stats['total_points'],
-            'last_violation_date' => $last['violation_date'] ?? null,
-        ];
-    }
-
-    protected function getViolationDetailsForReport(int $studentId): array
-    {
-        $rows = $this->db->table('violations v')
-            ->select(
-                'v.id,
-                 v.violation_date,
-                 v.violation_time,
-                 v.location,
-                 v.description,
-                 vc.category_name   AS category_name,
-                 vc.severity_level  AS category_severity,
-                 vc.point_deduction,
-                 u.full_name        AS recorder_name'
-            )
-            ->join('violation_categories vc', 'vc.id = v.category_id', 'left')
-            ->join('users u', 'u.id = v.reported_by', 'left')
-            ->where('v.student_id', $studentId)
-            ->where('v.deleted_at', null)
-            ->orderBy('v.violation_date', 'DESC')
-            ->orderBy('v.id', 'DESC')
-            ->get()
-            ->getResultArray();
-
-        return $rows ?: [];
     }
 
     protected function getSessionSummaryForReport(int $studentId): array

@@ -127,13 +127,8 @@ class RoleController extends BaseController
             return redirect()->back()->withInput()->with('error', implode(' ', $this->roleModel->errors()));
         }
 
-        // ambil 'permissions' (tanpa bracket)
-        $this->syncPermissions((int)$id, (array) $this->request->getPost('permissions'));
-
-        // bersihkan cache izin
-        session()->remove('auth_permissions');
-
-        return redirect()->to(route_to('admin.roles'))->with('success', 'Role diperbarui.');
+        return redirect()->to(base_url('admin/roles/edit/' . (int) $id))
+            ->with('success', 'Data role diperbarui.');
     }
 
     // POST /admin/roles/delete/{id}
@@ -141,12 +136,28 @@ class RoleController extends BaseController
     {
         require_permission('manage_roles');
 
-        if ((int) $id === 1) {
+        $id = (int) $id;
+        if ($id === 1) {
             return redirect()->back()->with('error', 'Role ini tidak boleh dihapus.');
         }
 
+        $role = $this->roleModel->find($id);
+        if (! $role) {
+            return redirect()->to(route_to('admin.roles'))->with('error', 'Role tidak ditemukan.');
+        }
+
+        if (! $this->roleModel->canDelete($id)) {
+            return redirect()->back()->with('error', 'Role masih digunakan oleh pengguna dan tidak dapat dihapus.');
+        }
+
+        $this->db->transStart();
         $this->rpModel->where('role_id', $id)->delete();
         $this->roleModel->delete($id);
+        $this->db->transComplete();
+
+        if (! $this->db->transStatus()) {
+            return redirect()->back()->with('error', 'Gagal menghapus role.');
+        }
 
         return redirect()->to(route_to('admin.roles'))->with('success', 'Role dihapus.');
     }

@@ -11,8 +11,6 @@ $title            = (string) ($title ?? 'Laporan Anak');
 
 $student          = $student ?? [];
 $parentName       = (string) ($parentName ?? '');
-$violationSummary = $violationSummary ?? [];
-$violations       = $violations ?? [];
 $sessions         = $sessions ?? [];
 
 // ----------------------
@@ -89,12 +87,8 @@ $renderReportContent = static function () use (
     $genderLabel,
     $todayText,
     $parentName,
-    $violationSummary,
-    $violations,
     $sessions
 ) {
-    $summary     = $violationSummary ?? [];
-    $hasViols    = !empty($violations);
     $hasSessions = !empty($sessions);
     ?>
     <div id="parent-child-report" class="my-3">
@@ -159,70 +153,9 @@ $renderReportContent = static function () use (
                 </table>
             </div>
 
-            <!-- B. Ringkasan & Daftar Pelanggaran -->
+            <!-- B. Ringkasan Sesi Konseling -->
             <div class="report-section mb-4">
-                <div class="report-section-title">B. Ringkasan Pelanggaran</div>
-
-                <table class="table table-sm meta-table mb-3">
-                    <tbody>
-                    <tr>
-                        <th>Jumlah Pelanggaran</th>
-                        <td><?= (int)($summary['total_violations'] ?? 0) ?></td>
-                    </tr>
-                    <tr>
-                        <th>Total Poin</th>
-                        <td><?= (int)($summary['total_points'] ?? 0) ?></td>
-                    </tr>
-                    <tr>
-                        <th>Pelanggaran Terakhir</th>
-                        <td>
-                            <?php
-                            $last = $summary['last_violation_date'] ?? null;
-                            echo esc(fmt_date_id_short($last));
-                            ?>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-
-                <h6 class="mb-2">Daftar Pelanggaran</h6>
-
-                <?php if (!$hasViols): ?>
-                    <p class="text-muted mb-0">Tidak ada data pelanggaran yang tercatat untuk anak ini.</p>
-                <?php else: ?>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-sm">
-                            <thead>
-                            <tr>
-                                <th style="width: 90px;">Tanggal</th>
-                                <th style="width: 170px;">Kategori</th>
-                                <th style="width: 70px;">Poin</th>
-                                <th>Uraian Singkat</th>
-                                <th style="width: 160px;">Pencatat</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <?php foreach ($violations as $v): ?>
-                                <tr>
-                                    <td><?= esc(fmt_date_id_short($v['violation_date'] ?? null)) ?></td>
-                                    <td>
-                                        <?= esc($v['category_name'] ?? '-') ?><br>
-                                        <small class="text-muted">Tingkat: <?= esc($v['category_severity'] ?? '-') ?></small>
-                                    </td>
-                                    <td><?= (int)($v['point_deduction'] ?? 0) ?></td>
-                                    <td><?= esc($v['description'] ?? '-') ?></td>
-                                    <td><?= esc($v['recorder_name'] ?? '-') ?></td>
-                                </tr>
-                            <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
-                <?php endif; ?>
-            </div>
-
-            <!-- C. Ringkasan Sesi Konseling -->
-            <div class="report-section mb-4">
-                <div class="report-section-title">C. Ringkasan Sesi Konseling</div>
+                <div class="report-section-title">B. Ringkasan Sesi Konseling</div>
 
                 <?php if (!$hasSessions): ?>
                     <p class="text-muted mb-0">Belum ada sesi konseling yang tercatat untuk anak ini.</p>

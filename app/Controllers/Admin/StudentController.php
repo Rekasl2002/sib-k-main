@@ -696,7 +696,6 @@ class StudentController extends BaseController
                 'Nama Ibu Kandung'  => $student['mother_name'] ?? '-',
                 'Nama Wali'         => $student['guardian_name'] ?? '-',
                 'Status'            => $student['status'] ?? '-',
-                'Poin Pelanggaran'  => $student['total_violation_points'] ?? 0,
                 'Tanggal Masuk'     => ! empty($student['admission_date']) ? date('d/m/Y', strtotime($student['admission_date'])) : '-',
                 'Terdaftar'         => ! empty($student['created_at']) ? date('d/m/Y H:i', strtotime($student['created_at'])) : '-',
             ];

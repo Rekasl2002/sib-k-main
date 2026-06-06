@@ -126,7 +126,6 @@ class StudentController extends BaseController
                     's.nik',
                     's.nisn',
                     's.gender',
-                    's.total_violation_points',
                     'c.class_name',
                     'c.grade_level',
                 ])
@@ -160,7 +159,7 @@ class StudentController extends BaseController
 
     /**
      * GET /homeroom/students/(:num)
-     * Halaman detail siswa (ringkasan biodata, akademik, pelanggaran, dan jadwal)
+     * Halaman detail siswa (ringkasan biodata, akademik, dan jadwal)
      * untuk Wali Kelas. Tanpa membuka catatan konseling yang rahasia.
      */
     public function show($id)
@@ -282,51 +281,6 @@ class StudentController extends BaseController
             }
         }
 
-        // Statistik pelanggaran ringkas untuk header (hanya yang tidak soft-delete)
-        $stats = $this->db->table('violations v')
-            ->select([
-                'COUNT(*) AS total_violations',
-                'COALESCE(SUM(vc.point_deduction), 0) AS total_points',
-            ])
-            ->join('violation_categories vc', 'vc.id = v.category_id', 'left')
-            ->where('v.student_id', (int)$student['id'])
-            ->where('v.deleted_at', null)
-            ->get()
-            ->getRowArray() ?? [
-                'total_violations' => 0,
-                'total_points'     => 0,
-            ];
-
-        // Jika kolom agregat di tabel students sudah diisi, gunakan sebagai fallback
-        if (!empty($student['total_violation_points']) && (int)$stats['total_points'] === 0) {
-            $stats['total_points'] = (int)$student['total_violation_points'];
-        }
-
-        // 5 pelanggaran terbaru siswa ini (hanya yang tidak di-soft delete)
-        // NOTE: gunakan point_deduction sebagai "points" agar view tetap aman
-        $recentViolations = $this->db->table('violations v')
-            ->select("
-                v.id,
-                v.violation_date,
-                v.violation_time,
-                v.location,
-                v.status,
-                vc.category_name,
-                vc.severity_level,
-                vc.point_deduction AS points,
-                vc.point_deduction,
-                u.full_name AS reporter_name
-            ")
-            ->join('violation_categories vc', 'vc.id = v.category_id', 'left')
-            ->join('users u', 'u.id = v.reported_by AND u.deleted_at IS NULL', 'left')
-            ->where('v.student_id', (int)$student['id'])
-            ->where('v.deleted_at', null)
-            ->orderBy('v.violation_date', 'DESC')
-            ->orderBy('v.created_at', 'DESC')
-            ->limit(5)
-            ->get()
-            ->getResultArray();
-
         // Jadwal konseling mendatang (meta saja, tanpa isi ringkasan/masalah detail)
         $today = date('Y-m-d');
 
@@ -357,8 +311,6 @@ class StudentController extends BaseController
             'classes'          => $classes,
             'classIds'         => $classIds,
             'activeYear'       => $activeYear,
-            'stats'            => $stats,
-            'recentViolations' => $recentViolations,
             'upcomingSessions' => $upcomingSessions,
         ]);
     }

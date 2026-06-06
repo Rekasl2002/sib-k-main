@@ -50,25 +50,12 @@ if (! function_exists('statusBadgeClass')) {
         };
     }
 }
-if (! function_exists('pointsBadgeClass')) {
-    function pointsBadgeClass($points): string
-    {
-        $p = (int) ($points ?? 0);
-        if ($p <= 0) return 'badge bg-success';
-        if ($p < 20) return 'badge bg-warning';
-        if ($p < 40) return 'badge bg-danger';
-        return 'badge bg-dark text-white';
-    }
-}
-
 // Normalisasi data utama
 $pageTitle            = $pageTitle ?? 'Kelas Perwalian Saya';
 $class                = rowa($class ?? null);
 $activeYear           = rowa($activeYear ?? null);
 $stats                = rowa($stats ?? null);
 $students             = $students ?? [];
-$recentViolations     = $recentViolations ?? [];
-$topViolationStudents = $topViolationStudents ?? [];
 $isMultipleClass      = ! empty($class['is_multiple']);
 
 $studentCount = is_array($students) ? count($students) : 0;
@@ -208,23 +195,17 @@ $studentCount = is_array($students) ? count($students) : 0;
                                         </div>
                                     </div>
 
-                                    <div class="small text-muted mb-1">Rata-rata poin pelanggaran kelas</div>
                                     <?php
-                                    $avgPoints  = (float) ($stats['avg_points'] ?? 0);
-                                    $avgPercent = min(100, max(0, $avgPoints * 2)); // skala kasar 0–50 → 0–100%
                                     ?>
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="progress flex-grow-1" style="height: 8px;">
                                             <div class="progress-bar"
                                                  role="progressbar"
-                                                 style="width: <?= $avgPercent ?>%;"
-                                                 aria-valuenow="<?= $avgPoints ?>"
                                                  aria-valuemin="0"
                                                  aria-valuemax="50">
                                             </div>
                                         </div>
                                         <div class="fw-semibold small">
-                                            <?= number_format($avgPoints, 1, ',', '.') ?> poin
                                         </div>
                                     </div>
                                 <?php else : ?>
@@ -275,7 +256,6 @@ $studentCount = is_array($students) ? count($students) : 0;
                                             <th>Nama</th>
                                             <th class="text-nowrap">NISN</th>
                                             <th class="text-center">JK</th>
-                                            <th class="text-end text-nowrap">Poin</th>
                                             <th class="text-center">Status</th>
                                             <th class="text-center" style="width: 90px;">Aksi</th>
                                         </tr>
@@ -323,11 +303,6 @@ $studentCount = is_array($students) ? count($students) : 0;
                                                         <?= genderLabel($s['gender'] ?? null) ?>
                                                     </span>
                                                 </td>
-                                                <td class="text-end">
-                                                    <span class="<?= pointsBadgeClass($s['total_violation_points'] ?? 0) ?>">
-                                                        <?= (int) ($s['total_violation_points'] ?? 0) ?> poin
-                                                    </span>
-                                                </td>
                                                 <td class="text-center">
                                                     <span class="<?= statusBadgeClass($s['status'] ?? '') ?>">
                                                         <?= esc($s['status'] ?? '-') ?>
@@ -351,110 +326,6 @@ $studentCount = is_array($students) ? count($students) : 0;
 
             </div>
 
-            <!-- Kolom samping -->
-            <div class="col-12 col-xl-4">
-
-                <!-- Pelanggaran terbaru -->
-                <div class="card shadow-sm mb-3">
-                    <div class="card-body">
-                        <h5 class="card-title mb-3">Pelanggaran Terbaru</h5>
-
-                        <?php if (! empty($recentViolations)) : ?>
-                            <ul class="list-group list-group-flush small mb-0">
-                                <?php foreach ($recentViolations as $v) :
-                                    $v = rowa($v);
-                                ?>
-                                    <li class="list-group-item px-0">
-                                        <div class="d-flex justify-content-between">
-                                            <div class="me-2">
-                                                <div class="fw-semibold">
-                                                    <?= esc($v['student_name'] ?? '-') ?>
-                                                </div>
-                                                <?php if ($isMultipleClass && ! empty($v['class_name'])) : ?>
-                                                    <div class="text-muted">
-                                                        <?= esc($v['class_name']) ?>
-                                                    </div>
-                                                <?php endif; ?>
-                                                <div class="text-muted">
-                                                    <?= esc($v['category_name'] ?? '-') ?>
-                                                    <?php if (! empty($v['severity_level'])) : ?>
-                                                        · <?= esc($v['severity_level']) ?>
-                                                    <?php endif; ?>
-                                                </div>
-                                                <div class="text-muted">
-                                                    <?= esc($v['violation_date'] ?? '-') ?>
-                                                    <?php if (! empty($v['violation_time'])) : ?>
-                                                        · <?= esc(substr((string) $v['violation_time'], 0, 5)) ?> WIB
-                                                    <?php endif; ?>
-                                                </div>
-                                                <?php if (! empty($v['location'])) : ?>
-                                                    <div class="text-muted">
-                                                        <i class="bi bi-geo-alt me-1"></i>
-                                                        <?= esc($v['location']) ?>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                            <div class="text-end">
-                                                <?php if (! empty($v['point_deduction'])) : ?>
-                                                    <div>
-                                                        <span class="badge rounded-pill bg-light text-danger">
-                                                            -<?= (int) ($v['point_deduction'] ?? 0) ?> poin
-                                                        </span>
-                                                    </div>
-                                                <?php endif; ?>
-
-                                                <?php if (! empty($v['status'])) : ?>
-                                                    <div class="mt-1">
-                                                        <span class="<?= statusBadgeClass($v['status'] ?? '') ?>">
-                                                            <?= esc($v['status']) ?>
-                                                        </span>
-                                                    </div>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ul>
-                        <?php else : ?>
-                            <p class="text-muted mb-0 small">
-                                Belum ada catatan pelanggaran untuk kelas ini.
-                            </p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-
-                <!-- Top poin pelanggaran -->
-                <?php if (! empty($topViolationStudents)) : ?>
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">Poin Pelanggaran Tertinggi</h5>
-                            <ol class="list-group list-group-numbered list-group-flush small mb-0">
-                                <?php foreach ($topViolationStudents as $ts) :
-                                    $ts = rowa($ts);
-                                ?>
-                                    <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                                        <div class="me-2">
-                                            <div class="fw-semibold">
-                                                <?= esc($ts['full_name'] ?? '-') ?>
-                                            </div>
-                                            <div class="text-muted">
-                                                <?= genderLabel($ts['gender'] ?? null) ?>
-                                                <?php if ($isMultipleClass && ! empty($ts['class_name'])): ?>
-                                                    - <?= esc($ts['class_name']) ?>
-                                                <?php endif; ?>
-                                            </div>
-                                        </div>
-                                        <span class="<?= pointsBadgeClass($ts['total_violation_points'] ?? 0) ?>">
-                                            <?= (int) ($ts['total_violation_points'] ?? 0) ?> poin
-                                        </span>
-                                    </li>
-                                <?php endforeach; ?>
-                            </ol>
-                        </div>
-                    </div>
-                <?php endif; ?>
-
-            </div>
         </div>
     <?php endif; ?>
 </div>

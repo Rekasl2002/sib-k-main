@@ -23,11 +23,6 @@
  *   Jika $perPage <= 0 => ambil semua data terfilter via findAll(), tidak pakai paginate().
  *   Return 'pager' => null.
  *
- * Tambahan (Revisi Poin Pelanggaran per Tahun Ajaran):
- * - Sediakan helper untuk resolve Tahun Ajaran aktif (gabung ganjil+genap via academic_years.year_name)
- * - Sediakan helper computeViolationPointsByRange() dan getViolationSummaryFiltered()
- * - getViolationSummary() defaultnya memakai Tahun Ajaran aktif (agar konsisten dengan cache students.total_violation_points)
- *
  * @package    SIB-K
  * @subpackage Services
  * @category   Business Logic
@@ -190,65 +185,6 @@ class StudentService
             'date_to'   => ($range['date_to'] ?? null) ?: null,
         ];
     }
-
-    /**
-     * Hitung total poin pelanggaran siswa berdasarkan filter.
-     * Default: Tahun Ajaran aktif (gabung ganjil+genap), exclude status Dibatalkan.
-     *
-     * filters:
-     * - year_name: string (opsional)
-     * - date_from/date_to: string Y-m-d (opsional, override year_name)
-     * - include_cancelled: bool (default false)
-     */
-    public function computeViolationPointsByRange(int $studentId, array $filters = []): int
-    {
-        $studentId = (int) $studentId;
-        if ($studentId <= 0) return 0;
-
-        $includeCancelled = (bool) ($filters['include_cancelled'] ?? false);
-
-        $dateFrom = trim((string) ($filters['date_from'] ?? ''));
-        $dateTo   = trim((string) ($filters['date_to'] ?? ''));
-
-        // Jika tidak ada date range eksplisit, pakai Tahun Ajaran (aktif atau year_name yang dipilih)
-        if ($dateFrom === '' || $dateTo === '') {
-            $yr = $this->getAcademicYearDateRange($filters['year_name'] ?? null);
-            $dateFrom = (string) ($yr['date_from'] ?? '');
-            $dateTo   = (string) ($yr['date_to'] ?? '');
-        }
-
-        // Kalau tetap tidak ada range, fallback 0 (lebih aman daripada “semua waktu” untuk poin tahunan)
-        if ($dateFrom === '' || $dateTo === '') {
-            return 0;
-        }
-
-        $qb = $this->db->table('violations v')
-            ->select('SUM(vc.point_deduction) as total_points')
-            ->join('violation_categories vc', 'vc.id = v.category_id', 'left')
-            ->where('v.deleted_at', null)
-            ->where('v.student_id', $studentId)
-            ->where('v.violation_date >=', $dateFrom)
-            ->where('v.violation_date <=', $dateTo);
-
-        if (!$includeCancelled) {
-            $qb->where('v.status !=', 'Dibatalkan');
-        }
-
-        $row = $qb->get()->getRowArray();
-        $total = (int) ($row['total_points'] ?? 0);
-        return max(0, $total);
-    }
-
-    /**
-     * Resync cache students.total_violation_points untuk 1 siswa
-     * (berdasarkan Tahun Ajaran aktif / year_name / date range).
-     */
-    public function resyncStudentViolationPointsCache(int $studentId, array $filters = []): bool
-    {
-        $points = $this->computeViolationPointsByRange($studentId, $filters);
-        return (bool) $this->studentModel->update((int) $studentId, ['total_violation_points' => $points]);
-    }
-
     // ---------------------------------------------------------------------
     // ADMIN/UMUM: Listing & CRUD
     // ---------------------------------------------------------------------
@@ -446,7 +382,6 @@ class StudentService
                 'parent_id'              => $data['parent_id'] ?? null,
                 'admission_date'         => $data['admission_date'] ?? date('Y-m-d'),
                 'status'                 => $data['status'] ?? 'Aktif',
-                'total_violation_points' => 0,
             ];
 
             // Sinkron nama lengkap user (jika diberikan/berubah)
@@ -551,7 +486,6 @@ class StudentService
                 'parent_id'              => $data['parent_id'] ?? null,
                 'admission_date'         => $data['admission_date'] ?? date('Y-m-d'),
                 'status'                 => $data['status'] ?? 'Aktif',
-                'total_violation_points' => 0,
             ];
 
             if (!$this->studentModel->insert($studentData)) {
@@ -953,108 +887,6 @@ class StudentService
             ->limit($limit)
             ->get()->getResultArray();
     }
-
-    /**
-     * Ringkasan pelanggaran siswa (default: Tahun Ajaran AKTIF)
-     *
-     * Return: {total:int, latest:array|null}
-     */
-    public function getViolationSummary(int $studentId): array
-    {
-        // Default: TA aktif, exclude cancelled
-        return $this->getViolationSummaryFiltered($studentId, [
-            'use_active_year'     => true,
-            'include_cancelled'   => false,
-        ]);
-    }
-
-    /**
-     * Ringkasan pelanggaran siswa dengan filter (untuk kebutuhan lintas role).
-     *
-     * filters:
-     * - use_active_year: bool (default true)
-     * - year_name: string (opsional)
-     * - date_from/date_to: string Y-m-d (opsional, override year_name)
-     * - include_cancelled: bool (default false)
-     *
-     * @return array{total:int,latest:array|null,total_points:int,range:array}
-     */
-    public function getViolationSummaryFiltered(int $studentId, array $filters = []): array
-    {
-        $studentId = (int) $studentId;
-        if ($studentId <= 0) {
-            return ['total' => 0, 'latest' => null, 'total_points' => 0, 'range' => ['date_from'=>null,'date_to'=>null,'year_name'=>null]];
-        }
-
-        // Pastikan tabel ada (CI4 BaseConnection punya tableExists)
-        if (!method_exists($this->db, 'tableExists') || !$this->db->tableExists('violations')) {
-            return ['total' => 0, 'latest' => null, 'total_points' => 0, 'range' => ['date_from'=>null,'date_to'=>null,'year_name'=>null]];
-        }
-
-        $includeCancelled = (bool) ($filters['include_cancelled'] ?? false);
-
-        $dateFrom = trim((string) ($filters['date_from'] ?? ''));
-        $dateTo   = trim((string) ($filters['date_to'] ?? ''));
-
-        $range = ['year_name' => null, 'date_from' => null, 'date_to' => null];
-
-        $useActiveYear = (bool) ($filters['use_active_year'] ?? true);
-
-        if ($dateFrom === '' || $dateTo === '') {
-            if ($useActiveYear || !empty($filters['year_name'])) {
-                $range = $this->getAcademicYearDateRange($filters['year_name'] ?? null);
-                $dateFrom = (string) ($range['date_from'] ?? '');
-                $dateTo   = (string) ($range['date_to'] ?? '');
-            }
-        } else {
-            $range = ['year_name' => (string) ($filters['year_name'] ?? null), 'date_from' => $dateFrom, 'date_to' => $dateTo];
-        }
-
-        $totalQb = $this->db->table('violations v')
-            ->where('v.student_id', $studentId)
-            ->where('v.deleted_at', null);
-
-        $latestQb = $this->db->table('violations v')
-            ->select('v.*')
-            ->where('v.student_id', $studentId)
-            ->where('v.deleted_at', null);
-
-        if (!$includeCancelled) {
-            $totalQb->where('v.status !=', 'Dibatalkan');
-            $latestQb->where('v.status !=', 'Dibatalkan');
-        }
-
-        if ($dateFrom !== '' && $dateTo !== '') {
-            $totalQb->where('v.violation_date >=', $dateFrom)->where('v.violation_date <=', $dateTo);
-            $latestQb->where('v.violation_date >=', $dateFrom)->where('v.violation_date <=', $dateTo);
-        }
-
-        $total = (int) $totalQb->countAllResults();
-
-        $latest = $latestQb
-            ->orderBy('v.violation_date', 'desc')
-            ->orderBy('v.created_at', 'desc')
-            ->get(1)->getRowArray();
-
-        $totalPoints = $this->computeViolationPointsByRange($studentId, [
-            'date_from' => $dateFrom,
-            'date_to'   => $dateTo,
-            'year_name' => $range['year_name'] ?? null,
-            'include_cancelled' => $includeCancelled,
-        ]);
-
-        return [
-            'total'        => $total,
-            'latest'       => $latest ?: null,
-            'total_points' => (int) $totalPoints,
-            'range'        => [
-                'year_name' => $range['year_name'] ?? null,
-                'date_from' => $dateFrom !== '' ? $dateFrom : null,
-                'date_to'   => $dateTo !== '' ? $dateTo : null,
-            ],
-        ];
-    }
-
     /**
      * Sorotan info karier (opsional)
      */

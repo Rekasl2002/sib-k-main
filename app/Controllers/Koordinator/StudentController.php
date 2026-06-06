@@ -8,12 +8,6 @@
  * - Boleh: view list/detail, edit/update data akademik, import/export
  * - Tidak boleh: create/store manual, delete, changeClass (diblock di controller)
  *
- * Tambahan (2026-01-21):
- * - Fitur sinkron poin pelanggaran (mirip akun Guru BK):
- *   - Quick Sync: Tahun Ajaran aktif
- *   - Opsi Sync: pilih Tahun Ajaran (year_name) / periode tanggal
- *   - Bisa (opsional) mengikuti filter list saat ini (class/grade/status/gender/search)
- *
  * @package    SIB-K
  * @subpackage Controllers/Koordinator
  * @category   Student Management
@@ -22,7 +16,6 @@
 namespace App\Controllers\Koordinator;
 
 use App\Services\StudentService;
-use App\Services\ViolationService;
 use App\Validation\StudentValidation;
 use App\Libraries\ExcelImporter;
 use App\Models\StudentModel;
@@ -32,7 +25,6 @@ class StudentController extends BaseKoordinatorController
     protected StudentService $studentService;
     protected ExcelImporter $excelImporter;
     protected StudentModel $studentModel;
-    protected ViolationService $violationService;
     protected $db;
 
     public function __construct()
@@ -40,7 +32,6 @@ class StudentController extends BaseKoordinatorController
         $this->studentService   = new StudentService();
         $this->excelImporter    = new ExcelImporter();
         $this->studentModel     = new StudentModel();
-        $this->violationService = new ViolationService();
         $this->db               = \Config\Database::connect();
     }
 
@@ -82,37 +73,6 @@ class StudentController extends BaseKoordinatorController
     }
 
     /**
-     * Permission khusus untuk sinkron poin.
-     * (umumnya ini selevel update data, tapi kita izinkan juga jika punya manage_violations).
-     */
-    private function requireSyncPermission()
-    {
-        try {
-            helper('permission');
-        } catch (\Throwable $e) {
-            // ignore
-        }
-
-        if (function_exists('has_permission')) {
-            if (
-                !has_permission('manage_users') &&
-                !has_permission('manage_violations')
-            ) {
-                return redirect()->to(base_url('koordinator/students'))
-                    ->with('error', 'Anda tidak memiliki izin untuk sinkronisasi poin pelanggaran.');
-            }
-            return null;
-        }
-
-        if (function_exists('require_permission')) {
-            // fallback paling aman: treat as student update privilege
-            require_permission('manage_users');
-        }
-
-        return null;
-    }
-
-    /**
      * Display students list
      */
     public function index()
@@ -147,15 +107,7 @@ class StudentController extends BaseKoordinatorController
         $classes      = $this->studentService->getAvailableClasses();
         $stats        = $this->studentService->getStudentStatistics();
 
-        // Opsi Tahun Ajaran untuk modal sinkron
         $academicYearOptions = [];
-        try {
-            if (method_exists($this->violationService, 'getAcademicYearOptions')) {
-                $academicYearOptions = (array) $this->violationService->getAcademicYearOptions();
-            }
-        } catch (\Throwable $e) {
-            $academicYearOptions = [];
-        }
 
         $data = [
             'title'          => 'Manajemen Siswa',
@@ -372,7 +324,6 @@ class StudentController extends BaseKoordinatorController
                 'Nama Ibu Kandung'  => $student['mother_name'] ?? '-',
                 'Nama Wali'         => $student['guardian_name'] ?? '-',
                 'Status'            => $student['status'] ?? '-',
-                'Poin Pelanggaran'  => (int) ($student['total_violation_points'] ?? 0),
                 'Tanggal Masuk'     => !empty($student['admission_date']) ? date('d/m/Y', strtotime($student['admission_date'])) : '-',
                 'Terdaftar'         => !empty($student['created_at']) ? date('d/m/Y H:i', strtotime($student['created_at'])) : '-',
             ];
@@ -662,169 +613,4 @@ class StudentController extends BaseKoordinatorController
     }
 
     // ==========================================================
-    // Sinkron poin pelanggaran (mirip Counselor)
-    // ==========================================================
-
-    private function normalizeDate($date): ?string
-    {
-        $date = trim((string) ($date ?? ''));
-        if ($date === '') return null;
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) return null;
-        return $date;
-    }
-
-    /**
-     * Ambil daftar student_id untuk sync.
-     * Default: semua siswa sesuai filter (class/grade/status/gender/search).
-     */
-    private function getStudentIdsForSync(array $filters = []): array
-    {
-        $qb = $this->db->table('students s')
-            ->select('s.id')
-            ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'inner')
-            ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
-            ->where('s.deleted_at', null);
-
-        $classId    = trim((string) ($filters['class_id'] ?? ''));
-        $gradeLevel = trim((string) ($filters['grade_level'] ?? ''));
-        $status     = trim((string) ($filters['status'] ?? ''));
-        $gender     = trim((string) ($filters['gender'] ?? ''));
-        $search     = trim((string) ($filters['search'] ?? ''));
-
-        if ($classId !== '') {
-            $qb->where('s.class_id', (int) $classId);
-        }
-        if ($gradeLevel !== '') {
-            $qb->where('c.grade_level', $gradeLevel);
-        }
-        if ($status !== '') {
-            $qb->where('s.status', $status);
-        }
-        if ($gender !== '') {
-            $qb->where('s.gender', $gender);
-        }
-        if ($search !== '') {
-            $qb->groupStart()
-                ->like('u.full_name', $search)
-                ->orLike('u.email', $search)
-                ->orLike('s.nisn', $search)
-                ->orLike('s.nik', $search)
-            ->groupEnd();
-        }
-
-        $rows = $qb->get()->getResultArray();
-
-        $ids = [];
-        foreach ($rows as $r) {
-            $id = (int) ($r['id'] ?? 0);
-            if ($id > 0) $ids[] = $id;
-        }
-        return $ids;
-    }
-
-    /**
-     * POST /koordinator/students/sync-violation-points
-     * Mode:
-     * - active: Tahun Ajaran aktif (default)
-     * - year: Tahun Ajaran dipilih (year_name)
-     * - range: periode custom date_from/date_to
-     */
-    public function syncViolationPoints()
-    {
-        // Permission
-        if (function_exists('require_permission')) {
-            require_permission('view_all_students');
-        }
-        $deny = $this->requireSyncPermission();
-        if ($deny) return $deny;
-
-        $syncMode = trim((string) ($this->request->getPost('sync_mode') ?? 'active'));
-        if ($syncMode === '') $syncMode = 'active';
-
-        $yearName = trim((string) ($this->request->getPost('academic_year') ?? ''));
-
-        $dateFrom = $this->normalizeDate($this->request->getPost('date_from'));
-        $dateTo   = $this->normalizeDate($this->request->getPost('date_to'));
-
-        // Optional: sync mengikuti filter list (kita ambil dari hidden input)
-        $studentFilters = [
-            'class_id'    => $this->request->getPost('class_id'),
-            'grade_level' => $this->request->getPost('grade_level'),
-            'status'      => $this->request->getPost('status'),
-            'gender'      => $this->request->getPost('gender'),
-            'search'      => $this->request->getPost('search'),
-        ];
-
-        $studentIds = $this->getStudentIdsForSync($studentFilters);
-        if (empty($studentIds)) {
-            return redirect()->back()->with('error', 'Tidak ada siswa yang bisa disinkronkan (sesuai filter saat ini).');
-        }
-
-        // Build compute filters untuk StudentService
-        $computeFilters = [
-            'include_cancelled' => false,
-        ];
-
-        $label = '';
-
-        if ($syncMode === 'range') {
-            if (!$dateFrom || !$dateTo) {
-                return redirect()->back()->with('error', 'Mode periode dipilih, tapi tanggal belum lengkap.');
-            }
-            if ($dateFrom > $dateTo) {
-                [$dateFrom, $dateTo] = [$dateTo, $dateFrom];
-            }
-            $computeFilters['date_from'] = $dateFrom;
-            $computeFilters['date_to']   = $dateTo;
-            $label = "Periode {$dateFrom} s/d {$dateTo}";
-        } elseif ($syncMode === 'year') {
-            if ($yearName === '') {
-                return redirect()->back()->with('error', 'Mode Tahun Ajaran dipilih, tapi Tahun Ajaran belum dipilih.');
-            }
-            $computeFilters['year_name'] = $yearName;
-            $label = "Tahun Ajaran {$yearName}";
-        } else {
-            // active
-            $activeYear = $this->studentService->getActiveAcademicYearName();
-            $label = $activeYear ? "Tahun Ajaran Aktif ({$activeYear})" : "Tahun Ajaran Aktif";
-        }
-
-        $payload = [];
-        $updated = 0;
-
-        try {
-            $chunkSize = 500;
-
-            foreach ($studentIds as $sid) {
-                $sid = (int) $sid;
-                if ($sid <= 0) continue;
-
-                $points = (int) $this->studentService->computeViolationPointsByRange($sid, $computeFilters);
-
-                $payload[] = [
-                    'id'                    => $sid,
-                    'total_violation_points' => max(0, $points),
-                ];
-
-                if (count($payload) >= $chunkSize) {
-                    $this->db->table('students')->updateBatch($payload, 'id');
-                    $updated += count($payload);
-                    $payload = [];
-                }
-            }
-
-            if (!empty($payload)) {
-                $this->db->table('students')->updateBatch($payload, 'id');
-                $updated += count($payload);
-            }
-
-            return redirect()->back()->with(
-                'success',
-                "Sinkronisasi poin pelanggaran berhasil untuk {$updated} siswa. ({$label})"
-            );
-        } catch (\Throwable $e) {
-            log_message('error', 'Koordinator StudentController::syncViolationPoints - ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Gagal sinkronisasi poin: ' . $e->getMessage());
-        }
-    }
 }

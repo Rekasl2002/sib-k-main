@@ -231,7 +231,7 @@ class ScheduleController extends BaseController
 
         $parts[] = $summary;
 
-        return implode(' • ', array_filter($parts));
+        return implode(' - ', array_filter($parts));
     }
 
     private function statusColor(string $status): array

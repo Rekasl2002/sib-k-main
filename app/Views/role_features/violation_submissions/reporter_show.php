@@ -5,7 +5,6 @@ $status = $row['status'] ?? 'Diajukan';
 $badge = match ($status) {
     'Ditolak' => 'danger',
     'Diterima' => 'success',
-    'Dikonversi' => 'primary',
     'Ditinjau' => 'info',
     default => 'warning',
 };
@@ -27,8 +26,6 @@ $subject = $row['subject_student_name'] ?? $row['subject_other_name'] ?? '-';
     <dl class="row mb-0">
       <dt class="col-sm-3">Terlapor</dt>
       <dd class="col-sm-9"><?= esc($subject) ?><?= !empty($row['subject_student_class']) ? ' - ' . esc($row['subject_student_class']) : '' ?></dd>
-      <dt class="col-sm-3">Kategori</dt>
-      <dd class="col-sm-9"><?= esc($row['category_name'] ?? '-') ?></dd>
       <dt class="col-sm-3">Waktu</dt>
       <dd class="col-sm-9"><?= esc($row['occurred_date'] ?? '-') ?> <?= esc($row['occurred_time'] ?? '') ?></dd>
       <dt class="col-sm-3">Lokasi</dt>

@@ -18,7 +18,7 @@
   <div>
     <h4 class="mb-0">PENGATURAN APLIKASI</h4>
     <div class="text-muted">
-      Halaman ini untuk mengatur identitas aplikasi, branding, keamanan, dan ambang poin.
+      Halaman ini untuk mengatur identitas aplikasi, branding, keamanan, dan notifikasi.
     </div>
   </div>
 
@@ -106,9 +106,6 @@ $checked = static function($value): bool {
         </li>-->
         <li class="nav-item" role="presentation">
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-security" type="button" role="tab">Keamanan</button>
-        </li>
-        <li class="nav-item" role="presentation">
-          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-points" type="button" role="tab">Poin</button>
         </li>
       </ul>
 
@@ -487,55 +484,6 @@ $checked = static function($value): bool {
           </div>
         </div>
 
-        <!-- ===================== TAB: POINTS ===================== -->
-        <div class="tab-pane fade" id="tab-points" role="tabpanel" tabindex="0">
-          <!--<div class="mb-3">
-            <div class="text-muted">
-              Ambang poin untuk memberi peringatan atau status probation. Biasanya dipakai di modul pelanggaran/ketertiban.
-            </div>
-          </div>-->
-
-          <div class="row g-3">
-            <?php $err = $getErr('warning_threshold'); ?>
-            <div class="col-md-6">
-              <label class="form-label">Ambang Peringatan</label>
-              <input
-                name="warning_threshold"
-                type="number"
-                min="0"
-                class="form-control <?= $invalidClass($err) ?>"
-                value="<?= esc(old('warning_threshold', setting('warning_threshold', 25, 'points'))) ?>"
-              >
-              <div class="form-text">
-                Jika poin pelanggaran mencapai angka ini, siswa bisa mendapat status “peringatan”.
-              </div>
-              <?php if ($err): ?><div class="invalid-feedback"><?= esc($err) ?></div><?php endif; ?>
-            </div>
-
-            <?php $err = $getErr('probation_threshold'); ?>
-            <!--<div class="col-md-6">
-              <label class="form-label">Ambang Probation</label>
-              <input
-                name="probation_threshold"
-                type="number"
-                min="0"
-                class="form-control <?= $invalidClass($err) ?>"
-                value="<?= esc(old('probation_threshold', setting('probation_threshold', 50, 'points'))) ?>"
-              >
-              <div class="form-text">
-                Jika poin melewati angka ini, siswa bisa masuk status “probation” (tindak lanjut lebih serius).
-              </div>
-              <?php if ($err): ?><div class="invalid-feedback"><?= esc($err) ?></div><?php endif; ?>
-            </div>-->
-          </div>
-
-          <div class="mb alert-secondary mt-4 mb-0">
-            <div class="fw-semibold mb-1">Catatan</div>
-            <div class="small">
-              Nilai ambang bisa disesuaikan sesuai kebijakan sekolah.
-            </div>
-          </div>
-        </div>
       </div>
 
       <div class="mt-4 d-flex flex-wrap align-items-center justify-content-between gap-2">

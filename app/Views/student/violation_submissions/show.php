@@ -26,7 +26,6 @@
     'Ditinjau'   => 'info',
     'Ditolak'    => 'danger',
     'Diterima'   => 'success',
-    'Dikonversi' => 'primary',
   ];
   $badge = $badgeMap[$status] ?? 'secondary';
 
@@ -68,7 +67,7 @@
   }));
 
   // Fallback jika controller tidak mengirim $isEditable
-  $isEditable = $isEditable ?? (!in_array($status, ['Ditolak','Diterima','Dikonversi'], true));
+  $isEditable = $isEditable ?? (!in_array($status, ['Ditolak','Diterima'], true));
 ?>
 
 <div class="d-flex align-items-center justify-content-between mb-3">
@@ -107,12 +106,7 @@
 <?php elseif ($status === 'Diterima'): ?>
   <div class="alert alert-success">
     <div class="fw-semibold">Pengaduan diterima</div>
-    <div class="small text-muted">Petugas akan menindaklanjuti dan dapat mengonversi menjadi pelanggaran resmi.</div>
-  </div>
-<?php elseif ($status === 'Dikonversi'): ?>
-  <div class="alert alert-primary">
-    <div class="fw-semibold">Sudah dikonversi menjadi pelanggaran resmi</div>
-    <div class="small">ID Pelanggaran: <?= esc($row['converted_violation_id'] ?? '-') ?></div>
+    <div class="small text-muted">Petugas akan menindaklanjuti pengaduan ini.</div>
   </div>
 <?php endif; ?>
 
@@ -122,11 +116,6 @@
       <div class="col-md-6">
         <div class="text-muted small">Terlapor</div>
         <div class="fw-semibold"><?= esc($subject) ?></div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="text-muted small">Kategori</div>
-        <div class="fw-semibold"><?= esc($row['category_name'] ?? '-') ?></div>
       </div>
 
       <div class="col-md-3">

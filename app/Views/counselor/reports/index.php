@@ -12,6 +12,7 @@
 
 $classes     = $classes ?? [];
 $assessments = $assessments ?? [];
+$students    = $students ?? [];
 
 $valType   = $valType ?? 'sessions';
 $valFrom   = $valFrom ?? date('Y-m-01');
@@ -20,6 +21,7 @@ $valTo     = $valTo ?? date('Y-m-d');
 $valClass  = $valClass ?? '';
 $valStatus = $valStatus ?? '';
 $valSearch = $valSearch ?? '';
+$valStudent = $valStudent ?? '';
 
 $valSortBy  = $valSortBy ?? '';
 $valSortDir = $valSortDir ?? 'desc';
@@ -83,7 +85,7 @@ if (function_exists('has_permission')) {
             <select name="type" class="form-select" id="typeSelect">
               <option value="students" <?= $valType === 'students' ? 'selected' : '' ?>>Data Siswa (Binaan)</option>
               <option value="sessions" <?= $valType === 'sessions' ? 'selected' : '' ?>>Sesi Konseling</option>
-              <option value="violations" <?= $valType === 'violations' ? 'selected' : '' ?>>Kasus & Pelanggaran</option>
+              <option value="student_individual" <?= $valType === 'student_individual' ? 'selected' : '' ?>>Laporan Individu Siswa</option>
               <!--<option value="assessments" <?= $valType==='assessments'?:'' ?>>Asesmen</option>
               <option value="career" <?= $valType==='career'?:'' ?>>Fitur Info Karier dan Info Studi Lanjut</option>
               <option value="universities" <?= $valType==='universities'?:'' ?>>Info Perguruan Tinggi</option>
@@ -129,6 +131,19 @@ if (function_exists('has_permission')) {
               <?php endforeach; ?>
             </select>
             <div class="form-text">Hanya untuk laporan Asesmen.</div>
+          </div>
+
+          <div class="col-12" id="studentWrap">
+            <label class="form-label">Siswa</label>
+            <select name="student_id" class="form-select">
+              <option value="">Pilih Siswa</option>
+              <?php foreach ($students as $s): ?>
+                <option value="<?= esc($s['id']) ?>" <?= (string)$s['id'] === (string)$valStudent ? 'selected' : '' ?>>
+                  <?= esc(($s['full_name'] ?? '-') . ' - ' . ($s['class_name'] ?? '-') . ' - NISN ' . ($s['nisn'] ?? '-')) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <div class="form-text">Digunakan untuk laporan individu siswa.</div>
           </div>
 
           <div class="col-12" id="statusWrap">
@@ -235,6 +250,7 @@ if (function_exists('has_permission')) {
   const wrapPeriod = document.getElementById('periodWrap');
   const wrapClass = document.getElementById('classWrap');
   const wrapAssess = document.getElementById('assessmentWrap');
+  const wrapStudent = document.getElementById('studentWrap');
   const wrapStatus = document.getElementById('statusWrap');
   const wrapSearch = document.getElementById('searchWrap');
   const wrapSort = document.getElementById('sortWrap');
@@ -297,6 +313,7 @@ if (function_exists('has_permission')) {
     wrapPeriod.style.display = '';
     wrapClass.style.display = '';
     wrapAssess.style.display = 'none';
+    wrapStudent.style.display = 'none';
     wrapStatus.style.display = '';
     wrapSearch.style.display = '';
     wrapSort.style.display = '';
@@ -343,23 +360,11 @@ if (function_exists('has_permission')) {
       ];
     }
 
-    if (type === 'violations') {
-      statusOptions = [
-        {value:'', label:'Semua Status'},
-        {value:'Dilaporkan', label:'Dilaporkan'},
-        {value:'Dalam Proses', label:'Dalam Proses'},
-        {value:'Selesai', label:'Selesai'}
-      ];
-
-      sortOptions = [
-        {value:'', label:'Default'},
-        {value:'v.violation_date', label:'Tanggal'},
-        {value:'vc.point_deduction', label:'Poin'},
-        {value:'vc.category_name', label:'Kategori'},
-        {value:'v.status', label:'Status'},
-        {value:'su.full_name', label:'Siswa'},
-        {value:'c.class_name', label:'Kelas'}
-      ];
+    if (type === 'student_individual') {
+      wrapStudent.style.display = '';
+      wrapStatus.style.display = 'none';
+      wrapSearch.style.display = 'none';
+      wrapSort.style.display = 'none';
     }
 
     if (type === 'assessments') {

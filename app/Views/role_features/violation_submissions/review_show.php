@@ -5,7 +5,6 @@ $status = $row['status'] ?? 'Diajukan';
 $badge = match ($status) {
     'Ditolak' => 'danger',
     'Diterima' => 'success',
-    'Dikonversi' => 'primary',
     'Ditinjau' => 'info',
     default => 'warning',
 };
@@ -42,8 +41,6 @@ $subject = $row['subject_student_name'] ?? $row['subject_other_name'] ?? '-';
           <dd class="col-sm-9"><?= esc($row['reporter_name'] ?? '-') ?> <span class="text-muted">(<?= esc($row['reporter_role'] ?? $row['reporter_type'] ?? '-') ?>)</span></dd>
           <dt class="col-sm-3">Terlapor</dt>
           <dd class="col-sm-9"><?= esc($subject) ?><?= !empty($row['subject_student_class']) ? ' - ' . esc($row['subject_student_class']) : '' ?></dd>
-          <dt class="col-sm-3">Kategori</dt>
-          <dd class="col-sm-9"><?= esc($row['category_name'] ?? '-') ?></dd>
           <dt class="col-sm-3">Waktu</dt>
           <dd class="col-sm-9"><?= esc($row['occurred_date'] ?? '-') ?> <?= esc($row['occurred_time'] ?? '') ?></dd>
           <dt class="col-sm-3">Lokasi</dt>
@@ -98,15 +95,5 @@ $subject = $row['subject_student_name'] ?? $row['subject_other_name'] ?? '-';
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header"><h5 class="mb-0">Konversi Kasus</h5></div>
-      <div class="card-body">
-        <form method="post" action="<?= site_url($basePath . '/violation-submissions/convert/' . (int)($row['id'] ?? 0)) ?>" onsubmit="return confirm('Konversi pengaduan ini menjadi kasus pelanggaran?')">
-          <?= csrf_field() ?>
-          <textarea name="review_notes" class="form-control mb-3" rows="3" placeholder="Catatan tindak lanjut"><?= esc($row['review_notes'] ?? '') ?></textarea>
-          <button type="submit" class="btn btn-outline-primary w-100">Konversi Menjadi Kasus</button>
-        </form>
-      </div>
-    </div>
   </div>
 </div>

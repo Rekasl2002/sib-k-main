@@ -16,12 +16,11 @@ $badgeMap = [
   'Ditinjau'   => 'info',
   'Ditolak'    => 'danger',
   'Diterima'   => 'success',
-  'Dikonversi' => 'primary',
 ];
 $badge = (string)($badge ?? ($badgeMap[$status] ?? 'secondary'));
 
 // Editable rules
-$isEditable = !in_array($status, ['Ditolak','Diterima','Dikonversi'], true);
+$isEditable = !in_array($status, ['Ditolak','Diterima'], true);
 
 // Terlapor label (support beberapa kemungkinan nama kolom)
 if (!empty($row['subject_student_id'])) {
@@ -126,11 +125,6 @@ $rid = (int)($row['id'] ?? 0); // dipakai untuk link edit/hapus (tidak ditampilk
     <div class="fw-semibold">Pengaduan diterima</div>
     <div class="small text-muted">Petugas akan menindaklanjuti pengaduan ini.</div>
   </div>
-<?php elseif ($status === 'Dikonversi'): ?>
-  <div class="alert alert-primary mb-3">
-    <div class="fw-semibold">Sudah dikonversi menjadi pelanggaran resmi</div>
-    <div class="small">ID Pelanggaran: <?= esc((string)($row['converted_violation_id'] ?? '-')) ?></div>
-  </div>
 <?php endif; ?>
 
 <div class="card mb-3">
@@ -140,11 +134,6 @@ $rid = (int)($row['id'] ?? 0); // dipakai untuk link edit/hapus (tidak ditampilk
       <div class="col-md-6">
         <div class="text-muted small">Terlapor</div>
         <div class="fw-semibold"><?= esc($subject) ?></div>
-      </div>
-
-      <div class="col-md-6">
-        <div class="text-muted small">Kategori</div>
-        <div class="fw-semibold"><?= esc((string)($row['category_name'] ?? ($row['category_id'] ?? '-'))) ?></div>
       </div>
 
       <div class="col-md-3">

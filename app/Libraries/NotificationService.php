@@ -244,32 +244,6 @@ class NotificationService
     }
 
     /**
-     * Send violation notification
-     */
-    public function sendViolationNotification(int $studentId, array $violationData): bool
-    {
-        $title   = 'Pelanggaran Tercatat';
-        $message = "Pelanggaran baru telah dicatat: {$violationData['violation_type']} (+{$violationData['points']} poin)";
-        $link    = '/student/violations';
-
-        // Send to student
-        $this->send($studentId, $title, $message, 'warning', $link, $violationData);
-
-        // Send to parent if exists
-        $student = $this->db->table('students')
-            ->where('user_id', $studentId)
-            ->get()
-            ->getRowArray();
-
-        if ($student && !empty($student['parent_id'])) {
-            $parentMessage = "Anak Anda telah melakukan pelanggaran: {$violationData['violation_type']} (+{$violationData['points']} poin)";
-            $this->send((int)$student['parent_id'], $title, $parentMessage, 'warning', '/parent/violations', $violationData);
-        }
-
-        return true;
-    }
-
-    /**
      * Send assessment notification
      */
     public function sendAssessmentNotification(int $studentId, array $assessmentData): bool

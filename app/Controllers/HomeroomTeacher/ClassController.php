@@ -10,9 +10,7 @@
  * - Menentukan tahun ajaran aktif
  * - Mengambil kelas aktif yang diampu oleh Wali Kelas yang login
  * - Menampilkan daftar siswa aktif di kelas tersebut
- * - Menampilkan statistik kelas (jumlah siswa, L/P, rata-rata poin pelanggaran)
- * - Menampilkan 5 pelanggaran terbaru di kelas (hanya yang tidak di-soft delete)
- * - Menampilkan 5 siswa dengan poin pelanggaran tertinggi
+ * - Menampilkan statistik kelas (jumlah siswa, L/P)
  *
  * Catatan perbaikan (2026-01-02+):
  * - Kolom students.full_name sudah dihapus -> pakai users.full_name via students.user_id
@@ -202,7 +200,6 @@ class ClassController extends BaseController
                 's.nik',
                 's.nisn',
                 's.birth_date',
-                's.total_violation_points',
                 's.status',
                 'c.class_name',
                 'c.grade_level',
@@ -232,7 +229,6 @@ class ClassController extends BaseController
                 'COUNT(*) AS total_students',
                 "SUM(CASE WHEN s.gender = 'L' THEN 1 ELSE 0 END) AS total_male",
                 "SUM(CASE WHEN s.gender = 'P' THEN 1 ELSE 0 END) AS total_female",
-                'COALESCE(AVG(s.total_violation_points),0) AS avg_points',
             ])
             ->whereIn('s.class_id', $classIds)
             ->where('s.status', 'Aktif');
@@ -245,70 +241,8 @@ class ClassController extends BaseController
 
         $stats = $statsQ->get()->getRowArray();
 
-        // =========================================================
-        // 5 pelanggaran terbaru di kelas ini (HANYA yang tidak di-soft delete)
-        // NOTE: student_name ambil dari users.full_name
-        // =========================================================
-        $recentViolations = $this->db->table('violations v')
-            ->select([
-                'v.id',
-                'v.violation_date',
-                'v.violation_time',
-                'v.location',
-                'v.status',
-                'vc.severity_level',
-                'vc.category_name',
-                'vc.point_deduction',
-                'su.full_name AS student_name',
-                's.nik AS student_nik',
-                's.nisn AS student_nisn',
-                'c.class_name',
-            ])
-            ->join('students s', 's.id = v.student_id', 'left')
-            ->join('users su', 'su.id = s.user_id AND su.deleted_at IS NULL', 'left')
-            ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
-            ->join('violation_categories vc', 'vc.id = v.category_id', 'left')
-            ->whereIn('s.class_id', $classIds)
-            ->where('v.deleted_at', null)
-            ->orderBy('v.violation_date', 'DESC')
-            ->orderBy('v.created_at', 'DESC')
-            ->limit(5)
-            ->get()
-            ->getResultArray();
-
-        // =========================================================
-        // 5 siswa dengan poin pelanggaran tertinggi di kelas
-        // NOTE: full_name ambil dari users.full_name
-        // =========================================================
-        $topStudentsQ = $this->db->table('students s')
-            ->select([
-                's.id',
-                's.user_id',
-                'u.full_name AS full_name',
-                's.gender',
-                's.nik',
-                's.nisn',
-                's.total_violation_points',
-                'c.class_name',
-            ])
-            ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'left')
-            ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
-            ->whereIn('s.class_id', $classIds)
-            ->where('s.status', 'Aktif')
-            ->where('s.total_violation_points >', 0);
-
-        try {
-            $topStudentsQ->where('s.deleted_at', null);
-        } catch (\Throwable $e) {
-            // abaikan
-        }
-
-        $topViolationStudents = $topStudentsQ
-            ->orderBy('s.total_violation_points', 'DESC')
-            ->orderBy('u.full_name', 'ASC')
-            ->limit(5)
-            ->get()
-            ->getResultArray();
+        $recentViolations = [];
+        $topViolationStudents = [];
 
         return view('homeroom_teacher/class/my_class', [
             'pageTitle'            => 'Kelas Binaan',

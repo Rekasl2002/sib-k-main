@@ -285,7 +285,6 @@ $routes->group('admin', [
         $routes->group('export', ['filter' => 'permission:import_export_data'], function ($routes) {
             $routes->get('/', 'ExportController::options', ['as' => 'admin.export']);
             $routes->get('students', 'ExportController::students', ['as' => 'admin.export.students']);
-            $routes->get('violations', 'ExportController::violations', ['as' => 'admin.export.violations']);
             $routes->get('sessions', 'ExportController::sessions', ['as' => 'admin.export.sessions']);
         });
     });
@@ -405,11 +404,6 @@ $routes->group('koordinator', [
             ]);
 
             // ✅ Sinkron poin pelanggaran (Koordinator)
-            $routes->post('sync-violation-points', 'StudentController::syncViolationPoints', [
-                'filter' => 'permission:view_all_students',
-                'as'     => 'koordinator.students.syncViolationPoints'
-            ]);
-
             $routes->get('export', 'StudentController::export', [
                 'filter' => 'permission:import_export_data',
                 'as'     => 'koordinator.students.export'
@@ -445,64 +439,6 @@ $routes->group('koordinator', [
             'as'     => 'koordinator.schedule.events'
         ]);
 
-        // CASES / PELANGGARAN
-        $routes->group('cases', function ($routes) {
-            $routes->get('/', 'CaseController::index', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'koordinator.cases.index'
-            ]);
-            $routes->get('detail/(:num)', 'CaseController::detail/$1', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'koordinator.cases.detail'
-            ]);
-            $routes->get('(:num)', 'CaseController::detail/$1', ['filter' => 'permission:view_violations']);
-
-            $routes->get('create', 'CaseController::create', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'koordinator.cases.create'
-            ]);
-            $routes->post('store', 'CaseController::store', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'koordinator.cases.store'
-            ]);
-
-            $routes->get('edit/(:num)', 'CaseController::edit/$1', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'koordinator.cases.edit'
-            ]);
-            $routes->post('update/(:num)', 'CaseController::update/$1', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'koordinator.cases.update'
-            ]);
-
-            $routes->post('delete/(:num)', 'CaseController::delete/$1', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'koordinator.cases.delete'
-            ]);
-
-            $routes->post('notifyParent/(:num)', 'CaseController::notifyParent/$1', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'koordinator.cases.notify'
-            ]);
-
-            // Assign Guru BK: Koordinator boleh (minimal lihat data pelanggaran)
-            $routes->post('assignCounselor/(:num)', 'CaseController::assignCounselor/$1', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'koordinator.cases.assign'
-            ]);
-
-            $routes->post('addSanction/(:num)', 'CaseController::addSanction/$1', [
-                'filter' => 'permission:any,manage_violations,manage_sanctions',
-                'as'     => 'koordinator.cases.sanction',
-            ]);
-        });
-
-        // Alias "violations" untuk kompatibilitas
-        $routes->group('violations', ['filter' => 'permission:view_violations'], function ($routes) {
-            $routes->get('/', static fn() => redirect()->to('/koordinator/cases'));
-            $routes->get('detail/(:num)', static fn($id) => redirect()->to('/koordinator/cases/detail/' . $id));
-        });
-
         $routes->group('violation-submissions', [
             'filter' => 'permission:any,view_violation_submissions,review_violation_submissions,manage_violation_submissions',
         ], function ($routes) {
@@ -511,58 +447,6 @@ $routes->group('koordinator', [
             $routes->post('update-status/(:num)', 'ViolationSubmissionsController::updateStatus/$1', [
                 'filter' => 'permission:any,review_violation_submissions,manage_violation_submissions',
                 'as'     => 'koordinator.violation_submissions.update_status',
-            ]);
-            $routes->post('convert/(:num)', 'ViolationSubmissionsController::convert/$1', [
-                'filter' => 'permission:any,convert_violation_submissions,manage_violation_submissions',
-                'as'     => 'koordinator.violation_submissions.convert',
-            ]);
-        });
-
-        // SANCTIONS
-        $routes->group('sanctions', function ($routes) {
-            $routes->post('create/(:num)', 'SanctionController::store/$1', [
-                'filter' => 'permission:any,manage_violations,manage_sanctions',
-                'as'     => 'koordinator.sanctions.create'
-            ]);
-            $routes->post('store/(:num)', 'SanctionController::store/$1', [
-                'filter' => 'permission:any,manage_violations,manage_sanctions',
-                'as'     => 'koordinator.sanctions.store'
-            ]);
-
-            $routes->get('show/(:num)', 'SanctionController::show/$1', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'koordinator.sanctions.show'
-            ]);
-
-            $routes->get('edit/(:num)', 'SanctionController::edit/$1', [
-                'filter' => 'permission:manage_sanctions',
-                'as'     => 'koordinator.sanctions.edit'
-            ]);
-            $routes->post('update/(:num)', 'SanctionController::update/$1', [
-                'filter' => 'permission:manage_sanctions',
-                'as'     => 'koordinator.sanctions.update'
-            ]);
-
-            $routes->post('delete/(:num)', 'SanctionController::delete/$1', [
-                'filter' => 'permission:any,manage_violations,manage_sanctions',
-                'as'     => 'koordinator.sanctions.delete'
-            ]);
-
-            $routes->post('complete/(:num)', 'SanctionController::complete/$1', [
-                'filter' => 'permission:manage_sanctions',
-                'as'     => 'koordinator.sanctions.complete'
-            ]);
-            $routes->post('verify/(:num)', 'SanctionController::verify/$1', [
-                'filter' => 'permission:manage_sanctions',
-                'as'     => 'koordinator.sanctions.verify'
-            ]);
-            $routes->post('acknowledge/(:num)', 'SanctionController::acknowledge/$1', [
-                'filter' => 'permission:manage_sanctions',
-                'as'     => 'koordinator.sanctions.ack'
-            ]);
-            $routes->post('ack/(:num)', 'SanctionController::acknowledge/$1', [
-                'filter' => 'permission:manage_sanctions',
-                'as'     => 'koordinator.sanctions.ack.alias'
             ]);
         });
 
@@ -767,119 +651,7 @@ $routes->group('counselor', [
             $routes->get('(:num)/edit', 'StudentController::edit/$1', ['as' => 'counselor.students.edit']);
             $routes->post('(:num)', 'StudentController::update/$1', ['as' => 'counselor.students.update']);
             $routes->get('detail/(:num)', 'StudentController::detail/$1', ['as' => 'counselor.students.detail']);
-
-            // ✅ Sinkron poin pelanggaran (Guru BK)
-            $routes->post('sync-violation-points', 'StudentController::syncViolationPoints', [
-                'as' => 'counselor.students.syncViolationPoints'
-            ]);
         });
-
-        // Cases & Violations
-        $routes->group('cases', function ($routes) {
-            $routes->get('/', 'CaseController::index', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'counselor.cases'
-            ]);
-            $routes->get('detail/(:num)', 'CaseController::detail/$1', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'counselor.cases.detail'
-            ]);
-
-            $routes->get('create', 'CaseController::create', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.cases.create'
-            ]);
-            $routes->post('store', 'CaseController::store', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.cases.store'
-            ]);
-            $routes->get('edit/(:num)', 'CaseController::edit/$1', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.cases.edit'
-            ]);
-            $routes->post('update/(:num)', 'CaseController::update/$1', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.cases.update'
-            ]);
-            $routes->post('delete/(:num)', 'CaseController::delete/$1', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.cases.delete'
-            ]);
-
-            $routes->post('addSanction/(:num)', 'CaseController::addSanction/$1', [
-                'filter' => 'permission:any,manage_violations,manage_sanctions',
-                'as'     => 'counselor.cases.sanction'
-            ]);
-            $routes->post('notifyParent/(:num)', 'CaseController::notifyParent/$1', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.cases.notify'
-            ]);
-        });
-
-        // Sanctions
-        $routes->group('sanctions', function ($routes) {
-            $routes->post('create/(:num)', 'SanctionController::store/$1', [
-                'filter' => 'permission:any,manage_violations,manage_sanctions'
-            ]);
-            $routes->get('show/(:num)', 'SanctionController::show/$1', [
-                'filter' => 'permission:view_violations'
-            ]);
-            $routes->get('edit/(:num)', 'SanctionController::edit/$1', [
-                'filter' => 'permission:manage_sanctions'
-            ]);
-            $routes->post('update/(:num)', 'SanctionController::update/$1', [
-                'filter' => 'permission:manage_sanctions'
-            ]);
-            $routes->post('delete/(:num)', 'SanctionController::delete/$1', [
-                'filter' => 'permission:any,manage_violations,manage_sanctions'
-            ]);
-            $routes->post('complete/(:num)', 'SanctionController::complete/$1', [
-                'filter' => 'permission:manage_sanctions'
-            ]);
-            $routes->post('verify/(:num)', 'SanctionController::verify/$1', [
-                'filter' => 'permission:manage_sanctions'
-            ]);
-            $routes->post('ack/(:num)', 'SanctionController::acknowledge/$1', [
-                'filter' => 'permission:manage_sanctions'
-            ]);
-        });
-
-        // Violations (alias tampilan terpisah)
-        $routes->group('violations', function ($routes) {
-            $routes->get('/', 'CaseController::violationsIndex', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'counselor.violations'
-            ]);
-            $routes->get('create', 'CaseController::create', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.violations.create'
-            ]);
-            $routes->post('store', 'CaseController::store', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.violations.store'
-            ]);
-            $routes->get('detail/(:num)', 'CaseController::detail/$1', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'counselor.violations.detail'
-            ]);
-            $routes->post('update/(:num)', 'CaseController::update/$1', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.violations.update'
-            ]);
-            $routes->post('delete/(:num)', 'CaseController::delete/$1', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.violations.delete'
-            ]);
-            $routes->post('addSanction/(:num)', 'CaseController::addSanction/$1', [
-                'filter' => 'permission:any,manage_violations,manage_sanctions',
-                'as'     => 'counselor.violations.sanction'
-            ]);
-            $routes->post('notifyParent/(:num)', 'CaseController::notifyParent/$1', [
-                'filter' => 'permission:manage_violations',
-                'as'     => 'counselor.violations.notify'
-            ]);
-        });
-
         $routes->group('violation-submissions', [
             'filter' => 'permission:any,view_violation_submissions,review_violation_submissions,manage_violation_submissions',
         ], function ($routes) {
@@ -888,10 +660,6 @@ $routes->group('counselor', [
             $routes->post('update-status/(:num)', 'ViolationSubmissionsController::updateStatus/$1', [
                 'filter' => 'permission:any,review_violation_submissions,manage_violation_submissions',
                 'as'     => 'counselor.violation_submissions.update_status',
-            ]);
-            $routes->post('convert/(:num)', 'ViolationSubmissionsController::convert/$1', [
-                'filter' => 'permission:any,convert_violation_submissions,manage_violation_submissions',
-                'as'     => 'counselor.violation_submissions.convert',
             ]);
         });
 
@@ -941,10 +709,6 @@ $routes->group('counselor', [
                 'filter' => 'permission:generate_reports_individual',
                 'as'     => 'counselor.reports.download'
             ]);
-
-            $routes->get('violation-report', static function () {
-                return redirect()->to('/counselor/reports?type=violations');
-            }, ['as' => 'counselor.reports.violation']);
 
             $routes->get('session-summary', static function () {
                 return redirect()->to('/counselor/reports?type=sessions');
@@ -1037,41 +801,6 @@ $routes->group('homeroom', [
             $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'homeroom.messages.reply']);
             $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'homeroom.messages.delete']);
             $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'homeroom.messages.read']);
-        });
-
-        // Pelanggaran:
-        // - Lihat -> view_violations
-        // - Kelola pelanggaran ringan -> manage_light_violations (sesuai tabel permissions)
-        $routes->group('violations', function ($routes) {
-            $routes->get('/', 'ViolationController::index', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'homeroom.violations'
-            ]);
-            $routes->get('detail/(:num)', 'ViolationController::detail/$1', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'homeroom.violations.detail'
-            ]);
-
-            $routes->get('create', 'ViolationController::create', [
-                'filter' => 'permission:manage_light_violations',
-                'as'     => 'homeroom.violations.create'
-            ]);
-            $routes->post('store', 'ViolationController::store', [
-                'filter' => 'permission:manage_light_violations',
-                'as'     => 'homeroom.violations.store'
-            ]);
-            $routes->get('edit/(:num)', 'ViolationController::edit/$1', [
-                'filter' => 'permission:manage_light_violations',
-                'as'     => 'homeroom.violations.edit'
-            ]);
-            $routes->post('update/(:num)', 'ViolationController::update/$1', [
-                'filter' => 'permission:manage_light_violations',
-                'as'     => 'homeroom.violations.update'
-            ]);
-            $routes->post('delete/(:num)', 'ViolationController::delete/$1', [
-                'filter' => 'permission:manage_light_violations',
-                'as'     => 'homeroom.violations.delete'
-            ]);
         });
 
         $routes->group('violation-submissions', ['filter' => 'permission:submit_violation_submissions'], function ($routes) {
@@ -1319,19 +1048,6 @@ $routes->group('student', [
             $routes->get('(:num)', 'CareerController::detail/$1', ['as' => 'student.career.detail']);
         });
 
-        // Riwayat pelanggaran (lihat)
-        $routes->get('violations', 'ViolationController::index', [
-            'filter' => 'permission:view_violations',
-            'as'     => 'student.violations'
-        ]);
-        $routes->get('violations/categories', 'ViolationController::categories', [
-            'filter' => 'permission:view_violations',
-            'as'     => 'student.violations.categories'
-        ]);
-        $routes->get('violations/(:num)', 'ViolationController::detail/$1', [
-            'filter' => 'permission:view_violations',
-            'as'     => 'student.violations.detail'
-        ]);
     });
 });
 
@@ -1400,24 +1116,6 @@ $routes->group('parent', [
             $routes->get('(:num)/staff', 'ChildController::staff/$1', [
                 'filter' => 'permission:view_student_portfolio',
                 'as'     => 'parent.children.staff'
-            ]);
-
-            // Pelanggaran anak
-            $routes->get('(:num)/violations', 'ChildController::violations/$1', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'parent.children.violations'
-            ]);
-            $routes->get('(:num)/violations/(:num)', 'ChildController::violationDetail/$1/$2', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'parent.children.violations.detail'
-            ]);
-            $routes->post('(:num)/violations/(:num)/ack', 'ChildController::acknowledgeSanctions/$1/$2', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'parent.children.violations.ack'
-            ]);
-            $routes->get('(:num)/violations/categories', 'ChildController::violationCategories/$1', [
-                'filter' => 'permission:view_violations',
-                'as'     => 'parent.children.violations.categories'
             ]);
 
             // Jadwal/sesi anak

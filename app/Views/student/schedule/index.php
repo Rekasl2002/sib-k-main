@@ -55,10 +55,10 @@ foreach ($all as $it) {
       <h4 class="mb-0">JADWAL KONSELING</h4>
       <div class="d-flex gap-2">
         <a class="btn btn-light" href="<?= route_to('student.schedule.history') ?>">Riwayat Lengkap</a>
-        <!--<a class="btn btn-primary" href="<?= route_to('student.schedule.request') ?>">Ajukan Konseling</a>-->
+        <a class="btn btn-primary" href="<?= route_to('student.schedule.request') ?>">Ajukan Konseling</a>
       </div>
       <ol class="breadcrumb m-0">
-              <li class="breadcrumb-item"><a href="<?= base_url('student/dashboard') ?>">Dashboard</a>></li>
+              <li class="breadcrumb-item"><a href="<?= base_url('student/dashboard') ?>">Dashboard</a></li>
               <li class="breadcrumb-item active">Sesi Konseling</li>
             </ol>
     </div>

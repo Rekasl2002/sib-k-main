@@ -4,7 +4,6 @@ namespace App\Controllers\HomeroomTeacher;
 
 use App\Controllers\BaseController;
 use App\Models\StudentModel;
-use App\Models\ViolationCategoryModel;
 use App\Services\ViolationSubmissionService;
 use CodeIgniter\Exceptions\PageNotFoundException;
 
@@ -12,7 +11,6 @@ class ViolationSubmissionsController extends BaseController
 {
     protected ViolationSubmissionService $service;
     protected StudentModel $studentModel;
-    protected ViolationCategoryModel $categoryModel;
 
     public function __construct()
     {
@@ -24,7 +22,6 @@ class ViolationSubmissionsController extends BaseController
 
         $this->service       = new ViolationSubmissionService();
         $this->studentModel  = new StudentModel();
-        $this->categoryModel = new ViolationCategoryModel();
     }
 
     public function index()
@@ -44,7 +41,6 @@ class ViolationSubmissionsController extends BaseController
         return view('homeroom_teacher/violation_submissions/create', [
             'title'      => 'Tambah Pengaduan Pelanggaran',
             'students'   => $this->fetchStudents(),
-            'categories' => $this->fetchCategories(),
             'errors'     => session()->getFlashdata('errors') ?? [],
             'basePath'   => 'homeroom/violation-submissions',
             'row'        => [],
@@ -107,7 +103,6 @@ class ViolationSubmissionsController extends BaseController
             'title'      => 'Edit Pengaduan Pelanggaran',
             'row'        => array_merge($row, $this->oldInputSubset()),
             'students'   => $this->fetchStudents(),
-            'categories' => $this->fetchCategories(),
             'errors'     => session()->getFlashdata('errors') ?? [],
             'basePath'   => 'homeroom/violation-submissions',
             'mode'       => 'edit',
@@ -152,12 +147,10 @@ class ViolationSubmissionsController extends BaseController
     protected function payload(): array
     {
         $subjectStudentId = $this->request->getPost('subject_student_id');
-        $categoryId = $this->request->getPost('category_id');
 
         return [
             'subject_student_id' => $subjectStudentId !== null && $subjectStudentId !== '' ? (int)$subjectStudentId : null,
             'subject_other_name' => trim((string)$this->request->getPost('subject_other_name')),
-            'category_id'        => $categoryId !== null && $categoryId !== '' ? (int)$categoryId : null,
             'occurred_date'      => $this->request->getPost('occurred_date') ?: null,
             'occurred_time'      => $this->request->getPost('occurred_time') ?: null,
             'location'           => trim((string)$this->request->getPost('location')),
@@ -219,19 +212,10 @@ class ViolationSubmissionsController extends BaseController
             ->findAll();
     }
 
-    protected function fetchCategories(): array
-    {
-        return $this->categoryModel
-            ->where('deleted_at', null)
-            ->where('is_active', 1)
-            ->orderBy('category_name', 'ASC')
-            ->findAll();
-    }
-
     protected function oldInputSubset(): array
     {
         $old = [];
-        foreach (['subject_student_id', 'subject_other_name', 'category_id', 'occurred_date', 'occurred_time', 'location', 'description', 'witness'] as $field) {
+        foreach (['subject_student_id', 'subject_other_name', 'occurred_date', 'occurred_time', 'location', 'description', 'witness'] as $field) {
             $value = $this->request->getOldInput($field);
             if ($value !== null) {
                 $old[$field] = $value;

@@ -11,21 +11,9 @@
     <div class="meta">
       <div class="title">Agregat Kelas: <?= esc($class['class_name'] ?? "ID #{$class['id']}") ?></div>
       <div class="sub"><?= esc($school['name']) ?> • Periode: <?= esc($period['from'] ?: '...') ?> s/d <?= esc($period['to'] ?: '...') ?></div>
-      <div class="small">Siswa: <?= (int)$studentCount ?> • Sesi: <?= (int)$sessionCount ?> • Pelanggaran: <?= (int)$violationCount ?></div>
+      <div class="small">Siswa: <?= (int)$studentCount ?> - Sesi: <?= (int)$sessionCount ?></div>
     </div>
   </div>
-
-  <h4>Agregat per Kategori Pelanggaran</h4>
-  <table>
-    <thead><tr><th>Kategori</th><th class="right">Jumlah</th></tr></thead>
-    <tbody>
-    <?php if ($perCategory): foreach ($perCategory as $k => $v): ?>
-      <tr><td><?= esc($k) ?></td><td class="right"><?= (int)$v ?></td></tr>
-    <?php endforeach; else: ?>
-      <tr><td colspan="2" class="center small">Tidak ada data</td></tr>
-    <?php endif; ?>
-    </tbody>
-  </table>
 
   <h4>Daftar Sesi (ringkas)</h4>
   <table>

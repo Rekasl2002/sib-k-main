@@ -40,18 +40,14 @@ function badgeClass($status){
 
 // Normalisasi variabel dari controller
 $children         = $children ?? [];
-$stats            = $stats ?? null; // ['children','violations_total','points_total','upcoming_sessions']
-$violationTotal   = isset($violationTotal) ? (int)$violationTotal : (int)($stats['violations_total'] ?? 0);
+$stats            = $stats ?? null;
 $upcoming         = $upcoming ?? [];
-$recentViolations = $recentViolations ?? [];
 
 // Peta id anak -> nama (untuk fallback di widget)
 $childNameMap = [];
 foreach ($children as $c) { $childNameMap[$c['id']] = $c['full_name'] ?? ('Siswa #'.$c['id']); }
 
 // Deteksi kolom opsional per anak (jika controller menyiapkan)
-$hasViolCount = array_reduce($children, fn($carry,$r)=>$carry || isset($r['violations_count']), false);
-$hasPoints    = array_reduce($children, fn($carry,$r)=>$carry || isset($r['points_sum']), false);
 $hasUpcoming  = array_reduce($children, fn($carry,$r)=>$carry || isset($r['upcoming_sessions']), false);
 
 // ✅ Default avatar svg (sesuai public/assets/images/users/default-avatar.svg)
@@ -125,7 +121,7 @@ function avatar_url($row): string {
                 </p>
 
                 <p class="text-white-50 mb-0" style="max-width: 900px;">
-                    Pantau perkembangan anak, riwayat pelanggaran, dan ringkasan layanan BK.
+                    Pantau perkembangan anak, jadwal konseling, dan ringkasan layanan BK.
                 </p>
             </div>
         </div>
@@ -149,7 +145,7 @@ function avatar_url($row): string {
 
 <!-- Quick Stats -->
 <div class="row g-3 mb-3">
-<div class="col-md-3">
+<div class="col-md-6">
   <div class="card shadow-sm h-100">
     <div class="card-body">
       <div class="text-muted small">Total Anak Terdaftar</div>
@@ -157,23 +153,7 @@ function avatar_url($row): string {
     </div>
   </div>
 </div>
-<div class="col-md-3">
-  <div class="card shadow-sm h-100">
-    <div class="card-body">
-      <div class="text-muted small">Total Pelanggaran (Semua Anak)</div>
-      <div class="display-6"><?= $violationTotal ?></div>
-    </div>
-  </div>
-</div>
-<div class="col-md-3">
-  <div class="card shadow-sm h-100">
-    <div class="card-body">
-      <div class="text-muted small">Total Poin (Semua Anak)</div>
-      <div class="display-6"><?= (int)($stats['points_total'] ?? 0) ?></div>
-    </div>
-  </div>
-</div>
-<div class="col-md-3">
+<div class="col-md-6">
   <div class="card shadow-sm h-100">
     <div class="card-body">
       <div class="text-muted small">Sesi Konseling Mendatang</div>
@@ -200,8 +180,6 @@ function avatar_url($row): string {
             <th>Kelas</th>
             <th>NIK</th>
             <th>NISN</th>
-            <?php if ($hasViolCount): ?><th class="text-center">Pelanggaran</th><?php endif; ?>
-            <?php if ($hasPoints): ?><th class="text-center">Poin</th><?php endif; ?>
             <?php if ($hasUpcoming): ?><th class="text-center">Sesi</th><?php endif; ?>
             <th class="text-end">Aksi</th>
           </tr>
@@ -226,19 +204,12 @@ function avatar_url($row): string {
             <td><?= h($c['class_name'] ?? '—') ?></td>
             <td><?= h($c['nik'] ?? '—') ?></td>
             <td><?= h($c['nisn'] ?? '—') ?></td>
-            <?php if ($hasViolCount): ?>
-              <td class="text-center"><?= (int)($c['violations_count'] ?? 0) ?></td>
-            <?php endif; ?>
-            <?php if ($hasPoints): ?>
-              <td class="text-center"><?= (int)($c['points_sum'] ?? 0) ?></td>
-            <?php endif; ?>
             <?php if ($hasUpcoming): ?>
               <td class="text-center"><?= (int)($c['upcoming_sessions'] ?? 0) ?></td>
             <?php endif; ?>
             <td class="text-end">
               <div class="btn-group">
                 <a class="btn btn-outline-primary btn-sm" href="<?= route_to('parent.children.profile', $c['id']) ?>">Profil</a>
-                <a class="btn btn-outline-secondary btn-sm" href="<?= route_to('parent.children.violations', $c['id']) ?>">Pelanggaran</a>
                 <a class="btn btn-outline-success btn-sm" href="<?= route_to('parent.children.sessions', $c['id']) ?>">Sesi</a>
                 <a class="btn btn-outline-info btn-sm" href="<?= route_to('parent.children.staff', $c['id']) ?>">Info Guru</a>
               </div>
@@ -291,45 +262,6 @@ function avatar_url($row): string {
       <?php endif; ?>
     </div>
   </div>
-</div>
-
-<!-- Pelanggaran Terbaru -->
-<div class="col-lg-6">
-  <div class="card shadow-sm h-100">
-    <div class="card-body">
-      <h6 class="mb-3">Pelanggaran Terbaru</h6>
-      <?php if (empty($recentViolations)): ?>
-        <div class="text-muted">Belum ada data pelanggaran.</div>
-      <?php else: ?>
-        <div class="table-responsive">
-          <table class="table table-sm table-hover mb-0">
-            <thead><tr><th>Tanggal</th><th>Kategori</th><th>Poin</th><th>Anak</th></tr></thead>
-            <tbody>
-            <?php foreach ($recentViolations as $rv): ?>
-              <tr>
-                <td><?= dt($rv['violation_date'] ?? null) ?></td>
-                <td><?= h($rv['category_name'] ?? '-') ?></td>
-                <td><?= (int)($rv['points'] ?? 0) ?></td>
-                <td>
-                  <?php
-                    $sid   = $rv['student_id'] ?? null;
-                    $sname = $rv['full_name']  ?? ($sid ? ($childNameMap[$sid] ?? null) : null);
-                  ?>
-                  <?php if ($sid): ?>
-                    <a href="<?= route_to('parent.children.violations', (int)$sid) ?>"><?= h($sname ?? '—') ?></a>
-                  <?php else: ?>
-                    <?= h($sname ?? '—') ?>
-                  <?php endif; ?>
-                </td>
-              </tr>
-            <?php endforeach; ?>
-            </tbody>
-          </table>
-        </div>
-      <?php endif; ?>
-    </div>
-  </div>
-</div>
 </div>
 
 <?= $this->endSection() ?>

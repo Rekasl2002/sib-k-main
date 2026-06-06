@@ -28,6 +28,39 @@
 
 <div class="row">
   <div class="col-lg-8">
+    <div class="card mb-3">
+      <div class="card-body">
+        <h4 class="card-title mb-3">
+          <i class="mdi mdi-shield-account-outline me-2"></i>
+          Data Peran
+        </h4>
+
+        <form action="<?= base_url('admin/roles/update/' . (int)$role['id']) ?>" method="post">
+          <?= csrf_field() ?>
+          <div class="mb-3">
+            <label for="role_name" class="form-label">Nama Role</label>
+            <input
+              type="text"
+              id="role_name"
+              name="role_name"
+              class="form-control"
+              value="<?= esc(old('role_name') ?? $roleName) ?>"
+              required
+            >
+          </div>
+          <div class="mb-3">
+            <label for="role_description" class="form-label">Deskripsi</label>
+            <textarea id="role_description" name="description" rows="3" class="form-control"><?= esc(old('description') ?? ($role['description'] ?? '')) ?></textarea>
+          </div>
+          <div class="text-end">
+            <button type="submit" class="btn btn-primary">
+              <i class="mdi mdi-content-save me-1"></i> Simpan Data Peran
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-body">
         <h4 class="card-title mb-3">

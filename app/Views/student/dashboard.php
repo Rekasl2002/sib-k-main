@@ -150,26 +150,21 @@ if (!function_exists('badgeClass')) {
               </div>
               <div class="col-md-3">
                 <div class="p-3 bg-light rounded">
-                  <div class="fw-semibold">Poin Pelanggaran</div>
-                  <div><?= v($student ?? [],'total_violation_points',0) ?></div>
                 </div>
               </div>
             </div>
 
             <!-- Aksi cepat -->
             <div class="mt-3 d-flex flex-wrap gap-2">
-              <!--<a href="<?= function_exists('route_to') ? route_to('student.schedule.request') : base_url('student/schedule/request') ?>" class="btn btn-sm btn-outline-primary">
+              <a href="<?= function_exists('route_to') ? route_to('student.schedule.request') : base_url('student/schedule/request') ?>" class="btn btn-sm btn-outline-primary">
                 <i class="mdi mdi-calendar-plus-outline me-1"></i> Ajukan Konseling
-              </a>-->
+              </a>
               <!-- <a href="<?= function_exists('route_to') ? route_to('student.assessments') : base_url('student/assessments') ?>" class="btn btn-sm btn-outline-success">
                 <i class="mdi mdi-clipboard-check-outline me-1"></i> Lihat Asesmen
               </a>-->
               <!--<a href="<?= function_exists('route_to') ? route_to('student.assessments.results') : base_url('student/assessments/results') ?>" class="btn btn-sm btn-outline-secondary">
                 <i class="mdi mdi-chart-line me-1"></i> Hasil Saya
               </a>-->
-              <a href="<?= base_url('student/violations') ?>" class="btn btn-sm btn-outline-warning">
-                <i class="mdi mdi-alert-outline me-1"></i> Kasus & Pelanggaran
-              </a>
               <a href="<?= base_url('student/schedule') ?>" class="btn btn-sm btn-outline-secondary">
                 <i class="mdi mdi-alert-outline me-1"></i> Sesi Konseling
               </a>
@@ -217,45 +212,6 @@ if (!function_exists('badgeClass')) {
             <?php endif; ?>
           </div>
         </div>
-
-        <!-- Opsional: Ringkasan Pelanggaran -->
-        <?php if (!empty($violationSummary) && is_array($violationSummary)): ?>
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title mb-3">Ringkasan Pelanggaran</h5>
-            <div class="row g-3">
-              <div class="col-md-3">
-                <div class="p-3 bg-light rounded text-center">
-                  <div class="fw-semibold">Total Kasus</div>
-                  <div class="fs-5"><?= esc($violationSummary['total'] ?? 0) ?></div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="p-3 bg-light rounded text-center">
-                  <div class="fw-semibold">Aktif</div>
-                  <div class="fs-5"><?= esc($violationSummary['open'] ?? 0) ?></div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="p-3 bg-light rounded text-center">
-                  <div class="fw-semibold">Selesai</div>
-                  <div class="fs-5"><?= esc($violationSummary['completed'] ?? 0) ?></div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="p-3 bg-light rounded text-center">
-                  <div class="fw-semibold">Total Poin</div>
-                  <div class="fs-5">
-                    <?= esc(isset($violationSummary['points'])
-                          ? $violationSummary['points']
-                          : v($student ?? [], 'total_violation_points', 0, false)) ?>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <?php endif; ?>
       </div>
 
       <!-- Sisi kanan: Asesmen & Hasil Terbaru + Karier -->

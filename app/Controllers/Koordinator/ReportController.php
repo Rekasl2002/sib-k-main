@@ -47,11 +47,7 @@ class ReportController extends BaseKoordinatorController
             ->orderBy('u.full_name', 'ASC')
             ->get()->getResultArray();
 
-        $categories = $db->table('violation_categories')
-            ->select('id, category_name')
-            ->where('deleted_at', null)
-            ->orderBy('category_name', 'ASC')
-            ->get()->getResultArray();
+        $students = $this->report->studentOptionsAll();
 
         // default: bulan ini
         $valFrom = (string) ($req->getGet('date_from') ?: date('Y-m-01'));
@@ -66,14 +62,15 @@ class ReportController extends BaseKoordinatorController
 
             'classes'     => $classes,
             'counselors'  => $counselors,
-            'categories'  => $categories,
+            'students'    => $students,
 
             'valFrom'     => $valFrom,
             'valTo'       => $valTo,
 
             'valClass'     => (string) ($req->getGet('class_id') ?? ''),
             'valCounselor' => (string) ($req->getGet('counselor_id') ?? ''),
-            'valCategory'  => (string) ($req->getGet('category_id') ?? ''),
+            'valMode'      => (string) ($req->getGet('mode') ?? 'aggregate'),
+            'valStudent'   => (string) ($req->getGet('student_id') ?? ''),
 
             'valPaper'    => $valPaper,
             'valOrient'   => $valOrient,
@@ -89,12 +86,22 @@ class ReportController extends BaseKoordinatorController
         $f = $this->filters();
 
         try {
+            if (($f['mode'] ?? 'aggregate') === 'student_individual') {
+                $out = $this->buildIndividualPayload($f);
+
+                return view('counselor/reports/partials/table', [
+                    'title'   => $out['title'],
+                    'columns' => $out['columns'],
+                    'rows'    => $out['rows'],
+                ]);
+            }
+
             $data = $this->report->schoolAggregate(
                 $f['date_from'],
                 $f['date_to'],
                 $f['class_id'],
                 $f['counselor_id'],
-                $f['category_id']
+                null
             );
 
             // opsional: rapikan status asesmen (0/1/2 -> label)
@@ -142,10 +149,43 @@ class ReportController extends BaseKoordinatorController
                 $f['date_to'],
                 $f['class_id'],
                 $f['counselor_id'],
-                $f['category_id']
+                null
             );
 
             $data = $this->humanizeAggregate($data);
+
+            if (($f['mode'] ?? 'aggregate') === 'student_individual') {
+                $out = $this->buildIndividualPayload($f);
+                $filename = $this->safeFilename('laporan_individu_' . ($f['student_id'] ?: 'siswa') . '_' . ($f['date_from'] ?: 'all') . '_' . ($f['date_to'] ?: 'all'));
+
+                if ($format === 'xlsx') {
+                    $tmpPath = $this->buildTableXlsx($out['title'], $out['columns'], $out['rows'], $filename);
+                    register_shutdown_function(static function () use ($tmpPath) {
+                        @unlink($tmpPath);
+                    });
+
+                    return $this->response->download($tmpPath, null)->setFileName($filename . '.xlsx');
+                }
+
+                if (! PDFGenerator::isAvailable()) {
+                    return redirect()->to('/koordinator/reports')
+                        ->with('error', 'Fitur unduh PDF belum tersedia karena paket Dompdf belum terpasang di server. Unduh Excel tetap dapat digunakan.');
+                }
+
+                $html = view('counselor/reports/partials/table_pdf', [
+                    'title'   => $out['title'],
+                    'columns' => $out['columns'],
+                    'rows'    => $out['rows'],
+                    'filters' => $f,
+                ]);
+
+                $bin = $this->pdf()->render($html, $paper, $orientation);
+
+                return $this->response
+                    ->setHeader('Content-Type', 'application/pdf')
+                    ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '.pdf"')
+                    ->setBody($bin);
+            }
 
             $filename = $this->safeFilename(
                 'laporan_agregat_' .
@@ -210,7 +250,29 @@ class ReportController extends BaseKoordinatorController
             'date_to'      => $dateTo,
             'class_id'     => $this->request->getGet('class_id') ? (int) $this->request->getGet('class_id') : null,
             'counselor_id' => $this->request->getGet('counselor_id') ? (int) $this->request->getGet('counselor_id') : null,
-            'category_id'  => $this->request->getGet('category_id') ? (int) $this->request->getGet('category_id') : null,
+            'mode'         => (string)($this->request->getGet('mode') ?: 'aggregate'),
+            'student_id'   => $this->request->getGet('student_id') ? (int) $this->request->getGet('student_id') : null,
+        ];
+    }
+
+    private function buildIndividualPayload(array $f): array
+    {
+        $studentId = (int)($f['student_id'] ?? 0);
+        if ($studentId <= 0) {
+            return [
+                'title' => 'Laporan Individu Siswa',
+                'columns' => ['Tanggal', 'Kategori', 'Kegiatan', 'Status', 'Catatan'],
+                'rows' => [],
+            ];
+        }
+
+        $out = $this->report->studentIndividualTable($studentId, $f['date_from'] ?? null, $f['date_to'] ?? null);
+        $student = $out['student'] ?? [];
+
+        return [
+            'title' => 'Laporan Individu Siswa - ' . (string)($student['full_name'] ?? 'Siswa'),
+            'columns' => $out['columns'] ?? [],
+            'rows' => $out['rows'] ?? [],
         ];
     }
 
@@ -343,10 +405,6 @@ class ReportController extends BaseKoordinatorController
             ['Total Siswa', (string) ($kpi['students_total'] ?? 0)],
             ['Total Sesi', (string) ($kpi['sessions_total'] ?? 0)],
             ['Total Durasi (menit)', (string) ($kpi['sessions_duration_total'] ?? 0)],
-            ['Total Pelanggaran', (string) ($kpi['violations_total'] ?? 0)],
-            ['Total Poin', (string) ($kpi['violations_points_total'] ?? 0)],
-            ['Kasus Aktif', (string) ($kpi['violations_active'] ?? 0)],
-            ['Total Sanksi', (string) ($kpi['sanctions_total'] ?? 0)],
             ['Asesmen Assigned', (string) ($kpi['assessments_assigned'] ?? 0)],
             ['Asesmen Completed', (string) ($kpi['assessments_completed'] ?? 0)],
             ['Avg Score (%)', (string) ($kpi['assessments_avg_percentage'] ?? 0)],
@@ -394,52 +452,7 @@ class ReportController extends BaseKoordinatorController
             }, $data['sessions']['byCounselor'] ?? [])
         );
 
-        // Sheet 3: Violations
-        $vioSheet = $spreadsheet->createSheet();
-        $vioSheet->setTitle('Violations');
-
-        $this->writeTable(
-            $vioSheet,
-            1,
-            ['Level', 'Jumlah', 'Total Poin'],
-            array_map(static function ($r) {
-                return [
-                    (string) ($r['label'] ?? ''),
-                    (string) ($r['count'] ?? 0),
-                    (string) ($r['points'] ?? 0),
-                ];
-            }, $data['violations']['byLevel'] ?? [])
-        );
-
-        $start = 1 + 2 + max(1, count($data['violations']['byLevel'] ?? [])) + 2;
-
-        $this->writeTable(
-            $vioSheet,
-            $start,
-            ['Kategori', 'Jumlah', 'Total Poin'],
-            array_map(static function ($r) {
-                return [
-                    (string) ($r['label'] ?? ''),
-                    (string) ($r['count'] ?? 0),
-                    (string) ($r['points'] ?? 0),
-                ];
-            }, $data['violations']['byCategory'] ?? [])
-        );
-
-        // Sheet 4: Sanctions
-        $sanSheet = $spreadsheet->createSheet();
-        $sanSheet->setTitle('Sanctions');
-
-        $this->writeTable(
-            $sanSheet,
-            1,
-            ['Jenis Sanksi', 'Jumlah'],
-            array_map(static function ($r) {
-                return [(string) ($r['label'] ?? ''), (string) ($r['count'] ?? 0)];
-            }, $data['sanctions']['byType'] ?? [])
-        );
-
-        // Sheet 5: Assessments
+        // Sheet 3: Assessments
         $assSheet = $spreadsheet->createSheet();
         $assSheet->setTitle('Assessments');
 
@@ -469,6 +482,31 @@ class ReportController extends BaseKoordinatorController
 
             $this->writeTable($stSheet, 1, ['Status', 'Jumlah'], $rows);
         }
+
+        $tmpPath = WRITEPATH . 'uploads/' . $filename . '.xlsx';
+        @mkdir(dirname($tmpPath), 0775, true);
+
+        (new Xlsx($spreadsheet))->save($tmpPath);
+
+        return $tmpPath;
+    }
+
+    private function buildTableXlsx(string $title, array $columns, array $rows, string $filename): string
+    {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Report');
+
+        $sheet->setCellValueExplicit('A1', 'Judul', DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('B1', $title, DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('A2', 'Dibuat', DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('B2', date('Y-m-d H:i:s'), DataType::TYPE_STRING);
+
+        $this->writeTable($sheet, 4, $columns ?: ['Data'], array_map(static function ($row) {
+            return is_array($row)
+                ? array_map(static fn ($value) => is_scalar($value) ? (string)$value : json_encode($value, JSON_UNESCAPED_UNICODE), array_values($row))
+                : [(string)$row];
+        }, $rows));
 
         $tmpPath = WRITEPATH . 'uploads/' . $filename . '.xlsx';
         @mkdir(dirname($tmpPath), 0775, true);

@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Models\ViolationSubmissionsModel;
-use App\Models\ViolationModel;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\HTTP\Files\UploadedFile;
 
@@ -35,12 +34,10 @@ class ViolationSubmissionService
         $builder = $this->db->table('violation_submissions vs');
         $builder->select([
             'vs.*',
-            'vc.category_name',
             'su.full_name AS subject_student_name',
             'ss.nisn AS subject_student_nisn',
             'c.class_name AS subject_student_class',
         ]);
-        $builder->join('violation_categories vc', 'vc.id = vs.category_id', 'left');
         $builder->join('students ss', 'ss.id = vs.subject_student_id', 'left');
         $builder->join('users su', 'su.id = ss.user_id', 'left');
         $builder->join('classes c', 'c.id = ss.class_id', 'left');
@@ -138,89 +135,6 @@ class ViolationSubmissionService
     }
 
     /**
-     * Konversi pengaduan menjadi kasus pelanggaran.
-     */
-    public function convertToViolation(int $id, int $handledBy, string $notes = ''): array
-    {
-        $row = $this->getDetailForReviewer($id);
-        if (!$row) {
-            return ['success' => false, 'message' => 'Pengaduan tidak ditemukan.'];
-        }
-
-        if ((string)($row['status'] ?? '') === 'Dikonversi' && !empty($row['converted_violation_id'])) {
-            return [
-                'success'      => true,
-                'message'      => 'Pengaduan sudah dikonversi.',
-                'violation_id' => (int)$row['converted_violation_id'],
-            ];
-        }
-
-        $studentId  = (int)($row['subject_student_id'] ?? 0);
-        $categoryId = (int)($row['category_id'] ?? 0);
-
-        if ($studentId <= 0) {
-            return ['success' => false, 'message' => 'Pengaduan belum memiliki siswa terlapor terdaftar, sehingga belum bisa dikonversi.'];
-        }
-        if ($categoryId <= 0) {
-            return ['success' => false, 'message' => 'Pengaduan belum memiliki kategori pelanggaran, sehingga belum bisa dikonversi.'];
-        }
-
-        $evidence = $this->normalizeEvidence($row['evidence_json'] ?? null);
-        $noteText = trim($notes);
-        $systemNote = 'Dikonversi dari pengaduan pelanggaran #' . $id;
-        if ($noteText !== '') {
-            $systemNote .= '. Catatan: ' . $noteText;
-        }
-
-        $violationModel = new ViolationModel();
-        $violationId = $violationModel->insert([
-            'student_id'      => $studentId,
-            'category_id'     => $categoryId,
-            'violation_date'  => $row['occurred_date'] ?: date('Y-m-d'),
-            'violation_time'  => $row['occurred_time'] ?: null,
-            'location'        => $row['location'] ?: null,
-            'description'     => (string)($row['description'] ?? ''),
-            'witness'         => $row['witness'] ?: null,
-            'evidence'        => $evidence ? json_encode($evidence, JSON_UNESCAPED_SLASHES) : null,
-            'reported_by'     => (int)($row['reporter_user_id'] ?? 0),
-            'handled_by'      => $handledBy ?: null,
-            'status'          => 'Dilaporkan',
-            'resolution_notes'=> null,
-            'notes'           => $systemNote,
-        ], true);
-
-        if (!$violationId) {
-            return [
-                'success' => false,
-                'message' => 'Gagal mengonversi pengaduan menjadi pelanggaran.',
-                'errors'  => $violationModel->errors(),
-            ];
-        }
-
-        $this->model->update($id, [
-            'status'                 => 'Dikonversi',
-            'handled_by'             => $handledBy ?: null,
-            'handled_at'             => date('Y-m-d H:i:s'),
-            'review_notes'           => $noteText !== '' ? $noteText : 'Pengaduan dikonversi menjadi kasus pelanggaran.',
-            'converted_violation_id' => (int)$violationId,
-        ]);
-
-        $this->notifyReporter(
-            $id,
-            (int)($row['reporter_user_id'] ?? 0),
-            (string)($row['reporter_type'] ?? ''),
-            'Dikonversi',
-            $noteText
-        );
-
-        return [
-            'success'      => true,
-            'message'      => 'Pengaduan berhasil dikonversi menjadi kasus pelanggaran.',
-            'violation_id' => (int)$violationId,
-        ];
-    }
-
-    /**
      * Detail submission (harus milik pelapor).
      */
     public function getDetailForReporter(int $id, int $reporterUserId, string $reporterType = 'student'): ?array
@@ -228,14 +142,12 @@ class ViolationSubmissionService
         $builder = $this->db->table('violation_submissions vs');
         $builder->select([
             'vs.*',
-            'vc.category_name',
             'ru.full_name AS reporter_name',
             'hu.full_name AS handled_by_name',
             'su.full_name AS subject_student_name',
             'ss.nisn AS subject_student_nisn',
             'c.class_name AS subject_student_class',
         ]);
-        $builder->join('violation_categories vc', 'vc.id = vs.category_id', 'left');
         $builder->join('users ru', 'ru.id = vs.reporter_user_id', 'left');
         $builder->join('users hu', 'hu.id = vs.handled_by', 'left');
         $builder->join('students ss', 'ss.id = vs.subject_student_id', 'left');
@@ -316,7 +228,6 @@ class ViolationSubmissionService
             $data['handled_by'],
             $data['handled_at'],
             $data['review_notes'],
-            $data['converted_violation_id'],
             $data['reporter_type'],
             $data['reporter_user_id']
         );
@@ -370,12 +281,12 @@ class ViolationSubmissionService
     }
 
     /**
-     * Editable jika belum Ditolak/Diterima/Dikonversi.
+     * Editable jika belum Ditolak/Diterima.
      */
     public function isEditable(array $row): bool
     {
         $status = $row['status'] ?? 'Diajukan';
-        return !in_array($status, ['Ditolak', 'Diterima', 'Dikonversi'], true);
+        return !in_array($status, ['Ditolak', 'Diterima'], true);
     }
 
     /**
@@ -496,8 +407,6 @@ class ViolationSubmissionService
         $builder = $this->db->table('violation_submissions vs');
         $builder->select([
             'vs.*',
-            'vc.category_name',
-            'vc.severity_level',
             'ru.full_name AS reporter_name',
             'rr.role_name AS reporter_role',
             'hu.full_name AS handled_by_name',
@@ -505,7 +414,6 @@ class ViolationSubmissionService
             'ss.nisn AS subject_student_nisn',
             'c.class_name AS subject_student_class',
         ]);
-        $builder->join('violation_categories vc', 'vc.id = vs.category_id', 'left');
         $builder->join('users ru', 'ru.id = vs.reporter_user_id', 'left');
         $builder->join('roles rr', 'rr.id = ru.role_id', 'left');
         $builder->join('users hu', 'hu.id = vs.handled_by', 'left');

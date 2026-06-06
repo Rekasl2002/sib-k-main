@@ -5,14 +5,12 @@ namespace App\Controllers\Student;
 use App\Controllers\BaseController;
 use App\Services\ViolationSubmissionService;
 use App\Models\StudentModel;
-use App\Models\ViolationCategoryModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 
 class ViolationSubmissionsController extends BaseController
 {
     protected ViolationSubmissionService $service;
     protected StudentModel $studentModel;
-    protected ViolationCategoryModel $categoryModel;
 
     public function __construct()
     {
@@ -24,7 +22,6 @@ class ViolationSubmissionsController extends BaseController
 
         $this->service       = new ViolationSubmissionService();
         $this->studentModel  = new StudentModel();
-        $this->categoryModel = new ViolationCategoryModel();
     }
 
     /**
@@ -97,16 +94,9 @@ class ViolationSubmissionsController extends BaseController
             ->orderBy('users.full_name', 'ASC')
             ->findAll();
 
-        $categories = $this->categoryModel
-            ->where('deleted_at', null)
-            ->where('is_active', 1)
-            ->orderBy('category_name', 'ASC')
-            ->findAll();
-
         return view('student/violation_submissions/create', [
             'title'      => 'Tambah Pengaduan Pelanggaran',
             'students'   => $students,
-            'categories' => $categories,
             'errors'     => session()->getFlashdata('errors') ?? [],
         ]);
     }
@@ -132,17 +122,11 @@ class ViolationSubmissionsController extends BaseController
             ? (int) $subjectStudentIdRaw
             : null;
 
-        $categoryIdRaw = $this->request->getPost('category_id');
-        $categoryId    = ($categoryIdRaw !== null && $categoryIdRaw !== '')
-            ? (int) $categoryIdRaw
-            : null;
-
         $data = [
             'reporter_type'      => 'student',
             'reporter_user_id'   => $uid,
             'subject_student_id' => $subjectStudentId,
             'subject_other_name' => trim((string) $this->request->getPost('subject_other_name')),
-            'category_id'        => $categoryId,
             'occurred_date'      => $this->request->getPost('occurred_date') ?: null,
             'occurred_time'      => $this->request->getPost('occurred_time') ?: null,
             'location'           => trim((string) $this->request->getPost('location')),
@@ -157,7 +141,6 @@ class ViolationSubmissionsController extends BaseController
             'witness'            => 'permit_empty|max_length[255]',
             'subject_other_name' => 'permit_empty|max_length[255]',
             'subject_student_id' => 'permit_empty|is_natural_no_zero',
-            'category_id'        => 'permit_empty|is_natural_no_zero',
         ];
 
         $errors = [];
@@ -266,7 +249,7 @@ class ViolationSubmissionsController extends BaseController
         // view edit kamu pakai $row langsung (bukan old()).
         // Jadi kita timpakan old input ke $row agar form menampilkan input terakhir.
         $oldKeys = [
-            'subject_student_id', 'subject_other_name', 'category_id',
+            'subject_student_id', 'subject_other_name',
             'occurred_date', 'occurred_time', 'location', 'description', 'witness'
         ];
         foreach ($oldKeys as $k) {
@@ -291,17 +274,10 @@ class ViolationSubmissionsController extends BaseController
             ->orderBy('users.full_name', 'ASC')
             ->findAll();
 
-        $categories = $this->categoryModel
-            ->where('deleted_at', null)
-            ->where('is_active', 1)
-            ->orderBy('category_name', 'ASC')
-            ->findAll();
-
         return view('student/violation_submissions/edit', [
             'title'      => 'Edit Pengaduan Pelanggaran',
             'row'        => $row,
             'students'   => $students,
-            'categories' => $categories,
             'errors'     => session()->getFlashdata('errors') ?? [],
         ]);
     }
@@ -327,15 +303,9 @@ class ViolationSubmissionsController extends BaseController
             ? (int) $subjectStudentIdRaw
             : null;
 
-        $categoryIdRaw = $this->request->getPost('category_id');
-        $categoryId    = ($categoryIdRaw !== null && $categoryIdRaw !== '')
-            ? (int) $categoryIdRaw
-            : null;
-
         $data = [
             'subject_student_id' => $subjectStudentId,
             'subject_other_name' => trim((string) $this->request->getPost('subject_other_name')),
-            'category_id'        => $categoryId,
             'occurred_date'      => $this->request->getPost('occurred_date') ?: null,
             'occurred_time'      => $this->request->getPost('occurred_time') ?: null,
             'location'           => trim((string) $this->request->getPost('location')),
@@ -349,7 +319,6 @@ class ViolationSubmissionsController extends BaseController
             'witness'            => 'permit_empty|max_length[255]',
             'subject_other_name' => 'permit_empty|max_length[255]',
             'subject_student_id' => 'permit_empty|is_natural_no_zero',
-            'category_id'        => 'permit_empty|is_natural_no_zero',
         ];
 
         $errors = [];

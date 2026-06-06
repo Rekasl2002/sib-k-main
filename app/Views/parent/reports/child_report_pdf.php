@@ -5,9 +5,7 @@
  */
 
 $student          = $student          ?? [];
-$violations       = $violations       ?? [];
 $sessions         = $sessions         ?? [];
-$violationSummary = $violationSummary ?? [];
 $today            = $today            ?? date('Y-m-d');
 $title            = $title            ?? 'Laporan Anak';
 $parentName       = $parentName       ?? '';
@@ -103,47 +101,7 @@ if (!function_exists('pdf_fmt_time')) {
   </div>
 
   <div class="section">
-    <div class="section-title">B. Ringkasan Pelanggaran</div>
-
-    <table class="meta-table" style="margin-bottom:8px;">
-      <tr><th>Jumlah Pelanggaran</th><td><?= (int)($violationSummary['total_violations'] ?? 0) ?></td></tr>
-      <tr><th>Total Poin</th><td><?= (int)($violationSummary['total_points'] ?? 0) ?></td></tr>
-      <tr><th>Pelanggaran Terakhir</th><td><?= esc(pdf_fmt_date_id($violationSummary['last_violation_date'] ?? null)) ?></td></tr>
-    </table>
-
-    <?php if (empty($violations)): ?>
-      <div class="muted">Tidak ada data pelanggaran yang tercatat untuk anak ini.</div>
-    <?php else: ?>
-      <table>
-        <thead>
-          <tr>
-            <th style="width:78px;">Tanggal</th>
-            <th style="width:150px;">Kategori</th>
-            <th style="width:52px;">Poin</th>
-            <th>Uraian Singkat</th>
-            <th style="width:120px;">Pencatat</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php foreach ($violations as $v): ?>
-            <tr>
-              <td><?= esc(pdf_fmt_date_id($v['violation_date'] ?? null)) ?></td>
-              <td>
-                <?= esc($v['category_name'] ?? '-') ?><br>
-                <span class="muted small">Tingkat: <?= esc($v['category_severity'] ?? '-') ?></span>
-              </td>
-              <td><?= (int)($v['point_deduction'] ?? 0) ?></td>
-              <td><?= esc($v['description'] ?? '-') ?></td>
-              <td><?= esc($v['recorder_name'] ?? '-') ?></td>
-            </tr>
-          <?php endforeach; ?>
-        </tbody>
-      </table>
-    <?php endif; ?>
-  </div>
-
-  <div class="section">
-    <div class="section-title">C. Ringkasan Sesi Konseling</div>
+    <div class="section-title">B. Ringkasan Sesi Konseling</div>
 
     <?php if (empty($sessions)): ?>
       <div class="muted">Belum ada sesi konseling yang tercatat untuk anak ini.</div>

@@ -37,7 +37,6 @@ $statusColors = [
 $statusVal   = $student['status'] ?? '-';
 $statusColor = $statusColors[$statusVal] ?? 'secondary';
 
-$poin = (int)($student['total_violation_points'] ?? 0);
 
 // Hitung umur (aman)
 $ageText = null;
@@ -152,91 +151,9 @@ if (!empty($student['birth_date'])) {
 
                     <div class="col-lg-8">
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="card border mb-3">
-                                    <div class="card-body">
-                                        <div class="d-flex">
-                                            <div class="flex-shrink-0 me-3">
-                                                <div class="avatar-xs">
-                                                    <span class="avatar-title rounded-circle bg-primary bg-soft text-primary font-size-18">
-                                                        <i class="mdi mdi-card-account-details"></i>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <p class="text-muted mb-1">NISN</p>
-                                                <h5 class="mb-0"><code><?= esc($student['nisn'] ?? '-') ?></code></h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="col-md-6">
-                                <div class="card border mb-3">
-                                    <div class="card-body">
-                                        <div class="d-flex">
-                                            <div class="flex-shrink-0 me-3">
-                                                <div class="avatar-xs">
-                                                    <span class="avatar-title rounded-circle bg-success bg-soft text-success font-size-18">
-                                                        <i class="mdi mdi-card-text"></i>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <p class="text-muted mb-1">NIK</p>
-                                                <h5 class="mb-0"><code><?= esc($student['nik'] ?? '-') ?></code></h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="col-md-6">
-                                <div class="card border mb-3">
-                                    <div class="card-body">
-                                        <div class="d-flex">
-                                            <div class="flex-shrink-0 me-3">
-                                                <div class="avatar-xs">
-                                                    <span class="avatar-title rounded-circle bg-<?= $poin > 0 ? 'danger' : 'success' ?> bg-soft text-<?= $poin > 0 ? 'danger' : 'success' ?> font-size-18">
-                                                        <i class="mdi mdi-alert-circle"></i>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <p class="text-muted mb-1">Poin Pelanggaran</p>
-                                                <h5 class="mb-0"><?= $poin ?> Poin</h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="col-md-6">
-                                <div class="card border mb-3">
-                                    <div class="card-body">
-                                        <div class="d-flex">
-                                            <div class="flex-shrink-0 me-3">
-                                                <div class="avatar-xs">
-                                                    <span class="avatar-title rounded-circle bg-info bg-soft text-info font-size-18">
-                                                        <i class="mdi mdi-calendar-account"></i>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="flex-grow-1">
-                                                <p class="text-muted mb-1">Tanggal Masuk</p>
-                                                <h5 class="mb-0">
-                                                    <?php if (!empty($student['admission_date'])): ?>
-                                                        <?= date('d M Y', strtotime($student['admission_date'])) ?>
-                                                    <?php else: ?>
-                                                        -
-                                                    <?php endif; ?>
-                                                </h5>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
 
                         <div class="d-flex gap-2 flex-wrap">
@@ -340,84 +257,6 @@ if (!empty($student['birth_date'])) {
                     <i class="mdi mdi-school me-2"></i>Informasi Akademik
                 </h5>
 
-                <div class="table-responsive">
-                    <table class="table table-sm table-borderless mb-0">
-                        <tbody>
-                            <tr>
-                                <td class="text-muted" style="width: 40%;">
-                                    <i class="mdi mdi-google-classroom me-1"></i>Kelas
-                                </td>
-                                <td class="fw-medium">
-                                    <?php if (!empty($student['class_name'])): ?>
-                                        <span class="badge bg-primary">
-                                            <?= esc($student['grade_level'] ?? '-') ?> - <?= esc($student['class_name']) ?>
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="text-muted">Belum ada kelas</span>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">
-                                    <i class="mdi mdi-card-account-details me-1"></i>NISN
-                                </td>
-                                <td class="fw-medium"><code><?= esc($student['nisn'] ?? '-') ?></code></td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">
-                                    <i class="mdi mdi-card-text me-1"></i>NIK
-                                </td>
-                                <td class="fw-medium"><code><?= esc($student['nik'] ?? '-') ?></code></td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">
-                                    <i class="mdi mdi-card-bulleted-outline me-1"></i>Nomor KIP/PIP
-                                </td>
-                                <td class="fw-medium"><code><?= !empty($student['kip_pip_number']) ? esc($student['kip_pip_number']) : '-' ?></code></td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">
-                                    <i class="mdi mdi-calendar-check me-1"></i>Status
-                                </td>
-                                <td class="fw-medium">
-                                    <span class="badge bg-<?= $statusColor ?>">
-                                        <?= esc($statusVal) ?>
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">
-                                    <i class="mdi mdi-calendar-import me-1"></i>Tanggal Masuk
-                                </td>
-                                <td class="fw-medium">
-                                    <?= !empty($student['admission_date']) ? date('d F Y', strtotime($student['admission_date'])) : '-' ?>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted">
-                                    <i class="mdi mdi-alert-circle me-1"></i>Total Poin Pelanggaran
-                                </td>
-                                <td class="fw-medium">
-                                    <span class="badge bg-<?= $poin > 0 ? 'danger' : 'success' ?> font-size-14">
-                                        <?= $poin ?> Poin
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted"><i class="mdi mdi-account-tie me-1"></i>Nama Ayah Kandung</td>
-                                <td class="fw-medium"><?= !empty($student['father_name']) ? esc($student['father_name']) : '-' ?></td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted"><i class="mdi mdi-account-heart-outline me-1"></i>Nama Ibu Kandung</td>
-                                <td class="fw-medium"><?= !empty($student['mother_name']) ? esc($student['mother_name']) : '-' ?></td>
-                            </tr>
-                            <tr>
-                                <td class="text-muted"><i class="mdi mdi-account-supervisor me-1"></i>Nama Wali</td>
-                                <td class="fw-medium"><?= !empty($student['guardian_name']) ? esc($student['guardian_name']) : '-' ?></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
 
             </div>
         </div>

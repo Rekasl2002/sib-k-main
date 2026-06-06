@@ -3,10 +3,13 @@
 
 <?php
 $classes = $classes ?? [];
+$students = $students ?? [];
 
 $valFrom  = $valFrom ?? date('Y-m-01');
 $valTo    = $valTo ?? date('Y-m-d');
 $valClass = $valClass ?? '';
+$valMode = $valMode ?? 'class_summary';
+$valStudent = $valStudent ?? '';
 
 $valPaper  = $valPaper ?? 'A4';
 $valOrient = $valOrient ?? 'portrait';
@@ -48,6 +51,14 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
         <form id="classReportForm" method="get" action="<?= route_to('homeroom.reports.preview') ?>" class="row g-3" autocomplete="off">
 
           <div class="col-12">
+            <label class="form-label">Mode Laporan</label>
+            <select name="mode" class="form-select" id="modeSelect" <?= !$hasClasses ? 'disabled' : '' ?>>
+              <option value="class_summary" <?= $valMode === 'class_summary' ? 'selected' : '' ?>>Ringkasan Kelas</option>
+              <option value="student_individual" <?= $valMode === 'student_individual' ? 'selected' : '' ?>>Individu Siswa</option>
+            </select>
+          </div>
+
+          <div class="col-12">
             <label class="form-label">Kelas</label>
 
             <select
@@ -85,6 +96,18 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
                 <div class="form-text">Sampai</div>
               </div>
             </div>
+          </div>
+
+          <div class="col-12" id="studentWrap">
+            <label class="form-label">Siswa</label>
+            <select name="student_id" class="form-select" <?= !$hasClasses ? 'disabled' : '' ?>>
+              <option value="">Pilih Siswa</option>
+              <?php foreach ($students as $s): ?>
+                <option value="<?= esc($s['id']) ?>" <?= (string)$s['id'] === (string)$valStudent ? 'selected' : '' ?>>
+                  <?= esc(($s['full_name'] ?? '-') . ' - ' . ($s['class_name'] ?? '-') . ' - NISN ' . ($s['nisn'] ?? '-')) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
           </div>
 
           <div class="col-12">
@@ -130,7 +153,7 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
     <div class="card">
       <div class="card-header d-flex align-items-center justify-content-between">
         <h5 class="mb-0">Pratinjau</h5>
-        <small class="text-muted">Klik “Pratinjau” untuk memuat data.</small>
+        <small class="text-muted">Klik "Pratinjau" untuk memuat data.</small>
       </div>
       <div class="card-body" id="previewArea">
         <?php if (!$hasClasses): ?>
@@ -139,7 +162,7 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
           </div>
         <?php else: ?>
           <div class="text-muted">
-            Pilih periode, lalu klik <b>Pratinjau</b>. 📊
+            Pilih periode, lalu klik <b>Pratinjau</b>.
           </div>
         <?php endif; ?>
       </div>
@@ -155,6 +178,8 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
   const preview = document.getElementById('previewArea');
   const dlPdf = document.getElementById('dlPdf');
   const dlXlsx = document.getElementById('dlXlsx');
+  const modeSelect = document.getElementById('modeSelect');
+  const studentWrap = document.getElementById('studentWrap');
 
   const downloadBase = "<?= route_to('homeroom.reports.download') ?>";
 
@@ -172,6 +197,13 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
     const q = qs();
     dlPdf.href  = downloadBase + "?" + q + "&format=pdf";
     dlXlsx.href = downloadBase + "?" + q + "&format=xlsx";
+  }
+
+  function syncMode() {
+    const isIndividual = modeSelect && modeSelect.value === 'student_individual';
+    if (studentWrap) {
+      studentWrap.classList.toggle('d-none', !isIndividual);
+    }
   }
 
   async function loadPreview(e){
@@ -210,7 +242,11 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
   });
 
   form.addEventListener('submit', loadPreview);
-  form.addEventListener('change', syncDownloadLinks);
+  form.addEventListener('change', function(){
+    syncMode();
+    syncDownloadLinks();
+  });
+  syncMode();
   syncDownloadLinks();
 })();
 </script>

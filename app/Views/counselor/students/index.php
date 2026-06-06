@@ -7,9 +7,6 @@
  *
  * Counselor - Students Index
  * - List siswa binaan + filter + DataTables
- * - Tombol sinkron poin pelanggaran:
- *   Default: Tahun Ajaran aktif
- *   Opsi: Tahun ajaran dipilih / periode custom
  */
 
 // Helpers aman-aman
@@ -280,33 +277,8 @@ $useShowAlerts = function_exists('show_alerts');
                     <h4 class="card-title mb-0">
                         <i class="mdi mdi-account-group me-2"></i>Daftar Siswa
                     </h4>
-                    <small class="text-muted">
-                        Jika poin pelanggaran tidak sesuai, gunakan sinkronisasi jika ingin menghitung ulang berdasarkan Tahun Ajaran/periode.
-                    </small>
                 </div>
 
-                <div class="text-sm-end d-flex gap-2 align-items-center">
-                    <!-- Quick Sync (default: Tahun Ajaran aktif) -->
-                    <form action="<?= base_url('counselor/students/sync-violation-points') ?>"
-                          method="post"
-                          class="d-inline">
-                        <?= csrf_field() ?>
-                        <input type="hidden" name="sync_mode" value="active">
-                        <button type="submit"
-                                class="btn btn-outline-warning btn-rounded waves-effect waves-light"
-                                onclick="return confirm('Hitung ulang poin pelanggaran berdasarkan Tahun Ajaran AKTIF?\n\nTips: klik tombol Opsi jika ingin memilih Tahun Ajaran/periode lain.');">
-                            <i class="mdi mdi-refresh me-1"></i> Sinkron (Aktif)
-                        </button>
-                    </form>
-
-                    <!-- Sync Options -->
-                    <button type="button"
-                            class="btn btn-warning btn-rounded waves-effect waves-light"
-                            data-bs-toggle="modal"
-                            data-bs-target="#syncModal">
-                        <i class="mdi mdi-tune-vertical me-1"></i> Opsi Sinkron
-                    </button>
-                </div>
             </div>
 
             <div class="card-body">
@@ -321,7 +293,6 @@ $useShowAlerts = function_exists('show_alerts');
                                 <th>Kelas</th>
                                 <th>Gender</th>
                                 <th>Status</th>
-                                <th>Poin</th>
                                 <th style="width: 150px;">Aksi</th>
                             </tr>
                         </thead>
@@ -329,7 +300,6 @@ $useShowAlerts = function_exists('show_alerts');
                             <?php if (!empty($students) && is_array($students)): ?>
                                 <?php $no = 1; ?>
                                 <?php foreach ($students as $student): ?>
-                                    <?php $points = (int) ($student['total_violation_points'] ?? 0); ?>
                                     <tr>
                                         <td class="text-center"><?= $no++ ?></td>
                                         <td>
@@ -383,13 +353,6 @@ $useShowAlerts = function_exists('show_alerts');
                                             </span>
                                         </td>
                                         <td class="text-center">
-                                            <?php if ($points > 0): ?>
-                                                <span class="badge bg-danger font-size-12"><?= $points ?></span>
-                                            <?php else: ?>
-                                                <span class="badge bg-success font-size-12">0</span>
-                                            <?php endif; ?>
-                                        </td>
-                                        <td class="text-center">
                                             <div class="btn-group" role="group">
                                                 <a href="<?= base_url('counselor/students/' . (int)$student['id']) ?>"
                                                    class="btn btn-sm btn-info"
@@ -412,7 +375,7 @@ $useShowAlerts = function_exists('show_alerts');
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="9" class="text-center text-muted py-4">
+                                    <td colspan="8" class="text-center text-muted py-4">
                                         <i class="mdi mdi-account-off font-size-24 d-block mb-2"></i>
                                         Tidak ada data siswa
                                     </td>
@@ -423,112 +386,6 @@ $useShowAlerts = function_exists('show_alerts');
                 </div>
 
             </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Opsi Sinkron -->
-<div class="modal fade" id="syncModal" tabindex="-1" aria-labelledby="syncModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
-        <div class="modal-content">
-            <form action="<?= base_url('counselor/students/sync-violation-points') ?>" method="post" id="syncForm">
-                <?= csrf_field() ?>
-
-                <div class="modal-header">
-                    <h5 class="modal-title" id="syncModalLabel">
-                        <i class="mdi mdi-refresh me-1"></i> Opsi Sinkron Poin Pelanggaran
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-
-                <div class="modal-body">
-                    <div class="mb alert-info">
-                        <i class="mdi mdi-information-outline me-1"></i>
-                        Default sinkron mengikuti <b>Tahun Ajaran aktif</b>. Anda juga bisa memilih <b>Tahun Ajaran</b> tertentu atau <b>periode tanggal</b>.
-                            <small>
-                                Poin tersinkron akan tersimpan di database sebagai cache,
-                                untuk ditampilkan pada aplikasi. Tolong pertimbangkan pilihan sebelum menggunakan.
-                            </small>
-                    </div>
-
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label">Mode Sinkron</label>
-
-                            <div class="d-flex flex-column gap-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="sync_mode" id="sync_mode_active" value="active" checked>
-                                    <label class="form-check-label" for="sync_mode_active">
-                                        Sesuai Tahun Ajaran aktif (bawaan)
-                                    </label>
-                                </div>
-
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="sync_mode" id="sync_mode_year" value="year" <?= empty($academicYears) ? 'disabled' : '' ?>>
-                                    <label class="form-check-label" for="sync_mode_year">
-                                        Sesuai Tahun Ajaran yang Dipilih
-                                        <?php if (empty($academicYears)): ?>
-                                            <span class="text-muted">- opsi tahun ajaran belum dikirim dari controller</span>
-                                        <?php endif; ?>
-                                    </label>
-                                </div>
-
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="sync_mode" id="sync_mode_range" value="range">
-                                    <label class="form-check-label" for="sync_mode_range">
-                                        Sesuai Periode/Tanggal yang Dipilih
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Tahun Ajaran</label>
-                            <select name="academic_year" class="form-select" id="syncAcademicYear" <?= empty($academicYears) ? 'disabled' : '' ?>>
-                                <option value="">- Pilih Tahun Ajaran -</option>
-                                <?php foreach ($academicYears as $yn): ?>
-                                    <?php $yn = trim((string)$yn); ?>
-                                    <?php if ($yn === '') continue; ?>
-                                    <option value="<?= esc($yn) ?>" <?= ($prefYear !== '' && $prefYear === $yn) ? 'selected' : '' ?>>
-                                        <?= esc($yn) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                            <small class="text-muted">Dipakai jika memilih: "Tahun Ajaran tertentu".</small>
-                        </div>
-
-                        <div class="col-md-3">
-                            <label class="form-label">Dari Tanggal</label>
-                            <input type="date" class="form-control" name="date_from" id="syncDateFrom" value="<?= esc($prefFrom) ?>">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label class="form-label">Sampai Tanggal</label>
-                            <input type="date" class="form-control" name="date_to" id="syncDateTo" value="<?= esc($prefTo) ?>">
-                        </div>
-
-                        <div class="col-12">
-                            <hr>
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" id="syncConfirm" name="sync_confirm" value="1" required>
-                                <label class="form-check-label" for="syncConfirm">
-                                    Saya paham sinkronisasi akan menghitung ulang poin dan memperbarui cache poin siswa.
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">
-                        Batal
-                    </button>
-                    <button type="submit" class="btn btn-warning" id="syncSubmitBtn">
-                        <i class="mdi mdi-refresh me-1"></i> Jalankan Sinkron
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
@@ -553,7 +410,7 @@ $useShowAlerts = function_exists('show_alerts');
             table = SIBK.initDataTable('studentsTable', {
                 pageLength: 10,
                 columnDefs: [
-                    { orderable: false, targets: [0, 8] }
+                    { orderable: false, targets: [0, 7] }
                 ]
             });
         } else {
@@ -561,7 +418,7 @@ $useShowAlerts = function_exists('show_alerts');
                 responsive: true,
                 pageLength: 10,
                 columnDefs: [
-                    { orderable: false, targets: [0, 8] }
+                    { orderable: false, targets: [0, 7] }
                 ],
                 language: {
                     search: "Cari:",
@@ -604,61 +461,6 @@ $useShowAlerts = function_exists('show_alerts');
             });
         }, 5000);
 
-        // Sync modal: enable/disable + required sesuai mode
-        function applySyncMode() {
-            var mode = document.querySelector('input[name="sync_mode"]:checked')?.value || 'active';
-            var yearSel = document.getElementById('syncAcademicYear');
-            var dFrom   = document.getElementById('syncDateFrom');
-            var dTo     = document.getElementById('syncDateTo');
-
-            // Reset required
-            if (yearSel) yearSel.required = false;
-            if (dFrom) dFrom.required = false;
-            if (dTo) dTo.required = false;
-
-            if (mode === 'active') {
-                if (yearSel) yearSel.disabled = true;
-                if (dFrom) dFrom.disabled = true;
-                if (dTo) dTo.disabled = true;
-            } else if (mode === 'year') {
-                if (yearSel) {
-                    yearSel.disabled = false;
-                    yearSel.required = true;
-                }
-                if (dFrom) dFrom.disabled = true;
-                if (dTo) dTo.disabled = true;
-            } else { // range
-                if (yearSel) yearSel.disabled = true;
-                if (dFrom) { dFrom.disabled = false; dFrom.required = true; }
-                if (dTo) { dTo.disabled = false; dTo.required = true; }
-            }
-        }
-
-        document.querySelectorAll('input[name="sync_mode"]').forEach(function(r){
-            r.addEventListener('change', applySyncMode);
-        });
-        applySyncMode();
-
-        // Konfirmasi submit
-        document.getElementById('syncForm')?.addEventListener('submit', function(e){
-            var mode = document.querySelector('input[name="sync_mode"]:checked')?.value || 'active';
-            var msg = 'Jalankan sinkronisasi poin pelanggaran?\n\n';
-            if (mode === 'active') msg += 'Mode: Tahun Ajaran AKTIF';
-            if (mode === 'year') msg += 'Mode: Tahun Ajaran tertentu';
-            if (mode === 'range') msg += 'Mode: Periode custom';
-
-            if (!confirm(msg)) {
-                e.preventDefault();
-                return false;
-            }
-
-            // Optional: disable button biar tidak dobel klik
-            var btn = document.getElementById('syncSubmitBtn');
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="mdi mdi-loading mdi-spin me-1"></i> Memproses...';
-            }
-        });
     });
 </script>
 <?= $this->endSection() ?>

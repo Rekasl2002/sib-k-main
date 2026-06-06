@@ -27,9 +27,6 @@ class DatabaseSeeder extends Seeder
         'messages',
         'notifications',
         'violation_submissions',
-        'sanctions',
-        'violations',
-        'violation_categories',
         'session_participants',
         'session_notes',
         'counseling_sessions',
@@ -56,7 +53,6 @@ class DatabaseSeeder extends Seeder
         $this->seedRolePermissions($permissionMap, $now);
         $this->seedUsers($now);
         $this->seedAcademicData($now);
-        $this->seedViolations($now);
         $this->seedCounseling($now);
         $this->seedCommunication($now);
         $this->seedAssessments($now);
@@ -123,8 +119,6 @@ class DatabaseSeeder extends Seeder
             'manage_academic_data' => 'Kelola kelas, tahun ajaran, dan siswa',
             'manage_counseling_sessions' => 'Kelola sesi konseling',
             'view_counseling_sessions' => 'Lihat sesi konseling',
-            'manage_violations' => 'Kelola kasus pelanggaran',
-            'view_violations' => 'Lihat kasus pelanggaran',
             'manage_assessments' => 'Kelola asesmen',
             'take_assessments' => 'Mengerjakan asesmen',
             'view_student_portfolio' => 'Lihat portofolio siswa',
@@ -135,7 +129,6 @@ class DatabaseSeeder extends Seeder
             'view_dashboard' => 'Akses dashboard sesuai role',
             'manage_career_info' => 'Kelola fitur info karier dan info studi lanjut',
             'view_career_info' => 'Lihat fitur info karier dan info studi lanjut',
-            'manage_sanctions' => 'Kelola sanksi pelanggaran',
             'import_export_data' => 'Import dan export data',
             'view_all_students' => 'Lihat semua data siswa',
             'manage_settings' => 'Kelola pengaturan aplikasi',
@@ -143,12 +136,10 @@ class DatabaseSeeder extends Seeder
             'generate_reports_aggregate' => 'Unduh laporan agregat',
             'view_reports_individual' => 'Lihat laporan individual siswa',
             'generate_reports_individual' => 'Unduh laporan individual siswa',
-            'manage_light_violations' => 'Kelola pelanggaran ringan untuk wali kelas',
             'submit_violation_submissions' => 'Ajukan laporan atau pengaduan pelanggaran',
             'view_violation_submissions' => 'Lihat pengaduan pelanggaran',
             'review_violation_submissions' => 'Tinjau pengaduan pelanggaran',
             'manage_violation_submissions' => 'Kelola pengaduan pelanggaran',
-            'convert_violation_submissions' => 'Konversi pengaduan menjadi kasus pelanggaran',
             'access_simulation_suite' => 'Akses halaman prototipe dan simulasi',
         ];
 
@@ -182,35 +173,32 @@ class DatabaseSeeder extends Seeder
             1 => array_keys($permissionMap),
             2 => [
                 'view_dashboard', 'manage_users', 'view_all_students', 'manage_academic_data',
-                'manage_counseling_sessions', 'view_counseling_sessions', 'manage_violations',
-                'view_violations', 'manage_sanctions', 'manage_assessments', 'manage_career_info',
+                'manage_counseling_sessions', 'view_counseling_sessions', 'manage_assessments', 'manage_career_info',
                 'view_career_info', 'send_messages', 'view_reports_aggregate',
                 'generate_reports_aggregate', 'view_reports_individual', 'generate_reports_individual',
                 'import_export_data', 'view_violation_submissions', 'review_violation_submissions',
-                'manage_violation_submissions', 'convert_violation_submissions',
+                'manage_violation_submissions',
             ],
             3 => [
                 'view_dashboard', 'view_all_students', 'manage_counseling_sessions',
-                'view_counseling_sessions', 'manage_violations', 'view_violations',
-                'manage_sanctions', 'manage_assessments', 'manage_career_info',
+                'view_counseling_sessions', 'manage_assessments', 'manage_career_info',
                 'view_career_info', 'send_messages', 'view_reports_individual',
                 'generate_reports_individual', 'view_violation_submissions',
                 'review_violation_submissions', 'manage_violation_submissions',
-                'convert_violation_submissions',
             ],
             4 => [
                 'view_dashboard', 'view_all_students', 'view_counseling_sessions',
-                'view_violations', 'manage_light_violations', 'view_reports_individual',
+                'view_reports_individual',
                 'generate_reports_individual', 'send_messages', 'manage_career_info', 'view_career_info',
                 'submit_violation_submissions',
             ],
             5 => [
                 'view_dashboard', 'view_counseling_sessions', 'take_assessments', 'schedule_counseling',
-                'send_messages', 'view_career_info', 'view_violations',
+                'send_messages', 'view_career_info',
                 'view_student_portfolio', 'submit_violation_submissions',
             ],
             6 => [
-                'view_dashboard', 'view_counseling_sessions', 'send_messages', 'view_career_info', 'view_violations',
+                'view_dashboard', 'view_counseling_sessions', 'send_messages', 'view_career_info',
                 'view_reports_individual', 'generate_reports_individual',
                 'view_student_portfolio', 'submit_violation_submissions',
             ],
@@ -295,7 +283,7 @@ class DatabaseSeeder extends Seeder
                 'address' => 'Kp. Contoh, Banjaran, Kabupaten Bandung, Jawa Barat 40377',
                 'special_needs' => 'Tidak Ada', 'disability' => 'Tidak Ada', 'kip_pip_number' => 'PIP-2025-0001',
                 'father_name' => 'Tatang Ruhiyat', 'mother_name' => 'Neneng Sulastri', 'guardian_name' => 'Tatang Ruhiyat',
-                'parent_id' => 10, 'admission_date' => '2025-07-14', 'status' => 'Aktif', 'total_violation_points' => 25,
+                'parent_id' => 10, 'admission_date' => '2025-07-14', 'status' => 'Aktif',
                 'created_at' => $now, 'updated_at' => $now,
             ],
             [
@@ -304,7 +292,7 @@ class DatabaseSeeder extends Seeder
                 'address' => 'Jl. Raya Banjaran No. 12, Kabupaten Bandung',
                 'special_needs' => 'Tidak Ada', 'disability' => 'Tidak Ada', 'kip_pip_number' => null,
                 'father_name' => 'Asep Hidayat', 'mother_name' => 'Sri Mulyani', 'guardian_name' => 'Asep Hidayat',
-                'parent_id' => 11, 'admission_date' => '2025-07-14', 'status' => 'Aktif', 'total_violation_points' => 5,
+                'parent_id' => 11, 'admission_date' => '2025-07-14', 'status' => 'Aktif',
                 'created_at' => $now, 'updated_at' => $now,
             ],
             [
@@ -313,34 +301,10 @@ class DatabaseSeeder extends Seeder
                 'address' => 'Kp. Sukamaju, Banjaran, Kabupaten Bandung',
                 'special_needs' => 'Tidak Ada', 'disability' => 'Tidak Ada', 'kip_pip_number' => 'KIP-2025-0003',
                 'father_name' => 'Dedi Supriadi', 'mother_name' => 'Iis Nurhayati', 'guardian_name' => 'Iis Nurhayati',
-                'parent_id' => 12, 'admission_date' => '2025-07-14', 'status' => 'Aktif', 'total_violation_points' => 0,
+                'parent_id' => 12, 'admission_date' => '2025-07-14', 'status' => 'Aktif',
                 'created_at' => $now, 'updated_at' => $now,
             ],
         ]);
-    }
-
-    private function seedViolations(string $now): void
-    {
-        $this->insertRows('violation_categories', [
-            ['id' => 1, 'category_name' => 'Keterlambatan', 'severity_level' => 'Ringan', 'point_deduction' => 5, 'description' => 'Datang terlambat tanpa keterangan yang sah.', 'examples' => 'Terlambat upacara, terlambat masuk kelas.', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'category_name' => 'Kelengkapan Seragam', 'severity_level' => 'Ringan', 'point_deduction' => 5, 'description' => 'Seragam atau atribut sekolah tidak lengkap.', 'examples' => 'Tidak memakai dasi, sepatu tidak sesuai.', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'category_name' => 'Membolos', 'severity_level' => 'Sedang', 'point_deduction' => 20, 'description' => 'Meninggalkan pelajaran tanpa izin.', 'examples' => 'Tidak masuk kelas setelah istirahat.', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 4, 'category_name' => 'Berkelahi Ringan', 'severity_level' => 'Sedang', 'point_deduction' => 20, 'description' => 'Konflik fisik ringan atau adu mulut yang mengganggu.', 'examples' => 'Saling dorong, adu mulut.', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 5, 'category_name' => 'Bullying', 'severity_level' => 'Berat', 'point_deduction' => 50, 'description' => 'Perundungan fisik, verbal, atau digital.', 'examples' => 'Intimidasi teman, perundungan grup chat.', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 6, 'category_name' => 'Merusak Fasilitas', 'severity_level' => 'Sedang', 'point_deduction' => 25, 'description' => 'Merusak fasilitas sekolah.', 'examples' => 'Mencoret meja, merusak kursi.', 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now],
-        ]);
-
-        $this->insertRows('violations', [
-            ['id' => 1, 'student_id' => 1, 'category_id' => 3, 'violation_date' => '2026-05-06', 'violation_time' => '08:10:00', 'location' => 'Koridor kelas X', 'description' => 'Tidak masuk pelajaran pertama setelah istirahat.', 'witness' => 'Pak Dedi', 'evidence' => 'uploads/violations/demo-bukti-pelanggaran.txt', 'reported_by' => 5, 'handled_by' => 3, 'status' => 'Dalam Proses', 'parent_notified' => 0, 'is_repeat_offender' => 0, 'notes' => 'Perlu sesi konseling tindak lanjut.', 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'student_id' => 2, 'category_id' => 1, 'violation_date' => '2026-05-09', 'violation_time' => '07:18:00', 'location' => 'Gerbang sekolah', 'description' => 'Datang terlambat 18 menit.', 'witness' => 'Petugas piket', 'reported_by' => 6, 'handled_by' => 4, 'status' => 'Selesai', 'resolution_notes' => 'Siswa diberi pembinaan singkat.', 'resolution_date' => '2026-05-09', 'parent_notified' => 1, 'parent_notified_at' => '2026-05-09 09:30:00', 'is_repeat_offender' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'student_id' => 1, 'category_id' => 2, 'violation_date' => '2026-05-15', 'violation_time' => '07:00:00', 'location' => 'Lapangan upacara', 'description' => 'Tidak memakai atribut lengkap saat upacara.', 'witness' => 'Bu Rina', 'reported_by' => 5, 'handled_by' => 3, 'status' => 'Selesai', 'resolution_notes' => 'Membuat komitmen tertulis.', 'resolution_date' => '2026-05-15', 'parent_notified' => 1, 'parent_notified_at' => '2026-05-15 10:00:00', 'is_repeat_offender' => 1, 'created_at' => $now, 'updated_at' => $now],
-        ]);
-
-        $this->insertRows('sanctions', [
-            ['id' => 1, 'violation_id' => 1, 'sanction_type' => 'Pembinaan BK', 'sanction_date' => '2026-05-07', 'start_date' => '2026-05-07', 'end_date' => '2026-05-14', 'duration_days' => 7, 'description' => 'Mengikuti pembinaan perilaku bersama Guru BK.', 'status' => 'Sedang Berjalan', 'assigned_by' => 3, 'documents' => 'uploads/violations/demo-sanksi.txt', 'notes' => 'Dipantau oleh wali kelas.', 'created_at' => $now, 'updated_at' => $now],
-        ]);
-
-        // Fitur pengaduan pelanggaran belum diaktifkan, jadi data demonya tidak diisi.
     }
 
     private function seedCounseling(string $now): void
@@ -367,7 +331,6 @@ class DatabaseSeeder extends Seeder
     {
         $this->insertRows('notifications', [
             ['id' => 1, 'user_id' => 7, 'title' => 'Asesmen Baru', 'message' => 'Asesmen Minat Karier sudah tersedia.', 'type' => 'assessment', 'link' => '/student/assessments', 'data' => json_encode(['assessment_id' => 1]), 'is_read' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'user_id' => 10, 'title' => 'Notifikasi Pelanggaran', 'message' => 'Ada pembaruan kasus pelanggaran Ahmad.', 'type' => 'violation', 'link' => '/parent/violations/1', 'data' => json_encode(['violation_id' => 1]), 'is_read' => 0, 'created_at' => $now, 'updated_at' => $now],
         ]);
 
         $this->insertRows('messages', [

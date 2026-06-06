@@ -135,14 +135,6 @@ helper(['url', 'form']);
                                 <td class="text-end"><code><?= esc($student['nik'] ?? '-') ?></code></td>
                             </tr>
                             <tr>
-                                <td class="text-muted">Poin Pelanggaran:</td>
-                                <td class="text-end">
-                                    <span class="badge bg-<?= (int)($student['total_violation_points'] ?? 0) > 0 ? 'danger' : 'success' ?>">
-                                        <?= (int)($student['total_violation_points'] ?? 0) ?>
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
                                 <td class="text-muted">Terdaftar:</td>
                                 <td class="text-end">
                                     <small>

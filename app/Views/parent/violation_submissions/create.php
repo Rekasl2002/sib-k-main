@@ -8,7 +8,6 @@
 try { helper(['form']); } catch (\Throwable $e) {}
 
 $students   = is_array($students ?? null) ? $students : [];
-$categories = is_array($categories ?? null) ? $categories : [];
 $errors     = is_array($errors ?? null) ? $errors : [];
 ?>
 
@@ -73,19 +72,6 @@ $errors     = is_array($errors ?? null) ? $errors : [];
                  class="form-control"
                  value="<?= esc(old('subject_other_name')) ?>"
                  placeholder="Contoh: Orang luar sekolah / dll">
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Kategori Pelanggaran (opsional)</label>
-          <select name="category_id" class="form-select">
-            <option value="">- Pilih kategori -</option>
-            <?php foreach ($categories as $c): ?>
-              <?php $cid = $c['id'] ?? ''; ?>
-              <option value="<?= esc($cid) ?>" <?= old('category_id') == $cid ? 'selected' : '' ?>>
-                <?= esc($c['category_name'] ?? '-') ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
         </div>
 
         <div class="col-md-3 mb-3">

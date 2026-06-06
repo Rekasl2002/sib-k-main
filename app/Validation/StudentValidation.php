@@ -223,10 +223,6 @@ final class StudentValidation
             }
         }
 
-        if (! isset($sanitized['total_violation_points'])) {
-            $sanitized['total_violation_points'] = 0;
-        }
-
         return $sanitized;
     }
 

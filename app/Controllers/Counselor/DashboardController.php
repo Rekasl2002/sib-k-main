@@ -19,7 +19,6 @@ use App\Controllers\BaseController;
 use App\Services\CounselingService;
 use App\Models\CounselingSessionModel;
 use App\Models\StudentModel;
-use App\Models\ViolationModel;
 use CodeIgniter\I18n\Time;
 
 class DashboardController extends BaseController
@@ -30,7 +29,6 @@ class DashboardController extends BaseController
     protected $counselingService;
     protected $sessionModel;
     protected $studentModel;
-    protected $violationModel;
     protected $db;
 
     public function __construct()
@@ -49,10 +47,6 @@ class DashboardController extends BaseController
         $this->studentModel      = new StudentModel();
         $this->db                = \Config\Database::connect();
 
-        // Optional - tidak wajib dipakai, tapi aman kalau model tersedia
-        if (class_exists('\App\Models\ViolationModel')) {
-            $this->violationModel = new ViolationModel();
-        }
     }
 
     /**
@@ -89,12 +83,7 @@ class DashboardController extends BaseController
         // Get assigned students (siswa binaan)
         $data['assignedStudents'] = $this->getAssignedStudents($counselorId);
 
-        // Get chart data for last 6 months
         $data['chartData'] = $this->getSessionChartData($counselorId);
-
-        // Trend Pelanggaran/Kasus & Sanksi (6 bulan)
-        $data['violationChartData'] = $this->getViolationChartData($counselorId);
-        $data['sanctionChartData']  = $this->getSanctionChartData($counselorId);
 
         // Get recent activities
         $data['recentActivities'] = $this->getRecentActivities($counselorId);
@@ -109,14 +98,6 @@ class DashboardController extends BaseController
             $counselorId,
             $data['activeAcademic']['id'] ?? null
         );
-
-        // ===== Tambahan untuk Chart: Pelanggaran per Kategori =====
-        $data['violationByCategory'] = $this->getViolationByCategoryForCounselor(
-            $counselorId,
-            $data['activeAcademic'] ?? null
-        );
-        $data['categoryRangeLabel'] = '6 bulan terakhir';
-
 
         // Page metadata
         $data['title']       = 'Dashboard Guru BK';
@@ -196,7 +177,7 @@ class DashboardController extends BaseController
         $counselorId = (int) $counselorId;
 
         $students = $this->db->table('students')
-            ->select('students.id, students.nisn, students.nik, students.total_violation_points,
+            ->select('students.id, students.nisn, students.nik,
                       users.full_name as student_name, users.email,
                       classes.class_name,
                       COUNT(DISTINCT counseling_sessions.id) as total_sessions')
@@ -213,7 +194,7 @@ class DashboardController extends BaseController
             ->where('students.status', 'Aktif')
             ->where('students.deleted_at', null) // ✅ tambah: jangan ambil siswa soft-deleted
             ->where('users.deleted_at', null)    // ✅ tambah: jangan ambil user soft-deleted
-            ->groupBy('students.id, students.nisn, students.nik, students.total_violation_points,
+            ->groupBy('students.id, students.nisn, students.nik,
                        users.full_name, users.email, classes.class_name')
             ->having('COUNT(DISTINCT counseling_sessions.id) >', 0)
             ->orderBy('total_sessions', 'DESC')
@@ -554,142 +535,8 @@ class DashboardController extends BaseController
     }
 
     /**
-     * Chart data: Tren Pelanggaran/Kasus (6 bulan terakhir)
-     * Sumber: table `violations`
-     *
-     * Rule akses:
-     * - dihitung jika handled_by = counselorId ATAU reported_by = counselorId
+     * Dataset kosong untuk widget lama yang belum dirender ulang.
      */
-    private function getViolationChartData($counselorId): array
-    {
-        $chartData = [
-            'labels'       => [],
-            'reported'     => [],
-            'in_process'   => [],
-            'completed'    => [],
-        ];
-
-        $monthIndex = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $ym        = date('Y-m', strtotime("-{$i} months"));
-            $monthName = date('M Y', strtotime("-{$i} months"));
-
-            $monthIndex[$ym]           = count($chartData['labels']);
-            $chartData['labels'][]     = $monthName;
-            $chartData['reported'][]   = 0;
-            $chartData['in_process'][] = 0;
-            $chartData['completed'][]  = 0;
-        }
-
-        $startDate = date('Y-m-01', strtotime('-5 months'));
-        $endDate   = date('Y-m-t');
-
-        try {
-            $rows = $this->db->table('violations v')
-                ->select("DATE_FORMAT(v.violation_date, '%Y-%m') AS ym, v.status, COUNT(*) AS total")
-                ->groupStart()
-                    ->where('v.handled_by', (int) $counselorId)
-                    ->orWhere('v.reported_by', (int) $counselorId)
-                ->groupEnd()
-                ->where('v.deleted_at', null)
-                ->where('v.violation_date >=', $startDate)
-                ->where('v.violation_date <=', $endDate)
-                ->groupBy('ym, v.status')
-                ->get()
-                ->getResultArray();
-
-            foreach ($rows as $r) {
-                $ym  = $r['ym'] ?? null;
-                $st  = $r['status'] ?? null;
-                $cnt = (int) ($r['total'] ?? 0);
-
-                if (!$ym || !isset($monthIndex[$ym])) continue;
-                $idx = $monthIndex[$ym];
-
-                if ($st === 'Dilaporkan') {
-                    $chartData['reported'][$idx] = $cnt;
-                } elseif ($st === 'Dalam Proses') {
-                    $chartData['in_process'][$idx] = $cnt;
-                } elseif ($st === 'Selesai') {
-                    $chartData['completed'][$idx] = $cnt;
-                }
-            }
-        } catch (\Throwable $e) {
-            log_message('error', 'Dashboard getViolationChartData error: ' . $e->getMessage());
-        }
-
-        return $chartData;
-    }
-
-    /**
-     * Chart data: Tren Sanksi (6 bulan terakhir)
-     * Sumber: table `sanctions` JOIN `violations`
-     *
-     * Agar relevan untuk Guru BK:
-     * - dihitung jika pelanggarannya handled_by = counselorId ATAU reported_by = counselorId
-     */
-    private function getSanctionChartData($counselorId): array
-    {
-        $chartData = [
-            'labels'    => [],
-            'scheduled' => [],
-            'ongoing'   => [],
-            'completed' => [],
-        ];
-
-        $monthIndex = [];
-        for ($i = 5; $i >= 0; $i--) {
-            $ym        = date('Y-m', strtotime("-{$i} months"));
-            $monthName = date('M Y', strtotime("-{$i} months"));
-
-            $monthIndex[$ym]          = count($chartData['labels']);
-            $chartData['labels'][]    = $monthName;
-            $chartData['scheduled'][] = 0;
-            $chartData['ongoing'][]   = 0;
-            $chartData['completed'][] = 0;
-        }
-
-        $startDate = date('Y-m-01', strtotime('-5 months'));
-        $endDate   = date('Y-m-t');
-
-        try {
-            $rows = $this->db->table('sanctions s')
-                ->select("DATE_FORMAT(s.sanction_date, '%Y-%m') AS ym, s.status, COUNT(*) AS total")
-                ->join('violations v', 'v.id = s.violation_id', 'left')
-                ->groupStart()
-                    ->where('v.handled_by', (int) $counselorId)
-                    ->orWhere('v.reported_by', (int) $counselorId)
-                ->groupEnd()
-                ->where('s.deleted_at', null)
-                ->where('s.sanction_date >=', $startDate)
-                ->where('s.sanction_date <=', $endDate)
-                ->groupBy('ym, s.status')
-                ->get()
-                ->getResultArray();
-
-            foreach ($rows as $r) {
-                $ym  = $r['ym'] ?? null;
-                $st  = $r['status'] ?? null;
-                $cnt = (int) ($r['total'] ?? 0);
-
-                if (!$ym || !isset($monthIndex[$ym])) continue;
-                $idx = $monthIndex[$ym];
-
-                if ($st === 'Dijadwalkan') {
-                    $chartData['scheduled'][$idx] = $cnt;
-                } elseif ($st === 'Sedang Berjalan') {
-                    $chartData['ongoing'][$idx] = $cnt;
-                } elseif ($st === 'Selesai') {
-                    $chartData['completed'][$idx] = $cnt;
-                }
-            }
-        } catch (\Throwable $e) {
-            log_message('error', 'Dashboard getSanctionChartData error: ' . $e->getMessage());
-        }
-
-        return $chartData;
-    }
-
     /**
      * Ambil Tahun Ajaran yang sedang aktif (untuk ditampilkan di Welcome Card)
      */
@@ -763,38 +610,4 @@ class DashboardController extends BaseController
         }
     }
 
-    /**
-     * Data doughnut chart Pelanggaran per Kategori (scope Guru BK)
-     * - Konsisten dengan chart lain: ikut yang handled_by atau reported_by (Guru BK tsb)
-     * - Difilter periode Tahun Ajaran aktif (violation_date BETWEEN start_date AND end_date) jika tersedia
-     */
-    private function getViolationByCategoryForCounselor(int $counselorId, ?array $activeAcademic = null): array
-    {
-        try {
-            $monthsBack = 6;
-            $start = Time::now()
-                ->subMonths(max(0, $monthsBack - 1))
-                ->format('Y-m-01');
-
-            // Ambil pelanggaran siswa yang kelasnya dibina oleh Guru BK ini
-            $builder = $this->db->table('violations v')
-                ->select('vc.category_name, COUNT(v.id) as count')
-                ->join('violation_categories vc', 'vc.id = v.category_id', 'inner')
-                ->join('students s', 's.id = v.student_id', 'inner')
-                ->join('classes c', 'c.id = s.class_id', 'inner')
-                ->where('v.deleted_at', null)
-                ->where('vc.deleted_at', null)
-                ->where('c.deleted_at', null)
-                ->where('c.counselor_id', (int) $counselorId)
-                ->where('v.violation_date >=', $start)
-                ->groupBy('v.category_id')
-                ->orderBy('count', 'DESC')
-                ->limit(5);
-
-            return $builder->get()->getResultArray() ?? [];
-        } catch (\Throwable $e) {
-            log_message('error', '[COUNSELOR DASHBOARD] getViolationByCategoryForCounselor error: ' . $e->getMessage());
-            return [];
-        }
-    }
 }

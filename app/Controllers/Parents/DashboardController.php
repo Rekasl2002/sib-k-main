@@ -30,24 +30,7 @@ class DashboardController extends BaseController
                 u.full_name AS full_name,
                 s.nisn, s.nik, s.class_id,
                 c.class_name, c.grade_level, c.major,
-                u.email, u.phone, u.profile_photo,
-
-                /* Ringkasan pelanggaran per anak */
-                (SELECT COUNT(*)
-                   FROM violations v
-                  WHERE v.student_id = s.id
-                    AND v.deleted_at IS NULL) AS violations_count,
-
-                (SELECT COALESCE(SUM(COALESCE(vc.point_deduction, 0)), 0)
-                   FROM violations v
-              LEFT JOIN violation_categories vc ON vc.id = v.category_id
-                  WHERE v.student_id = s.id
-                    AND v.deleted_at IS NULL) AS points_sum,
-
-                (SELECT MAX(v.violation_date)
-                   FROM violations v
-                  WHERE v.student_id = s.id
-                    AND v.deleted_at IS NULL) AS last_violation_date
+                u.email, u.phone, u.profile_photo
             ")
             ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'left')
             ->join('classes c', 'c.id = s.class_id', 'left')
@@ -60,15 +43,8 @@ class DashboardController extends BaseController
         // Agregat lintas anak
         $stats = [
             'children'          => count($children),
-            'violations_total'  => 0,
-            'points_total'      => 0,
             'upcoming_sessions' => 0,
         ];
-        foreach ($children as $r) {
-            $stats['violations_total'] += (int) ($r['violations_count'] ?? 0);
-            $stats['points_total']     += (int) ($r['points_sum'] ?? 0);
-        }
-        $violationTotal = $stats['violations_total'];
 
         // ID anak & kelas
         $childIds = array_column($children, 'id');
@@ -168,31 +144,6 @@ class DashboardController extends BaseController
             $stats['upcoming_sessions'] = count($upcoming);
         }
 
-        // Pelanggaran terbaru lintas anak (opsional)
-        $recentViolations = [];
-        if (!empty($childIds)) {
-            $recentViolations = $this->db->table('violations v')
-                ->select("
-                    v.id,
-                    v.student_id,
-                    v.violation_date,
-                    v.description,
-                    COALESCE(vc.point_deduction, 0) AS points,
-                    vc.category_name,
-                    su.full_name AS full_name
-                ")
-                ->join('students s', 's.id = v.student_id AND s.deleted_at IS NULL', 'left')
-                ->join('users su', 'su.id = s.user_id AND su.deleted_at IS NULL', 'left')
-                ->join('violation_categories vc', 'vc.id = v.category_id', 'left')
-                ->whereIn('v.student_id', $childIds)
-                ->where('v.deleted_at', null)
-                ->orderBy('v.violation_date', 'DESC')
-                ->orderBy('v.created_at', 'DESC')
-                ->limit(5)
-                ->get()
-                ->getResultArray();
-        }
-
         helper('auth');
 
         $currentUser = function_exists('auth_user') ? (auth_user() ?? []) : [
@@ -207,9 +158,7 @@ class DashboardController extends BaseController
             'title'            => 'Dashboard Orang Tua',
             'children'         => $children,
             'stats'            => $stats,
-            'violationTotal'   => $violationTotal,
             'upcoming'         => $upcoming,
-            'recentViolations' => $recentViolations,
             'currentUser'    => $currentUser,
             'activeAcademic' => $activeAcademic,
         ]);

@@ -52,41 +52,6 @@ if (!function_exists('fmt_date_id')) {
     }
 }
 
-if (!function_exists('badge_points_class')) {
-    function badge_points_class(int $points): string
-    {
-        if ($points >= 75) {
-            return 'bg-danger';
-        }
-        if ($points >= 40) {
-            return 'bg-warning';
-        }
-        if ($points > 0) {
-            return 'bg-info';
-        }
-        return 'bg-success';
-    }
-}
-
-if (!function_exists('badge_severity_class')) {
-    function badge_severity_class(?string $level): string
-    {
-        $s = strtolower((string) $level);
-
-        if (str_contains($s, 'berat')) {
-            return 'bg-danger';
-        }
-        if (str_contains($s, 'sedang')) {
-            return 'bg-warning';
-        }
-        if (str_contains($s, 'ringan')) {
-            return 'bg-success';
-        }
-
-        return 'bg-secondary';
-    }
-}
-
 if (!function_exists('badge_status_class')) {
     function badge_status_class(?string $status): string
     {
@@ -108,8 +73,6 @@ if (!function_exists('badge_status_class')) {
 // ------------------------
 $student          = rowa($student ?? []);
 $class            = rowa($class ?? []);
-$stats            = rowa($stats ?? []);
-$recentViolations = is_array($recentViolations ?? null) ? $recentViolations : [];
 $upcomingSessions = is_array($upcomingSessions ?? null) ? $upcomingSessions : [];
 
 // Data siswa utama
@@ -147,8 +110,6 @@ $parentPhone = $student['parent_phone'] ?? null;
 $parentEmail = $student['parent_email'] ?? null;
 
 // Ringkasan pelanggaran (yang boleh diakses Wali Kelas)
-$totalPoints = (int) ($student['total_violation_points'] ?? $stats['total_points'] ?? 0);
-$totalCases  = (int) ($stats['total_violations'] ?? 0);
 
 // Hitung umur kalau ada tanggal lahir
 $ageText = '-';
@@ -172,9 +133,6 @@ $statusBadgeClass = $status === 'Aktif' ? 'bg-success' : 'bg-secondary';
 
 // URL navigasi
 $backUrl = base_url('homeroom/my-class');
-$createViolationUrl = $studentId
-    ? base_url('homeroom/violations/create?student=' . $studentId)
-    : null;
 
 // ✅ Default avatar svg (sesuai public/assets/images/users/default-avatar.svg)
 $defaultAvatar = base_url('assets/images/users/default-avatar.svg');
@@ -232,12 +190,6 @@ $avatarSrc = user_avatar($photo);
                     &larr; Kembali ke Kelas Binaan
                 </a>
 
-                <?php if ($createViolationUrl): ?>
-                    <!-- Sesuai peran Wali Kelas: boleh mencatat pelanggaran -->
-                    <a href="<?= esc($createViolationUrl) ?>" class="btn btn-primary btn-sm">
-                        <i class="mdi mdi-alert-plus-outline me-1"></i>Catat Pelanggaran
-                    </a>
-                <?php endif; ?>
             </div>
             <div class="page-title-right">
         <ol class="breadcrumb m-0">
@@ -307,21 +259,6 @@ $avatarSrc = user_avatar($photo);
                             <?= esc($status ?: 'Status tidak diketahui') ?>
                         </span>
 
-                        <hr>
-
-                        <!-- Ringkasan poin pelanggaran -->
-                        <div class="d-flex justify-content-center gap-3">
-                            <div>
-                                <small class="text-muted d-block">Total Kasus</small>
-                                <span class="fw-bold"><?= (int) $totalCases ?></span>
-                            </div>
-                            <div>
-                                <small class="text-muted d-block">Total Poin</small>
-                                <span class="badge <?= badge_points_class($totalPoints) ?> font-size-14">
-                                    <?= (int) $totalPoints ?> poin
-                                </span>
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -619,86 +556,6 @@ $avatarSrc = user_avatar($photo);
 
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Ringkasan Pelanggaran Terbaru (hanya yang tidak soft delete) -->
-                <div class="card mb-3">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                            <div>
-                                <h5 class="card-title mb-0">
-                                    <i class="mdi mdi-alert-octagram-outline me-2"></i>Pelanggaran Terbaru
-                                </h5>
-                            </div>
-                        </div>
-
-                        <?php
-                        // Filter di sisi view sebagai pengaman tambahan:
-                        // skip record yang punya deleted_at tidak null
-                        $rows = [];
-                        foreach ($recentViolations as $rv) {
-                            $vRow = rowa($rv);
-                            if (! empty($vRow['deleted_at'])) {
-                                continue;
-                            }
-                            $rows[] = $vRow;
-                        }
-                        ?>
-
-                        <?php if (empty($rows)): ?>
-                            <div class="text-center py-4">
-                                <i class="mdi mdi-check-circle-outline text-success mb-2" style="font-size: 32px;"></i>
-                                <p class="text-muted mb-0">
-                                    Belum ada pelanggaran aktif yang tercatat.
-                                </p>
-                            </div>
-                        <?php else: ?>
-                            <div class="table-responsive">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th style="width: 15%;">Tanggal</th>
-                                            <th style="width: 30%;">Kategori</th>
-                                            <th style="width: 15%;">Tingkat</th>
-                                            <th style="width: 10%;">Poin</th>
-                                            <th style="width: 15%;">Status</th>
-                                            <th style="width: 15%;">Dicatat Oleh</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($rows as $rv): ?>
-                                            <?php
-                                            $tgl        = $rv['violation_date'] ?? $rv['date'] ?? null;
-                                            $catName    = $rv['category_name'] ?? $rv['violation_category_name'] ?? '-';
-                                            $severity   = $rv['severity_level'] ?? $rv['severity'] ?? '-';
-                                            $points     = (int) ($rv['points'] ?? $rv['violation_points'] ?? 0);
-                                            $vStatus    = $rv['status'] ?? '-';
-                                            $reportedBy = $rv['reporter_name'] ?? $rv['reported_by_name'] ?? '-';
-                                            ?>
-                                            <tr>
-                                                <td><?= fmt_date_id($tgl) ?></td>
-                                                <td><?= esc($catName) ?></td>
-                                                <td>
-                                                    <span class="badge <?= badge_severity_class($severity) ?>">
-                                                        <?= esc($severity ?: '-') ?>
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <span class="fw-bold text-danger"><?= $points ?></span>
-                                                </td>
-                                                <td>
-                                                    <span class="badge <?= badge_status_class($vStatus) ?>">
-                                                        <?= esc($vStatus ?: '-') ?>
-                                                    </span>
-                                                </td>
-                                                <td><?= esc($reportedBy ?: '-') ?></td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 </div>
 

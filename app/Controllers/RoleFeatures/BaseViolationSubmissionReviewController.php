@@ -64,15 +64,6 @@ abstract class BaseViolationSubmissionReviewController extends BaseController
             ->with($result['success'] ? 'success' : 'error', $result['message']);
     }
 
-    public function convert($id)
-    {
-        $notes = trim((string)$this->request->getPost('review_notes'));
-        $result = $this->service->convertToViolation((int)$id, $this->currentUserId(), $notes);
-
-        return redirect()->to(site_url($this->routePrefix . '/violation-submissions/show/' . (int)$id))
-            ->with($result['success'] ? 'success' : 'error', $result['message']);
-    }
-
     protected function currentUserId(): int
     {
         return (int)(session('user_id') ?? 0);

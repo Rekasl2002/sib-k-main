@@ -22,15 +22,14 @@ class ViolationSubmissionsModel extends Model
     /**
      * Catatan keamanan:
      * - Jangan masukkan created_at/updated_at/deleted_at ke allowedFields (hindari override dari input).
-     * - Field seperti handled_by/handled_at/converted_violation_id tetap ada karena dibutuhkan saat diproses BK,
-     *   tapi controller harus memastikan siswa tidak bisa mengirim nilai field-field ini.
+     * - Field handled_by/handled_at/review_notes tetap ada karena dibutuhkan saat diproses BK,
+     *   tapi controller harus memastikan pelapor tidak bisa mengirim nilai field-field ini.
      */
     protected $allowedFields    = [
         'reporter_type',
         'reporter_user_id',
         'subject_student_id',
         'subject_other_name',
-        'category_id',
         'occurred_date',
         'occurred_time',
         'location',
@@ -41,7 +40,6 @@ class ViolationSubmissionsModel extends Model
         'handled_by',
         'handled_at',
         'review_notes',
-        'converted_violation_id',
     ];
 
     protected $useTimestamps = true;
@@ -65,20 +63,18 @@ class ViolationSubmissionsModel extends Model
         'subject_student_id' => 'permit_empty|is_natural_no_zero',
         'subject_other_name' => 'permit_empty|max_length[190]',
 
-        'category_id'        => 'permit_empty|is_natural_no_zero',
         'occurred_date'      => 'permit_empty|valid_date[Y-m-d]',
         'occurred_time'      => 'permit_empty|regex_match[/^\d{2}:\d{2}(:\d{2})?$/]',
         'location'           => 'permit_empty|max_length[190]',
         'witness'            => 'permit_empty|max_length[190]',
 
         // Status yang dipakai di view kamu
-        'status'             => 'permit_empty|in_list[Diajukan,Ditinjau,Ditolak,Diterima,Dikonversi]',
+        'status'             => 'permit_empty|in_list[Diajukan,Ditinjau,Ditolak,Diterima]',
 
         // Diproses BK (umumnya diisi staff, bukan siswa)
         'handled_by'             => 'permit_empty|is_natural_no_zero',
         'handled_at'             => 'permit_empty|valid_date',
         'review_notes'           => 'permit_empty',
-        'converted_violation_id' => 'permit_empty|is_natural_no_zero',
     ];
 
     protected $validationMessages = [

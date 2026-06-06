@@ -48,20 +48,19 @@ $aliases = [
     'kelas'     => ['class_name', 'kelas', 'class'],
 
     // umum untuk report lain
-    'tanggal'   => ['date', 'created_at', 'session_date', 'violation_date', 'started_at'],
+    'tanggal'   => ['date', 'created_at', 'session_date', 'started_at'],
 
-    // ✅ Tambahan untuk laporan Sesi Konseling & Kasus/Pelanggaran
-    'waktu'      => ['time', 'session_time', 'violation_time', 'waktu'],
+    // Tambahan untuk laporan Sesi Konseling dan asesmen
+    'waktu'      => ['time', 'session_time', 'waktu'],
     'lokasi'     => ['location', 'lokasi', 'place', 'room', 'ruang'],
     'topik'      => ['topic', 'topik', 'subject'],
-    'kategori'   => ['kategori', 'category', 'category_name', 'violation_category'],
+    'kategori'   => ['kategori', 'category', 'category_name'],
     'siswa'      => ['student', 'student_name', 'full_name', 'nama'],
     'siswakelas' => ['student', 'student_label', 'student_or_class', 'target', 'target_label', 'target_class', 'student_class', 'participants'],
     'berulang'   => ['is_repeat_offender', 'repeat_offender', 'is_repeat', 'repeat', 'berulang'],
 
     'jenis'     => ['type', 'session_type', 'category_name', 'level'],
     'durasi'    => ['duration', 'duration_minutes', 'minutes'],
-    'poin'      => ['points', 'point', 'point_deduction', 'total_points'],
     'nilai'     => ['percentage', 'score', 'avg_percentage'],
     'asesmen'   => ['assessment', 'assessment_title', 'title'],
     'konselor'  => ['counselor', 'counselor_name', 'counselor_full_name', 'full_name'],

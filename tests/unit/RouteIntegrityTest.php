@@ -92,6 +92,39 @@ final class RouteIntegrityTest extends CIUnitTestCase
         $this->assertSame([], $debugCalls, "Masih ada output debug di controller:\n" . implode("\n", $debugCalls));
     }
 
+    public function testStudentViolationSubmissionCreateViewUsesStudentFlow(): void
+    {
+        $content = file_get_contents(APPPATH . 'Views/student/violation_submissions/create.php') ?: '';
+
+        $this->assertStringContainsString("base_url('student/dashboard')", $content);
+        $this->assertStringContainsString("base_url('student/violation-submissions/store')", $content);
+        $this->assertStringContainsString("base_url('student/violation-submissions')", $content);
+        $this->assertStringNotContainsString("base_url('parent/dashboard')", $content);
+        $this->assertStringNotContainsString("base_url('parent/violation-submissions/store')", $content);
+    }
+
+    public function testStudentScheduleRequestViewIsCounselingRequestForm(): void
+    {
+        $content = file_get_contents(APPPATH . 'Views/student/schedule/request.php') ?: '';
+
+        foreach (['session_date', 'session_time', 'topic', 'description'] as $field) {
+            $this->assertStringContainsString('name="' . $field . '"', $content);
+        }
+
+        $this->assertStringContainsString("route_to('student.schedule.store')", $content);
+        $this->assertStringNotContainsString('parent.children.sessions.detail', $content);
+        $this->assertStringNotContainsString('parent/child/', $content);
+    }
+
+    public function testViolationExportIsRemovedWithDeprecatedFeature(): void
+    {
+        $content = file_get_contents(APPPATH . 'Controllers/ExportController.php') ?: '';
+
+        $this->assertStringNotContainsString('function violations', $content);
+        $this->assertStringNotContainsString('vc.point_deduction', $content);
+        $this->assertStringNotContainsString('violations.points', $content);
+    }
+
     public function testPermissionFiltersAreDeclaredInBothSeeders(): void
     {
         $routePermissions = $this->routePermissionNames();

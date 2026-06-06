@@ -14,11 +14,6 @@
  * - Jika ada semester "Ganjil-Genap" untuk suatu year_name, maka tidak boleh ada record lain untuk year_name tsb.
  * - Jika mode split (Ganjil/Genap), maksimal 2 record per year_name dan tidak boleh dobel kombinasi (year_name + semester).
  *
- * Revisi (Poin Pelanggaran per Tahun Ajaran):
- * - Saat Tahun Ajaran aktif berubah, cache students.total_violation_points wajib disinkronkan
- *   berdasarkan rentang tanggal gabungan untuk year_name aktif (Ganjil + Genap).
- * - Ini memastikan: ganti 2025/2026 -> 2026/2027 (0 jika belum ada data), lalu balik ke 2025/2026 -> angka kembali.
- *
  * @package    SIB-K
  * @subpackage Services
  * @category   Business Logic
@@ -44,18 +39,6 @@ class AcademicYearService
      * Default: false (agar perilaku existing tidak berubah).
      */
     protected bool $enforceOverlapCheck = false;
-
-    /**
-     * Auto-sync cache poin pelanggaran saat TA aktif berubah.
-     * Default: true karena requirement bisnis baru butuh konsistensi lintas role.
-     */
-    protected bool $autoSyncViolationPointsOnActiveChange = true;
-
-    /**
-     * Sinkronisasi hanya untuk siswa Aktif (lebih ringan).
-     * Jika ingin semua siswa (termasuk Alumni) ikut cache, set false.
-     */
-    protected bool $syncOnlyActiveStudents = true;
 
     public function __construct()
     {
@@ -258,114 +241,6 @@ class AcademicYearService
         return $this->getYearNameRange($yearName);
     }
 
-    /**
-     * Sinkronisasi cache students.total_violation_points untuk year_name tertentu.
-     * Ini yang membuat angka otomatis "0 lalu balik lagi" saat TA aktif diganti/dikembalikan.
-     *
-     * @return array{success:bool,updated:int,message:string}
-     */
-    private function syncStudentsViolationPointsForYearName(string $yearName): array
-    {
-        try {
-            $range = $this->getYearNameRange($yearName);
-
-            $dateFrom = (string)($range['date_from'] ?? '');
-            $dateTo   = (string)($range['date_to'] ?? '');
-
-            // Jika range tidak valid => set 0 (aman)
-            if ($dateFrom === '' || $dateTo === '') {
-                $qb = $this->db->table('students')
-                    ->set('total_violation_points', 0)
-                    ->where('deleted_at', null);
-
-                if ($this->syncOnlyActiveStudents) {
-                    $qb->where('status', 'Aktif');
-                }
-
-                $qb->update();
-                $affected = (int)($this->db->affectedRows() ?? 0);
-
-                return [
-                    'success' => true,
-                    'updated' => $affected,
-                    'message' => 'Range tahun ajaran tidak valid, cache poin diset 0.',
-                ];
-            }
-
-            // Ambil semua siswa target
-            $studentsQb = $this->db->table('students')
-                ->select('id')
-                ->where('deleted_at', null);
-
-            if ($this->syncOnlyActiveStudents) {
-                $studentsQb->where('status', 'Aktif');
-            }
-
-            $students = $studentsQb->get()->getResultArray();
-            $studentIds = [];
-            foreach ($students as $s) {
-                $sid = (int)($s['id'] ?? 0);
-                if ($sid > 0) $studentIds[] = $sid;
-            }
-
-            if (empty($studentIds)) {
-                return ['success' => true, 'updated' => 0, 'message' => 'Tidak ada siswa target untuk disinkronkan.'];
-            }
-
-            // Total poin per siswa dalam range (gabungan semester via year_name range)
-            // - LEFT JOIN categories supaya kalau ada category missing, tidak membuat row hilang total (fallback 0).
-            $totals = $this->db->table('violations v')
-                ->select('v.student_id, SUM(COALESCE(vc.point_deduction,0)) as total_points')
-                ->join('violation_categories vc', 'vc.id = v.category_id', 'left')
-                ->where('v.deleted_at', null)
-                ->where('v.status !=', 'Dibatalkan')
-                ->where('v.violation_date >=', $dateFrom)
-                ->where('v.violation_date <=', $dateTo)
-                ->groupBy('v.student_id')
-                ->get()
-                ->getResultArray();
-
-            $map = [];
-            foreach ($totals as $t) {
-                $sid = (int)($t['student_id'] ?? 0);
-                $pts = (int)($t['total_points'] ?? 0);
-                if ($sid > 0) $map[$sid] = max(0, $pts);
-            }
-
-            // Update batch semua siswa (yang tidak ada di map => 0)
-            $batch = [];
-            foreach ($studentIds as $sid) {
-                $batch[] = [
-                    'id' => $sid,
-                    'total_violation_points' => (int)($map[$sid] ?? 0),
-                ];
-            }
-
-            // Chunk updateBatch biar aman untuk MySQL (cPanel) jika data besar
-            $updated = 0;
-            foreach (array_chunk($batch, 500) as $chunk) {
-                $ok = $this->studentModel->updateBatch($chunk, 'id');
-                // updateBatch CI4 bisa return bool/int (tergantung versi), kita hitung conservatively
-                if ($ok !== false) {
-                    $updated += count($chunk);
-                }
-            }
-
-            return [
-                'success' => true,
-                'updated' => $updated,
-                'message' => 'Cache poin pelanggaran berhasil disinkronkan untuk year_name ' . $yearName,
-            ];
-        } catch (\Throwable $e) {
-            log_message('error', 'AcademicYearService::syncStudentsViolationPointsForYearName - ' . $e->getMessage());
-            return [
-                'success' => false,
-                'updated' => 0,
-                'message' => 'Gagal sinkron cache poin pelanggaran: ' . $e->getMessage(),
-            ];
-        }
-    }
-
     // ==========================================================
     // CRUD/listing existing
     // ==========================================================
@@ -514,19 +389,9 @@ class AcademicYearService
             }
 
             $this->logActivity('create', $yearId, "Tahun ajaran {$data['year_name']} berhasil dibuat");
-
-            // Revisi: auto-sync poin setelah TA aktif berubah (jika record baru aktif)
-            $syncWarn = null;
-            if ($this->autoSyncViolationPointsOnActiveChange && !empty($data['is_active']) && (int)$data['is_active'] === 1) {
-                $sync = $this->syncStudentsViolationPointsForYearName((string)($data['year_name'] ?? ''));
-                if (!$sync['success']) {
-                    $syncWarn = $sync['message'];
-                }
-            }
-
             return [
                 'success' => true,
-                'message' => $syncWarn ? ('Tahun ajaran berhasil dibuat, namun: ' . $syncWarn) : 'Tahun ajaran berhasil dibuat',
+                'message' => 'Tahun ajaran berhasil dibuat',
                 'year_id' => $yearId,
             ];
         } catch (\Throwable $e) {
@@ -602,19 +467,9 @@ class AcademicYearService
             }
 
             $this->logActivity('update', $id, "Tahun ajaran {$data['year_name']} berhasil diupdate");
-
-            // Revisi: jika year aktif (atau menjadi aktif), resync cache poin
-            $syncWarn = null;
-            if ($this->autoSyncViolationPointsOnActiveChange && $willBeActive) {
-                $sync = $this->syncStudentsViolationPointsForYearName((string)($data['year_name'] ?? $year['year_name'] ?? ''));
-                if (!$sync['success']) {
-                    $syncWarn = $sync['message'];
-                }
-            }
-
             return [
                 'success' => true,
-                'message' => $syncWarn ? ('Tahun ajaran berhasil diupdate, namun: ' . $syncWarn) : 'Tahun ajaran berhasil diupdate',
+                'message' => 'Tahun ajaran berhasil diupdate',
             ];
         } catch (\Throwable $e) {
             $this->db->transRollback();
@@ -676,18 +531,9 @@ class AcademicYearService
             $year = $this->asArray($year);
 
             if ((int)($year['is_active'] ?? 0) === 1) {
-                // Tetap boleh resync jika ingin memastikan cache benar (mis. sebelumnya stale)
-                $syncWarn = null;
-                if ($this->autoSyncViolationPointsOnActiveChange) {
-                    $sync = $this->syncStudentsViolationPointsForYearName((string)($year['year_name'] ?? ''));
-                    if (!$sync['success']) $syncWarn = $sync['message'];
-                }
-
                 return [
                     'success' => true,
-                    'message' => $syncWarn
-                        ? ("Tahun ajaran {$year['year_name']} sudah aktif, namun: " . $syncWarn)
-                        : "Tahun ajaran {$year['year_name']} sudah aktif",
+                    'message' => "Tahun ajaran {$year['year_name']} sudah aktif",
                 ];
             }
 
@@ -709,21 +555,9 @@ class AcademicYearService
             set_setting('academic', 'default_academic_year_id', (int) $id, 'int');
 
             $this->logActivity('set_active', $id, "Tahun ajaran {$year['year_name']} diset sebagai aktif");
-
-            // Revisi: resync cache poin pelanggaran berdasarkan year_name aktif (gabungan semester)
-            $syncWarn = null;
-            if ($this->autoSyncViolationPointsOnActiveChange) {
-                $sync = $this->syncStudentsViolationPointsForYearName((string)($year['year_name'] ?? ''));
-                if (!$sync['success']) {
-                    $syncWarn = $sync['message'];
-                }
-            }
-
             return [
                 'success' => true,
-                'message' => $syncWarn
-                    ? ("Tahun ajaran {$year['year_name']} berhasil diaktifkan, namun: " . $syncWarn)
-                    : "Tahun ajaran {$year['year_name']} berhasil diaktifkan",
+                'message' => "Tahun ajaran {$year['year_name']} berhasil diaktifkan",
             ];
         } catch (\Throwable $e) {
             $this->db->transRollback();

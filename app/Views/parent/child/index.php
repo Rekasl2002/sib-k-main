@@ -13,7 +13,6 @@
             <td><?= esc($s['full_name']) ?></td>
             <td>
               <a class="btn btn-outline-primary btn-sm" href="<?= site_url('parent/child/'.$s['id'].'/profile') ?>">Profil</a>
-                  <a class="btn btn-outline-secondary btn-sm" href="<?= site_url('parent/child/'.$s['id'].'/violations') ?>">Pelanggaran</a>
                   <a class="btn btn-outline-success btn-sm" href="<?= site_url('parent/child/'.$s['id'].'/sessions') ?>">Sesi</a>
             </td>
           </tr>

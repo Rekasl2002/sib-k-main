@@ -375,16 +375,13 @@ if (! function_exists('prototype_status_tone')) {
                     <button type="button" class="btn btn-outline-success" data-vs-status="Diterima">
                       <i class="mdi mdi-check-circle-outline me-1"></i> Terima untuk Ditindaklanjuti
                     </button>
-                    <button type="button" class="btn btn-outline-primary" data-vs-status="Dikonversi">
-                      <i class="mdi mdi-source-branch me-1"></i> Konversi ke Kasus
-                    </button>
                     <button type="button" class="btn btn-outline-danger" data-vs-status="Ditolak">
                       <i class="mdi mdi-close-circle-outline me-1"></i> Tolak dengan Catatan
                     </button>
                   </div>
                 <?php else: ?>
                   <div class="alert alert-light border mb-0">
-                    Pengguna pada mode <?= esc($roleLabel) ?> dapat mengirim dan memantau status, tetapi tidak bisa menerima, menolak, atau mengonversi pengaduan.
+                    Pengguna pada mode <?= esc($roleLabel) ?> dapat mengirim dan memantau status, tetapi tidak bisa menerima atau menolak pengaduan.
                   </div>
                 <?php endif; ?>
               </div>
@@ -401,13 +398,10 @@ if (! function_exists('prototype_status_tone')) {
                   <div class="proto-step mb-3 <?= ($step === ($first['status'] ?? 'Diajukan')) ? 'is-active' : '' ?>" data-vs-step="<?= esc($step) ?>">
                     <div class="fw-semibold"><?= esc($step) ?></div>
                     <small class="text-muted">
-                      <?= $step === 'Dikonversi' ? 'Membentuk draft kasus pelanggaran.' : 'Tercatat dalam riwayat pengaduan.' ?>
+                      <?= $step === 'Diterima' ? 'Pengaduan diterima untuk tindak lanjut layanan BK.' : 'Tercatat dalam riwayat pengaduan.' ?>
                     </small>
                   </div>
                 <?php endforeach; ?>
-                <div id="vsCasePreview" class="alert alert-success mb-0 d-none">
-                  Draft kasus dibuat: kategori <strong>Ketertiban</strong>, prioritas <strong>sedang</strong>, tindak lanjut <strong>konseling awal</strong>.
-                </div>
               </div>
             </div>
           </div>
@@ -876,7 +870,6 @@ if (! function_exists('prototype_status_tone')) {
     'Ditinjau': 'info',
     'Diterima': 'success',
     'Ditolak': 'danger',
-    'Dikonversi': 'primary',
     'Belum dibaca': 'warning',
     'Dibaca': 'success'
   };
@@ -1002,7 +995,6 @@ if (! function_exists('prototype_status_tone')) {
 
   if (feature === 'violation-submissions') {
     const badge = document.getElementById('vsStatusBadge');
-    const casePreview = document.getElementById('vsCasePreview');
 
     function setViolationStatus(status) {
       if (badge) {
@@ -1011,18 +1003,14 @@ if (! function_exists('prototype_status_tone')) {
       }
 
       root.querySelectorAll('[data-vs-step]').forEach((step) => {
-        const order = ['Diajukan', 'Ditinjau', 'Diterima', 'Dikonversi'];
+        const order = ['Diajukan', 'Ditinjau', 'Diterima'];
         const statusIndex = order.indexOf(status);
         const stepIndex = order.indexOf(step.dataset.vsStep || '');
         step.classList.toggle('is-active', stepIndex >= 0 && statusIndex >= 0 && stepIndex <= statusIndex);
       });
 
-      if (casePreview) {
-        casePreview.classList.toggle('d-none', status !== 'Dikonversi');
-      }
-
       setPrototypeStage(
-        ['Dikonversi', 'Ditolak'].includes(status) ? 'hasil' : (status === 'Diajukan' ? 'input' : 'proses'),
+        ['Diterima', 'Ditolak'].includes(status) ? 'hasil' : (status === 'Diajukan' ? 'input' : 'proses'),
         'Status pengaduan berubah menjadi ' + status + ' dan riwayat simulasi ikut diperbarui.'
       );
       showNotice('Status pengaduan simulasi berubah menjadi ' + status + '.', status === 'Ditolak' ? 'warning' : 'success');

@@ -23,7 +23,7 @@ $filters = is_array($filters ?? null) ? $filters : [];
         <label class="form-label">Status</label>
         <select name="status" class="form-select">
           <option value="">Semua</option>
-          <?php foreach (['Diajukan', 'Ditinjau', 'Ditolak', 'Diterima', 'Dikonversi'] as $status): ?>
+          <?php foreach (['Diajukan', 'Ditinjau', 'Ditolak', 'Diterima'] as $status): ?>
             <option value="<?= esc($status) ?>" <?= ($filters['status'] ?? '') === $status ? 'selected' : '' ?>><?= esc($status) ?></option>
           <?php endforeach; ?>
         </select>
@@ -52,7 +52,6 @@ $filters = is_array($filters ?? null) ? $filters : [];
           <th>ID</th>
           <th>Pelapor</th>
           <th>Terlapor</th>
-          <th>Kategori</th>
           <th>Status</th>
           <th>Dibuat</th>
           <th>Aksi</th>
@@ -60,7 +59,7 @@ $filters = is_array($filters ?? null) ? $filters : [];
       </thead>
       <tbody>
         <?php if (empty($rows)): ?>
-          <tr><td colspan="7" class="text-center text-muted py-4">Belum ada pengaduan.</td></tr>
+          <tr><td colspan="6" class="text-center text-muted py-4">Belum ada pengaduan.</td></tr>
         <?php else: ?>
           <?php foreach ($rows as $row): ?>
             <?php
@@ -70,7 +69,6 @@ $filters = is_array($filters ?? null) ? $filters : [];
               $badge = match ($status) {
                   'Ditolak' => 'danger',
                   'Diterima' => 'success',
-                  'Dikonversi' => 'primary',
                   'Ditinjau' => 'info',
                   default => 'warning',
               };
@@ -85,7 +83,6 @@ $filters = is_array($filters ?? null) ? $filters : [];
                 <div><?= esc($subject) ?></div>
                 <?php if ($class): ?><small class="text-muted"><?= esc($class) ?></small><?php endif; ?>
               </td>
-              <td><?= esc($row['category_name'] ?? '-') ?></td>
               <td><span class="badge bg-<?= esc($badge) ?>"><?= esc($status) ?></span></td>
               <td><small class="text-muted"><?= esc($row['created_at'] ?? '-') ?></small></td>
               <td>

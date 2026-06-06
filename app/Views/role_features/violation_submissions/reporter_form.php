@@ -46,18 +46,6 @@ $action = $mode === 'edit'
           <label class="form-label">Nama Terlapor Lainnya</label>
           <input type="text" name="subject_other_name" class="form-control" value="<?= esc(old('subject_other_name', $row['subject_other_name'] ?? '')) ?>">
         </div>
-        <div class="col-md-6">
-          <label class="form-label">Kategori</label>
-          <select name="category_id" class="form-select">
-            <option value="">Pilih kategori</option>
-            <?php $selectedCategory = (string)old('category_id', $row['category_id'] ?? ''); ?>
-            <?php foreach (($categories ?? []) as $category): ?>
-              <option value="<?= (int)$category['id'] ?>" <?= $selectedCategory === (string)$category['id'] ? 'selected' : '' ?>>
-                <?= esc($category['category_name'] ?? '-') ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
-        </div>
         <div class="col-md-3">
           <label class="form-label">Tanggal</label>
           <input type="date" name="occurred_date" class="form-control" value="<?= esc(old('occurred_date', $row['occurred_date'] ?? '')) ?>">

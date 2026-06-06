@@ -1374,7 +1374,6 @@ class ExcelImporter
             'parent_id'              => $parentId,
             'admission_date'         => $rowData['admission_date'],
             'status'                 => $rowData['status'],
-            'total_violation_points' => 0,
         ];
 
         if (!$this->studentModel->insert($studentData)) {

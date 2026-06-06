@@ -1,5 +1,5 @@
 <?php
-// app/Views/parent/violation_submissions/create.php
+// app/Views/student/violation_submissions/create.php
 ?>
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
@@ -8,7 +8,6 @@
 try { helper(['form']); } catch (\Throwable $e) {}
 
 $students   = (isset($students) && is_array($students)) ? $students : [];
-$categories = (isset($categories) && is_array($categories)) ? $categories : [];
 $errors     = (isset($errors) && is_array($errors)) ? $errors : [];
 ?>
 
@@ -18,10 +17,10 @@ $errors     = (isset($errors) && is_array($errors)) ? $errors : [];
   <nav aria-label="breadcrumb" class="mb-0 ms-md-auto">
     <ol class="breadcrumb mb-0 justify-content-md-end">
       <li class="breadcrumb-item">
-        <a href="<?= base_url('parent/dashboard') ?>">Dashboard</a>
+        <a href="<?= base_url('student/dashboard') ?>">Dashboard</a>
       </li>
       <li class="breadcrumb-item">
-        <a href="<?= base_url('parent/violation-submissions') ?>">Pengaduan</a>
+        <a href="<?= base_url('student/violation-submissions') ?>">Pengaduan</a>
       </li>
       <li class="breadcrumb-item active" aria-current="page">Tambah Pengaduan</li>
     </ol>
@@ -42,13 +41,13 @@ $errors     = (isset($errors) && is_array($errors)) ? $errors : [];
 <div class="mb alert-warning mb-3">
   <div class="fw-semibold">Catatan</div>
   <div class="small">
-    Pilih <b>salah satu</b>: terlapor siswa terdaftar <i>atau</i> isi “Nama terlapor (lainnya)”.
+    Pilih <b>salah satu</b>: terlapor siswa terdaftar <i>atau</i> isi "Nama terlapor (lainnya)".
   </div>
 </div>
 
 <div class="card">
   <div class="card-body">
-    <form action="<?= base_url('parent/violation-submissions/store') ?>" method="post" enctype="multipart/form-data">
+    <form action="<?= base_url('student/violation-submissions/store') ?>" method="post" enctype="multipart/form-data">
       <?= csrf_field() ?>
 
       <div class="row">
@@ -59,11 +58,11 @@ $errors     = (isset($errors) && is_array($errors)) ? $errors : [];
             <?php foreach ($students as $s): ?>
               <?php $sid = $s['id'] ?? ''; ?>
               <option value="<?= esc($sid) ?>" <?= (string)old('subject_student_id') === (string)$sid ? 'selected' : '' ?>>
-                <?= esc(($s['full_name'] ?? '-') . ' • ' . ($s['class_name'] ?? '-') . ' • NISN ' . ($s['nisn'] ?? '-')) ?>
+                <?= esc(($s['full_name'] ?? '-') . ' - ' . ($s['class_name'] ?? '-') . ' - NISN ' . ($s['nisn'] ?? '-')) ?>
               </option>
             <?php endforeach; ?>
           </select>
-          <small class="text-muted">Jika terlapor bukan siswa terdaftar, isi kolom “Nama terlapor (lainnya)”.</small>
+          <small class="text-muted">Jika terlapor bukan siswa terdaftar, isi kolom "Nama terlapor (lainnya)".</small>
         </div>
 
         <div class="col-md-6 mb-3">
@@ -74,19 +73,6 @@ $errors     = (isset($errors) && is_array($errors)) ? $errors : [];
                  id="subject_other_name"
                  value="<?= esc(old('subject_other_name')) ?>"
                  placeholder="Contoh: Orang luar sekolah / Orang tak dikenal / dll">
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Kategori Pelanggaran (opsional)</label>
-          <select name="category_id" class="form-select">
-            <option value="">- Pilih kategori -</option>
-            <?php foreach ($categories as $c): ?>
-              <?php $cid = $c['id'] ?? ''; ?>
-              <option value="<?= esc($cid) ?>" <?= (string)old('category_id') === (string)$cid ? 'selected' : '' ?>>
-                <?= esc($c['category_name'] ?? '-') ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
         </div>
 
         <div class="col-md-3 mb-3">
@@ -134,7 +120,7 @@ $errors     = (isset($errors) && is_array($errors)) ? $errors : [];
       </div>
 
       <div class="d-flex gap-2">
-        <a href="<?= base_url('parent/violation-submissions') ?>" class="btn btn-light">Kembali</a>
+        <a href="<?= base_url('student/violation-submissions') ?>" class="btn btn-light">Kembali</a>
         <button type="submit" class="btn btn-primary">Kirim Pengaduan</button>
       </div>
     </form>

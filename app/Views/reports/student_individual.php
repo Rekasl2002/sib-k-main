@@ -36,8 +36,6 @@
       </table>
       <div class="stat">
         <div class="box">Total Sesi: <b><?= (int)$totalSessions ?></b></div>
-        <div class="box">Total Pelanggaran: <b><?= (int)$totalViolations ?></b></div>
-        <div class="box">Total Poin: <b><?= (int)$totalPoints ?></b></div>
       </div>
     </div>
   </div>
@@ -64,32 +62,5 @@
     </tbody>
   </table>
 
-  <h4>Riwayat Pelanggaran</h4>
-  <table>
-    <thead>
-      <tr>
-        <th>Tanggal</th><th>Kategori</th><th>Level</th><th>Deskripsi</th><th class="right">Poin</th>
-      </tr>
-    </thead>
-    <tbody>
-    <?php if ($violations): foreach ($violations as $v): ?>
-      <tr>
-        <td><?= esc($v['violation_date'] ?? '-') ?></td>
-        <td><?= esc($v['category_name'] ?? '-') ?></td>
-        <td><?= esc($v['level'] ?? '-') ?></td>
-        <td><?= esc($v['description'] ?? '-') ?></td>
-        <td class="right"><?= (int)($v['points'] ?? 0) ?></td>
-      </tr>
-    <?php endforeach; else: ?>
-      <tr><td colspan="5" class="center small">Belum ada data</td></tr>
-    <?php endif; ?>
-    </tbody>
-    <tfoot>
-      <tr>
-        <th colspan="4" class="right">Total Poin</th>
-        <th class="right"><?= (int)$totalPoints ?></th>
-      </tr>
-    </tfoot>
-  </table>
 </body>
 </html>

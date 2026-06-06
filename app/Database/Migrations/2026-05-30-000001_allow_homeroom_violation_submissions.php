@@ -22,7 +22,6 @@ class AllowHomeroomViolationSubmissions extends Migration
             'view_violation_submissions'    => 'Lihat pengaduan pelanggaran',
             'review_violation_submissions'  => 'Tinjau pengaduan pelanggaran',
             'manage_violation_submissions'  => 'Kelola pengaduan pelanggaran',
-            'convert_violation_submissions' => 'Konversi pengaduan menjadi kasus pelanggaran',
             'submit_violation_submissions'  => 'Ajukan laporan/pengaduan pelanggaran',
             'view_career_info'              => 'Lihat fitur info karier dan info studi lanjut',
             'send_messages'                 => 'Kirim pesan internal',
@@ -37,7 +36,6 @@ class AllowHomeroomViolationSubmissions extends Migration
                 'view_violation_submissions',
                 'review_violation_submissions',
                 'manage_violation_submissions',
-                'convert_violation_submissions',
                 'view_career_info',
             ]);
         }

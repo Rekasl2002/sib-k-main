@@ -86,10 +86,6 @@ class SettingController extends BaseController
             // Academic year: optional, tapi kalau ada harus integer > 0
             'default_academic_year_id' => 'permit_empty|is_natural_no_zero',
 
-            // Points
-            'warning_threshold' => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[100000]',
-            'probation_threshold' => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[100000]',
-
             // Security
             'session_timeout_minutes' => 'permit_empty|integer|greater_than_equal_to[5]|less_than_equal_to[1440]',
             'password_min_length' => 'permit_empty|integer|greater_than_equal_to[6]|less_than_equal_to[64]',
@@ -127,7 +123,6 @@ class SettingController extends BaseController
             $this->service->saveNotifications($post);
             $this->service->saveMail($post);
             $this->service->saveSecurity($post);
-            $this->service->savePoints($post);
 
         } catch (Throwable $e) {
             // Jangan tampilkan stack trace di UI user biasa, cukup pesan ringkas

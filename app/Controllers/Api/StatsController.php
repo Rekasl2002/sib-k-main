@@ -20,7 +20,6 @@ class StatsController extends BaseController
             'users'       => $this->countRows('users'),
             'students'    => $this->countRows('students'),
             'classes'     => $this->countRows('classes'),
-            'violations'  => $this->countRows('violations'),
             'sessions'    => $this->countRows('counseling_sessions'),
             'assessments' => $this->countRows('assessments'),
         ]);
@@ -32,7 +31,6 @@ class StatsController extends BaseController
 
         return $this->response->setJSON([
             'sessions'    => $this->countRows('counseling_sessions', ['counselor_id' => $userId]),
-            'violations'  => $this->countRows('violations', ['reported_by' => $userId]),
             'assessments' => $this->countRows('assessments', ['created_by' => $userId]),
         ]);
     }
@@ -42,7 +40,6 @@ class StatsController extends BaseController
         $studentId = $this->currentStudentId();
 
         return $this->response->setJSON([
-            'violations'  => $studentId ? $this->countRows('violations', ['student_id' => $studentId]) : 0,
             'sessions'    => $studentId ? $this->countRows('counseling_sessions', ['student_id' => $studentId]) : 0,
             'assessments' => $studentId ? $this->countRows('assessment_results', ['student_id' => $studentId]) : 0,
         ]);

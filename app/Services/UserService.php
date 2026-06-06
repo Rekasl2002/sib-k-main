@@ -309,7 +309,6 @@ class UserService
                     'parent_id'  => $parentId,
                     'admission_date' => $admissionDate,
                     'status'     => $status,
-                    'total_violation_points' => 0,
                 ];
 
                 if (!$this->studentModel->insert($studentInsert)) {

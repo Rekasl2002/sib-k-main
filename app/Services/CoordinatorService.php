@@ -5,7 +5,6 @@ namespace App\Services;
 use App\Models\UserModel;
 use App\Models\StudentModel;
 use App\Models\CounselingSessionModel;
-use App\Models\ViolationModel;
 use App\Models\RoleModel;
 use App\Models\ClassModel;
 use App\Models\NotificationModel;
@@ -30,8 +29,6 @@ class CoordinatorService
      * - totalStaff
      * - totalCounselors
      * - totalHomerooms
-     * - activeCases
-     * - closedCases
      * - totalSessions
      * - todaySessions
      * - upcomingSessions
@@ -43,7 +40,6 @@ class CoordinatorService
     {
         $studentModel   = new StudentModel();
         $sessionModel   = new CounselingSessionModel();
-        $violationModel = new ViolationModel();
         $userModel      = new UserModel();
         $roleModel      = new RoleModel();
 
@@ -103,17 +99,6 @@ class CoordinatorService
             }
         }
 
-        // --- Kasus pelanggaran (non deleted) ---
-        $activeCases = $violationModel
-            ->where('deleted_at', null)
-            ->whereIn('status', ['Dilaporkan', 'Dalam Proses'])
-            ->countAllResults();
-
-        $closedCases = $violationModel
-            ->where('deleted_at', null)
-            ->whereIn('status', ['Selesai', 'Ditutup'])
-            ->countAllResults();
-
         // --- Sesi konseling (non deleted) ---
         $today = date('Y-m-d');
 
@@ -148,8 +133,6 @@ class CoordinatorService
             'totalStaff'          => (int) $totalStaff,
             'totalCounselors'     => (int) $totalCounselors,
             'totalHomerooms'      => (int) $totalHomerooms,
-            'activeCases'         => (int) $activeCases,
-            'closedCases'         => (int) $closedCases,
             'totalSessions'       => (int) $totalSessions,
             'todaySessions'       => (int) $todaySessions,
             'upcomingSessions'    => (int) $upcomingSessions,
@@ -158,32 +141,8 @@ class CoordinatorService
     }
 
     /**
-     * Ringkasan pelanggaran per tingkat (Ringan/Sedang/Berat)
-     * untuk kebutuhan chart di dashboard.
-     *
-     * Hanya menghitung data yang tidak di-soft-delete.
-     */
-    public function getViolationSummaryByLevel(): array
-    {
-        if (!method_exists($this->db, 'tableExists') || !$this->db->tableExists('violations')) {
-            return [];
-        }
-
-        return $this->db->table('violations v')
-            ->select('c.severity_level AS level, COUNT(*) AS total')
-            ->join('violation_categories c', 'c.id = v.category_id', 'left')
-            ->where('v.deleted_at', null)
-            ->groupBy('c.severity_level')
-            // Urutkan: Ringan -> Sedang -> Berat
-            ->orderBy('FIELD(c.severity_level, "Ringan","Sedang","Berat")', '', false)
-            ->get()
-            ->getResultArray();
-    }
-
-    /**
      * Aktivitas terbaru lintas modul:
      * - Sesi konseling
-     * - Pelanggaran
      * - Notifikasi
      *
      * Return: array of [type, created_at, message]
@@ -205,19 +164,6 @@ class CoordinatorService
                         session_date AS created_at,
                         CONCAT('Sesi konseling #', id) AS message
                     FROM counseling_sessions
-                    WHERE deleted_at IS NULL
-                )
-            ";
-        }
-
-        if ($this->db->tableExists('violations')) {
-            $parts[] = "
-                (
-                    SELECT
-                        'violation' AS type,
-                        violation_date AS created_at,
-                        CONCAT('Pelanggaran #', id) AS message
-                    FROM violations
                     WHERE deleted_at IS NULL
                 )
             ";
@@ -357,7 +303,6 @@ class CoordinatorService
     /**
      * Ringkasan menyeluruh untuk laporan sekolah:
      * - quick_stats
-     * - violations_by_level
      * - session_by_status
      * - students_by_grade
      * - assessments
@@ -367,7 +312,6 @@ class CoordinatorService
     {
         return [
             'quick_stats'         => $this->getQuickStats(),
-            'violations_by_level' => $this->getViolationSummaryByLevel(),
             'session_by_status'   => $this->getSessionStatsByStatus(),
             'students_by_grade'   => $this->getStudentDistributionByGrade(),
             'assessments'         => $this->getAssessmentSummary(),

@@ -333,7 +333,7 @@ class PrototypeController extends BaseController
                 'tone'        => 'danger',
                 'roles'       => 'Siswa, Orang Tua, Wali Kelas, Guru BK, Koordinator BK',
                 'role_modes'  => ['koordinator-bk', 'guru-bk', 'wali-kelas', 'siswa', 'orang-tua'],
-                'outcome'     => 'Pengaduan dapat dikirim, ditinjau, diterima/ditolak, lalu dikonversi menjadi kasus pelanggaran.',
+                'outcome'     => 'Pengaduan dapat dikirim, ditinjau, lalu diterima atau ditolak oleh petugas.',
             ],
             'notifications' => [
                 'title'       => 'Notifikasi Internal',
@@ -399,19 +399,19 @@ class PrototypeController extends BaseController
                 'koordinator-bk' => [
                     'can_submit' => false,
                     'can_review' => true,
-                    'role_note' => 'Koordinator BK meninjau antrian pengaduan dan memantau konversi menjadi kasus.',
+                    'role_note' => 'Koordinator BK meninjau antrian pengaduan dan menentukan tindak lanjut administratif.',
                 ],
                 'guru-bk' => [
                     'can_submit' => false,
                     'can_review' => true,
-                    'role_note' => 'Guru BK memverifikasi, menerima/menolak, dan mengonversi pengaduan menjadi kasus.',
+                    'role_note' => 'Guru BK memverifikasi pengaduan dan memberi keputusan diterima atau ditolak.',
                 ],
                 'wali-kelas' => [
                     'can_submit' => true,
                     'can_review' => false,
                     'role_note' => 'Wali kelas membuat pengaduan untuk siswa kelas binaan dan memantau statusnya.',
                     'submissions' => [
-                        ['id' => 'PGD-2026-003', 'reporter' => 'Pak Aditya', 'role' => 'Wali Kelas', 'subject' => 'Kelompok XI IPS 1', 'category' => 'Perundungan verbal', 'date' => '18 Mei 2026', 'status' => 'Dikonversi'],
+                        ['id' => 'PGD-2026-003', 'reporter' => 'Pak Aditya', 'role' => 'Wali Kelas', 'subject' => 'Kelompok XI IPS 1', 'category' => 'Perundungan verbal', 'date' => '18 Mei 2026', 'status' => 'Diterima'],
                         ['id' => 'PGD-2026-006', 'reporter' => 'Pak Aditya', 'role' => 'Wali Kelas', 'subject' => 'Rafi Maulana', 'category' => 'Ketertiban', 'date' => '21 Mei 2026', 'status' => 'Ditinjau'],
                     ],
                 ],
@@ -553,9 +553,9 @@ class PrototypeController extends BaseController
                 'submissions' => [
                     ['id' => 'PGD-2026-001', 'reporter' => 'Nadia Azzahra', 'role' => 'Siswa', 'subject' => 'Rafi Maulana - XI MIPA 2', 'category' => 'Ketertiban', 'date' => '20 Mei 2026', 'status' => 'Diajukan'],
                     ['id' => 'PGD-2026-002', 'reporter' => 'Ibu Siti Rahma', 'role' => 'Orang Tua', 'subject' => 'Siswa sekitar gerbang', 'category' => 'Kedisiplinan', 'date' => '19 Mei 2026', 'status' => 'Ditinjau'],
-                    ['id' => 'PGD-2026-003', 'reporter' => 'Pak Aditya', 'role' => 'Wali Kelas', 'subject' => 'Kelompok XI IPS 1', 'category' => 'Perundungan verbal', 'date' => '18 Mei 2026', 'status' => 'Dikonversi'],
+                    ['id' => 'PGD-2026-003', 'reporter' => 'Pak Aditya', 'role' => 'Wali Kelas', 'subject' => 'Kelompok XI IPS 1', 'category' => 'Perundungan verbal', 'date' => '18 Mei 2026', 'status' => 'Diterima'],
                 ],
-                'timeline' => ['Diajukan', 'Ditinjau', 'Diterima', 'Dikonversi'],
+                'timeline' => ['Diajukan', 'Ditinjau', 'Diterima'],
             ],
             'notifications' => [
                 'can_send' => false,

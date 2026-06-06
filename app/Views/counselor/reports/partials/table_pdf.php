@@ -58,7 +58,6 @@ function filter_label_type(?string $type): string
     return match ($type) {
         'students'           => 'Data Siswa (Binaan)',
         'sessions'           => 'Sesi Konseling',
-        'violations'         => 'Pelanggaran (Binaan)',
         'assessments'        => 'Asesmen (Binaan)',
         'career'             => 'Fitur Info Karier dan Info Studi Lanjut',
         'universities'       => 'Info Perguruan Tinggi',

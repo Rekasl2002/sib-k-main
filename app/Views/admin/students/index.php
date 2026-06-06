@@ -295,7 +295,6 @@ helper('app');
                                 <th>Kelas</th>
                                 <th>Gender</th>
                                 <th>Status</th>
-                                <th>Poin</th>
                                 <th style="width:150px;">Aksi</th>
                             </tr>
                         </thead>
@@ -315,7 +314,6 @@ helper('app');
                                         $status      = $student['status'] ?? '-';
                                         $statusColor = $statusColors[$status] ?? 'secondary';
 
-                                        $points = (int)($student['total_violation_points'] ?? 0);
                                     ?>
                                     <tr>
                                         <!-- No diisi DataTables -->
@@ -367,13 +365,6 @@ helper('app');
                                             <span class="badge bg-<?= $statusColor ?> font-size-12"><?= esc($status) ?></span>
                                         </td>
 
-                                        <td class="text-center" data-order="<?= $points ?>">
-                                            <?php if ($points > 0): ?>
-                                                <span class="badge bg-danger font-size-12"><?= $points ?></span>
-                                            <?php else: ?>
-                                                <span class="badge bg-success font-size-12">0</span>
-                                            <?php endif; ?>
-                                        </td>
 
                                         <td class="text-center">
                                             <div class="btn-group" role="group">
@@ -403,7 +394,7 @@ helper('app');
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="9" class="text-center py-5 text-muted">
+                                    <td colspan="8" class="text-center py-5 text-muted">
                                         <i class="mdi mdi-account-off font-size-24 d-block mb-2"></i>
                                         Tidak ada data siswa
                                     </td>
@@ -472,7 +463,7 @@ $(document).ready(function() {
             pageLength: <?= (int)$perPage ?>,
             order: [[1, 'asc']], // Siswa (nama) ASC
             columnDefs: [
-                { orderable: false, targets: [0, 8] } // No + Aksi
+                { orderable: false, targets: [0, 7] } // No + Aksi
             ]
         });
     } else {
@@ -481,7 +472,7 @@ $(document).ready(function() {
             pageLength: <?= (int)$perPage ?>,
             order: [[1, 'asc']],
             columnDefs: [
-                { orderable: false, targets: [0, 8] }
+                { orderable: false, targets: [0, 7] }
             ],
             language: {
                 search: "Cari:",

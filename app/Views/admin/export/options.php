@@ -26,23 +26,6 @@
   </div>
 
   <div class="card">
-    <h3>Export Pelanggaran</h3>
-    <form class="row" method="get" action="<?= site_url('admin/export/violations') ?>">
-      <div>
-        <label>Dari</label>
-        <input type="date" name="from">
-      </div>
-      <div>
-        <label>Sampai</label>
-        <input type="date" name="to">
-      </div>
-      <div>
-        <button class="btn" type="submit">Unduh XLSX</button>
-      </div>
-    </form>
-  </div>
-
-  <div class="card">
     <h3>Export Sesi Konseling</h3>
     <form class="row" method="get" action="<?= site_url('admin/export/sessions') ?>">
       <div>

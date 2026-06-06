@@ -96,7 +96,7 @@ class ScheduleController extends BaseController
             if (!empty($r['student_name'])) $titleParts[] = $r['student_name'];
             if (!empty($r['topic']))        $titleParts[] = $r['topic'];
             if (!empty($r['class_name']))   $titleParts[] = '(' . $r['class_name'] . ')';
-            $title = $titleParts ? implode(' • ', $titleParts) : 'Sesi Konseling';
+            $title = $titleParts ? implode(' - ', $titleParts) : 'Sesi Konseling';
 
             // Bangun start & end dari session_date + session_time + duration
             $dateStr = $r['session_date'] ?? date('Y-m-d');

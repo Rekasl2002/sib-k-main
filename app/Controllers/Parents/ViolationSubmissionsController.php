@@ -6,14 +6,12 @@ namespace App\Controllers\Parents;
 use App\Controllers\BaseController;
 use App\Services\ViolationSubmissionService;
 use App\Models\StudentModel;
-use App\Models\ViolationCategoryModel;
 use CodeIgniter\Exceptions\PageNotFoundException;
 
 class ViolationSubmissionsController extends BaseController
 {
     protected ViolationSubmissionService $service;
     protected StudentModel $studentModel;
-    protected ViolationCategoryModel $categoryModel;
     protected $db;
 
     public function __construct()
@@ -26,7 +24,6 @@ class ViolationSubmissionsController extends BaseController
 
         $this->service       = new ViolationSubmissionService();
         $this->studentModel  = new StudentModel();
-        $this->categoryModel = new ViolationCategoryModel();
         $this->db            = \Config\Database::connect();
     }
 
@@ -90,7 +87,6 @@ class ViolationSubmissionsController extends BaseController
         return view('parent/violation_submissions/create', [
             'title'      => 'Tambah Pengaduan Pelanggaran',
             'students'   => $this->fetchStudentsForDropdown(),
-            'categories' => $this->fetchCategories(),
             'errors'     => session()->getFlashdata('errors') ?? [],
         ]);
     }
@@ -112,17 +108,11 @@ class ViolationSubmissionsController extends BaseController
             ? (int) $subjectStudentIdRaw
             : null;
 
-        $categoryIdRaw = $this->request->getPost('category_id');
-        $categoryId    = ($categoryIdRaw !== null && $categoryIdRaw !== '')
-            ? (int) $categoryIdRaw
-            : null;
-
         $data = [
             'reporter_type'      => 'parent',
             'reporter_user_id'   => $uid,
             'subject_student_id' => $subjectStudentId,
             'subject_other_name' => trim((string) $this->request->getPost('subject_other_name')),
-            'category_id'        => $categoryId,
             'occurred_date'      => $this->request->getPost('occurred_date') ?: null,
             'occurred_time'      => $this->request->getPost('occurred_time') ?: null,
             'location'           => trim((string) $this->request->getPost('location')),
@@ -137,7 +127,6 @@ class ViolationSubmissionsController extends BaseController
             'witness'            => 'permit_empty|max_length[255]',
             'subject_other_name' => 'permit_empty|max_length[255]',
             'subject_student_id' => 'permit_empty|is_natural_no_zero',
-            'category_id'        => 'permit_empty|is_natural_no_zero',
             'occurred_date'      => 'permit_empty|valid_date[Y-m-d]',
             'occurred_time'      => 'permit_empty',
         ];
@@ -251,7 +240,7 @@ class ViolationSubmissionsController extends BaseController
 
         // Timpakan old input ke $row (biar edit menampilkan input terakhir kalau gagal validasi)
         $oldKeys = [
-            'subject_student_id', 'subject_other_name', 'category_id',
+            'subject_student_id', 'subject_other_name',
             'occurred_date', 'occurred_time', 'location', 'description', 'witness'
         ];
         foreach ($oldKeys as $k) {
@@ -265,7 +254,6 @@ class ViolationSubmissionsController extends BaseController
             'title'      => 'Edit Pengaduan Pelanggaran',
             'row'        => $row,
             'students'   => $this->fetchStudentsForDropdown(),
-            'categories' => $this->fetchCategories(),
             'errors'     => session()->getFlashdata('errors') ?? [],
         ]);
     }
@@ -298,15 +286,9 @@ class ViolationSubmissionsController extends BaseController
             ? (int) $subjectStudentIdRaw
             : null;
 
-        $categoryIdRaw = $this->request->getPost('category_id');
-        $categoryId    = ($categoryIdRaw !== null && $categoryIdRaw !== '')
-            ? (int) $categoryIdRaw
-            : null;
-
         $data = [
             'subject_student_id' => $subjectStudentId,
             'subject_other_name' => trim((string) $this->request->getPost('subject_other_name')),
-            'category_id'        => $categoryId,
             'occurred_date'      => $this->request->getPost('occurred_date') ?: null,
             'occurred_time'      => $this->request->getPost('occurred_time') ?: null,
             'location'           => trim((string) $this->request->getPost('location')),
@@ -320,7 +302,6 @@ class ViolationSubmissionsController extends BaseController
             'witness'            => 'permit_empty|max_length[255]',
             'subject_other_name' => 'permit_empty|max_length[255]',
             'subject_student_id' => 'permit_empty|is_natural_no_zero',
-            'category_id'        => 'permit_empty|is_natural_no_zero',
             'occurred_date'      => 'permit_empty|valid_date[Y-m-d]',
             'occurred_time'      => 'permit_empty',
         ];
@@ -462,40 +443,6 @@ class ViolationSubmissionsController extends BaseController
         }
     }
 
-    /**
-     * Ambil kategori (sebaiknya hanya aktif, kalau kolom is_active ada).
-     */
-    private function fetchCategories(): array
-    {
-        try {
-            $b = $this->db->table('violation_categories')
-                ->select('id, category_name')
-                ->orderBy('category_name', 'ASC');
-
-            // Soft delete guard kalau kolom ada
-            try {
-                $fields = $this->db->getFieldNames('violation_categories') ?? [];
-                if (in_array('deleted_at', $fields, true)) {
-                    $b->where('deleted_at', null);
-                }
-                if (in_array('is_active', $fields, true)) {
-                    $b->where('is_active', 1);
-                }
-            } catch (\Throwable $e) {}
-
-            $rows = $b->get()->getResultArray();
-            return is_array($rows) ? $rows : [];
-        } catch (\Throwable $e) {
-            // Fallback via model
-            try {
-                $rows = $this->categoryModel->orderBy('category_name', 'ASC')->findAll();
-                return is_array($rows) ? $rows : [];
-            } catch (\Throwable $e2) {
-                return [];
-            }
-        }
-    }
-
     private function statusBadge(string $status): string
     {
         $s = strtolower(trim($status));
@@ -504,7 +451,6 @@ class ViolationSubmissionsController extends BaseController
             'ditinjau'   => 'info',
             'ditolak'    => 'danger',
             'diterima'   => 'success',
-            'dikonversi' => 'primary',
             default      => 'secondary',
         };
     }

@@ -36,19 +36,11 @@
             <th>Anak</th>
             <th>Kelas</th>
             <th>JK</th>
-            <th>Pelanggaran</th>
-            <th>Total Poin</th>
             <th>Aksi</th>
           </tr>
           </thead>
           <tbody>
           <?php foreach ($children as $c): ?>
-            <?php
-              $stats = $violationStats[$c['id']] ?? [
-                'total_violations' => 0,
-                'total_points'     => 0,
-              ];
-            ?>
             <tr>
               <td>
                 <strong><?= esc($c['full_name']) ?></strong><br>
@@ -66,8 +58,6 @@
                 <?php endif; ?>
               </td>
               <td><?= esc($c['gender'] ?? '-') ?></td>
-              <td><?= (int) ($stats['total_violations'] ?? 0) ?></td>
-              <td><?= (int) ($stats['total_points'] ?? 0) ?></td>
               <td>
                 <a href="<?= site_url('parent/reports/child/' . $c['id']) ?>"
                    class="btn btn-sm btn-primary">

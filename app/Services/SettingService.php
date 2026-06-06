@@ -13,7 +13,7 @@ class SettingService
     /**
      * Daftar group settings yang dikenali oleh halaman admin/settings.
      */
-    protected array $groups = ['general', 'branding', 'academic', 'mail', 'security', 'notifications', 'points'];
+    protected array $groups = ['general', 'branding', 'academic', 'mail', 'security', 'notifications'];
 
     public function __construct()
     {
@@ -192,18 +192,6 @@ class SettingService
         set_setting('security', 'session_timeout_minutes', $timeout, 'int');
         set_setting('security', 'password_min_length', $minLen, 'int');
         set_setting('security', 'login_captcha', !empty($data['login_captcha']), 'bool');
-    }
-
-    public function savePoints(array $data): void
-    {
-        $probation = (int) ($data['probation_threshold'] ?? 50);
-        $warning   = (int) ($data['warning_threshold'] ?? 25);
-
-        if ($probation < 0) $probation = 0;
-        if ($warning < 0) $warning = 0;
-
-        set_setting('points', 'probation_threshold', $probation, 'int');
-        set_setting('points', 'warning_threshold', $warning, 'int');
     }
 
     public function saveNotifications(array $data): void

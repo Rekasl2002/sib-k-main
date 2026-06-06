@@ -21,7 +21,6 @@ try { helper(['form']); } catch (\Throwable $e) {}
 // Normalisasi data utama
 $row        = is_array($row ?? null) ? $row : (array) ($row ?? []);
 $students   = is_array($students ?? null) ? $students : [];
-$categories = is_array($categories ?? null) ? $categories : [];
 
 $status = (string)($row['status'] ?? 'Diajukan');
 
@@ -31,10 +30,9 @@ if ($status === 'Diajukan')   $badge = 'warning';
 if ($status === 'Ditinjau')   $badge = 'info';
 if ($status === 'Ditolak')    $badge = 'danger';
 if ($status === 'Diterima')   $badge = 'success';
-if ($status === 'Dikonversi') $badge = 'primary';
 
 // Editable rules
-$isEditable = !in_array($status, ['Ditolak', 'Diterima', 'Dikonversi'], true);
+$isEditable = !in_array($status, ['Ditolak', 'Diterima'], true);
 
 // Evidence normalizer: bisa array, bisa JSON string
 $evidenceRaw = $row['evidence_json'] ?? [];
@@ -99,7 +97,7 @@ $disabledAttr = $isEditable ? '' : 'disabled';
     </div>
   <?php else: ?>
     <div class="small text-muted mt-1">
-      Kamu masih bisa mengubah pengaduan selama status belum Ditolak/Diterima/Dikonversi.
+      Kamu masih bisa mengubah pengaduan selama status belum Ditolak/Diterima.
     </div>
   <?php endif; ?>
 </div>
@@ -160,20 +158,6 @@ $disabledAttr = $isEditable ? '' : 'disabled';
                  placeholder="Contoh: Orang luar sekolah / dll"
                  autocomplete="off"
                  <?= $disabledAttr ?>>
-        </div>
-
-        <div class="col-md-6 mb-3">
-          <label class="form-label">Kategori Pelanggaran (opsional)</label>
-          <?php $curCat = $val('category_id', $row['category_id'] ?? ''); ?>
-          <select name="category_id" class="form-select" <?= $disabledAttr ?>>
-            <option value="">- Pilih kategori -</option>
-            <?php foreach ($categories as $c): ?>
-              <?php $cid = $c['id'] ?? ''; ?>
-              <option value="<?= esc($cid) ?>" <?= $sel($curCat, $cid) ?>>
-                <?= esc($c['category_name'] ?? '-') ?>
-              </option>
-            <?php endforeach; ?>
-          </select>
         </div>
 
         <div class="col-md-3 mb-3">
