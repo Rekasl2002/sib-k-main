@@ -6,12 +6,17 @@ $label = (string) ($field['label'] ?? 'Isian');
 $type = (string) ($field['type'] ?? 'text');
 $placeholder = (string) ($field['placeholder'] ?? '');
 $options = is_array($field['options'] ?? null) ? $field['options'] : [];
+$locked = ! empty($field['locked']);
+$value = (string) ($field['value'] ?? '');
+$help = (string) ($field['help'] ?? '');
 $name = 'demo_field_' . $index;
 ?>
 
 <div class="<?= esc($wide) ?>">
   <label class="form-label" for="<?= esc($name) ?>"><?= esc($label) ?></label>
-  <?php if ($type === 'select'): ?>
+  <?php if ($locked): ?>
+    <input class="form-control bg-light" id="<?= esc($name) ?>" type="text" value="<?= esc($value) ?>" readonly>
+  <?php elseif ($type === 'select'): ?>
     <select class="form-select" id="<?= esc($name) ?>">
       <option value="">Pilih <?= esc(strtolower($label)) ?></option>
       <?php foreach ($options as $option): ?>
@@ -27,5 +32,8 @@ $name = 'demo_field_' . $index;
     <div class="form-text">Format yang disarankan: <?= esc($placeholder ?: '.xlsx, .xls, .csv') ?></div>
   <?php else: ?>
     <input class="form-control" id="<?= esc($name) ?>" type="text" placeholder="<?= esc($placeholder) ?>">
+  <?php endif; ?>
+  <?php if ($help !== ''): ?>
+    <div class="form-text"><i class="mdi mdi-lock-outline me-1"></i><?= esc($help) ?></div>
   <?php endif; ?>
 </div>

@@ -1138,7 +1138,7 @@ class PrototypeController extends BaseController
             ],
             'schedule' => [
                 ['label' => 'Jenis tindak lanjut', 'type' => 'select', 'options' => ['Bimbingan', 'Konseling', 'Kolaborasi Orang Tua', 'Konferensi Kasus']],
-                ['label' => 'Petugas', 'type' => 'select', 'options' => ['Guru BK 1', 'Guru BK 2', 'Guru BK 3']],
+                $this->petugasField($role, 'Petugas'),
                 ['label' => 'Tanggal dan waktu', 'type' => 'text', 'placeholder' => 'Contoh: 14 Juni 2026, 09.00'],
                 ['label' => 'Catatan jadwal', 'type' => 'textarea', 'placeholder' => 'Tuliskan keterangan singkat'],
             ],
@@ -1172,11 +1172,11 @@ class PrototypeController extends BaseController
                 'student-import' => [
                     ['label' => 'Pilih file Excel', 'type' => 'file', 'placeholder' => '.xlsx,.xls,.csv'],
                 ],
-                'guidance' => $this->bkServiceFields('Bimbingan'),
-                'counseling' => $this->bkServiceFields('Konseling'),
-                'parent-collaboration' => $this->bkServiceFields('Kolaborasi Orang Tua'),
-                'home-visits' => $this->bkServiceFields('Kunjungan Rumah'),
-                'case-conferences' => $this->bkServiceFields('Konferensi Kasus'),
+                'guidance' => $this->bkServiceFields('Bimbingan', $role),
+                'counseling' => $this->bkServiceFields('Konseling', $role),
+                'parent-collaboration' => $this->bkServiceFields('Kolaborasi Orang Tua', $role),
+                'home-visits' => $this->bkServiceFields('Kunjungan Rumah', $role),
+                'case-conferences' => $this->bkServiceFields('Konferensi Kasus', $role),
                 'assignments' => [
                     ['label' => 'Jenis tugas', 'type' => 'select', 'options' => ['Kelas Binaan', 'Tugas Layanan', 'Tindak Lanjut', 'Koordinasi']],
                     ['label' => 'Judul tugas', 'type' => 'text', 'placeholder' => 'Contoh: tindak lanjut konsultasi siswa'],
@@ -1193,7 +1193,26 @@ class PrototypeController extends BaseController
         };
     }
 
-    private function bkServiceFields(string $serviceType): array
+    /**
+     * Field pemilihan Guru BK/Petugas. Hanya Koordinator BK (dan Admin) yang boleh
+     * memilih petugas lain; Guru BK dikunci ke dirinya sendiri.
+     */
+    private function petugasField(string $role, string $label = 'Guru BK/Petugas'): array
+    {
+        if ($role === 'guru-bk') {
+            return [
+                'label'  => $label,
+                'type'   => 'text',
+                'locked' => true,
+                'value'  => 'Saya sendiri (Guru BK)',
+                'help'   => 'Guru BK hanya dapat menugaskan dirinya sendiri. Pemilihan Guru BK/Petugas lain dilakukan oleh Koordinator BK.',
+            ];
+        }
+
+        return ['label' => $label, 'type' => 'select', 'options' => ['Guru BK 1', 'Guru BK 2', 'Guru BK 3']];
+    }
+
+    private function bkServiceFields(string $serviceType, string $role = ''): array
     {
         $titleLabel = match ($serviceType) {
             'Bimbingan' => 'Topik/Judul bimbingan',
@@ -1209,7 +1228,7 @@ class PrototypeController extends BaseController
             ['label' => $titleLabel, 'type' => 'text', 'placeholder' => 'Contoh: pendampingan rencana belajar'],
             ['label' => 'Siswa terkait', 'type' => 'select', 'options' => ['Tidak spesifik', 'Siswa 2', 'Siswa 1']],
             ['label' => 'Kelas terkait', 'type' => 'select', 'options' => ['Tidak spesifik', 'X IPA C', 'XI C', 'XII C']],
-            ['label' => 'Guru BK/Petugas', 'type' => 'select', 'options' => ['Guru BK 1', 'Guru BK 2', 'Guru BK 3']],
+            $this->petugasField($role),
             ['label' => 'Tanggal/Jadwal', 'type' => 'text', 'placeholder' => 'Contoh: 18 Juni 2026, 09.00'],
             ['label' => $locationLabel, 'type' => 'text', 'placeholder' => 'Contoh: Ruang BK 1'],
             ['label' => 'Durasi menit', 'type' => 'text', 'placeholder' => 'Contoh: 45'],
