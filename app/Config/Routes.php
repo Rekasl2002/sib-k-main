@@ -1191,17 +1191,34 @@ $routes->group('simulation', ['filter' => 'auth'], function ($routes) {
     $routes->get('(:segment)', 'SimulationController::feature/$1', ['as' => 'simulation.feature']);
 });
 
-// Prototype Fitur Skripsi
-$routes->group('prototype', ['filter' => 'auth'], function ($routes) use ($featureViolationSubmissionsEnabled) {
+// Prototype Pengembangan BK
+$routes->group('prototype', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'PrototypeController::index', ['as' => 'prototype.index']);
     $routes->get('progress/(:segment)', 'PrototypeController::progress/$1', ['as' => 'prototype.progress']);
-    if ($featureViolationSubmissionsEnabled) {
-        $routes->get('violation-submissions', 'PrototypeController::violationSubmissions', ['as' => 'prototype.violation_submissions']);
-    }
+    $routes->get('diagram/(:segment)', 'PrototypeController::diagram/$1', ['as' => 'prototype.diagram']);
+    $routes->get('diagram-image/(:segment)/(:any)', 'PrototypeController::diagramImage/$1/$2', ['as' => 'prototype.diagram_image']);
+    $routes->get('template/student-import', 'PrototypeController::studentImportTemplate', ['as' => 'prototype.template.student_import']);
+    $routes->get('demo/(:segment)', 'PrototypeController::demo/$1', ['as' => 'prototype.demo']);
+    $routes->get('demo/(:segment)/(:segment)', 'PrototypeController::demo/$1/$2', ['as' => 'prototype.demo.screen']);
+    $routes->get('demo/(:segment)/(:segment)/(:num)', 'PrototypeController::demo/$1/$2/$3', ['as' => 'prototype.demo.detail']);
+    $routes->get('flow/(:segment)', 'PrototypeController::flow/$1', ['as' => 'prototype.flow']);
+    $routes->get('flow/(:segment)/(:segment)', 'PrototypeController::flow/$1/$2', ['as' => 'prototype.flow.page']);
+    $routes->get('violation-submissions', 'PrototypeController::violationSubmissions', ['as' => 'prototype.violation_submissions']);
     $routes->get('notifications', 'PrototypeController::notifications', ['as' => 'prototype.notifications']);
     $routes->get('messages', 'PrototypeController::messages', ['as' => 'prototype.messages']);
     $routes->get('assessments', 'PrototypeController::assessments', ['as' => 'prototype.assessments']);
     $routes->get('career', 'PrototypeController::career', ['as' => 'prototype.career']);
+
+    // Form Evaluasi & Konfirmasi Penerimaan Prototipe (modul sementara tahap skripsi).
+    // Harus didaftarkan sebelum catch-all '(:segment)' di bawah.
+    $routes->get('evaluation', 'PrototypeEvaluationController::index', ['as' => 'prototype.evaluation']);
+    $routes->post('evaluation/submit', 'PrototypeEvaluationController::submit', ['as' => 'prototype.evaluation.submit']);
+    $routes->get('evaluation/thanks', 'PrototypeEvaluationController::thanks', ['as' => 'prototype.evaluation.thanks']);
+    $routes->get('evaluation/results', 'PrototypeEvaluationController::results', ['as' => 'prototype.evaluation.results']);
+    $routes->get('evaluation/results/(:num)', 'PrototypeEvaluationController::resultDetail/$1', ['as' => 'prototype.evaluation.result_detail']);
+    $routes->get('evaluation/export', 'PrototypeEvaluationController::export', ['as' => 'prototype.evaluation.export']);
+
+    $routes->get('(:segment)', 'PrototypeController::feature/$1', ['as' => 'prototype.feature']);
 });
 
 // ===============================

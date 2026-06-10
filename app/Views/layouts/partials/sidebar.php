@@ -26,7 +26,7 @@ $__enableAssessments        = false;
 $__enableCareerInfo         = false;
 $__enableCommonMenu         = false;
 
-// ✅ Fitur baru: Pengaduan Pelanggaran (Violation Submissions)
+// Fitur kompatibilitas: route lama pengaduan diarahkan sebagai Konsultasi & Pengaduan.
 $__enableViolationSubmissions = false;
 
 // Ambil user & role (aman)
@@ -208,7 +208,7 @@ $__permViewStaffInfo             = $__can('view_staff_info');
 
 /**
  * ------------------------------------------------------------
- * Permission alias khusus fitur Pengaduan Pelanggaran
+ * Permission alias khusus fitur Konsultasi & Pengaduan
  * ------------------------------------------------------------
  * Catatan:
  * - Kalau permission ini belum ada di sistemmu, menu tetap akan tampil berbasis role
@@ -377,7 +377,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
               <?php endif; ?>
 
               <?php if ($__showStaffVS && $__permViewViolationSubmissions): ?>
-                <li><a href="<?= base_url('koordinator/violation-submissions') ?>">Pengaduan Pelanggaran</a></li>
+                <li><a href="<?= base_url('koordinator/violation-submissions') ?>">Konsultasi & Pengaduan</a></li>
               <?php endif; ?>
 
               <?php if ($__enableAssessments && $__canAny(['manage_assessments','take_assessments'])): ?>
@@ -449,7 +449,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           <li>
             <a href="<?= base_url('counselor/violation-submissions') ?>" class="waves-effect<?= $__active('counselor/violation-submissions*') ?>">
               <i class="mdi mdi-message-alert"></i>
-              <span>Pengaduan Pelanggaran</span>
+              <span>Konsultasi & Pengaduan</span>
             </a>
           </li>
           <?php endif; ?>
@@ -516,7 +516,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           <li>
             <a href="<?= base_url('homeroom/violation-submissions') ?>" class="waves-effect<?= $__active('homeroom/violation-submissions*') ?>">
               <i class="mdi mdi-message-alert"></i>
-              <span>Pengaduan Pelanggaran</span>
+              <span>Konsultasi & Pengaduan</span>
             </a>
           </li>
           <?php endif; ?>
@@ -601,7 +601,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           <li>
             <a href="<?= base_url('student/violation-submissions') ?>" class="waves-effect<?= $__active('student/violation-submissions*') ?>">
               <i class="mdi mdi-message-alert"></i>
-              <span>Pengaduan Pelanggaran</span>
+              <span>Konsultasi & Pengaduan</span>
             </a>
           </li>
           <?php endif; ?>
@@ -632,7 +632,7 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
           <li>
             <a href="<?= base_url('parent/violation-submissions') ?>" class="waves-effect<?= $__active('parent/violation-submissions*') ?>">
               <i class="mdi mdi-message-alert"></i>
-              <span>Pengaduan Pelanggaran</span>
+              <span>Konsultasi & Pengaduan</span>
             </a>
           </li>
           <?php endif; ?>
@@ -680,15 +680,15 @@ $__showStaffVS   = $__enableViolationSubmissions && ($__isKoordinator || $__isCo
         <?php endif; ?>
 
         <?php if ($__canAccessDemoSuite): ?>
-        <li class="menu-title">Prototipe/Simulasi</li>
+        <li class="menu-title">Prototipe Pengembangan</li>
         <li class="<?= $__mm(['simulation*','prototype*','admin/simulation-access*']) ?>">
           <a href="javascript:void(0);" class="has-arrow waves-effect">
             <i class="mdi mdi-test-tube"></i>
-            <span>Prototipe/Simulasi</span>
+            <span>Prototipe Pengembangan</span>
           </a>
           <ul class="sub-menu" aria-expanded="false">
-            <li><a href="<?= base_url('simulation') ?>" class="<?= $__active('simulation*') ? 'active' : '' ?>">Simulasi Fitur</a></li>
-            <li><a href="<?= base_url('prototype') ?>" class="<?= $__active('prototype*') ? 'active' : '' ?>">Prototipe Skripsi</a></li>
+            <li><a href="<?= base_url('simulation') ?>" class="<?= $__active('simulation*') ? 'active' : '' ?>">Simulasi Lama</a></li>
+            <li><a href="<?= base_url('prototype') ?>" class="<?= $__active('prototype*') ? 'active' : '' ?>">Halaman Demo BK</a></li>
             <?php if ($__isAdmin): ?>
               <li><a href="<?= base_url('admin/simulation-access') ?>" class="<?= $__active('admin/simulation-access*') ? 'active' : '' ?>">Kelola Akses</a></li>
             <?php endif; ?>

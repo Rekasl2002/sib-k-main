@@ -8,41 +8,62 @@ class PermissionSeeder extends Seeder
 {
     public function run()
     {
-        $data = [
-            ['id' => 1, 'permission_name' => 'manage_users', 'description' => 'Kelola pengguna sistem (CRUD users)', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 2, 'permission_name' => 'manage_roles', 'description' => 'Kelola peran dan izin akses', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 3, 'permission_name' => 'manage_academic_data', 'description' => 'Kelola data akademik (kelas, tahun ajaran)', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 4, 'permission_name' => 'manage_counseling_sessions', 'description' => 'Kelola sesi konseling (create, update, delete)', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 5, 'permission_name' => 'view_counseling_sessions', 'description' => 'Lihat sesi konseling', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 8, 'permission_name' => 'manage_assessments', 'description' => 'Kelola asesmen (AUM, ITP)', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 9, 'permission_name' => 'take_assessments', 'description' => 'Mengerjakan asesmen yang diberikan', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 10, 'permission_name' => 'view_student_portfolio', 'description' => 'Lihat portofolio digital siswa', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 11, 'permission_name' => 'generate_reports', 'description' => 'Generate laporan (PDF/Excel)', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 12, 'permission_name' => 'view_reports', 'description' => 'Lihat laporan', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 13, 'permission_name' => 'send_messages', 'description' => 'Kirim pesan internal', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 14, 'permission_name' => 'schedule_counseling', 'description' => 'Jadwalkan konseling', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 15, 'permission_name' => 'view_dashboard', 'description' => 'Akses dashboard sesuai role', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 16, 'permission_name' => 'manage_career_info', 'description' => 'Kelola fitur info karier dan info studi lanjut', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 17, 'permission_name' => 'view_career_info', 'description' => 'Lihat fitur info karier dan info studi lanjut', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 19, 'permission_name' => 'import_export_data', 'description' => 'Import/Export data via Excel', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 20, 'permission_name' => 'view_all_students', 'description' => 'Lihat semua data siswa', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 21, 'permission_name' => 'manage_settings', 'description' => 'Kelola pengaturan aplikasi', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 22, 'permission_name' => 'view_reports_aggregate', 'description' => 'Lihat laporan agregat', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 23, 'permission_name' => 'generate_reports_aggregate', 'description' => 'Unduh/generate laporan agregat', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 24, 'permission_name' => 'view_reports_individual', 'description' => 'Lihat laporan individual siswa', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 25, 'permission_name' => 'generate_reports_individual', 'description' => 'Unduh/generate laporan individual siswa', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 27, 'permission_name' => 'submit_violation_submissions', 'description' => 'Ajukan laporan/pengaduan pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 28, 'permission_name' => 'view_violation_submissions', 'description' => 'Lihat pengaduan pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 29, 'permission_name' => 'review_violation_submissions', 'description' => 'Tinjau pengaduan pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 30, 'permission_name' => 'manage_violation_submissions', 'description' => 'Kelola pengaduan pelanggaran', 'created_at' => date('Y-m-d H:i:s')],
-            ['id' => 32, 'permission_name' => 'access_simulation_suite', 'description' => 'Akses halaman prototipe dan simulasi', 'created_at' => date('Y-m-d H:i:s')],
+        $now = date('Y-m-d H:i:s');
+        $permissions = [
+            'manage_users' => 'Kelola pengguna sistem',
+            'manage_roles' => 'Kelola peran dan hak akses',
+            'manage_academic_data' => 'Kelola tahun akademik, kelas, dan siswa',
+            'manage_counseling_sessions' => 'Kelola sesi konseling lama yang masih dipakai aplikasi',
+            'view_counseling_sessions' => 'Lihat sesi konseling lama yang masih dipakai aplikasi',
+            'manage_assessments' => 'Kelola asesmen',
+            'take_assessments' => 'Mengerjakan asesmen',
+            'view_student_portfolio' => 'Lihat portofolio siswa',
+            'generate_reports' => 'Unduh laporan umum',
+            'view_reports' => 'Lihat laporan umum',
+            'send_messages' => 'Kirim pesan internal',
+            'schedule_counseling' => 'Ajukan atau jadwalkan konseling',
+            'view_dashboard' => 'Akses dashboard sesuai peran',
+            'manage_career_info' => 'Kelola info karier dan studi lanjut',
+            'view_career_info' => 'Lihat info karier dan studi lanjut',
+            'import_export_data' => 'Import dan export data',
+            'view_all_students' => 'Lihat semua data siswa sesuai lingkup peran',
+            'manage_settings' => 'Kelola pengaturan aplikasi',
+            'view_reports_aggregate' => 'Lihat laporan agregat',
+            'generate_reports_aggregate' => 'Unduh laporan agregat',
+            'view_reports_individual' => 'Lihat laporan individual siswa',
+            'generate_reports_individual' => 'Unduh laporan individual siswa',
+            'submit_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
+            'view_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
+            'review_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
+            'manage_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
+            'manage_bk_services' => 'Kelola layanan BK baru',
+            'view_bk_services' => 'Lihat layanan BK baru',
+            'manage_consultation_complaints' => 'Kelola konsultasi dan pengaduan',
+            'submit_consultation_complaints' => 'Ajukan konsultasi atau pengaduan',
+            'review_consultation_complaints' => 'Tinjau konsultasi dan pengaduan',
+            'manage_bk_assignments' => 'Kelola penugasan Guru BK',
+            'view_bk_assignments' => 'Lihat penugasan Guru BK',
+            'view_bk_reports' => 'Lihat laporan layanan BK',
+            'generate_bk_reports' => 'Unduh laporan layanan BK',
+            'access_simulation_suite' => 'Akses halaman prototipe dan simulasi',
         ];
 
-        // Truncate table first
-        $this->db->table('permissions')->emptyTable();
+        $rows = [];
+        $id = 1;
+        foreach ($permissions as $name => $description) {
+            $rows[] = [
+                'id' => $id++,
+                'permission_name' => $name,
+                'description' => $description,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
 
-        // Insert batch data
-        $this->db->table('permissions')->insertBatch($data);
+        $this->db->query('SET FOREIGN_KEY_CHECKS=0');
+        $this->db->table('permissions')->truncate();
+        $this->db->query('SET FOREIGN_KEY_CHECKS=1');
+        $this->db->table('permissions')->insertBatch($rows);
 
         echo "OK Permissions seeded successfully!\n";
     }

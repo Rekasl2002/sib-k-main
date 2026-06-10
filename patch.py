@@ -1,0 +1,13 @@
+import re
+c=open('app/Controllers/PrototypeController.php', encoding='utf-8').read()
+c=c.replace("Orang Tua, Wali Kelas terbatas',", "Orang Tua, Wali Kelas terbatas, Siswa',")
+c=re.sub(r"('parent-collaboration' => \[.*?'role_mo[^\]]+)(orang-tua'\]))", r'"\1siswa', 'orang-tua']", c, flags=re.DOTALL)
+c=re.sub(r"('home-visits' => \[.*?'role_mo[^\]]+)(orang-tua'\])", r'"\1siswa', 'orang-tua']", c, flags=re.DOTALL)
+rf=lambda m: re.sub(r"'Ajukan Jadwal Konseling', '[^']+', 'form', \[[^\]]+\]]", r"'Ajukan Jadwal Konseling', 'Hanya untuk staf sesuai hak akses.', 'form', $staff", re.sub(r"'list' => \$this->flowPage(\([^,]+, [^,]+, 'list'\)), \$family\)", r"'list' => $this->flowPage\1)", re.sub(r"'detail' => \$this->flowPage(\([^,]+, [^,]+, 'detail'\))(, \$[a-zA-Z]+)?\)", r"'detail' => $this->flowPage\1, $staff)", m.group(0))))
+c=re.sub(r"'guidance' => \[.*?\]\n            ],", rf, c, flags=re.DOTALL)
+c=re.sub(r"'counseling' => \[.*?\]\n            \],", rf, c, flags=re.DOTALL)
+c=re.sub(r"'parent-collaboration' => \[.*?\]\n            ],", rf, c, flags=re.DOTALL)
+c=re.sub(r"'home-visits' => \[.*?\]\n            ],", rf, c, flags=re.DOTALL)
+c=re.sub(r"'case-conferences' => \[.*?\]\n            \],", rf, c, flags=re.DOTALL)
+c=re.sub(r",\s*'Privasi'\\s*=>\\s*'[^']*'", "", c)
+open('app/Controllers/PrototypeController.php', 'w', encoding='utf-8').write(c)

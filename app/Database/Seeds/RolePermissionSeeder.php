@@ -8,79 +8,88 @@ class RolePermissionSeeder extends Seeder
 {
     public function run()
     {
-        $data = [];
+        $now = date('Y-m-d H:i:s');
+        $permissionMap = $this->permissionMap();
 
-        // Role: Admin (id: 1) - all active permissions
-        foreach ([1, 2, 3, 4, 5, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19, 20, 21, 22, 23, 24, 25, 27, 28, 29, 30, 32] as $i) {
-            $data[] = [
-                'role_id'       => 1,
-                'permission_id' => $i,
-                'created_at'    => date('Y-m-d H:i:s'),
-            ];
+        $sets = [
+            1 => array_keys($permissionMap),
+            2 => [
+                'view_dashboard', 'view_all_students', 'manage_academic_data', 'send_messages',
+                'manage_assessments', 'manage_career_info', 'view_career_info',
+                'manage_bk_services', 'view_bk_services', 'manage_consultation_complaints',
+                'review_consultation_complaints', 'manage_bk_assignments', 'view_bk_assignments',
+                'view_bk_reports', 'generate_bk_reports', 'view_reports_aggregate',
+                'generate_reports_aggregate', 'view_reports_individual', 'generate_reports_individual',
+                'access_simulation_suite', 'view_violation_submissions', 'review_violation_submissions',
+                'manage_violation_submissions',
+            ],
+            3 => [
+                'view_dashboard', 'view_all_students', 'send_messages', 'manage_assessments',
+                'manage_career_info', 'view_career_info', 'manage_bk_services', 'view_bk_services',
+                'manage_consultation_complaints', 'review_consultation_complaints',
+                'view_bk_assignments', 'view_bk_reports', 'generate_bk_reports',
+                'view_reports_individual', 'generate_reports_individual', 'access_simulation_suite',
+                'manage_counseling_sessions', 'view_counseling_sessions', 'view_violation_submissions',
+                'review_violation_submissions', 'manage_violation_submissions',
+            ],
+            4 => [
+                'view_dashboard', 'view_all_students', 'send_messages', 'submit_consultation_complaints',
+                'view_bk_services', 'view_bk_reports', 'view_reports_individual',
+                'generate_reports_individual', 'view_career_info', 'access_simulation_suite',
+                'submit_violation_submissions', 'view_counseling_sessions',
+            ],
+            5 => [
+                'view_dashboard', 'send_messages', 'submit_consultation_complaints', 'take_assessments',
+                'schedule_counseling', 'view_bk_services', 'view_career_info', 'view_student_portfolio',
+                'access_simulation_suite', 'submit_violation_submissions', 'view_counseling_sessions',
+            ],
+            6 => [
+                'view_dashboard', 'send_messages', 'submit_consultation_complaints', 'view_bk_services',
+                'view_career_info', 'view_bk_reports', 'view_reports_individual',
+                'generate_reports_individual', 'view_student_portfolio', 'access_simulation_suite',
+                'submit_violation_submissions', 'view_counseling_sessions',
+            ],
+        ];
+
+        $rows = [];
+        foreach ($sets as $roleId => $permissionNames) {
+            foreach ($permissionNames as $permissionName) {
+                if (! isset($permissionMap[$permissionName])) {
+                    continue;
+                }
+
+                $rows[] = [
+                    'role_id' => $roleId,
+                    'permission_id' => $permissionMap[$permissionName],
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
         }
 
-        // Role: Koordinator BK (id: 2)
-        $koordinatorPermissions = [1, 2, 3, 4, 5, 8, 10, 11, 12, 13, 15, 16, 17, 19, 20, 22, 23, 28, 29, 30];
-        foreach ($koordinatorPermissions as $perm) {
-            $data[] = [
-                'role_id'       => 2,
-                'permission_id' => $perm,
-                'created_at'    => date('Y-m-d H:i:s'),
-            ];
-        }
-
-        // Role: Guru BK (id: 3)
-        $guruBKPermissions = [4, 5, 8, 10, 11, 12, 13, 14, 15, 16, 17, 20, 24, 25, 28, 29, 30];
-        foreach ($guruBKPermissions as $perm) {
-            $data[] = [
-                'role_id'       => 3,
-                'permission_id' => $perm,
-                'created_at'    => date('Y-m-d H:i:s'),
-            ];
-        }
-
-        // Role: Wali Kelas (id: 4)
-        $waliKelasPermissions = [5, 12, 13, 15, 16, 17, 24, 25, 27];
-        foreach ($waliKelasPermissions as $perm) {
-            $data[] = [
-                'role_id'       => 4,
-                'permission_id' => $perm,
-                'created_at'    => date('Y-m-d H:i:s'),
-            ];
-        }
-
-        // Role: Siswa (id: 5)
-        $siswaPermissions = [5, 9, 13, 14, 15, 17, 27];
-        foreach ($siswaPermissions as $perm) {
-            $data[] = [
-                'role_id'       => 5,
-                'permission_id' => $perm,
-                'created_at'    => date('Y-m-d H:i:s'),
-            ];
-        }
-
-        // Role: Orang Tua (id: 6)
-        $orangTuaPermissions = [5, 12, 13, 15, 17, 24, 25, 27];
-        foreach ($orangTuaPermissions as $perm) {
-            $data[] = [
-                'role_id'       => 6,
-                'permission_id' => $perm,
-                'created_at'    => date('Y-m-d H:i:s'),
-            ];
-        }
-
-        // Truncate table first
-        $this->db->table('role_permissions')->emptyTable();
-
-        // Insert batch data
-        $this->db->table('role_permissions')->insertBatch($data);
+        $this->db->query('SET FOREIGN_KEY_CHECKS=0');
+        $this->db->table('role_permissions')->truncate();
+        $this->db->query('SET FOREIGN_KEY_CHECKS=1');
+        $this->db->table('role_permissions')->insertBatch($rows);
 
         echo "OK Role Permissions seeded successfully!\n";
-        echo "  - Admin: 27 permissions\n";
-        echo "  - Koordinator BK: 20 permissions\n";
-        echo "  - Guru BK: 17 permissions\n";
-        echo "  - Wali Kelas: 9 permissions\n";
-        echo "  - Siswa: 7 permissions\n";
-        echo "  - Orang Tua: 8 permissions\n";
+    }
+
+    /**
+     * @return array<string,int>
+     */
+    private function permissionMap(): array
+    {
+        $rows = $this->db->table('permissions')
+            ->select('id, permission_name')
+            ->get()
+            ->getResultArray();
+
+        $map = [];
+        foreach ($rows as $row) {
+            $map[(string) $row['permission_name']] = (int) $row['id'];
+        }
+
+        return $map;
     }
 }
