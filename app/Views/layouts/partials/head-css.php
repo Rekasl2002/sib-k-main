@@ -16,4 +16,8 @@ helper('settings');
 <?php endif; ?>
 
 <!-- App favicon -->
-<link rel="shortcut icon" id="favicon" href="<?= base_url(setting('favicon_path', 'assets/images/favicon.ico', 'branding')) ?>">
+<?php
+$__fav  = setting('favicon_path', 'assets/images/favicon.ico', 'branding');
+$__favV = (defined('FCPATH') && is_file(FCPATH . ltrim($__fav, '/'))) ? '?v=' . @filemtime(FCPATH . ltrim($__fav, '/')) : '';
+?>
+<link rel="shortcut icon" id="favicon" href="<?= base_url($__fav) . $__favV ?>">

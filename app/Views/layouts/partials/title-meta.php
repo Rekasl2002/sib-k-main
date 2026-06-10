@@ -50,4 +50,8 @@ if ($tabTitle === '') {
 <meta name="csrf-token" content="<?= csrf_hash() ?>">
 
 <!-- App favicon -->
-<link rel="icon" href="<?= base_url(setting('favicon_path', 'assets/images/favicon.ico', 'branding')) ?>" type="image/x-icon">
+<?php
+$__fav  = setting('favicon_path', 'assets/images/favicon.ico', 'branding');
+$__favV = (defined('FCPATH') && is_file(FCPATH . ltrim($__fav, '/'))) ? '?v=' . @filemtime(FCPATH . ltrim($__fav, '/')) : '';
+?>
+<link rel="icon" href="<?= base_url($__fav) . $__favV ?>" type="image/x-icon">

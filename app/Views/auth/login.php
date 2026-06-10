@@ -8,7 +8,11 @@
     <?php helper('settings'); ?>
 
     <title><?= esc(setting('app_name', 'SIB-K', 'general')) ?> - Login</title>
-    <link rel="icon" href="<?= base_url(setting('favicon_path', 'assets/images/favicon.ico', 'branding')) ?>" type="image/x-icon">
+    <?php
+    $__fav  = setting('favicon_path', 'assets/images/favicon.ico', 'branding');
+    $__favV = (defined('FCPATH') && is_file(FCPATH . ltrim($__fav, '/'))) ? '?v=' . @filemtime(FCPATH . ltrim($__fav, '/')) : '';
+    ?>
+    <link rel="icon" href="<?= base_url($__fav) . $__favV ?>" type="image/x-icon">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
