@@ -7,6 +7,7 @@
 helper('phone');
 // ✅ Pakai helper auth agar konsisten dengan halaman lain (user_avatar)
 helper('auth');
+helper('permission');
 
 // Helpers kecil biar view tahan banting untuk array/objek
 if (!function_exists('rowa')) {
@@ -108,8 +109,9 @@ $phone   = $student['phone'] ?? null;
 $parentName  = $student['parent_name'] ?? null;
 $parentPhone = $student['parent_phone'] ?? null;
 $parentEmail = $student['parent_email'] ?? null;
+$parentId    = (int) ($student['parent_id'] ?? 0);
 
-// Ringkasan pelanggaran (yang boleh diakses Wali Kelas)
+// Ringkasan pendampingan siswa (yang boleh diakses Wali Kelas)
 
 // Hitung umur kalau ada tanggal lahir
 $ageText = '-';
@@ -189,7 +191,20 @@ $avatarSrc = user_avatar($photo);
                 <a href="<?= $backUrl ?>" class="btn btn-light btn-sm">
                     &larr; Kembali ke Kelas Binaan
                 </a>
-
+                <?php if (function_exists('has_permission') && has_permission('manage_students')): ?>
+                    <a href="<?= base_url('homeroom/students/edit/' . $studentId) ?>" class="btn btn-primary btn-sm">
+                        Edit Siswa
+                    </a>
+                    <?php if ($parentId > 0): ?>
+                        <a href="<?= base_url('homeroom/parents/' . $parentId) ?>" class="btn btn-outline-info btn-sm">
+                            Akun Orang Tua
+                        </a>
+                    <?php endif; ?>
+                    <form method="post" action="<?= base_url('homeroom/students/delete/' . $studentId) ?>" class="d-inline" onsubmit="return confirm('Hapus siswa ini dari kelas binaan?')">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-outline-danger btn-sm">Hapus</button>
+                    </form>
+                <?php endif; ?>
             </div>
             <div class="page-title-right">
         <ol class="breadcrumb m-0">
@@ -338,6 +353,16 @@ $avatarSrc = user_avatar($photo);
                                 <?= ! empty($parentEmail) ? esc($parentEmail) : '-' ?>
                             </span>
                         </div>
+
+                        <?php if ($parentId > 0): ?>
+                            <a href="<?= base_url('homeroom/parents/' . $parentId) ?>" class="btn btn-sm btn-outline-primary">
+                                Lihat Profil Orang Tua
+                            </a>
+                        <?php elseif (function_exists('has_permission') && has_permission('manage_students')): ?>
+                            <a href="<?= base_url('homeroom/students/edit/' . $studentId) ?>" class="btn btn-sm btn-outline-secondary">
+                                Hubungkan Akun Orang Tua
+                            </a>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -382,7 +407,7 @@ $avatarSrc = user_avatar($photo);
 
             </div>
 
-            <!-- Kolom kanan: detail biodata, akademik, ringkasan pelanggaran -->
+            <!-- Kolom kanan: detail biodata, akademik, dan pendampingan siswa -->
             <div class="col-lg-8">
                 <div class="row">
                     <!-- Informasi personal -->
@@ -460,6 +485,14 @@ $avatarSrc = user_avatar($photo);
                                             <tr>
                                                 <td class="text-muted"><i class="mdi mdi-wheelchair-accessibility me-1"></i>Disabilitas</td>
                                                 <td class="fw-medium"><?= ! empty($disability) ? esc($disability) : '-' ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted"><i class="mdi mdi-soccer me-1"></i>Hobi</td>
+                                                <td class="fw-medium"><?= ! empty($student['hobi']) ? esc($student['hobi']) : '-' ?></td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted"><i class="mdi mdi-account-group me-1"></i>Ekstrakurikuler / Organisasi</td>
+                                                <td class="fw-medium"><?= ! empty($student['ekskul_organisasi']) ? esc($student['ekskul_organisasi']) : '-' ?></td>
                                             </tr>
                                         </tbody>
                                     </table>

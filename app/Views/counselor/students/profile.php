@@ -72,7 +72,7 @@ if (!empty($birthDate)) {
         $today = new DateTime();
         $age   = $today->diff($birth)->y;
         $ageText = date('d F Y', strtotime($birthDate)) . ' ';
-        $ageText .= '<span class="text-muted">(' . $age . ' tahun)</span>';
+        $ageText .= '<span class="text-dark">(' . $age . ' tahun)</span>';
     } catch (\Throwable $e) {
         $ageText = date('d F Y', strtotime($birthDate));
     }
@@ -135,9 +135,9 @@ if (!empty($birthDate)) {
 
                             <h4 class="mb-1"><?= esc($fullName) ?></h4>
                             <?php if (!empty($username)): ?>
-                                <p class="text-muted mb-2">@<?= esc($username) ?></p>
+                                <p class="text-dark mb-2">@<?= esc($username) ?></p>
                             <?php elseif (!empty($email)): ?>
-                                <p class="text-muted mb-2"><?= esc($email) ?></p>
+                                <p class="text-dark mb-2"><?= esc($email) ?></p>
                             <?php endif; ?>
 
                             <div class="mb-3">
@@ -174,14 +174,13 @@ if (!empty($birthDate)) {
                         </div>
                     </div>
 
-                    <div class="col-lg-8">
-                        <div class="row">
+                    <div class="col-lg-8 d-flex flex-column">
+                        <p class="text-dark mb-3">
+                            Halaman ini menampilkan data pribadi, akademik, orang tua/wali, akun, serta
+                            kegiatan layanan BK yang diikuti siswa binaan secara lengkap.
+                        </p>
 
-
-
-                        </div>
-
-                        <div class="d-flex gap-2 flex-wrap">
+                        <div class="d-flex gap-2 flex-wrap mt-auto">
                             <?php if (!empty($canUpdate) && !empty($studentId)): ?>
                             <a href="<?= base_url('counselor/students/' . (int) $studentId . '/edit') ?>" class="btn btn-primary">
                                 <i class="mdi mdi-pencil me-1"></i>Edit Data
@@ -211,13 +210,13 @@ if (!empty($birthDate)) {
                     <table class="table table-sm table-borderless mb-0">
                         <tbody>
                             <tr>
-                                <td class="text-muted" style="width: 40%;">
+                                <td class="text-dark" style="width: 40%;">
                                     <i class="mdi mdi-account me-1"></i>Nama Lengkap
                                 </td>
                                 <td class="fw-medium"><?= esc($fullName) ?></td>
                             </tr>
                             <tr>
-                                <td class="text-muted">
+                                <td class="text-dark">
                                     <i class="mdi mdi-gender-<?= ($gender === 'L') ? 'male' : 'female' ?> me-1"></i>Jenis Kelamin
                                 </td>
                                 <td class="fw-medium">
@@ -229,13 +228,13 @@ if (!empty($birthDate)) {
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-muted">
+                                <td class="text-dark">
                                     <i class="mdi mdi-map-marker me-1"></i>Tempat Lahir
                                 </td>
                                 <td class="fw-medium"><?= !empty($birthPlace) ? esc($birthPlace) : '-' ?></td>
                             </tr>
                             <tr>
-                                <td class="text-muted">
+                                <td class="text-dark">
                                     <i class="mdi mdi-calendar me-1"></i>Tanggal Lahir
                                 </td>
                                 <td class="fw-medium">
@@ -243,24 +242,32 @@ if (!empty($birthDate)) {
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-muted">
+                                <td class="text-dark">
                                     <i class="mdi mdi-book-cross me-1"></i>Agama
                                 </td>
                                 <td class="fw-medium"><?= !empty($religion) ? esc($religion) : '-' ?></td>
                             </tr>
                             <tr>
-                                <td class="text-muted">
+                                <td class="text-dark">
                                     <i class="mdi mdi-home me-1"></i>Alamat
                                 </td>
                                 <td class="fw-medium"><?= !empty($address) ? esc($address) : '-' ?></td>
                             </tr>
                             <tr>
-                                <td class="text-muted"><i class="mdi mdi-account-heart me-1"></i>Kebutuhan Khusus</td>
+                                <td class="text-dark"><i class="mdi mdi-account-heart me-1"></i>Kebutuhan Khusus</td>
                                 <td class="fw-medium"><?= !empty($specialNeeds) ? esc($specialNeeds) : '-' ?></td>
                             </tr>
                             <tr>
-                                <td class="text-muted"><i class="mdi mdi-wheelchair-accessibility me-1"></i>Disabilitas</td>
+                                <td class="text-dark"><i class="mdi mdi-wheelchair-accessibility me-1"></i>Disabilitas</td>
                                 <td class="fw-medium"><?= !empty($disability) ? esc($disability) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-dark"><i class="mdi mdi-soccer me-1"></i>Hobi</td>
+                                <td class="fw-medium"><?= !empty($student['hobi']) ? esc($student['hobi']) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-dark"><i class="mdi mdi-account-group me-1"></i>Ekstrakurikuler / Organisasi</td>
+                                <td class="fw-medium"><?= !empty($student['ekskul_organisasi']) ? esc($student['ekskul_organisasi']) : '-' ?></td>
                             </tr>
                         </tbody>
                     </table>
@@ -277,6 +284,83 @@ if (!empty($birthDate)) {
                     <i class="mdi mdi-school me-2"></i>Informasi Akademik
                 </h5>
 
+                <div class="table-responsive">
+                    <table class="table table-sm table-borderless mb-0">
+                        <tbody>
+                            <tr>
+                                <td class="text-dark" style="width: 40%;"><i class="mdi mdi-identifier me-1"></i>NISN</td>
+                                <td class="fw-medium"><?= esc($nisn) ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-dark"><i class="mdi mdi-card-account-details me-1"></i>NIK</td>
+                                <td class="fw-medium"><?= esc($nik) ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-dark"><i class="mdi mdi-google-classroom me-1"></i>Kelas</td>
+                                <td class="fw-medium"><?= !empty($kelas) ? esc(($grade ?? '') . ' - ' . $kelas) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-dark"><i class="mdi mdi-stairs me-1"></i>Tingkat</td>
+                                <td class="fw-medium"><?= !empty($grade) ? esc($grade) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-dark"><i class="mdi mdi-calendar-import me-1"></i>Tanggal Masuk</td>
+                                <td class="fw-medium"><?= !empty($admission) ? date('d F Y', strtotime($admission)) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-dark"><i class="mdi mdi-card-bulleted me-1"></i>Nomor KIP/PIP</td>
+                                <td class="fw-medium"><?= !empty($kipPipNumber) ? esc($kipPipNumber) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-dark"><i class="mdi mdi-flag me-1"></i>Status Siswa</td>
+                                <td class="fw-medium"><span class="badge bg-<?= $statusColor ?>"><?= esc($status) ?></span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kegiatan / Acara BK -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">
+                    <i class="mdi mdi-clipboard-text-clock me-2"></i>Kegiatan / Acara BK yang Diikuti
+                </h5>
+                <?php if (! empty($bkActivities)): ?>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead>
+                                <tr class="text-dark">
+                                    <th>Jenis Layanan</th>
+                                    <th>Judul/Topik</th>
+                                    <th>Tempat/Lokasi</th>
+                                    <th>Jadwal</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($bkActivities as $act): ?>
+                                    <?php $jadwal = $act['held_at'] ?? $act['scheduled_at'] ?? null; ?>
+                                    <tr class="text-dark">
+                                        <td><span class="badge bg-info"><?= esc($act['service_type'] ?? '-') ?></span></td>
+                                        <td><?= esc($act['title'] ?? '-') ?></td>
+                                        <td><?= !empty($act['location']) ? esc($act['location']) : '-' ?></td>
+                                        <td><?= $jadwal ? esc(date('d M Y, H:i', strtotime($jadwal))) : '-' ?></td>
+                                        <td><span class="badge bg-secondary"><?= esc($act['status'] ?? '-') ?></span></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php else: ?>
+                    <p class="text-dark mb-0">Belum ada kegiatan atau acara BK yang tercatat untuk siswa ini.</p>
+                <?php endif; ?>
             </div>
         </div>
     </div>
@@ -298,13 +382,13 @@ if (!empty($birthDate)) {
                                 <table class="table table-sm table-borderless mb-0">
                                     <tbody>
                                         <tr>
-                                            <td class="text-muted" style="width: 40%;">
+                                            <td class="text-dark" style="width: 40%;">
                                                 <i class="mdi mdi-account me-1"></i>Nama
                                             </td>
                                             <td class="fw-medium"><?= esc($parentName ?? '-') ?></td>
                                         </tr>
                                         <tr>
-                                            <td class="text-muted">
+                                            <td class="text-dark">
                                                 <i class="mdi mdi-phone me-1"></i>Telepon
                                             </td>
                                             <td class="fw-medium">
@@ -357,25 +441,25 @@ if (!empty($birthDate)) {
                             <table class="table table-sm table-borderless mb-0">
                                 <tbody>
                                     <tr>
-                                        <td class="text-muted" style="width: 40%;">
+                                        <td class="text-dark" style="width: 40%;">
                                             <i class="mdi mdi-account-key me-1"></i>Username
                                         </td>
                                         <td class="fw-medium">
                                             <?php if (!empty($username)): ?>
                                                 <?= esc($username) ?>
                                             <?php else: ?>
-                                                <span class="text-muted">-</span>
+                                                <span class="text-dark">-</span>
                                             <?php endif; ?>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="text-muted">
+                                        <td class="text-dark">
                                             <i class="mdi mdi-email me-1"></i>Email
                                         </td>
                                         <td class="fw-medium"><?= !empty($email) ? esc($email) : '-' ?></td>
                                     </tr>
                                     <tr>
-                                        <td class="text-muted">
+                                        <td class="text-dark">
                                             <i class="mdi mdi-phone me-1"></i>Telepon
                                         </td>
                                         <td class="fw-medium"><?= !empty($phone) ? esc($phone) : '-' ?></td>
@@ -389,7 +473,7 @@ if (!empty($birthDate)) {
                             <table class="table table-sm table-borderless mb-0">
                                 <tbody>
                                     <tr>
-                                        <td class="text-muted" style="width: 40%;">
+                                        <td class="text-dark" style="width: 40%;">
                                             <i class="mdi mdi-check-circle me-1"></i>Status Akun
                                         </td>
                                         <td class="fw-medium">
@@ -401,15 +485,15 @@ if (!empty($birthDate)) {
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="text-muted">
+                                        <td class="text-dark">
                                             <i class="mdi mdi-login-variant me-1"></i>Terakhir Login
                                         </td>
                                         <td class="fw-medium">
-                                            <?= !empty($lastLogin) ? date('d M Y, H:i', strtotime($lastLogin)) : '<span class="text-muted">Belum pernah login</span>' ?>
+                                            <?= !empty($lastLogin) ? date('d M Y, H:i', strtotime($lastLogin)) : '<span class="text-dark">Belum pernah login</span>' ?>
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td class="text-muted">
+                                        <td class="text-dark">
                                             <i class="mdi mdi-calendar-plus me-1"></i>Terdaftar
                                         </td>
                                         <td class="fw-medium">
@@ -429,16 +513,4 @@ if (!empty($birthDate)) {
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<script>
-    (function() {
-        // Auto-hide alerts after 5 seconds
-        setTimeout(function() {
-            var alerts = document.querySelectorAll('.alert.show');
-            alerts.forEach(function(a){
-                a.classList.add('fade');
-                a.classList.remove('show');
-            });
-        }, 5000);
-    })();
-</script>
 <?= $this->endSection() ?>

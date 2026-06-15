@@ -211,9 +211,11 @@ class StudentController extends BaseController
         }
 
         return view('counselor/students/profile', [
-            'title'      => 'Profil Siswa',
-            'page_title' => 'Profil Siswa',
-            'student'    => $student,
+            'title'        => 'Profil Siswa',
+            'page_title'   => 'Profil Siswa',
+            'student'      => $student,
+            'canUpdate'    => true,
+            'bkActivities' => $this->studentService->getStudentBkActivities((int) ($student['id'] ?? 0)),
         ]);
     }
 
