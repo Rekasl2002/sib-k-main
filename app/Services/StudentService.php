@@ -38,6 +38,7 @@ use App\Models\UserModel;
 use App\Models\ClassModel;
 use App\Models\AcademicYearModel;
 use App\Models\RoleModel;
+use App\Validation\StudentValidation;
 use CodeIgniter\Database\BaseConnection;
 
 class StudentService
@@ -375,6 +376,8 @@ class StudentService
                 'address'                => $data['address'] ?? null,
                 'special_needs'          => $data['special_needs'] ?? null,
                 'disability'             => $data['disability'] ?? null,
+                'hobi'                   => $data['hobi'] ?? null,
+                'ekskul_organisasi'      => $data['ekskul_organisasi'] ?? null,
                 'kip_pip_number'         => $data['kip_pip_number'] ?? null,
                 'father_name'            => $data['father_name'] ?? null,
                 'mother_name'            => $data['mother_name'] ?? null,
@@ -479,6 +482,8 @@ class StudentService
                 'address'                => $data['address'] ?? null,
                 'special_needs'          => $data['special_needs'] ?? null,
                 'disability'             => $data['disability'] ?? null,
+                'hobi'                   => $data['hobi'] ?? null,
+                'ekskul_organisasi'      => $data['ekskul_organisasi'] ?? null,
                 'kip_pip_number'         => $data['kip_pip_number'] ?? null,
                 'father_name'            => $data['father_name'] ?? null,
                 'mother_name'            => $data['mother_name'] ?? null,
@@ -531,26 +536,48 @@ class StudentService
                 return ['success'=>false,'message'=>'Data siswa tidak ditemukan'];
             }
 
+            // Bersihkan input: string kosong -> null untuk field opsional.
+            // Ini memperbaiki bug "edit gagal" saat field tanggal/relasi (birth_date,
+            // admission_date, parent_id, nik, dll) dikosongkan dan tersimpan sebagai ''.
+            $data = StudentValidation::sanitizeInput($data);
+            $data['id'] = (int) $studentId;
+
+            // Validasi sisi server: tolak wajib kosong, format salah, NISN/NIK duplikat.
+            $validation = \Config\Services::validation();
+            $validation->setRules(
+                StudentValidation::rulesForUpdate($student, $data),
+                StudentValidation::messages()
+            );
+            if (! $validation->run($data)) {
+                return [
+                    'success' => false,
+                    'message' => 'Data belum tersimpan. Mohon periksa kembali isian yang ditandai.',
+                    'errors'  => $validation->getErrors(),
+                ];
+            }
+
             $this->db->transStart();
 
             $updateData = [
-                'class_id'       => $data['class_id'] ?? null,
-                'nisn'           => $data['nisn'] ?? null,
-                'nik'            => $data['nik'] ?? null,
-                'gender'         => $data['gender'] ?? null,
-                'birth_place'    => $data['birth_place'] ?? null,
-                'birth_date'     => $data['birth_date'] ?? null,
-                'religion'       => $data['religion'] ?? null,
-                'address'        => $data['address'] ?? null,
-                'special_needs'  => $data['special_needs'] ?? null,
-                'disability'     => $data['disability'] ?? null,
-                'kip_pip_number' => $data['kip_pip_number'] ?? null,
-                'father_name'    => $data['father_name'] ?? null,
-                'mother_name'    => $data['mother_name'] ?? null,
-                'guardian_name'  => $data['guardian_name'] ?? null,
-                'parent_id'      => $data['parent_id'] ?? null,
-                'admission_date' => $data['admission_date'] ?? null,
-                'status'         => $data['status'] ?? 'Aktif',
+                'class_id'          => $data['class_id'] ?? null,
+                'nisn'              => $data['nisn'] ?? null,
+                'nik'               => $data['nik'] ?? null,
+                'gender'            => $data['gender'] ?? null,
+                'birth_place'       => $data['birth_place'] ?? null,
+                'birth_date'        => $data['birth_date'] ?? null,
+                'religion'          => $data['religion'] ?? null,
+                'address'           => $data['address'] ?? null,
+                'special_needs'     => $data['special_needs'] ?? null,
+                'disability'        => $data['disability'] ?? null,
+                'hobi'              => $data['hobi'] ?? null,
+                'ekskul_organisasi' => $data['ekskul_organisasi'] ?? null,
+                'kip_pip_number'    => $data['kip_pip_number'] ?? null,
+                'father_name'       => $data['father_name'] ?? null,
+                'mother_name'       => $data['mother_name'] ?? null,
+                'guardian_name'     => $data['guardian_name'] ?? null,
+                'parent_id'         => $data['parent_id'] ?? null,
+                'admission_date'    => $data['admission_date'] ?? null,
+                'status'            => $data['status'] ?? 'Aktif',
             ];
 
             if (!$this->studentModel->update($studentId, $updateData)) {
@@ -558,17 +585,24 @@ class StudentService
                 return ['success'=>false,'message'=>'Gagal mengupdate data siswa: ' . implode(', ', $this->studentModel->errors() ?: [])];
             }
 
-            // Nama siswa disimpan di users.full_name
+            // Nama & telepon siswa disimpan di tabel users.
             $fullName = trim((string) ($data['full_name'] ?? ''));
 
             if (!empty($student['user_id'])) {
                 $userId = (int) $student['user_id'];
 
-                // Jika full_name kosong, jangan overwrite jadi kosong
+                $userUpdate = [];
                 if ($fullName !== '') {
-                    if (!$this->userModel->update($userId, ['full_name' => $fullName])) {
+                    $userUpdate['full_name'] = $fullName; // jangan overwrite jadi kosong
+                }
+                if (array_key_exists('phone', $data)) {
+                    $userUpdate['phone'] = $data['phone']; // sudah null bila dikosongkan
+                }
+
+                if (! empty($userUpdate)) {
+                    if (!$this->userModel->update($userId, $userUpdate)) {
                         $this->db->transRollback();
-                        return ['success'=>false,'message'=>'Gagal mengupdate nama lengkap user: ' . implode(', ', $this->userModel->errors() ?: [])];
+                        return ['success'=>false,'message'=>'Gagal mengupdate akun siswa: ' . implode(', ', $this->userModel->errors() ?: [])];
                     }
                 }
             }
