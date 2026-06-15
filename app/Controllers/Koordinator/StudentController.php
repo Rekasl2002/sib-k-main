@@ -19,12 +19,14 @@ use App\Services\StudentService;
 use App\Validation\StudentValidation;
 use App\Libraries\ExcelImporter;
 use App\Models\StudentModel;
+use App\Models\UserModel;
 
 class StudentController extends BaseKoordinatorController
 {
     protected StudentService $studentService;
     protected ExcelImporter $excelImporter;
     protected StudentModel $studentModel;
+    protected UserModel $userModel;
     protected $db;
 
     public function __construct()
@@ -32,21 +34,30 @@ class StudentController extends BaseKoordinatorController
         $this->studentService   = new StudentService();
         $this->excelImporter    = new ExcelImporter();
         $this->studentModel     = new StudentModel();
+        $this->userModel        = new UserModel();
         $this->db               = \Config\Database::connect();
     }
 
-    /**
-     * Helper: Blok aksi CRUD manual yang tidak diperbolehkan untuk Koordinator
-     */
-    private function denyManualCrud(string $action = 'Aksi ini')
+    private function normalizeIdPhoneTo08(?string $phone): string
     {
-        return redirect()->to(base_url('koordinator/students'))
-            ->with('error', $action . ' tidak tersedia untuk akun Koordinator. Gunakan fitur Import jika perlu menambahkan data siswa.');
+        $p = trim((string) ($phone ?? ''));
+        if ($p === '') {
+            return '';
+        }
+
+        $p = preg_replace('/[^\d+]/', '', $p) ?? '';
+        if (str_starts_with($p, '+62')) {
+            return '0' . substr($p, 3);
+        }
+        if (str_starts_with($p, '62')) {
+            return '0' . substr($p, 2);
+        }
+
+        return $p;
     }
 
     /**
-     * Helper: Permission untuk edit/update siswa.
-     * Mengakomodasi perbedaan setup permission (manage_users).
+     * Helper: Permission untuk tambah/edit/hapus siswa.
      */
     private function requireManageStudentsPermission()
     {
@@ -57,7 +68,7 @@ class StudentController extends BaseKoordinatorController
         }
 
         if (function_exists('has_permission')) {
-            if (!has_permission('manage_users')) {
+            if (!has_permission('manage_students')) {
                 return redirect()->to(base_url('koordinator/students'))
                     ->with('error', 'Anda tidak memiliki izin untuk mengubah data siswa.');
             }
@@ -66,7 +77,7 @@ class StudentController extends BaseKoordinatorController
 
         // Fallback: gunakan require_permission jika tersedia
         if (function_exists('require_permission')) {
-            require_permission('manage_users');
+            require_permission('manage_students');
         }
 
         return null;
@@ -142,19 +153,69 @@ class StudentController extends BaseKoordinatorController
     }
 
     /**
-     * Display create student form (DIBLOK untuk Koordinator)
+     * Display create student form.
      */
     public function create()
     {
-        return $this->denyManualCrud('Tambah siswa manual');
+        $deny = $this->requireManageStudentsPermission();
+        if ($deny) return $deny;
+
+        $data = [
+            'title'            => 'Tambah Siswa',
+            'page_title'       => 'Tambah Siswa',
+            'breadcrumb'       => [
+                ['title' => 'Koordinator', 'link' => base_url('koordinator/dashboard')],
+                ['title' => 'Siswa', 'link' => base_url('koordinator/students')],
+                ['title' => 'Tambah', 'link' => null],
+            ],
+            'classes'          => $this->studentService->getAvailableClasses(),
+            'parents'          => $this->studentService->getAvailableParents(),
+            'availableUsers'   => $this->studentService->getAvailableStudentUsers(),
+            'gender_options'   => StudentValidation::getGenderOptions(),
+            'religion_options' => StudentValidation::getReligionOptions(),
+            'status_options'   => StudentValidation::getStatusOptions(),
+            'validation'       => \Config\Services::validation(),
+        ];
+
+        return view('koordinator/students/create', $data);
     }
 
     /**
-     * Store new student (DIBLOK untuk Koordinator)
+     * Store new student.
      */
     public function store()
     {
-        return $this->denyManualCrud('Tambah siswa manual');
+        $deny = $this->requireManageStudentsPermission();
+        if ($deny) return $deny;
+
+        $post = $this->request->getPost() ?? [];
+        $post['create_with_user'] = '1';
+
+        if (isset($post['phone'])) {
+            $post['phone'] = $this->normalizeIdPhoneTo08((string) $post['phone']);
+        }
+
+        $rules = StudentValidation::createWithUserRules();
+        if (! $this->validateData($post, $rules)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('errors', $this->validator->getErrors());
+        }
+
+        $data = StudentValidation::sanitizeInput($post);
+        if (isset($data['phone'])) {
+            $data['phone'] = $this->normalizeIdPhoneTo08((string) $data['phone']);
+        }
+
+        $result = $this->studentService->createStudentWithUser($data);
+        if (! ($result['success'] ?? false)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $result['message'] ?? 'Gagal menambah siswa.');
+        }
+
+        return redirect()->to(base_url('koordinator/students'))
+            ->with('success', $result['message'] ?? 'Siswa berhasil ditambahkan.');
     }
 
     /**
@@ -187,7 +248,8 @@ class StudentController extends BaseKoordinatorController
                 ['title' => 'Siswa', 'link' => base_url('koordinator/students')],
                 ['title' => 'Profil Siswa', 'link' => null],
             ],
-            'student' => $student,
+            'student'      => $student,
+            'bkActivities' => $this->studentService->getStudentBkActivities((int) $id),
         ];
 
         return view('koordinator/students/profile', $data);
@@ -259,11 +321,21 @@ class StudentController extends BaseKoordinatorController
     }
 
     /**
-     * Delete student (DIBLOK untuk Koordinator)
+     * Delete student.
      */
     public function delete($id)
     {
-        return $this->denyManualCrud('Hapus siswa');
+        $deny = $this->requireManageStudentsPermission();
+        if ($deny) return $deny;
+
+        $result = $this->studentService->deleteStudent((int) $id);
+
+        if (! ($result['success'] ?? false)) {
+            return redirect()->back()->with('error', $result['message'] ?? 'Gagal menghapus siswa.');
+        }
+
+        return redirect()->to(base_url('koordinator/students'))
+            ->with('success', $result['message'] ?? 'Siswa berhasil dihapus.');
     }
 
     /**
@@ -550,7 +622,7 @@ class StudentController extends BaseKoordinatorController
             $failed = (int) ($results['failed'] ?? 0);
 
             $message = sprintf(
-                'Import selesai! Total: %d baris, Berhasil: %d, Gagal: %d',
+                'Impor selesai! Total: %d baris, Berhasil: %d, Gagal: %d',
                 $total,
                 $ok,
                 $failed
@@ -562,7 +634,7 @@ class StudentController extends BaseKoordinatorController
                 if ($ok > 0) {
                     session()->setFlashdata('warning', $message);
                 } else {
-                    session()->setFlashdata('error', 'Import gagal! ' . $message);
+                session()->setFlashdata('error', 'Impor gagal! ' . $message);
                 }
             } else {
                 session()->setFlashdata('success', $message);
@@ -578,14 +650,14 @@ class StudentController extends BaseKoordinatorController
 
             return redirect()->to(base_url('koordinator/students'));
         } catch (\Exception $e) {
-            log_message('error', 'Import error: ' . $e->getMessage());
+            log_message('error', 'Impor error: ' . $e->getMessage());
 
             if (isset($filePath) && file_exists($filePath)) {
                 unlink($filePath);
             }
 
             return redirect()->back()
-                ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+                ->with('error', 'Terjadi kesalahan saat impor: ' . $e->getMessage());
         }
     }
 

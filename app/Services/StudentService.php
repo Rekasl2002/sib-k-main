@@ -333,6 +333,49 @@ class StudentService
     }
 
     /**
+     * Daftar kegiatan/acara layanan BK yang melibatkan siswa
+     * (sebagai subjek langsung atau peserta/undangan).
+     *
+     * @return list<array<string,mixed>>
+     */
+    public function getStudentBkActivities(int $studentId, int $limit = 30): array
+    {
+        if ($studentId <= 0 || ! $this->db->tableExists('bk_service_records')) {
+            return [];
+        }
+
+        // Id layanan tempat siswa tercatat sebagai peserta/undangan.
+        $participantIds = [];
+        if ($this->db->tableExists('session_participants')) {
+            $rows = $this->db->table('session_participants')
+                ->select('bk_service_record_id')
+                ->where('participant_student_id', $studentId)
+                ->where('deleted_at', null)
+                ->get()->getResultArray();
+            $participantIds = array_values(array_unique(array_filter(array_map(
+                static fn ($r) => (int) ($r['bk_service_record_id'] ?? 0),
+                $rows
+            ))));
+        }
+
+        $builder = $this->db->table('bk_service_records sr')
+            ->select('sr.id, sr.service_type, sr.title, sr.status, sr.location, sr.scheduled_at, sr.held_at')
+            ->where('sr.deleted_at', null)
+            ->groupStart()
+                ->where('sr.target_student_id', $studentId);
+
+        if (! empty($participantIds)) {
+            $builder->orWhereIn('sr.id', $participantIds);
+        }
+
+        $builder->groupEnd()
+            ->orderBy('COALESCE(sr.held_at, sr.scheduled_at)', 'DESC', false)
+            ->limit($limit);
+
+        return $builder->get()->getResultArray();
+    }
+
+    /**
      * Create new student with existing user account
      *
      * @param array $data
