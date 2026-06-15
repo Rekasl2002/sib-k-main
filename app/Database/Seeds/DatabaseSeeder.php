@@ -71,6 +71,9 @@ class DatabaseSeeder extends Seeder
         $this->seedSimulationAccess($now);
         $this->call(DemoSchoolDataSeeder::class);
 
+        // Geser semua tanggal jadwal/agenda agar berpusat di sekitar hari ini (~1 bulan).
+        $this->shiftScheduleDatesToTodayWindow();
+
         echo "\nSIB-K development demo database seeded successfully.\n";
         echo "Akun demo:\n";
         echo "- admin / admin123\n";
@@ -81,6 +84,51 @@ class DatabaseSeeder extends Seeder
         echo "- siswa_2 / siswa123\n";
         echo "- siswa_1 / siswa123\n";
         echo "- ortu_2 / parent123\n\n";
+    }
+
+    /**
+     * Menggeser tanggal jadwal/agenda demo agar berpusat di sekitar hari ini,
+     * sehingga halaman "Jadwal akan datang" selalu terisi data ~1 bulan.
+     * Anchor data demo = 2026-06-09 (tanggal acuan pembuatan seed).
+     */
+    private function shiftScheduleDatesToTodayWindow(): void
+    {
+        $anchor = strtotime('2026-06-09');
+        $today  = strtotime(date('Y-m-d'));
+        $shift  = (int) round(($today - $anchor) / 86400);
+
+        if ($shift === 0) {
+            return;
+        }
+
+        $scheduleColumns = [
+            'bk_service_records'             => ['scheduled_at', 'held_at'],
+            'counseling_sessions'            => ['session_date'],
+            'bk_assignments'                 => ['due_at', 'assigned_at'],
+            'bk_assignment_status_histories' => ['changed_at'],
+            'consultation_complaints'        => ['occurred_at', 'handled_at'],
+            'assessments'                    => ['start_date', 'end_date'],
+            'assessment_assignees'           => ['assigned_at'],
+            'assessment_results'             => ['started_at', 'completed_at'],
+        ];
+
+        foreach ($scheduleColumns as $table => $columns) {
+            if (! $this->db->tableExists($table)) {
+                continue;
+            }
+
+            $fields = $this->tableFields($table);
+            $sets   = [];
+            foreach ($columns as $col) {
+                if (in_array($col, $fields, true)) {
+                    $sets[] = "`{$col}` = DATE_ADD(`{$col}`, INTERVAL {$shift} DAY)";
+                }
+            }
+
+            if ($sets !== []) {
+                $this->db->query("UPDATE `{$table}` SET " . implode(', ', $sets));
+            }
+        }
     }
 
     private function resetTables(): void
@@ -283,17 +331,17 @@ class DatabaseSeeder extends Seeder
     {
         $rows = [
             [1, 1, 'admin', 'admin@sibk.sch.id', 'admin123', 'Administrator Sistem', '081100000001'],
-            [2, 2, 'koordinator', 'koordinator.bk@sibk.sch.id', 'koordinator123', 'Ustadz Koordinator BK 1 - Koordinator BK', '081100000002'],
-            [3, 3, 'gurubk_1', 'gurubk1@sibk.sch.id', 'gurubk123', 'Guru BK 1 - Guru BK', '081100000003'],
-            [4, 3, 'gurubk_2', 'gurubk2@sibk.sch.id', 'gurubk123', 'Guru BK 2, S.Psi., M.M.', '081100000004'],
-            [5, 3, 'gurubk_3', 'gurubk3@sibk.sch.id', 'gurubk123', 'Guru BK 3 - Guru BK', '081100000005'],
-            [6, 4, 'walikelas_1', 'walikelas1@sibk.sch.id', 'walikelas123', "Wali Kelas 1 - Wali Kelas", '081100000006'],
+            [2, 2, 'koordinator', 'koordinator.bk@sibk.sch.id', 'koordinator123', 'Koordinator BK 1', '081100000002'],
+            [3, 3, 'gurubk_1', 'gurubk1@sibk.sch.id', 'gurubk123', 'Guru BK 1', '081100000003'],
+            [4, 3, 'gurubk_2', 'gurubk2@sibk.sch.id', 'gurubk123', 'Guru BK 2', '081100000004'],
+            [5, 3, 'gurubk_3', 'gurubk3@sibk.sch.id', 'gurubk123', 'Guru BK 3', '081100000005'],
+            [6, 4, 'walikelas_1', 'walikelas1@sibk.sch.id', 'walikelas123', "Wali Kelas 1", '081100000006'],
             [7, 4, 'walikelas_demo', 'wali.demo@sibk.sch.id', 'walikelas123', 'Wali Kelas Demo', '081100000007'],
-            [8, 5, 'siswa_2', null, 'siswa123', 'Siswa 2 Jahrama', '081100000008'],
+            [8, 5, 'siswa_2', null, 'siswa123', 'Siswa 2', '081100000008'],
             [9, 5, 'siswa_1', null, 'siswa123', 'Siswa 1', '081100000009'],
             [10, 5, 'siswa_demo', null, 'siswa123', 'Siswa Demo Fathiyah', '081100000010'],
             [11, 6, 'ortu_2', null, 'parent123', 'Orang Tua Siswa 2', '081100000011'],
-            [12, 6, 'ortu_1', null, 'parent123', 'Orang Tua Siswa 1', '081100000012'],
+            [12, 6, 'ortu_1', null, 'parent123', 'Ibu Siswa 1', '081100000012'],
             [13, 6, 'parent_demo', null, 'parent123', 'Orang Tua Siswa Demo', '081100000013'],
         ];
 
@@ -337,6 +385,7 @@ class DatabaseSeeder extends Seeder
                 'gender' => 'L', 'birth_place' => 'Bandung', 'birth_date' => '2007-09-19', 'religion' => 'Islam',
                 'address' => 'Kp. Banjaran, Kabupaten Bandung',
                 'special_needs' => 'Tidak Ada', 'disability' => 'Tidak Ada', 'kip_pip_number' => null,
+                'hobi' => 'Sepak bola dan membaca', 'ekskul_organisasi' => 'Pramuka, Rohis',
                 'father_name' => 'Ayah Siswa 2', 'mother_name' => 'Ibu Siswa 2', 'guardian_name' => 'Orang Tua Siswa 2',
                 'parent_id' => 11, 'admission_date' => '2025-07-14', 'status' => 'Aktif',
                 'created_at' => $now, 'updated_at' => $now,
@@ -346,7 +395,8 @@ class DatabaseSeeder extends Seeder
                 'gender' => 'P', 'birth_place' => 'Bandung', 'birth_date' => '2008-01-15', 'religion' => 'Islam',
                 'address' => 'Jl. Raya Banjaran No. 12, Kabupaten Bandung',
                 'special_needs' => 'Tidak Ada', 'disability' => 'Tidak Ada', 'kip_pip_number' => 'KIP-2025-0002',
-                'father_name' => 'Ayah Siswa 1', 'mother_name' => 'Ibu Siswa 1', 'guardian_name' => 'Orang Tua Siswa 1',
+                'hobi' => 'Menulis dan kaligrafi', 'ekskul_organisasi' => 'PMR, Jurnalistik',
+                'father_name' => 'Ayah Siswa 1', 'mother_name' => 'Ibu Siswa 1', 'guardian_name' => 'Ibu Siswa 1',
                 'parent_id' => 12, 'admission_date' => '2025-07-14', 'status' => 'Aktif',
                 'created_at' => $now, 'updated_at' => $now,
             ],
@@ -421,7 +471,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->insertRows('parent_collaborations', [
-            ['id' => 1, 'bk_service_record_id' => 3, 'parent_name' => 'Orang Tua Siswa 1', 'topic' => 'Koordinasi motivasi belajar dan kehadiran', 'summary' => 'Orang tua menyampaikan perubahan kebiasaan belajar di rumah. Guru BK menjelaskan rencana pendampingan sekolah.', 'follow_up' => 'Guru BK mengirim ringkasan jadwal pendampingan kepada orang tua dan wali kelas hanya pada bagian umum.', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 1, 'bk_service_record_id' => 3, 'parent_name' => 'Ibu Siswa 1', 'topic' => 'Koordinasi motivasi belajar dan kehadiran', 'summary' => 'Orang tua menyampaikan perubahan kebiasaan belajar di rumah. Guru BK menjelaskan rencana pendampingan sekolah.', 'follow_up' => 'Guru BK mengirim ringkasan jadwal pendampingan kepada orang tua dan wali kelas hanya pada bagian umum.', 'created_at' => $now, 'updated_at' => $now],
         ]);
 
         $this->insertRows('home_visits', [
