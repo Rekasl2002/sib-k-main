@@ -487,6 +487,7 @@ $routes->group('koordinator', [
             $routes->get('show/(:num)', 'ConsultationController::show/$1', ['as' => 'koordinator.consultations.show']);
             $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'koordinator.consultations.edit']);
             $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'koordinator.consultations.update']);
+            $routes->post('delete/(:num)', 'ConsultationController::delete/$1', ['as' => 'koordinator.consultations.delete']);
             $routes->post('review/(:num)', 'ConsultationController::review/$1', ['as' => 'koordinator.consultations.review']);
         });
 
@@ -661,6 +662,7 @@ $routes->group('counselor', [
             $routes->get('show/(:num)', 'ConsultationController::show/$1', ['as' => 'counselor.consultations.show']);
             $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'counselor.consultations.edit']);
             $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'counselor.consultations.update']);
+            $routes->post('delete/(:num)', 'ConsultationController::delete/$1', ['as' => 'counselor.consultations.delete']);
             $routes->post('review/(:num)', 'ConsultationController::review/$1', ['as' => 'counselor.consultations.review']);
         });
 
@@ -844,6 +846,7 @@ $routes->group('homeroom', [
             $routes->get('show/(:num)', 'ConsultationController::show/$1', ['as' => 'homeroom.consultations.show']);
             $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'homeroom.consultations.edit']);
             $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'homeroom.consultations.update']);
+            $routes->post('delete/(:num)', 'ConsultationController::delete/$1', ['as' => 'homeroom.consultations.delete']);
         });
 
         $bkReadRoutes = static function ($routes, string $controller, string $alias): void {
@@ -1121,6 +1124,7 @@ $routes->group('student', [
             $routes->get('show/(:num)', 'ConsultationController::show/$1', ['as' => 'student.consultations.show']);
             $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'student.consultations.edit']);
             $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'student.consultations.update']);
+            $routes->post('delete/(:num)', 'ConsultationController::delete/$1', ['as' => 'student.consultations.delete']);
         });
         $routes->group('guidance', ['filter' => 'permission:view_bk_services'], function ($routes) {
             $routes->get('/', 'GuidanceController::index', ['as' => 'student.guidance.index']);
@@ -1274,6 +1278,7 @@ $routes->group('parent', [
             $routes->get('show/(:num)', 'ConsultationController::show/$1', ['as' => 'parent.consultations.show']);
             $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'parent.consultations.edit']);
             $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'parent.consultations.update']);
+            $routes->post('delete/(:num)', 'ConsultationController::delete/$1', ['as' => 'parent.consultations.delete']);
         });
 
         $bkReadRoutes = static function ($routes, string $controller, string $alias): void {
