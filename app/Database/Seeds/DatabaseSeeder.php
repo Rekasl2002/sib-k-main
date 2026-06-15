@@ -35,7 +35,6 @@ class DatabaseSeeder extends Seeder
         'message_participants',
         'messages',
         'notifications',
-        'violation_submissions',
         'students',
         'classes',
         'academic_years',
@@ -70,6 +69,7 @@ class DatabaseSeeder extends Seeder
         $this->seedCareerAndUniversity($now);
         $this->seedSettings($now);
         $this->seedSimulationAccess($now);
+        $this->call(DemoSchoolDataSeeder::class);
 
         echo "\nSIB-K development demo database seeded successfully.\n";
         echo "Akun demo:\n";
@@ -155,6 +155,7 @@ class DatabaseSeeder extends Seeder
             'manage_users' => 'Kelola pengguna sistem',
             'manage_roles' => 'Kelola peran dan hak akses',
             'manage_academic_data' => 'Kelola tahun akademik, kelas, dan siswa',
+            'manage_students' => 'Kelola data siswa dan akun orang tua sesuai lingkup peran',
             'manage_counseling_sessions' => 'Kelola sesi konseling lama yang masih dipakai aplikasi',
             'view_counseling_sessions' => 'Lihat sesi konseling lama yang masih dipakai aplikasi',
             'manage_assessments' => 'Kelola asesmen',
@@ -174,10 +175,6 @@ class DatabaseSeeder extends Seeder
             'generate_reports_aggregate' => 'Unduh laporan agregat',
             'view_reports_individual' => 'Lihat laporan individual siswa',
             'generate_reports_individual' => 'Unduh laporan individual siswa',
-            'submit_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
-            'view_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
-            'review_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
-            'manage_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
             'manage_bk_services' => 'Kelola layanan BK baru',
             'view_bk_services' => 'Lihat layanan BK baru',
             'manage_consultation_complaints' => 'Kelola konsultasi dan pengaduan',
@@ -188,6 +185,7 @@ class DatabaseSeeder extends Seeder
             'view_bk_reports' => 'Lihat laporan layanan BK',
             'generate_bk_reports' => 'Unduh laporan layanan BK',
             'access_simulation_suite' => 'Akses halaman prototipe dan simulasi',
+            'view_staff_info' => 'Lihat info kontak Guru BK dan Wali Kelas',
         ];
 
         $rows = [];
@@ -219,14 +217,14 @@ class DatabaseSeeder extends Seeder
         $sets = [
             1 => array_keys($permissionMap),
             2 => [
-                'view_dashboard', 'view_all_students', 'manage_academic_data', 'send_messages',
+                'view_dashboard', 'view_all_students', 'manage_students', 'manage_users',
+                'manage_academic_data', 'import_export_data', 'send_messages',
                 'manage_assessments', 'manage_career_info', 'view_career_info',
                 'manage_bk_services', 'view_bk_services', 'manage_consultation_complaints',
                 'review_consultation_complaints', 'manage_bk_assignments', 'view_bk_assignments',
                 'view_bk_reports', 'generate_bk_reports', 'view_reports_aggregate',
                 'generate_reports_aggregate', 'view_reports_individual', 'generate_reports_individual',
-                'access_simulation_suite', 'view_violation_submissions', 'review_violation_submissions',
-                'manage_violation_submissions',
+                'access_simulation_suite',
             ],
             3 => [
                 'view_dashboard', 'view_all_students', 'send_messages', 'manage_assessments',
@@ -234,27 +232,32 @@ class DatabaseSeeder extends Seeder
                 'manage_consultation_complaints', 'review_consultation_complaints',
                 'view_bk_assignments', 'view_bk_reports', 'generate_bk_reports',
                 'view_reports_individual', 'generate_reports_individual', 'access_simulation_suite',
-                'manage_counseling_sessions', 'view_counseling_sessions', 'view_violation_submissions',
-                'review_violation_submissions', 'manage_violation_submissions',
+                'manage_counseling_sessions', 'view_counseling_sessions',
             ],
             4 => [
-                'view_dashboard', 'view_all_students', 'send_messages', 'submit_consultation_complaints',
+                // Wali Kelas dapat membantu impor siswa/orang tua, tetapi prosesnya dibatasi ke kelas binaannya.
+                'view_dashboard', 'view_all_students', 'manage_students', 'send_messages', 'submit_consultation_complaints',
                 'view_bk_services', 'view_bk_reports', 'view_reports_individual',
                 'generate_reports_individual', 'view_career_info', 'access_simulation_suite',
-                'submit_violation_submissions', 'view_counseling_sessions',
+                'import_export_data', 'view_counseling_sessions',
             ],
             5 => [
                 'view_dashboard', 'send_messages', 'submit_consultation_complaints', 'take_assessments',
                 'schedule_counseling', 'view_bk_services', 'view_career_info', 'view_student_portfolio',
-                'access_simulation_suite', 'submit_violation_submissions', 'view_counseling_sessions',
+                'access_simulation_suite', 'view_counseling_sessions',
             ],
             6 => [
                 'view_dashboard', 'send_messages', 'submit_consultation_complaints', 'view_bk_services',
                 'view_career_info', 'view_bk_reports', 'view_reports_individual',
                 'generate_reports_individual', 'view_student_portfolio', 'access_simulation_suite',
-                'submit_violation_submissions', 'view_counseling_sessions',
+                'view_counseling_sessions',
             ],
         ];
+
+        // Info Guru/Staf untuk semua peran non-Admin (Admin sudah punya semua permission).
+        foreach ([2, 3, 4, 5, 6] as $roleIdForStaff) {
+            $sets[$roleIdForStaff][] = 'view_staff_info';
+        }
 
         $rows = [];
 
@@ -392,9 +395,6 @@ class DatabaseSeeder extends Seeder
             ['id' => 1, 'complaint_id' => 2, 'file_path' => 'uploads/demo/laporan-orang-tua-khayra.pdf', 'file_type' => 'application/pdf', 'uploaded_by' => 12, 'created_at' => '2026-06-04 20:25:00', 'updated_at' => $now],
         ]);
 
-        $this->insertRows('violation_submissions', [
-            ['id' => 1, 'reporter_type' => 'homeroom', 'reporter_user_id' => 6, 'subject_student_id' => 3, 'occurred_date' => '2026-06-06', 'occurred_time' => '10:00:00', 'location' => 'Ruang kelas XII C', 'description' => 'Data kompatibilitas untuk route lama; alur final memakai consultation_complaints.', 'status' => 'Ditinjau', 'handled_by' => 5, 'handled_at' => '2026-06-06 12:00:00', 'review_notes' => 'Dipindahkan ke rancangan Konsultasi & Pengaduan.', 'created_at' => $now, 'updated_at' => $now],
-        ]);
     }
 
     private function seedBkServices(string $now): void

@@ -13,6 +13,7 @@ class PermissionSeeder extends Seeder
             'manage_users' => 'Kelola pengguna sistem',
             'manage_roles' => 'Kelola peran dan hak akses',
             'manage_academic_data' => 'Kelola tahun akademik, kelas, dan siswa',
+            'manage_students' => 'Kelola data siswa dan akun orang tua sesuai lingkup peran',
             'manage_counseling_sessions' => 'Kelola sesi konseling lama yang masih dipakai aplikasi',
             'view_counseling_sessions' => 'Lihat sesi konseling lama yang masih dipakai aplikasi',
             'manage_assessments' => 'Kelola asesmen',
@@ -32,10 +33,6 @@ class PermissionSeeder extends Seeder
             'generate_reports_aggregate' => 'Unduh laporan agregat',
             'view_reports_individual' => 'Lihat laporan individual siswa',
             'generate_reports_individual' => 'Unduh laporan individual siswa',
-            'submit_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
-            'view_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
-            'review_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
-            'manage_violation_submissions' => 'Kompatibilitas fitur pengaduan lama',
             'manage_bk_services' => 'Kelola layanan BK baru',
             'view_bk_services' => 'Lihat layanan BK baru',
             'manage_consultation_complaints' => 'Kelola konsultasi dan pengaduan',
@@ -46,6 +43,7 @@ class PermissionSeeder extends Seeder
             'view_bk_reports' => 'Lihat laporan layanan BK',
             'generate_bk_reports' => 'Unduh laporan layanan BK',
             'access_simulation_suite' => 'Akses halaman prototipe dan simulasi',
+            'view_staff_info' => 'Lihat info kontak Guru BK dan Wali Kelas',
         ];
 
         $rows = [];

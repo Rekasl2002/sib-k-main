@@ -14,14 +14,14 @@ class RolePermissionSeeder extends Seeder
         $sets = [
             1 => array_keys($permissionMap),
             2 => [
-                'view_dashboard', 'view_all_students', 'manage_academic_data', 'send_messages',
+                'view_dashboard', 'view_all_students', 'manage_students', 'manage_users',
+                'manage_academic_data', 'import_export_data', 'send_messages',
                 'manage_assessments', 'manage_career_info', 'view_career_info',
                 'manage_bk_services', 'view_bk_services', 'manage_consultation_complaints',
                 'review_consultation_complaints', 'manage_bk_assignments', 'view_bk_assignments',
                 'view_bk_reports', 'generate_bk_reports', 'view_reports_aggregate',
                 'generate_reports_aggregate', 'view_reports_individual', 'generate_reports_individual',
-                'access_simulation_suite', 'view_violation_submissions', 'review_violation_submissions',
-                'manage_violation_submissions',
+                'access_simulation_suite',
             ],
             3 => [
                 'view_dashboard', 'view_all_students', 'send_messages', 'manage_assessments',
@@ -29,27 +29,32 @@ class RolePermissionSeeder extends Seeder
                 'manage_consultation_complaints', 'review_consultation_complaints',
                 'view_bk_assignments', 'view_bk_reports', 'generate_bk_reports',
                 'view_reports_individual', 'generate_reports_individual', 'access_simulation_suite',
-                'manage_counseling_sessions', 'view_counseling_sessions', 'view_violation_submissions',
-                'review_violation_submissions', 'manage_violation_submissions',
+                'manage_counseling_sessions', 'view_counseling_sessions',
             ],
             4 => [
-                'view_dashboard', 'view_all_students', 'send_messages', 'submit_consultation_complaints',
+                // Wali Kelas mendapat import_export_data agar dapat membantu impor siswa/orang tua pada kelas binaannya.
+                'view_dashboard', 'view_all_students', 'manage_students', 'send_messages', 'submit_consultation_complaints',
                 'view_bk_services', 'view_bk_reports', 'view_reports_individual',
                 'generate_reports_individual', 'view_career_info', 'access_simulation_suite',
-                'submit_violation_submissions', 'view_counseling_sessions',
+                'import_export_data', 'view_counseling_sessions',
             ],
             5 => [
                 'view_dashboard', 'send_messages', 'submit_consultation_complaints', 'take_assessments',
                 'schedule_counseling', 'view_bk_services', 'view_career_info', 'view_student_portfolio',
-                'access_simulation_suite', 'submit_violation_submissions', 'view_counseling_sessions',
+                'access_simulation_suite', 'view_counseling_sessions',
             ],
             6 => [
                 'view_dashboard', 'send_messages', 'submit_consultation_complaints', 'view_bk_services',
                 'view_career_info', 'view_bk_reports', 'view_reports_individual',
                 'generate_reports_individual', 'view_student_portfolio', 'access_simulation_suite',
-                'submit_violation_submissions', 'view_counseling_sessions',
+                'view_counseling_sessions',
             ],
         ];
+
+        // Info Guru/Staf untuk semua peran non-Admin (Admin sudah punya semua permission).
+        foreach ([2, 3, 4, 5, 6] as $roleIdForStaff) {
+            $sets[$roleIdForStaff][] = 'view_staff_info';
+        }
 
         $rows = [];
         foreach ($sets as $roleId => $permissionNames) {
