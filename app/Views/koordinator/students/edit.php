@@ -387,6 +387,20 @@ helper(['url', 'form']);
                                            value="<?= old('guardian_name') ?? esc($student['guardian_name'] ?? '') ?>">
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="hobi" class="form-label">Hobi</label>
+                                    <input type="text" class="form-control" id="hobi" name="hobi"
+                                           value="<?= old('hobi') ?? esc($student['hobi'] ?? '') ?>"
+                                           placeholder="Contoh: Membaca, sepak bola">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="ekskul_organisasi" class="form-label">Ekstrakurikuler / Organisasi</label>
+                                    <input type="text" class="form-control" id="ekskul_organisasi" name="ekskul_organisasi"
+                                           value="<?= old('ekskul_organisasi') ?? esc($student['ekskul_organisasi'] ?? '') ?>"
+                                           placeholder="Contoh: Pramuka, Rohis">
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
