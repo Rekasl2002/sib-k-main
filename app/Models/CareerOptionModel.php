@@ -23,8 +23,10 @@ class CareerOptionModel extends Model
     protected array $casts = [
         'is_public'      => 'integer',
         'is_active'      => 'integer',
-        'demand_level'   => 'integer',
-        'avg_salary_idr' => 'integer',
+        // Kolom ini nullable di DB & opsional di form -> pakai cast nullable
+        // agar nilai kosong (null) tidak ditolak DataCaster CI4.
+        'demand_level'   => '?integer',
+        'avg_salary_idr' => '?integer',
     ];
 
 

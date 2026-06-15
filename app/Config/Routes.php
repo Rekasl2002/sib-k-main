@@ -559,17 +559,30 @@ $routes->group('koordinator', [
             $routes->post('review/(:num)', 'AssessmentController::reviewSave/$1', ['as' => 'koordinator.assessments.review.save']);
             $routes->post('(:num)/results/(:num)/ungrade', 'AssessmentController::ungradeResult/$1/$2', ['as' => 'koordinator.assessments.results.ungrade']);
             $routes->post('(:num)/results/(:num)/delete', 'AssessmentController::deleteResult/$1/$2', ['as' => 'koordinator.assessments.results.delete']);
-
-            $routes->post('grade/submit', 'AssessmentController::submitGrade', ['as' => 'koordinator.assessments.grade.submit']);
-            $routes->post('grade/answer', 'AssessmentController::gradeAnswerAction', ['as' => 'koordinator.assessments.grade.answer']);
-            $routes->post('review/(:num)', 'AssessmentController::reviewSave/$1', ['as' => 'koordinator.assessments.review.save']);
-            $routes->post('(:num)/results/(:num)/ungrade', 'AssessmentController::ungradeResult/$1/$2', ['as' => 'koordinator.assessments.results.ungrade']);
-            $routes->post('(:num)/results/(:num)/delete', 'AssessmentController::deleteResult/$1/$2', ['as' => 'koordinator.assessments.results.delete']);
         });
 
-        $routes->group('career-info', ['filter' => 'permission:any,manage_career_info,view_career_info'], function ($routes) {
+        // Career & University info (Koordinator = paritas penuh dengan Guru BK)
+        $routes->group('career-info', ['filter' => 'permission:manage_career_info'], static function ($routes) {
             $routes->get('/', 'CareerInfoController::index', ['as' => 'koordinator.career.index']);
+            $routes->get('careers', 'CareerInfoController::index');
+            $routes->get('careers/create', 'CareerInfoController::createCareer', ['as' => 'koordinator.career.create']);
+            $routes->post('careers/store', 'CareerInfoController::storeCareer', ['as' => 'koordinator.career.store']);
+            $routes->get('careers/edit/(:num)', 'CareerInfoController::editCareer/$1', ['as' => 'koordinator.career.edit']);
+            $routes->post('careers/update/(:num)', 'CareerInfoController::updateCareer/$1', ['as' => 'koordinator.career.update']);
+            $routes->post('careers/delete/(:num)', 'CareerInfoController::deleteCareer/$1', ['as' => 'koordinator.career.delete']);
+            $routes->post('careers/toggle/(:num)', 'CareerInfoController::toggleCareer/$1', ['as' => 'koordinator.career.toggle']);
+            $routes->post('careers/publish/(:num)', 'CareerInfoController::toggleCareerPublic/$1', ['as' => 'koordinator.career.publish']);
+
             $routes->get('student-choices', 'CareerInfoController::studentChoices', ['as' => 'koordinator.career.choices']);
+
+            $routes->get('universities', 'CareerInfoController::universities', ['as' => 'koordinator.university.index']);
+            $routes->get('universities/create', 'CareerInfoController::createUniversity', ['as' => 'koordinator.university.create']);
+            $routes->post('universities/store', 'CareerInfoController::storeUniversity', ['as' => 'koordinator.university.store']);
+            $routes->get('universities/edit/(:num)', 'CareerInfoController::editUniversity/$1', ['as' => 'koordinator.university.edit']);
+            $routes->post('universities/update/(:num)', 'CareerInfoController::updateUniversity/$1', ['as' => 'koordinator.university.update']);
+            $routes->post('universities/delete/(:num)', 'CareerInfoController::deleteUniversity/$1', ['as' => 'koordinator.university.delete']);
+            $routes->post('universities/toggle/(:num)', 'CareerInfoController::toggleUniversity/$1', ['as' => 'koordinator.university.toggle']);
+            $routes->post('universities/publish/(:num)', 'CareerInfoController::toggleUniversityPublic/$1', ['as' => 'koordinator.university.publish']);
         });
 
         // Reports:
