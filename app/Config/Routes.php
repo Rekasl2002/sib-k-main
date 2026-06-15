@@ -4,7 +4,7 @@
  * File Path: app/Config/Routes.php
  *
  * Complete Routes Configuration (RBAC-ready)
- * Qovex Template • CodeIgniter 4.6.3
+ * Qovex Template â€¢ CodeIgniter 4.6.3
  *
  * IMPORTANT (RBAC Permissions):
  * - Semua filter permission di file ini WAJIB sesuai dengan `permissions.permission_name` di database.
@@ -18,14 +18,14 @@ use Config\Services;
 /** @var RouteCollection $routes */
 
 /**
- * ✅ SAFETY: Pastikan $routes terdefinisi.
+ * âœ… SAFETY: Pastikan $routes terdefinisi.
  */
 if (!isset($routes) || !($routes instanceof RouteCollection)) {
     $routes = Services::routes();
 }
 
 /**
- * ✅ OPSIONAL (standar CI4):
+ * âœ… OPSIONAL (standar CI4):
  * Muat Routes sistem terlebih dahulu (kalau ada).
  * Ini membantu menjaga default behavior CI4 tetap konsisten.
  */
@@ -49,22 +49,22 @@ $routes->setTranslateURIDashes(false);
 // Disarankan: matikan AutoRoute untuk keamanan (semua rute eksplisit)
 $routes->setAutoRoute(false);
 
-// Fitur Pengaduan Pelanggaran dibuka sebagai hidden URL.
-// Jangan tampilkan di sidebar; pengguna hanya mengakses jika mengetahui URL-nya.
-$featureViolationSubmissionsEnabled = true;
+
+// UI Manajemen Sesi Konseling lama sudah digantikan fitur Konseling final.
+// Tabel counseling_sessions tetap dipakai sebagai detail data Konseling.
 
 // -------------------------------
 // Default
 // -------------------------------
 
-// ✅ FIX: Masuk web langsung ke halaman login
+// âœ… FIX: Masuk web langsung ke halaman login
 $routes->get('/', static fn() => redirect()->to('/login'));
 
-// ✅ OPSIONAL: tetap sediakan akses Home::index (kalau masih dibutuhkan)
+// âœ… OPSIONAL: tetap sediakan akses Home::index (kalau masih dibutuhkan)
 $routes->get('home', 'Home::index');
 
 /**
- * ✅ Dashboard universal (opsional, tapi enak untuk redirect fail-safe)
+ * âœ… Dashboard universal (opsional, tapi enak untuk redirect fail-safe)
  * Mengarahkan user ke dashboard sesuai role_name di session.
  */
 $routes->get('dashboard', static function () {
@@ -91,7 +91,7 @@ $routes->get('parent', static fn() => redirect()->to('/parent/dashboard'), ['fil
 $routes->get('student', static fn() => redirect()->to('/student/dashboard'), ['filter' => 'auth']);
 
 /**
- * ✅ Kompatibilitas untuk AuthFilter lama yang redirect ke /auth/login.
+ * âœ… Kompatibilitas untuk AuthFilter lama yang redirect ke /auth/login.
  * Ini mencegah 404 / redirect loop.
  */
 $routes->group('auth', ['filter' => 'csrf'], function ($routes) {
@@ -107,7 +107,7 @@ $routes->group('auth', ['filter' => 'csrf'], function ($routes) {
 });
 
 /**
- * ✅ Opsional kompatibilitas:
+ * âœ… Opsional kompatibilitas:
  * beberapa view/controller lama kadang pakai prefix "homeroom_teacher/*"
  * kita redirect ke rute "homeroom/*" biar tidak 404.
  *
@@ -187,6 +187,38 @@ $routes->group('admin', [
             'filter' => 'permission:view_dashboard',
             'as'     => 'admin.dashboard.stats'
         ]);
+
+        $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'NotificationController::index', ['as' => 'admin.notifications']);
+            $routes->get('unread', 'NotificationController::unread', ['as' => 'admin.notifications.unread']);
+            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'admin.notifications.preferences']);
+            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'admin.notifications.preferences.update']);
+            $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'admin.notifications.read']);
+            $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'admin.notifications.read_all']);
+            $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'admin.notifications.delete']);
+            $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'admin.notifications.count']);
+        });
+
+        // Tempat Sampah (pemulihan soft delete) - hanya data milik penghapus.
+        $routes->group('trash', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'TrashController::index', ['as' => 'admin.trash']);
+            $routes->post('restore', 'TrashController::restore', ['as' => 'admin.trash.restore']);
+            $routes->post('force-delete', 'TrashController::forceDelete', ['as' => 'admin.trash.force']);
+        });
+
+        $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
+            $routes->get('/', 'MessageController::index', ['as' => 'admin.messages']);
+            $routes->get('inbox', 'MessageController::inbox', ['as' => 'admin.messages.inbox']);
+            $routes->get('sent', 'MessageController::sent', ['as' => 'admin.messages.sent']);
+            $routes->get('compose', 'MessageController::compose', ['as' => 'admin.messages.compose']);
+            $routes->post('send', 'MessageController::send', ['as' => 'admin.messages.send']);
+            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'admin.messages.detail']);
+            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'admin.messages.edit']);
+            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'admin.messages.update']);
+            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'admin.messages.reply']);
+            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'admin.messages.delete']);
+            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'admin.messages.read']);
+        });
 
         // USER MANAGEMENT (izin: manage_users)
         $routes->group('users', ['filter' => 'permission:manage_users'], function ($routes) {
@@ -317,6 +349,13 @@ $routes->group('koordinator', [
             $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'koordinator.notifications.count']);
         });
 
+        // Tempat Sampah (pemulihan soft delete) - hanya data milik penghapus.
+        $routes->group('trash', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'TrashController::index', ['as' => 'koordinator.trash']);
+            $routes->post('restore', 'TrashController::restore', ['as' => 'koordinator.trash.restore']);
+            $routes->post('force-delete', 'TrashController::forceDelete', ['as' => 'koordinator.trash.force']);
+        });
+
         $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
             $routes->get('/', 'MessageController::index', ['as' => 'koordinator.messages']);
             $routes->get('inbox', 'MessageController::inbox', ['as' => 'koordinator.messages.inbox']);
@@ -376,6 +415,14 @@ $routes->group('koordinator', [
                 'filter' => 'permission:view_all_students',
                 'as'     => 'koordinator.students.index'
             ]);
+            $routes->get('create', 'StudentController::create', [
+                'filter' => 'permission:manage_students',
+                'as'     => 'koordinator.students.create'
+            ]);
+            $routes->post('store', 'StudentController::store', [
+                'filter' => 'permission:manage_students',
+                'as'     => 'koordinator.students.store'
+            ]);
             $routes->get('profile/(:num)', 'StudentController::profile/$1', [
                 'filter' => 'permission:view_all_students',
                 'as'     => 'koordinator.students.profile'
@@ -395,15 +442,19 @@ $routes->group('koordinator', [
 
             // Edit/update: pakai permission yang memang ada di tabel (hindari manage_academic_data yang khusus Admin)
             $routes->get('edit/(:num)', 'StudentController::edit/$1', [
-                'filter' => 'permission:view_all_students',
+                'filter' => 'permission:manage_students',
                 'as'     => 'koordinator.students.edit'
             ]);
             $routes->post('update/(:num)', 'StudentController::update/$1', [
-                'filter' => 'permission:view_all_students',
+                'filter' => 'permission:manage_students',
                 'as'     => 'koordinator.students.update'
             ]);
+            $routes->post('delete/(:num)', 'StudentController::delete/$1', [
+                'filter' => 'permission:manage_students',
+                'as'     => 'koordinator.students.delete'
+            ]);
 
-            // ✅ Sinkron poin pelanggaran (Koordinator)
+            // Impor/ekspor data siswa dan akun orang tua untuk pembagian kerja pengelolaan data.
             $routes->get('export', 'StudentController::export', [
                 'filter' => 'permission:import_export_data',
                 'as'     => 'koordinator.students.export'
@@ -422,32 +473,54 @@ $routes->group('koordinator', [
             ]);
         });
 
-        // SESSIONS (Koordinator) - READ (izin: view_counseling_sessions)
-        $routes->group('sessions', ['filter' => 'permission:view_counseling_sessions'], function ($routes) {
-            $routes->get('/', 'SessionController::index', ['as' => 'koordinator.sessions.index']);
-            $routes->get('detail/(:num)', 'SessionController::show/$1', ['as' => 'koordinator.sessions.detail']);
-            $routes->get('(:num)', 'SessionController::show/$1');
+        $routes->get('sessions', static fn() => redirect()->to('/koordinator/counseling'), ['as' => 'koordinator.sessions.index']);
+        $routes->get('sessions/(:any)', static fn() => redirect()->to('/koordinator/counseling'));
+        $routes->get('schedule', static fn() => redirect()->to('/koordinator/counseling'), ['as' => 'koordinator.schedule']);
+        $routes->get('schedule/(:any)', static fn() => redirect()->to('/koordinator/counseling'));
+
+
+        // Fitur final pengembangan BK: Konsultasi & Pengaduan, layanan BK, dan Penugasan.
+        $routes->group('consultations', ['filter' => 'permission:any,manage_consultation_complaints,review_consultation_complaints,submit_consultation_complaints'], function ($routes) {
+            $routes->get('/', 'ConsultationController::index', ['as' => 'koordinator.consultations.index']);
+            $routes->get('create', 'ConsultationController::create', ['as' => 'koordinator.consultations.create']);
+            $routes->post('store', 'ConsultationController::store', ['as' => 'koordinator.consultations.store']);
+            $routes->get('show/(:num)', 'ConsultationController::show/$1', ['as' => 'koordinator.consultations.show']);
+            $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'koordinator.consultations.edit']);
+            $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'koordinator.consultations.update']);
+            $routes->post('review/(:num)', 'ConsultationController::review/$1', ['as' => 'koordinator.consultations.review']);
         });
 
-        // Kalender seluruh jadwal konseling
-        $routes->get('schedule', 'ScheduleController::index', [
-            'filter' => 'permission:view_counseling_sessions',
-            'as'     => 'koordinator.schedule'
-        ]);
-        $routes->get('schedule/events', 'ScheduleController::events', [
-            'filter' => 'permission:view_counseling_sessions',
-            'as'     => 'koordinator.schedule.events'
-        ]);
+        $bkServiceRoutes = static function ($routes, string $controller, string $alias): void {
+            $routes->get('/', $controller . '::index', ['as' => $alias . '.index']);
+            $routes->get('create', $controller . '::create', ['as' => $alias . '.create']);
+            $routes->post('store', $controller . '::store', ['as' => $alias . '.store']);
+            $routes->get('show/(:num)', $controller . '::show/$1', ['as' => $alias . '.show']);
+            $routes->get('edit/(:num)', $controller . '::edit/$1', ['as' => $alias . '.edit']);
+            $routes->post('update/(:num)', $controller . '::update/$1', ['as' => $alias . '.update']);
+            $routes->post('delete/(:num)', $controller . '::delete/$1', ['as' => $alias . '.delete']);
+            $routes->post('note/(:num)', $controller . '::addNote/$1', ['as' => $alias . '.note']);
+            $routes->post('participants/(:num)', $controller . '::updateParticipant/$1', ['as' => $alias . '.participant']);
+        };
 
-        $routes->group('violation-submissions', [
-            'filter' => 'permission:any,view_violation_submissions,review_violation_submissions,manage_violation_submissions',
-        ], function ($routes) {
-            $routes->get('/', 'ViolationSubmissionsController::index', ['as' => 'koordinator.violation_submissions.index']);
-            $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1', ['as' => 'koordinator.violation_submissions.show']);
-            $routes->post('update-status/(:num)', 'ViolationSubmissionsController::updateStatus/$1', [
-                'filter' => 'permission:any,review_violation_submissions,manage_violation_submissions',
-                'as'     => 'koordinator.violation_submissions.update_status',
+        $routes->group('guidance', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'GuidanceController', 'koordinator.guidance'));
+        $routes->group('counseling', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'CounselingController', 'koordinator.counseling'));
+        $routes->group('parent-collaborations', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'ParentCollaborationController', 'koordinator.parent_collaborations'));
+        $routes->group('home-visits', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'HomeVisitController', 'koordinator.home_visits'));
+        $routes->group('case-conferences', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'CaseConferenceController', 'koordinator.case_conferences'));
+
+        $routes->group('assignments', ['filter' => 'permission:any,manage_bk_assignments,view_bk_assignments'], function ($routes) {
+            $routes->get('/', 'AssignmentController::index', ['as' => 'koordinator.assignments.index']);
+            $routes->get('create', 'AssignmentController::create', ['as' => 'koordinator.assignments.create']);
+            $routes->post('store', 'AssignmentController::store', ['as' => 'koordinator.assignments.store']);
+            $routes->post('promote-guru-bk/(:num)', 'AssignmentController::promoteToCounselor/$1', [
+                'filter' => 'permission:manage_users',
+                'as'     => 'koordinator.assignments.promote_counselor',
             ]);
+            $routes->get('show/(:num)', 'AssignmentController::show/$1', ['as' => 'koordinator.assignments.show']);
+            $routes->get('edit/(:num)', 'AssignmentController::edit/$1', ['as' => 'koordinator.assignments.edit']);
+            $routes->post('update/(:num)', 'AssignmentController::update/$1', ['as' => 'koordinator.assignments.update']);
+            $routes->post('status/(:num)', 'AssignmentController::status/$1', ['as' => 'koordinator.assignments.status']);
+            $routes->post('delete/(:num)', 'AssignmentController::delete/$1', ['as' => 'koordinator.assignments.delete']);
         });
 
         // Assessments (izin: manage_assessments)
@@ -545,6 +618,13 @@ $routes->group('counselor', [
             $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'counselor.notifications.count']);
         });
 
+        // Tempat Sampah (pemulihan soft delete) - hanya data milik penghapus.
+        $routes->group('trash', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'TrashController::index', ['as' => 'counselor.trash']);
+            $routes->post('restore', 'TrashController::restore', ['as' => 'counselor.trash.restore']);
+            $routes->post('force-delete', 'TrashController::forceDelete', ['as' => 'counselor.trash.force']);
+        });
+
         $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
             $routes->get('/', 'MessageController::index', ['as' => 'counselor.messages']);
             $routes->get('inbox', 'MessageController::inbox', ['as' => 'counselor.messages.inbox']);
@@ -559,90 +639,10 @@ $routes->group('counselor', [
             $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'counselor.messages.read']);
         });
 
-        // Sessions: list/detail pakai view, CRUD pakai manage
-        $routes->group('sessions', function ($routes) {
-            $routes->get('/', 'SessionController::index', [
-                'filter' => 'permission:view_counseling_sessions',
-                'as'     => 'counselor.sessions'
-            ]);
-
-            $routes->get('detail/(:num)', 'SessionController::show/$1', [
-                'filter' => 'permission:view_counseling_sessions',
-                'as'     => 'counselor.sessions.detail'
-            ]);
-
-            $routes->get('create', 'SessionController::create', [
-                'filter' => 'permission:manage_counseling_sessions',
-                'as'     => 'counselor.sessions.create'
-            ]);
-            $routes->post('store', 'SessionController::store', [
-                'filter' => 'permission:manage_counseling_sessions',
-                'as'     => 'counselor.sessions.store'
-            ]);
-            $routes->get('edit/(:num)', 'SessionController::edit/$1', [
-                'filter' => 'permission:manage_counseling_sessions',
-                'as'     => 'counselor.sessions.edit'
-            ]);
-            $routes->post('update/(:num)', 'SessionController::update/$1', [
-                'filter' => 'permission:manage_counseling_sessions',
-                'as'     => 'counselor.sessions.update'
-            ]);
-            $routes->post('delete/(:num)', 'SessionController::delete/$1', [
-                'filter' => 'permission:manage_counseling_sessions',
-                'as'     => 'counselor.sessions.delete'
-            ]);
-
-            $routes->post('addNote/(:num)', 'SessionController::addNote/$1', [
-                'filter' => 'permission:manage_counseling_sessions',
-                'as'     => 'counselor.sessions.note'
-            ]);
-
-            $routes->post('notes/update/(:num)', 'SessionController::updateNote/$1', [
-                'filter' => 'permission:manage_counseling_sessions',
-                'as'     => 'counselor.sessions.notes.update'
-            ]);
-            $routes->post('notes/delete/(:num)', 'SessionController::deleteNote/$1', [
-                'filter' => 'permission:manage_counseling_sessions',
-                'as'     => 'counselor.sessions.notes.delete'
-            ]);
-
-            $routes->post('participants/update/(:num)', 'SessionController::updateParticipant/$1', [
-                'filter' => 'permission:manage_counseling_sessions',
-                'as'     => 'counselor.sessions.participants.update',
-            ]);
-
-            $routes->post('participants/note/update', 'SessionController::updateParticipantNote', [
-                'filter' => 'permission:manage_counseling_sessions',
-                'as'     => 'counselor.sessions.participant_note.update'
-            ]);
-            $routes->post('participants/note/delete', 'SessionController::deleteParticipantNote', [
-                'filter' => 'permission:manage_counseling_sessions',
-                'as'     => 'counselor.sessions.participant_note.delete'
-            ]);
-
-            $routes->get('students-by-class', 'SessionController::getStudentsByClass', [
-                'filter' => 'permission:view_counseling_sessions',
-                'as'     => 'counselor.sessions.students'
-            ]);
-        });
-
-        // Schedule (pakai permission yang ada di tabel: view_counseling_sessions)
-        $routes->get('schedule', 'ScheduleController::index', [
-            'filter' => 'permission:view_counseling_sessions',
-            'as'     => 'counselor.schedule'
-        ]);
-        $routes->get('schedule/create', 'SessionController::create', [
-            'filter' => 'permission:manage_counseling_sessions',
-            'as'     => 'counselor.schedule.create'
-        ]);
-        $routes->get('schedule/events', 'ScheduleController::events', [
-            'filter' => 'permission:view_counseling_sessions',
-            'as'     => 'counselor.schedule.events'
-        ]);
-        $routes->post('schedule/reschedule', 'ScheduleController::reschedule', [
-            'filter' => 'permission:manage_counseling_sessions',
-            'as'     => 'counselor.schedule.reschedule'
-        ]);
+        $routes->get('sessions', static fn() => redirect()->to('/counselor/counseling'), ['as' => 'counselor.sessions']);
+        $routes->get('sessions/(:any)', static fn() => redirect()->to('/counselor/counseling'));
+        $routes->get('schedule', static fn() => redirect()->to('/counselor/counseling'), ['as' => 'counselor.schedule']);
+        $routes->get('schedule/(:any)', static fn() => redirect()->to('/counselor/counseling'));
 
         // Students (binaan)
         $routes->group('students', ['filter' => 'permission:view_all_students'], function ($routes) {
@@ -652,15 +652,40 @@ $routes->group('counselor', [
             $routes->post('(:num)', 'StudentController::update/$1', ['as' => 'counselor.students.update']);
             $routes->get('detail/(:num)', 'StudentController::detail/$1', ['as' => 'counselor.students.detail']);
         });
-        $routes->group('violation-submissions', [
-            'filter' => 'permission:any,view_violation_submissions,review_violation_submissions,manage_violation_submissions',
-        ], function ($routes) {
-            $routes->get('/', 'ViolationSubmissionsController::index', ['as' => 'counselor.violation_submissions.index']);
-            $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1', ['as' => 'counselor.violation_submissions.show']);
-            $routes->post('update-status/(:num)', 'ViolationSubmissionsController::updateStatus/$1', [
-                'filter' => 'permission:any,review_violation_submissions,manage_violation_submissions',
-                'as'     => 'counselor.violation_submissions.update_status',
-            ]);
+
+        // Fitur final pengembangan BK untuk Guru BK.
+        $routes->group('consultations', ['filter' => 'permission:any,manage_consultation_complaints,review_consultation_complaints,submit_consultation_complaints'], function ($routes) {
+            $routes->get('/', 'ConsultationController::index', ['as' => 'counselor.consultations.index']);
+            $routes->get('create', 'ConsultationController::create', ['as' => 'counselor.consultations.create']);
+            $routes->post('store', 'ConsultationController::store', ['as' => 'counselor.consultations.store']);
+            $routes->get('show/(:num)', 'ConsultationController::show/$1', ['as' => 'counselor.consultations.show']);
+            $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'counselor.consultations.edit']);
+            $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'counselor.consultations.update']);
+            $routes->post('review/(:num)', 'ConsultationController::review/$1', ['as' => 'counselor.consultations.review']);
+        });
+
+        $bkServiceRoutes = static function ($routes, string $controller, string $alias): void {
+            $routes->get('/', $controller . '::index', ['as' => $alias . '.index']);
+            $routes->get('create', $controller . '::create', ['as' => $alias . '.create']);
+            $routes->post('store', $controller . '::store', ['as' => $alias . '.store']);
+            $routes->get('show/(:num)', $controller . '::show/$1', ['as' => $alias . '.show']);
+            $routes->get('edit/(:num)', $controller . '::edit/$1', ['as' => $alias . '.edit']);
+            $routes->post('update/(:num)', $controller . '::update/$1', ['as' => $alias . '.update']);
+            $routes->post('delete/(:num)', $controller . '::delete/$1', ['as' => $alias . '.delete']);
+            $routes->post('note/(:num)', $controller . '::addNote/$1', ['as' => $alias . '.note']);
+            $routes->post('participants/(:num)', $controller . '::updateParticipant/$1', ['as' => $alias . '.participant']);
+        };
+
+        $routes->group('guidance', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'GuidanceController', 'counselor.guidance'));
+        $routes->group('counseling', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'CounselingController', 'counselor.counseling'));
+        $routes->group('parent-collaborations', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'ParentCollaborationController', 'counselor.parent_collaborations'));
+        $routes->group('home-visits', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'HomeVisitController', 'counselor.home_visits'));
+        $routes->group('case-conferences', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'CaseConferenceController', 'counselor.case_conferences'));
+
+        $routes->group('assignments', ['filter' => 'permission:view_bk_assignments'], function ($routes) {
+            $routes->get('/', 'AssignmentController::index', ['as' => 'counselor.assignments.index']);
+            $routes->get('show/(:num)', 'AssignmentController::show/$1', ['as' => 'counselor.assignments.show']);
+            $routes->post('status/(:num)', 'AssignmentController::status/$1', ['as' => 'counselor.assignments.status']);
         });
 
         // Assessments
@@ -789,6 +814,13 @@ $routes->group('homeroom', [
             $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'homeroom.notifications.count']);
         });
 
+        // Tempat Sampah (pemulihan soft delete) - hanya data milik penghapus.
+        $routes->group('trash', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'TrashController::index', ['as' => 'homeroom.trash']);
+            $routes->post('restore', 'TrashController::restore', ['as' => 'homeroom.trash.restore']);
+            $routes->post('force-delete', 'TrashController::forceDelete', ['as' => 'homeroom.trash.force']);
+        });
+
         $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
             $routes->get('/', 'MessageController::index', ['as' => 'homeroom.messages']);
             $routes->get('inbox', 'MessageController::inbox', ['as' => 'homeroom.messages.inbox']);
@@ -803,15 +835,27 @@ $routes->group('homeroom', [
             $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'homeroom.messages.read']);
         });
 
-        $routes->group('violation-submissions', ['filter' => 'permission:submit_violation_submissions'], function ($routes) {
-            $routes->get('/', 'ViolationSubmissionsController::index', ['as' => 'homeroom.violation_submissions.index']);
-            $routes->get('create', 'ViolationSubmissionsController::create', ['as' => 'homeroom.violation_submissions.create']);
-            $routes->post('store', 'ViolationSubmissionsController::store', ['as' => 'homeroom.violation_submissions.store']);
-            $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1', ['as' => 'homeroom.violation_submissions.show']);
-            $routes->get('edit/(:num)', 'ViolationSubmissionsController::edit/$1', ['as' => 'homeroom.violation_submissions.edit']);
-            $routes->post('update/(:num)', 'ViolationSubmissionsController::update/$1', ['as' => 'homeroom.violation_submissions.update']);
-            $routes->post('delete/(:num)', 'ViolationSubmissionsController::delete/$1', ['as' => 'homeroom.violation_submissions.delete']);
+
+        // Fitur final pengembangan BK untuk Wali Kelas.
+        $routes->group('consultations', ['filter' => 'permission:submit_consultation_complaints'], function ($routes) {
+            $routes->get('/', 'ConsultationController::index', ['as' => 'homeroom.consultations.index']);
+            $routes->get('create', 'ConsultationController::create', ['as' => 'homeroom.consultations.create']);
+            $routes->post('store', 'ConsultationController::store', ['as' => 'homeroom.consultations.store']);
+            $routes->get('show/(:num)', 'ConsultationController::show/$1', ['as' => 'homeroom.consultations.show']);
+            $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'homeroom.consultations.edit']);
+            $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'homeroom.consultations.update']);
         });
+
+        $bkReadRoutes = static function ($routes, string $controller, string $alias): void {
+            $routes->get('/', $controller . '::index', ['as' => $alias . '.index']);
+            $routes->get('show/(:num)', $controller . '::show/$1', ['as' => $alias . '.show']);
+        };
+
+        $routes->group('guidance', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'GuidanceController', 'homeroom.guidance'));
+        $routes->group('counseling', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'CounselingController', 'homeroom.counseling'));
+        $routes->group('parent-collaborations', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'ParentCollaborationController', 'homeroom.parent_collaborations'));
+        $routes->group('home-visits', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'HomeVisitController', 'homeroom.home_visits'));
+        $routes->group('case-conferences', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'CaseConferenceController', 'homeroom.case_conferences'));
 
         // Reports (wali kelas -> individual)
         $routes->group('reports', ['filter' => 'permission:view_reports_individual'], function ($routes) {
@@ -847,6 +891,70 @@ $routes->group('homeroom', [
         $routes->get('students/index', 'StudentController::index', [
             'filter' => 'permission:view_all_students',
             'as'     => 'homeroom.students.index'
+        ]);
+        $routes->get('students/create', 'StudentController::create', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.students.create'
+        ]);
+        $routes->post('students/store', 'StudentController::store', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.students.store'
+        ]);
+        $routes->get('students/edit/(:num)', 'StudentController::edit/$1', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.students.edit'
+        ]);
+        $routes->post('students/update/(:num)', 'StudentController::update/$1', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.students.update'
+        ]);
+        $routes->post('students/delete/(:num)', 'StudentController::delete/$1', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.students.delete'
+        ]);
+        $routes->get('students/export', 'StudentController::export', [
+            'filter' => 'permission:import_export_data',
+            'as'     => 'homeroom.students.export'
+        ]);
+        $routes->get('students/import', 'StudentImportController::import', [
+            'filter' => 'permission:import_export_data',
+            'as'     => 'homeroom.students.import'
+        ]);
+        $routes->post('students/do-import', 'StudentImportController::doImport', [
+            'filter' => 'permission:import_export_data',
+            'as'     => 'homeroom.students.do_import'
+        ]);
+        $routes->get('students/download-template', 'StudentImportController::downloadTemplate', [
+            'filter' => 'permission:import_export_data',
+            'as'     => 'homeroom.students.template'
+        ]);
+        $routes->get('parents', 'StudentController::parents', [
+            'filter' => 'permission:view_all_students',
+            'as'     => 'homeroom.parents'
+        ]);
+        $routes->get('parents/create', 'StudentController::createParent', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.parents.create'
+        ]);
+        $routes->post('parents/store', 'StudentController::storeParent', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.parents.store'
+        ]);
+        $routes->get('parents/(:num)', 'StudentController::showParent/$1', [
+            'filter' => 'permission:view_all_students',
+            'as'     => 'homeroom.parents.show'
+        ]);
+        $routes->get('parents/edit/(:num)', 'StudentController::editParent/$1', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.parents.edit'
+        ]);
+        $routes->post('parents/update/(:num)', 'StudentController::updateParent/$1', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.parents.update'
+        ]);
+        $routes->post('parents/delete/(:num)', 'StudentController::deleteParent/$1', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.parents.delete'
         ]);
         $routes->get('students/(:num)', 'StudentController::show/$1', [
             'filter' => 'permission:view_all_students',
@@ -940,9 +1048,9 @@ $routes->group('homeroom', [
 $routes->group('student', [
     'filter'    => 'auth',
     'namespace' => 'App\Controllers\Student'
-], function ($routes) use ($featureViolationSubmissionsEnabled) {
+], function ($routes) {
 
-    $routes->group('', ['filter' => 'role:siswa,student'], function ($routes) use ($featureViolationSubmissionsEnabled) {
+    $routes->group('', ['filter' => 'role:siswa,student'], function ($routes) {
 
         $routes->get('/', 'DashboardController::index', [
             'filter' => 'permission:view_dashboard',
@@ -962,6 +1070,13 @@ $routes->group('student', [
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'student.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'student.notifications.delete']);
             $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'student.notifications.count']);
+        });
+
+        // Tempat Sampah (pemulihan soft delete) - hanya data milik penghapus.
+        $routes->group('trash', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'TrashController::index', ['as' => 'student.trash']);
+            $routes->post('restore', 'TrashController::restore', ['as' => 'student.trash.restore']);
+            $routes->post('force-delete', 'TrashController::forceDelete', ['as' => 'student.trash.force']);
         });
 
         $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
@@ -997,23 +1112,24 @@ $routes->group('student', [
             'as'     => 'student.staff'
         ]);
 
-        if ($featureViolationSubmissionsEnabled) {
-            // Pengaduan Pelanggaran (Violation Submissions) - milik sendiri
-            $routes->group('violation-submissions', [
-                'filter' => 'permission:submit_violation_submissions',
-            ], function ($routes) {
-                $routes->get('/', 'ViolationSubmissionsController::index', ['as' => 'student.violation_submissions.index']);
-                $routes->get('create', 'ViolationSubmissionsController::create', ['as' => 'student.violation_submissions.create']);
-                $routes->post('store', 'ViolationSubmissionsController::store', ['as' => 'student.violation_submissions.store']);
 
-                $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1', ['as' => 'student.violation_submissions.show']);
-                $routes->get('edit/(:num)', 'ViolationSubmissionsController::edit/$1', ['as' => 'student.violation_submissions.edit']);
-                $routes->post('update/(:num)', 'ViolationSubmissionsController::update/$1', ['as' => 'student.violation_submissions.update']);
-
-                $routes->post('delete/(:num)', 'ViolationSubmissionsController::delete/$1', ['as' => 'student.violation_submissions.delete']);
-                $routes->get('delete/(:num)', 'ViolationSubmissionsController::delete/$1', ['as' => 'student.violation_submissions.delete.get']);
-            });
-        }
+        // Fitur final pengembangan BK untuk Siswa.
+        $routes->group('consultations', ['filter' => 'permission:submit_consultation_complaints'], function ($routes) {
+            $routes->get('/', 'ConsultationController::index', ['as' => 'student.consultations.index']);
+            $routes->get('create', 'ConsultationController::create', ['as' => 'student.consultations.create']);
+            $routes->post('store', 'ConsultationController::store', ['as' => 'student.consultations.store']);
+            $routes->get('show/(:num)', 'ConsultationController::show/$1', ['as' => 'student.consultations.show']);
+            $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'student.consultations.edit']);
+            $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'student.consultations.update']);
+        });
+        $routes->group('guidance', ['filter' => 'permission:view_bk_services'], function ($routes) {
+            $routes->get('/', 'GuidanceController::index', ['as' => 'student.guidance.index']);
+            $routes->get('show/(:num)', 'GuidanceController::show/$1', ['as' => 'student.guidance.show']);
+        });
+        $routes->group('counseling', ['filter' => 'permission:view_bk_services'], function ($routes) {
+            $routes->get('/', 'CounselingController::index', ['as' => 'student.counseling.index']);
+            $routes->get('show/(:num)', 'CounselingController::show/$1', ['as' => 'student.counseling.show']);
+        });
 
         // Jadwal/request konseling: kompatibel dengan permission lama schedule_counseling
         // dan permission baru view_counseling_sessions.
@@ -1057,9 +1173,9 @@ $routes->group('student', [
 $routes->group('parent', [
     'filter'    => 'auth',
     'namespace' => 'App\Controllers\Parents'
-], function ($routes) use ($featureViolationSubmissionsEnabled) {
+], function ($routes) {
 
-    $routes->group('', ['filter' => 'role:orang tua,parent'], function ($routes) use ($featureViolationSubmissionsEnabled) {
+    $routes->group('', ['filter' => 'role:orang tua,parent'], function ($routes) {
 
         $routes->get('dashboard', 'DashboardController::index', [
             'filter' => 'permission:view_dashboard',
@@ -1075,6 +1191,13 @@ $routes->group('parent', [
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'parent.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'parent.notifications.delete']);
             $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'parent.notifications.count']);
+        });
+
+        // Tempat Sampah (pemulihan soft delete) - hanya data milik penghapus.
+        $routes->group('trash', ['filter' => 'permission:view_dashboard'], function ($routes) {
+            $routes->get('/', 'TrashController::index', ['as' => 'parent.trash']);
+            $routes->post('restore', 'TrashController::restore', ['as' => 'parent.trash.restore']);
+            $routes->post('force-delete', 'TrashController::forceDelete', ['as' => 'parent.trash.force']);
         });
 
         $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
@@ -1096,7 +1219,7 @@ $routes->group('parent', [
             'as'     => 'parent.profile.edit'
         ]);
 
-        // ✅ FIX: gunakan FQN dengan leading backslash agar tidak kena prefix namespace group
+        // âœ… FIX: gunakan FQN dengan leading backslash agar tidak kena prefix namespace group
         $routes->post('profile', '\App\Controllers\ProfileController::update', [
             'filter' => 'permission:view_dashboard',
             'as'     => 'parent.profile.update'
@@ -1142,21 +1265,27 @@ $routes->group('parent', [
             ]);
         });
 
-        if ($featureViolationSubmissionsEnabled) {
-            // Pengaduan Pelanggaran (milik sendiri) - gunakan permission tabel
-            $routes->group('violation-submissions', ['filter' => 'permission:submit_violation_submissions'], function ($routes) {
-                $routes->get('/', 'ViolationSubmissionsController::index');
-                $routes->get('create', 'ViolationSubmissionsController::create');
-                $routes->post('store', 'ViolationSubmissionsController::store');
 
-                $routes->get('show/(:num)', 'ViolationSubmissionsController::show/$1');
-                $routes->get('edit/(:num)', 'ViolationSubmissionsController::edit/$1');
-                $routes->post('update/(:num)', 'ViolationSubmissionsController::update/$1');
+        // Fitur final pengembangan BK untuk Orang Tua.
+        $routes->group('consultations', ['filter' => 'permission:submit_consultation_complaints'], function ($routes) {
+            $routes->get('/', 'ConsultationController::index', ['as' => 'parent.consultations.index']);
+            $routes->get('create', 'ConsultationController::create', ['as' => 'parent.consultations.create']);
+            $routes->post('store', 'ConsultationController::store', ['as' => 'parent.consultations.store']);
+            $routes->get('show/(:num)', 'ConsultationController::show/$1', ['as' => 'parent.consultations.show']);
+            $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'parent.consultations.edit']);
+            $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'parent.consultations.update']);
+        });
 
-                $routes->post('delete/(:num)', 'ViolationSubmissionsController::delete/$1');
-                $routes->get('delete/(:num)', 'ViolationSubmissionsController::delete/$1'); // opsional
-            });
-        }
+        $bkReadRoutes = static function ($routes, string $controller, string $alias): void {
+            $routes->get('/', $controller . '::index', ['as' => $alias . '.index']);
+            $routes->get('show/(:num)', $controller . '::show/$1', ['as' => $alias . '.show']);
+        };
+
+        $routes->group('guidance', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'GuidanceController', 'parent.guidance'));
+        $routes->group('counseling', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'CounselingController', 'parent.counseling'));
+        $routes->group('parent-collaborations', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'ParentCollaborationController', 'parent.parent_collaborations'));
+        $routes->group('home-visits', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'HomeVisitController', 'parent.home_visits'));
+        $routes->group('case-conferences', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'CaseConferenceController', 'parent.case_conferences'));
 
         // Komunikasi
         $routes->group('communication', ['filter' => 'permission:send_messages'], function ($routes) {
@@ -1203,7 +1332,6 @@ $routes->group('prototype', ['filter' => 'auth'], function ($routes) {
     $routes->get('demo/(:segment)/(:segment)/(:num)', 'PrototypeController::demo/$1/$2/$3', ['as' => 'prototype.demo.detail']);
     $routes->get('flow/(:segment)', 'PrototypeController::flow/$1', ['as' => 'prototype.flow']);
     $routes->get('flow/(:segment)/(:segment)', 'PrototypeController::flow/$1/$2', ['as' => 'prototype.flow.page']);
-    $routes->get('violation-submissions', 'PrototypeController::violationSubmissions', ['as' => 'prototype.violation_submissions']);
     $routes->get('notifications', 'PrototypeController::notifications', ['as' => 'prototype.notifications']);
     $routes->get('messages', 'PrototypeController::messages', ['as' => 'prototype.messages']);
     $routes->get('assessments', 'PrototypeController::assessments', ['as' => 'prototype.assessments']);
@@ -1222,31 +1350,39 @@ $routes->group('prototype', ['filter' => 'auth'], function ($routes) {
 });
 
 // ===============================
-// Messages & Notifications
+// Redirect kompatibilitas untuk route global Pesan & Notifikasi
 // ===============================
-$routes->group('messages', ['filter' => 'auth'], function ($routes) {
-    $routes->group('', ['filter' => 'permission:send_messages'], function ($routes) {
-        $routes->get('/', 'MessageController::index', ['as' => 'messages.index']);
-        $routes->get('inbox', 'MessageController::inbox', ['as' => 'messages.inbox']);
-        $routes->get('sent', 'MessageController::sent', ['as' => 'messages.sent']);
-        $routes->get('compose', 'MessageController::compose', ['as' => 'messages.compose']);
-        $routes->post('send', 'MessageController::send', ['as' => 'messages.send']);
-        $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'messages.detail']);
-        $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'messages.reply']);
-        $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'messages.delete']);
-        $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'messages.read']);
-    });
+$roleScopedUrl = static function (string $path): string {
+    $roleId = (int) (session('role_id') ?? 0);
+    $roleName = strtolower(trim((string) (session('role_name') ?? '')));
+    $prefix = match (true) {
+        $roleId === 1 || str_contains($roleName, 'admin') => 'admin',
+        $roleId === 2 || str_contains($roleName, 'koordinator') => 'koordinator',
+        $roleId === 3 || str_contains($roleName, 'guru') || str_contains($roleName, 'counselor') => 'counselor',
+        $roleId === 4 || str_contains($roleName, 'wali') || str_contains($roleName, 'homeroom') => 'homeroom',
+        $roleId === 5 || str_contains($roleName, 'siswa') || str_contains($roleName, 'student') => 'student',
+        $roleId === 6 || str_contains($roleName, 'orang') || str_contains($roleName, 'parent') => 'parent',
+        default => 'dashboard',
+    };
+
+    $query = service('request')->getGet() ?? [];
+    $qs = $query ? ('?' . http_build_query($query)) : '';
+
+    return '/' . trim($prefix . '/' . ltrim($path, '/'), '/') . $qs;
+};
+
+$routes->group('messages', ['filter' => 'auth'], function ($routes) use ($roleScopedUrl) {
+    $routes->get('/', static fn() => redirect()->to($roleScopedUrl('messages')), ['as' => 'messages.index']);
+    $routes->get('inbox', static fn() => redirect()->to($roleScopedUrl('messages/inbox')), ['as' => 'messages.inbox']);
+    $routes->get('sent', static fn() => redirect()->to($roleScopedUrl('messages/sent')), ['as' => 'messages.sent']);
+    $routes->get('compose', static fn() => redirect()->to($roleScopedUrl('messages/compose')), ['as' => 'messages.compose']);
+    $routes->get('detail/(:num)', static fn($id) => redirect()->to($roleScopedUrl('messages/detail/' . (int) $id)), ['as' => 'messages.detail']);
 });
 
-$routes->group('notifications', ['filter' => 'auth'], function ($routes) {
-    $routes->group('', ['filter' => 'permission:view_dashboard'], function ($routes) {
-        $routes->get('/', 'NotificationController::index', ['as' => 'notifications']);
-        $routes->get('unread', 'NotificationController::unread', ['as' => 'notifications.unread']);
-        $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'notifications.read']);
-        $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'notifications.read_all']);
-        $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'notifications.delete']);
-        $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'notifications.count']);
-    });
+$routes->group('notifications', ['filter' => 'auth'], function ($routes) use ($roleScopedUrl) {
+    $routes->get('/', static fn() => redirect()->to($roleScopedUrl('notifications')), ['as' => 'notifications']);
+    $routes->get('unread', static fn() => redirect()->to($roleScopedUrl('notifications/unread')), ['as' => 'notifications.unread']);
+    $routes->get('count', static fn() => redirect()->to($roleScopedUrl('notifications/count')), ['as' => 'notifications.count']);
 });
 
 // ===============================
@@ -1317,7 +1453,7 @@ $routes->set404Override(static function () {
 });
 
 /**
- * ✅ OPSIONAL (standar CI4):
+ * âœ… OPSIONAL (standar CI4):
  * Load routes tambahan per environment (development/production).
  */
 $envRoutes = APPPATH . 'Config/' . (defined('ENVIRONMENT') ? ENVIRONMENT : 'production') . '/Routes.php';

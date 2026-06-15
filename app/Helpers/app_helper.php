@@ -156,15 +156,6 @@ if (!function_exists('student_age_text')) {
     }
 }
 
-if (!function_exists('feature_violation_submissions_enabled')) {
-    function feature_violation_submissions_enabled(): bool
-    {
-        // Fitur dibuka untuk akses langsung lewat URL tersembunyi.
-        // Sidebar tetap mengatur visibilitasnya sendiri agar tidak muncul sebagai menu umum.
-        return true;
-    }
-}
-
 if (!function_exists('format_number')) {
     /**
      * Format number to Indonesian format
@@ -576,5 +567,49 @@ if (!function_exists('get_academic_year')) {
         } else {
             return ($year - 1) . '/' . $year;
         }
+    }
+}
+
+if (!function_exists('soft_delete_record')) {
+    /**
+     * Soft delete sebuah record sambil mencatat siapa yang menghapus (deleted_by),
+     * agar data dapat dipulihkan lewat halaman Tempat Sampah oleh penghapusnya.
+     *
+     * @param \CodeIgniter\Model $model Model dengan useSoftDeletes = true.
+     * @param int|string         $id    Primary key record.
+     * @param int|null           $userId Id pengguna penghapus (default: session user_id).
+     */
+    function soft_delete_record($model, $id, $userId = null): bool
+    {
+        $id = (int) $id;
+        if ($id <= 0) {
+            return false;
+        }
+
+        if ($userId === null) {
+            $userId = (int) (session('user_id') ?? 0);
+        }
+
+        try {
+            $ref   = new \ReflectionObject($model);
+            $tProp = $ref->getProperty('table');
+            $tProp->setAccessible(true);
+            $table = (string) $tProp->getValue($model);
+
+            $pkProp = $ref->getProperty('primaryKey');
+            $pkProp->setAccessible(true);
+            $pk = (string) $pkProp->getValue($model);
+
+            if ($userId > 0 && $table !== '' && $pk !== '') {
+                $db = \Config\Database::connect();
+                if ($db->tableExists($table) && $db->fieldExists('deleted_by', $table)) {
+                    $db->table($table)->where($pk, $id)->update(['deleted_by' => $userId]);
+                }
+            }
+        } catch (\Throwable $e) {
+            // Abaikan; tetap lanjut soft delete standar agar tidak menggagalkan aksi.
+        }
+
+        return (bool) $model->delete($id);
     }
 }
