@@ -636,6 +636,12 @@ class StudentService
                 return ['success'=>false,'message'=>'Data siswa tidak ditemukan'];
             }
 
+            // Catat penghapus agar data bisa dipulihkan lewat Tempat Sampah.
+            $uid = (int) (session('user_id') ?? 0);
+            if ($uid > 0 && $this->db->fieldExists('deleted_by', 'students')) {
+                $this->db->table('students')->where('id', (int) $studentId)->update(['deleted_by' => $uid]);
+            }
+
             if (!$this->studentModel->delete($studentId)) {
                 return ['success'=>false,'message'=>'Gagal menghapus data siswa'];
             }

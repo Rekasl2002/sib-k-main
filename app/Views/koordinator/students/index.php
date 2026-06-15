@@ -9,6 +9,7 @@
  * Students List View (Koordinator BK)
  * - Pagination hanya di View (DataTables) agar konsisten dengan counselor/sessions
  * - Filter UI mengikuti layout counselor/sessions (Filter Card)
+ * - Memuat pintu masuk Impor Data Siswa dan Orang Tua sesuai rancangan pengembangan BK
  *
  * @package    SIB-K
  * @subpackage Views/Koordinator/Students
@@ -138,7 +139,7 @@ $importWarnings = session()->getFlashdata('import_warnings');
 <?php if (!empty($importErrors) && is_array($importErrors)): ?>
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <i class="mdi mdi-close-circle me-2"></i>
-        <strong>Detail Error Import:</strong>
+        <strong>Detail Kesalahan Impor:</strong>
         <ul class="mb-0 mt-2">
             <?php foreach ($importErrors as $e): ?>
                 <li><?= esc($e) ?></li>
@@ -150,97 +151,47 @@ $importWarnings = session()->getFlashdata('import_warnings');
 
 <!-- Statistics Cards -->
 <div class="row">
-    <div class="col-md-3">
-        <div class="card mini-stats-wid">
-            <div class="card-body">
-                <div class="d-flex">
-                    <div class="flex-grow-1">
-                        <p class="text-muted fw-medium">Total Siswa</p>
-                        <h4 class="mb-0"><?= number_format($stats['total'] ?? 0) ?></h4>
-                    </div>
-                    <div class="flex-shrink-0 align-self-center">
-                        <div class="mini-stat-icon avatar-sm rounded-circle bg-primary">
-                            <span class="avatar-title">
-                                <i class="mdi mdi-school font-size-24"></i>
-                            </span>
+    <?php
+    $miniCards = [
+        ['label' => 'Total Siswa',     'value' => $stats['total'] ?? 0,                                   'bg' => 'bg-primary',   'icon' => 'mdi-school',         'style' => ''],
+        ['label' => 'Siswa Aktif',     'value' => $stats['active'] ?? 0,                                  'bg' => 'bg-success',   'icon' => 'mdi-account-check',  'style' => ''],
+        ['label' => 'Siswa Laki-laki', 'value' => $stats['by_gender']['L'] ?? 0,                          'bg' => 'bg-info',      'icon' => 'mdi-gender-male',    'style' => ''],
+        ['label' => 'Siswa Perempuan', 'value' => $stats['by_gender']['P'] ?? 0,                          'bg' => '',             'icon' => 'mdi-gender-female',  'style' => 'background-color:#d63384;'],
+        ['label' => 'Alumni',          'value' => $stats['alumni'] ?? 0,                                  'bg' => 'bg-secondary', 'icon' => 'mdi-school-outline', 'style' => ''],
+        ['label' => 'Pindah/Keluar',   'value' => ($stats['moved'] ?? 0) + ($stats['dropped'] ?? 0),      'bg' => 'bg-warning',   'icon' => 'mdi-account-off',    'style' => ''],
+    ];
+    ?>
+    <?php foreach ($miniCards as $mc): ?>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card mini-stats-wid">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <p class="text-dark fw-medium mb-2"><?= esc($mc['label']) ?></p>
+                            <h4 class="mb-0 text-dark"><?= number_format((int) $mc['value']) ?></h4>
+                        </div>
+                        <div class="flex-shrink-0 align-self-center">
+                            <div class="mini-stat-icon avatar-sm rounded-circle <?= esc($mc['bg'], 'attr') ?>" style="<?= esc($mc['style'], 'attr') ?>">
+                                <span class="avatar-title"><i class="mdi <?= esc($mc['icon'], 'attr') ?> font-size-24"></i></span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card mini-stats-wid">
-            <div class="card-body">
-                <div class="d-flex">
-                    <div class="flex-grow-1">
-                        <p class="text-muted fw-medium">Siswa Aktif</p>
-                        <h4 class="mb-0"><?= number_format($stats['active'] ?? 0) ?></h4>
-                    </div>
-                    <div class="flex-shrink-0 align-self-center">
-                        <div class="mini-stat-icon avatar-sm rounded-circle bg-success">
-                            <span class="avatar-title">
-                                <i class="mdi mdi-account-check font-size-24"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card mini-stats-wid">
-            <div class="card-body">
-                <div class="d-flex">
-                    <div class="flex-grow-1">
-                        <p class="text-muted fw-medium">Alumni</p>
-                        <h4 class="mb-0"><?= number_format($stats['alumni'] ?? 0) ?></h4>
-                    </div>
-                    <div class="flex-shrink-0 align-self-center">
-                        <div class="mini-stat-icon avatar-sm rounded-circle bg-info">
-                            <span class="avatar-title">
-                                <i class="mdi mdi-school-outline font-size-24"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card mini-stats-wid">
-            <div class="card-body">
-                <div class="d-flex">
-                    <div class="flex-grow-1">
-                        <p class="text-muted fw-medium">Pindah/Keluar</p>
-                        <h4 class="mb-0"><?= number_format(($stats['moved'] ?? 0) + ($stats['dropped'] ?? 0)) ?></h4>
-                    </div>
-                    <div class="flex-shrink-0 align-self-center">
-                        <div class="mini-stat-icon avatar-sm rounded-circle bg-warning">
-                            <span class="avatar-title">
-                                <i class="mdi mdi-account-off font-size-24"></i>
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php endforeach; ?>
 </div>
 
 <!-- Filter Card (konsisten dengan counselor/sessions) -->
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">
-                    <i class="mdi mdi-filter-variant me-2"></i>Filter Data
-                </h4>
+        <div class="card filter-compact">
+            <div class="card-header py-2">
+                <h5 class="card-title mb-0 text-dark">
+                    <i class="mdi mdi-filter-variant me-2"></i>Filter/Saring Data
+                </h5>
             </div>
-            <div class="card-body">
+            <div class="card-body py-3">
                 <form action="<?= base_url('koordinator/students') ?>" method="get" id="filterForm">
                     <div class="row g-3">
                         <div class="col-md-3">
@@ -290,7 +241,7 @@ $importWarnings = session()->getFlashdata('import_warnings');
                         </div>
 
                         <div class="col-md-2">
-                            <label class="form-label">Gender</label>
+                            <label class="form-label">Jenis Kelamin</label>
                             <select name="gender" class="form-select">
                                 <option value="">Semua</option>
                                 <?php foreach (($gender_options ?? []) as $key => $value): ?>
@@ -315,7 +266,7 @@ $importWarnings = session()->getFlashdata('import_warnings');
                         <div class="col-md-2">
                             <label class="form-label d-block">&nbsp;</label>
                             <button type="submit" class="btn btn-primary w-100">
-                                <i class="mdi mdi-magnify me-1"></i> Filter
+                                <i class="mdi mdi-magnify me-1"></i> Filter/Saring
                             </button>
                         </div>
 
@@ -348,10 +299,16 @@ $importWarnings = session()->getFlashdata('import_warnings');
 
                 <div class="text-end d-flex gap-2 align-items-center flex-wrap">
 
+                    <?php if (has_permission('manage_students')): ?>
+                        <a href="<?= base_url('koordinator/students/create') ?>" class="btn btn-success">
+                            <i class="mdi mdi-plus me-1"></i> Tambah Siswa
+                        </a>
+                    <?php endif; ?>
+
                     <?php if (has_permission('import_export_data')): ?>
-                        <!--<a href="<?= base_url('koordinator/students/import') ?>" class="btn btn-info">
+                        <a href="<?= base_url('koordinator/students/import') ?>" class="btn btn-info">
                             <i class="mdi mdi-upload me-1"></i> Impor
-                        </a>-->
+                        </a>
                         <a href="<?= base_url('koordinator/students/export') . '?' . http_build_query($filters ?? []) ?>"
                            class="btn btn-primary">
                             <i class="mdi mdi-download me-1"></i> Ekspor CSV
@@ -370,7 +327,7 @@ $importWarnings = session()->getFlashdata('import_warnings');
                                 <th style="width:120px;">NISN</th>
                                 <th style="width:120px;">NIK</th>
                                 <th style="width:160px;">Kelas</th>
-                                <th style="width:90px;">Gender</th>
+                                <th style="width:120px;">Jenis Kelamin</th>
                                 <th style="width:120px;">Status</th>
                                 <th style="width:140px;" class="text-center">Aksi</th>
                             </tr>
@@ -400,7 +357,7 @@ $importWarnings = session()->getFlashdata('import_warnings');
                                                 </div>
                                                 <div class="flex-grow-1">
                                                     <h5 class="font-size-14 mb-0"><?= esc($studentName) ?></h5>
-                                                    <p class="text-muted mb-0 font-size-12"><?= esc($student['email'] ?? '-') ?></p>
+                                                    <p class="text-dark mb-0 font-size-12"><?= esc($student['email'] ?? '-') ?></p>
                                                 </div>
                                             </div>
                                         </td>
@@ -452,20 +409,23 @@ $importWarnings = session()->getFlashdata('import_warnings');
                                                     <i class="mdi mdi-eye"></i>
                                                 </a>
 
-                                                <?php if (has_permission('manage_users')): ?>
+                                                <?php if (has_permission('manage_students')): ?>
                                                     <a href="<?= base_url('koordinator/students/edit/' . (int)($student['id'] ?? 0)) ?>"
                                                         class="btn btn-sm btn-primary"
                                                         title="Edit"
                                                         data-bs-toggle="tooltip">
                                                         <i class="mdi mdi-pencil"></i>
                                                     </a>
-                                                <?php else: ?>
+                                                <?php endif; ?>
+                                                <?php if (has_permission('manage_students')): ?>
                                                     <button type="button"
-                                                        class="btn btn-sm btn-primary"
-                                                        disabled
-                                                        title="Tidak punya izin untuk edit"
-                                                        data-bs-toggle="tooltip">
-                                                        <i class="mdi mdi-pencil-off"></i>
+                                                        class="btn btn-sm btn-danger"
+                                                        title="Hapus"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#deleteStudentModal"
+                                                        data-student-id="<?= (int)($student['id'] ?? 0) ?>"
+                                                        data-student-name="<?= esc($studentName, 'attr') ?>">
+                                                        <i class="mdi mdi-delete"></i>
                                                     </button>
                                                 <?php endif; ?>
                                             </div>
@@ -475,8 +435,8 @@ $importWarnings = session()->getFlashdata('import_warnings');
                             <?php else: ?>
                                 <tr>
                                     <td colspan="8" class="text-center py-5">
-                                        <i class="mdi mdi-account-off text-muted" style="font-size: 48px;"></i>
-                                        <p class="text-muted mt-2 mb-0">Tidak ada data siswa</p>
+                                        <i class="mdi mdi-account-off text-dark" style="font-size: 48px;"></i>
+                                        <p class="text-dark mt-2 mb-0">Tidak ada data siswa</p>
                                     </td>
                                 </tr>
                             <?php endif; ?>
@@ -487,6 +447,26 @@ $importWarnings = session()->getFlashdata('import_warnings');
                 <!-- Tidak ada CI pager di sini (pagination hanya DataTables di VIEW) -->
             </div>
         </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteStudentModal" tabindex="-1" aria-labelledby="deleteStudentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <form method="post" action="#" id="deleteStudentForm" class="modal-content">
+            <?= csrf_field() ?>
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteStudentModalLabel">Hapus Siswa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Hapus data siswa <strong id="deleteStudentName">ini</strong>?</p>
+                <small class="text-dark">Data akan dipindahkan ke Tempat Sampah dan masih dapat dipulihkan oleh Anda.</small>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="submit" class="btn btn-danger">Hapus</button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -520,63 +500,54 @@ $importWarnings = session()->getFlashdata('import_warnings');
         });
 
         // DataTables (pagination di VIEW)
+        // - Kotak cari bawaan DIHILANGKAN (pencarian sudah ada di card Filter/Saring Data).
+        // - Dropdown "Tampilkan" dipindah ke bawah-kiri card.
         <?php if (!empty($students) && is_array($students)): ?>
-            var table;
-
-            if (window.SIBK && typeof SIBK.initDataTable === 'function') {
-                table = SIBK.initDataTable('studentsTable', {
-                    pageLength: <?= (int)$dtPageLength ?>,
-                    order: [
-                        [1, 'asc'] // kolom "Siswa"
-                    ],
-                    columnDefs: [
-                        { orderable: false, targets: [0, 7] } // No + Aksi
-                    ]
-                });
-            } else {
-                table = $('#studentsTable').DataTable({
-                    responsive: true,
-                    pageLength: <?= (int)$dtPageLength ?>,
-                    order: [
-                        [1, 'asc']
-                    ],
-                    columnDefs: [
-                        { orderable: false, targets: [0, 7] }
-                    ],
-                    language: {
-                        search: "Cari:",
-                        lengthMenu: "Tampilkan _MENU_ data",
-                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                        infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
-                        infoFiltered: "(difilter dari _MAX_ total data)",
-                        zeroRecords: "Tidak ada data yang sesuai",
-                        emptyTable: "Tidak ada data tersedia",
-                        processing: "Memproses...",
-                        paginate: {
-                            first: "Pertama",
-                            last: "Terakhir",
-                            next: "Berikutnya",
-                            previous: "Sebelumnya"
-                        }
+            var table = $('#studentsTable').DataTable({
+                responsive: true,
+                pageLength: <?= (int)$dtPageLength ?>,
+                order: [[1, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: [0, 7] }
+                ],
+                dom: "rt" +
+                     "<'row align-items-center mt-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-start'p>>" +
+                     "<'row'<'col-12 mt-2'i>>",
+                language: {
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+                    infoFiltered: "(disaring dari _MAX_ total data)",
+                    zeroRecords: "Tidak ada data yang sesuai",
+                    emptyTable: "Tidak ada data tersedia",
+                    processing: "Memproses...",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "Berikutnya",
+                        previous: "Sebelumnya"
                     }
-                });
-            }
+                }
+            });
 
-            // Nomor urut selalu benar walau sort/search/paging
+            // Nomor urut selalu benar walau diurutkan/paging
             function renumber() {
                 var info = table.page.info();
                 table.column(0, { page: 'current' }).nodes().each(function(cell, i) {
                     cell.innerHTML = info.start + i + 1;
                 });
             }
-            table.on('order.dt search.dt draw.dt', renumber);
+            table.on('order.dt draw.dt', renumber);
             renumber();
         <?php endif; ?>
 
-        // Auto-hide alert
-        setTimeout(function() {
-            $('.alert').fadeOut('slow');
-        }, 5000);
+        $('#deleteStudentModal').on('show.bs.modal', function(event) {
+            var button = $(event.relatedTarget);
+            var id = button.data('student-id');
+            var name = button.data('student-name') || 'ini';
+            $('#deleteStudentName').text(name);
+            $('#deleteStudentForm').attr('action', '<?= base_url('koordinator/students/delete') ?>/' + id);
+        });
 
     });
 </script>
