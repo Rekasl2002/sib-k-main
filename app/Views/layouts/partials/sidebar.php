@@ -24,7 +24,7 @@ $session = session();
  */
 $__enableAssessments        = true;
 $__enableCareerInfo         = true;
-$__enableCommonMenu         = false;
+$__enableCommonMenu         = true;
 
 // Ambil user & role (aman)
 $user = function_exists('auth_user')

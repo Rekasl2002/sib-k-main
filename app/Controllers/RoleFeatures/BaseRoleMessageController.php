@@ -85,20 +85,9 @@ abstract class BaseRoleMessageController extends BaseController
             return redirect()->to('/login');
         }
 
-        $recipients = $this->user
-            ->select('users.id, users.full_name, users.email, roles.role_name')
-            ->join('roles', 'roles.id = users.role_id', 'left')
-            ->where('users.is_active', 1)
-            ->where('users.deleted_at', null)
-            ->whereIn('users.role_id', [2, 3, 4, 5, 6])
-            ->where('users.id !=', $uid)
-            ->orderBy('roles.id', 'ASC')
-            ->orderBy('users.full_name', 'ASC')
-            ->findAll();
-
         return $this->render('compose', [
             'title'      => 'Tulis Pesan Internal',
-            'recipients' => $recipients,
+            'recipients' => $this->allowedRecipients($uid),
         ]);
     }
 
@@ -113,8 +102,17 @@ abstract class BaseRoleMessageController extends BaseController
         $body    = trim((string) $this->request->getPost('body'));
         $to      = array_values(array_unique(array_filter(array_map('intval', (array) $this->request->getPost('to')))));
 
+        // Penegakan matriks penerima (sisi server): buang penerima yang tidak diizinkan.
+        $to = array_values(array_intersect($to, $this->allowedRecipientIds($uid, (int) session('role_id'))));
+
         if ($subject === '' || $body === '' || empty($to)) {
-            return redirect()->back()->withInput()->with('error', 'Penerima, subjek, dan isi pesan wajib diisi.');
+            return redirect()->back()->withInput()->with('error', 'Penerima tidak diizinkan, atau subjek/isi pesan kosong.');
+        }
+        if (mb_strlen($subject) > 150) {
+            return redirect()->back()->withInput()->with('error', 'Subjek maksimal 150 karakter.');
+        }
+        if (mb_strlen($body) > 5000) {
+            return redirect()->back()->withInput()->with('error', 'Isi pesan maksimal 5000 karakter.');
         }
 
         $msgId = (int) $this->message->insert([
@@ -399,6 +397,115 @@ abstract class BaseRoleMessageController extends BaseController
             ->update();
 
         return $this->response->setJSON(['status' => 'ok']);
+    }
+
+    /**
+     * Daftar id penerima yang DIIZINKAN untuk pengirim, sesuai matriks kerahasiaan
+     * (timbal balik antar pihak yang terhubung).
+     *
+     * @return list<int>
+     */
+    protected function allowedRecipientIds(int $uid, int $roleId): array
+    {
+        $db = \Config\Database::connect();
+
+        $usersByRole = static function (array $roleIds) use ($db): array {
+            if (empty($roleIds)) {
+                return [];
+            }
+            $rows = $db->table('users')->select('id')
+                ->whereIn('role_id', $roleIds)
+                ->where('is_active', 1)->where('deleted_at', null)
+                ->get()->getResultArray();
+            return array_map(static fn($r) => (int) $r['id'], $rows);
+        };
+
+        $ids = [];
+
+        if ($roleId === 1) {            // Admin -> Koordinator, Guru BK, Wali Kelas
+            $ids = $usersByRole([2, 3, 4]);
+        } elseif ($roleId === 2) {      // Koordinator -> Admin, Guru BK, Wali Kelas
+            $ids = $usersByRole([1, 3, 4]);
+        } elseif ($roleId === 3) {      // Guru BK -> Admin, Koordinator, Wali Kelas + siswa binaan & ortunya
+            $ids = array_merge($usersByRole([1, 2, 4]), $this->relatedStudentUserIds($db, 'c.counselor_id', $uid));
+        } elseif ($roleId === 4) {      // Wali Kelas -> Admin, Koordinator, Guru BK + siswa binaan & ortunya
+            $ids = array_merge($usersByRole([1, 2, 3]), $this->relatedStudentUserIds($db, 'c.homeroom_teacher_id', $uid));
+        } elseif ($roleId === 5) {      // Siswa -> orang tua, wali kelas, guru bk (miliknya)
+            $row = $db->table('students s')
+                ->select('s.parent_id, c.homeroom_teacher_id, c.counselor_id')
+                ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
+                ->where('s.user_id', $uid)->where('s.deleted_at', null)
+                ->get()->getRowArray();
+            foreach (['parent_id', 'homeroom_teacher_id', 'counselor_id'] as $k) {
+                if (! empty($row[$k])) {
+                    $ids[] = (int) $row[$k];
+                }
+            }
+        } elseif ($roleId === 6) {      // Orang Tua -> anak, wali kelas anak, guru bk anak
+            $rows = $db->table('students s')
+                ->select('s.user_id, c.homeroom_teacher_id, c.counselor_id')
+                ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
+                ->where('s.parent_id', $uid)->where('s.deleted_at', null)
+                ->get()->getResultArray();
+            foreach ($rows as $r) {
+                foreach (['user_id', 'homeroom_teacher_id', 'counselor_id'] as $k) {
+                    if (! empty($r[$k])) {
+                        $ids[] = (int) $r[$k];
+                    }
+                }
+            }
+        }
+
+        return array_values(array_unique(array_filter($ids, static fn($v) => (int) $v > 0 && (int) $v !== $uid)));
+    }
+
+    /**
+     * Id user siswa + orang tua dari kelas yang dibina staf (Guru BK/Wali Kelas).
+     *
+     * @return list<int>
+     */
+    private function relatedStudentUserIds($db, string $classField, int $staffUid): array
+    {
+        $rows = $db->table('students s')
+            ->select('s.user_id, s.parent_id')
+            ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'inner')
+            ->where($classField, $staffUid)
+            ->where('s.deleted_at', null)
+            ->get()->getResultArray();
+
+        $ids = [];
+        foreach ($rows as $r) {
+            if (! empty($r['user_id'])) {
+                $ids[] = (int) $r['user_id'];
+            }
+            if (! empty($r['parent_id'])) {
+                $ids[] = (int) $r['parent_id'];
+            }
+        }
+        return $ids;
+    }
+
+    /**
+     * Baris penerima yang diizinkan (untuk dropdown compose).
+     *
+     * @return list<array<string,mixed>>
+     */
+    protected function allowedRecipients(int $uid): array
+    {
+        $ids = $this->allowedRecipientIds($uid, (int) session('role_id'));
+        if (empty($ids)) {
+            return [];
+        }
+
+        return $this->user
+            ->select('users.id, users.full_name, users.email, roles.role_name')
+            ->join('roles', 'roles.id = users.role_id', 'left')
+            ->whereIn('users.id', $ids)
+            ->where('users.is_active', 1)
+            ->where('users.deleted_at', null)
+            ->orderBy('roles.id', 'ASC')
+            ->orderBy('users.full_name', 'ASC')
+            ->findAll();
     }
 
     protected function currentUserId(): int
