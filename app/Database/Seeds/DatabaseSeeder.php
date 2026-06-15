@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
     private array $truncateOrder = [
         'simulation_access_grants',
         'bk_assignment_status_histories',
+        'bk_assignments',
         'session_notes',
         'session_participants',
         'case_conferences',
