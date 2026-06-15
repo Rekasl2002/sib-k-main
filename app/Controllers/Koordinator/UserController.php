@@ -33,9 +33,16 @@ class UserController extends BaseController
     protected ClassModel $classModel;
 
     /**
-     * Role yang boleh dikelola Koordinator (nama role di tabel roles)
+     * Role yang TIDAK boleh dikelola Koordinator. Hanya Admin yang dikecualikan;
+     * Koordinator BK kini setara Admin untuk mengelola SEMUA peran lain
+     * (Koordinator BK, Guru BK, Wali Kelas, Siswa, Orang Tua) termasuk reset sandi.
      */
-    protected array $allowedRoleNames = ['Guru BK', 'Wali Kelas'];
+    protected array $excludedRoleNames = ['Admin', 'Administrator'];
+
+    /**
+     * (Kompatibilitas) Daftar peran yang dikelola Koordinator = semua non-Admin.
+     */
+    protected array $allowedRoleNames = ['Koordinator BK', 'Guru BK', 'Wali Kelas', 'Siswa', 'Orang Tua'];
 
     /**
      * Cache role IDs agar tidak query DB berulang dalam 1 request
@@ -68,7 +75,7 @@ class UserController extends BaseController
 
         $rows = $this->roleModel
             ->select('id, role_name')
-            ->whereIn('role_name', $this->allowedRoleNames)
+            ->whereNotIn('role_name', $this->excludedRoleNames)
             ->findAll();
 
         $map = [];
@@ -80,11 +87,14 @@ class UserController extends BaseController
             }
         }
 
-        // Fallback aman jika seed/role_name berbeda atau belum ada
+        // Fallback aman jika seed/role_name berbeda atau belum ada (semua non-Admin).
         if (empty($map)) {
             $map = [
-                'Guru BK'    => 3,
-                'Wali Kelas' => 4,
+                'Koordinator BK' => 2,
+                'Guru BK'        => 3,
+                'Wali Kelas'     => 4,
+                'Siswa'          => 5,
+                'Orang Tua'      => 6,
             ];
         }
 
@@ -119,6 +129,23 @@ class UserController extends BaseController
     {
         $map = $this->allowedRoleMap();
         return (int)($map[$roleName] ?? 0);
+    }
+
+    /**
+     * Id peran yang ditampilkan paling atas pada daftar (Guru BK & Wali Kelas).
+     *
+     * @return list<int>
+     */
+    protected function priorityRoleIds(): array
+    {
+        $ids = [];
+        foreach (['Guru BK', 'Wali Kelas'] as $name) {
+            $id = $this->roleIdByName($name);
+            if ($id > 0) {
+                $ids[] = $id;
+            }
+        }
+        return $ids;
     }
 
     protected function roleIsAllowed(?int $roleId): bool
@@ -470,13 +497,19 @@ class UserController extends BaseController
                 ->groupEnd();
         }
 
+        // Guru BK & Wali Kelas tampil paling atas, lalu peran lain.
+        $priorityIds = $this->priorityRoleIds();
+        if (! empty($priorityIds)) {
+            $model->orderBy('FIELD(users.role_id, ' . implode(',', $priorityIds) . ') = 0', 'ASC', false);
+        }
+
         $users = $model->orderBy($filters['order_by'], $filters['order_dir'])
             ->paginate($perPage);
 
         $pager = $model->pager;
 
         $roles = $this->roleModel
-            ->whereIn('role_name', $this->allowedRoleNames)
+            ->whereNotIn('role_name', $this->excludedRoleNames)
             ->findAll();
 
         $um = new UserModel();
@@ -517,7 +550,7 @@ class UserController extends BaseController
         require_permission('manage_users');
 
         $roles = $this->roleModel
-            ->whereIn('role_name', $this->allowedRoleNames)
+            ->whereNotIn('role_name', $this->excludedRoleNames)
             ->findAll();
 
         $data = [
@@ -668,7 +701,7 @@ class UserController extends BaseController
         if ($userOrRedirect instanceof \CodeIgniter\HTTP\RedirectResponse) return $userOrRedirect;
 
         $roles = $this->roleModel
-            ->whereIn('role_name', $this->allowedRoleNames)
+            ->whereNotIn('role_name', $this->excludedRoleNames)
             ->findAll();
 
         $uid = (int)$id;

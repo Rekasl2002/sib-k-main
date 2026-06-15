@@ -159,6 +159,11 @@ if (!empty($student['birth_date'])) {
                             <a href="<?= base_url('koordinator/students/edit/' . ($student['id'] ?? 0)) ?>" class="btn btn-primary">
                                 <i class="mdi mdi-pencil me-1"></i>Edit Data
                             </a>
+                            <?php if (! empty($student['user_id'])): ?>
+                                <a href="<?= base_url('koordinator/users/show/' . (int) $student['user_id']) ?>" class="btn btn-info">
+                                    <i class="mdi mdi-account-cog me-1"></i>Kelola Akun &amp; Sandi
+                                </a>
+                            <?php endif; ?>
                             <a href="<?= base_url('koordinator/students') ?>" class="btn btn-secondary">
                                 <i class="mdi mdi-arrow-left me-1"></i>Kembali
                             </a>

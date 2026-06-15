@@ -30,20 +30,8 @@ $dtPageLength = (int)($perPage ?? 10);
 if ($dtPageLength <= 0) $dtPageLength = 10;
 if ($dtPageLength > 200) $dtPageLength = 200;
 
-// Filter role sesuai aturan Koordinator (UI layer; validasi wajib tetap di controller)
-$allowedRoleNames = ['Guru BK','Wali Kelas','Counselor','Homeroom Teacher','HomeroomTeacher'];
-$filteredRoles = [];
-if (!empty($roles) && is_array($roles)) {
-    foreach ($roles as $r) {
-        $name = (string)($r['role_name'] ?? '');
-        foreach ($allowedRoleNames as $allowed) {
-            if ($name !== '' && strcasecmp($name, $allowed) === 0) {
-                $filteredRoles[] = $r;
-                break;
-            }
-        }
-    }
-}
+// Daftar peran untuk filter = semua peran non-Admin yang dikirim controller.
+$filteredRoles = is_array($roles) ? $roles : [];
 
 // Avatar src aman (tanpa user_avatar(null))
 if (!function_exists('safe_user_avatar_src')) {
@@ -92,12 +80,6 @@ if (!function_exists('safe_user_avatar_src')) {
     </div>
 </div>
 
-<!-- Info aturan Koordinator -->
-<div class="mb alert-info" role="alert">
-    <i class="mdi mdi-information-outline me-2"></i>
-    Koordinator hanya dapat mengelola akun <strong>Guru BK</strong> dan <strong>Wali Kelas</strong>.
-</div>
-
 <!-- Success/Error Messages -->
 <?php if (session()->getFlashdata('success')): ?>
     <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -122,7 +104,7 @@ if (!function_exists('safe_user_avatar_src')) {
             <div class="card-body">
                 <div class="d-flex">
                     <div class="flex-grow-1">
-                        <p class="text-muted fw-medium">Total Pengguna</p>
+                        <p class="text-dark fw-medium">Total Pengguna</p>
                         <h4 class="mb-0"><?= number_format((int)($stats['total'] ?? 0)) ?></h4>
                     </div>
                     <div class="flex-shrink-0 align-self-center">
@@ -142,7 +124,7 @@ if (!function_exists('safe_user_avatar_src')) {
             <div class="card-body">
                 <div class="d-flex">
                     <div class="flex-grow-1">
-                        <p class="text-muted fw-medium">Pengguna Aktif</p>
+                        <p class="text-dark fw-medium">Pengguna Aktif</p>
                         <h4 class="mb-0"><?= number_format((int)($stats['active'] ?? 0)) ?></h4>
                     </div>
                     <div class="flex-shrink-0 align-self-center">
@@ -162,7 +144,7 @@ if (!function_exists('safe_user_avatar_src')) {
             <div class="card-body">
                 <div class="d-flex">
                     <div class="flex-grow-1">
-                        <p class="text-muted fw-medium">Pengguna Nonaktif</p>
+                        <p class="text-dark fw-medium">Pengguna Nonaktif</p>
                         <h4 class="mb-0"><?= number_format((int)($stats['inactive'] ?? 0)) ?></h4>
                     </div>
                     <div class="flex-shrink-0 align-self-center">
@@ -182,12 +164,12 @@ if (!function_exists('safe_user_avatar_src')) {
 <div class="row">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">
-                    <i class="mdi mdi-filter-variant me-2"></i>Filter Data
-                </h4>
+            <div class="card-header py-2">
+                <h5 class="card-title mb-0 text-dark">
+                    <i class="mdi mdi-filter-variant me-2"></i>Filter/Saring Data
+                </h5>
             </div>
-            <div class="card-body">
+            <div class="card-body py-3">
                 <form action="<?= base_url('koordinator/users') ?>" method="get" id="filterForm">
                     <div class="row g-3">
                         <div class="col-md-4">
@@ -225,7 +207,7 @@ if (!function_exists('safe_user_avatar_src')) {
                         <div class="col-md-2">
                             <label class="form-label d-block">&nbsp;</label>
                             <button type="submit" class="btn btn-primary w-100">
-                                <i class="mdi mdi-magnify me-1"></i> Filter
+                                <i class="mdi mdi-magnify me-1"></i> Filter/Saring
                             </button>
                         </div>
 
@@ -332,12 +314,12 @@ if (!function_exists('safe_user_avatar_src')) {
                                             <?php if (!empty($user['last_login'])): ?>
                                                 <small><?= esc(date('d/m/Y H:i', strtotime($user['last_login']))) ?></small>
                                             <?php else: ?>
-                                                <span class="text-muted">Belum pernah</span>
+                                                <span class="text-dark">Belum pernah</span>
                                             <?php endif; ?>
                                         </td>
 
                                         <td class="text-center">
-                                            <div class="btn-group" role="group">
+                                            <div class="d-inline-flex gap-1 justify-content-center flex-wrap">
                                                 <a href="<?= base_url('koordinator/users/show/' . (int)($user['id'] ?? 0)) ?>"
                                                     class="btn btn-sm btn-info"
                                                     data-bs-toggle="tooltip"
@@ -350,6 +332,15 @@ if (!function_exists('safe_user_avatar_src')) {
                                                     title="Edit">
                                                     <i class="mdi mdi-pencil"></i>
                                                 </a>
+
+                                                <form method="post" action="<?= base_url('koordinator/users/reset-password/' . (int)($user['id'] ?? 0)) ?>"
+                                                      class="d-inline"
+                                                      onsubmit="return confirm('Reset kata sandi pengguna ini? Sandi baru akan ditampilkan setelah disimpan.');">
+                                                    <?= csrf_field() ?>
+                                                    <button type="submit" class="btn btn-sm btn-warning" data-bs-toggle="tooltip" title="Reset Kata Sandi">
+                                                        <i class="mdi mdi-lock-reset"></i>
+                                                    </button>
+                                                </form>
 
                                                 <?php if ((int)($user['id'] ?? 0) !== (int)session()->get('user_id')): ?>
                                                     <button type="button"
@@ -368,8 +359,8 @@ if (!function_exists('safe_user_avatar_src')) {
                             <?php else: ?>
                                 <tr>
                                     <td colspan="9" class="text-center py-5">
-                                        <i class="mdi mdi-account-off text-muted" style="font-size: 48px;"></i>
-                                        <p class="text-muted mt-2 mb-0">Tidak ada data pengguna</p>
+                                        <i class="mdi mdi-account-off text-dark" style="font-size: 48px;"></i>
+                                        <p class="text-dark mt-2 mb-0">Tidak ada data pengguna</p>
                                     </td>
                                 </tr>
                             <?php endif; ?>
@@ -445,52 +436,44 @@ if (!function_exists('safe_user_avatar_src')) {
         });
 
         // DataTables (pagination di VIEW)
+        // - Kotak cari bawaan DIHILANGKAN (pencarian sudah ada di card Filter/Saring).
+        // - Dropdown "Tampilkan" dipindah ke bawah-kiri.
         <?php if (!empty($users) && is_array($users)): ?>
-            var table;
-
-            if (window.SIBK && typeof SIBK.initDataTable === 'function') {
-                table = SIBK.initDataTable('usersTable', {
-                    pageLength: <?= (int)$dtPageLength ?>,
-                    order: [[1, 'asc']], // kolom "Pengguna"
-                    columnDefs: [
-                        { orderable: false, targets: [0, 6, 8] } // No + Status (switch) + Aksi
-                    ]
-                });
-            } else {
-                table = $('#usersTable').DataTable({
-                    responsive: true,
-                    pageLength: <?= (int)$dtPageLength ?>,
-                    order: [[1, 'asc']],
-                    columnDefs: [
-                        { orderable: false, targets: [0, 6, 8] }
-                    ],
-                    language: {
-                        search: "Cari:",
-                        lengthMenu: "Tampilkan _MENU_ data",
-                        info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
-                        infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
-                        infoFiltered: "(difilter dari _MAX_ total data)",
-                        zeroRecords: "Tidak ada data yang sesuai",
-                        emptyTable: "Tidak ada data tersedia",
-                        processing: "Memproses...",
-                        paginate: {
-                            first: "Pertama",
-                            last: "Terakhir",
-                            next: "Berikutnya",
-                            previous: "Sebelumnya"
-                        }
+            var table = $('#usersTable').DataTable({
+                responsive: true,
+                pageLength: <?= (int)$dtPageLength ?>,
+                order: [[1, 'asc']],
+                columnDefs: [
+                    { orderable: false, targets: [0, 6, 8] }
+                ],
+                dom: "rt" +
+                     "<'row align-items-center mt-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-start'p>>" +
+                     "<'row'<'col-12 mt-2'i>>",
+                language: {
+                    lengthMenu: "Tampilkan _MENU_ data",
+                    info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+                    infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+                    infoFiltered: "(disaring dari _MAX_ total data)",
+                    zeroRecords: "Tidak ada data yang sesuai",
+                    emptyTable: "Tidak ada data tersedia",
+                    processing: "Memproses...",
+                    paginate: {
+                        first: "Pertama",
+                        last: "Terakhir",
+                        next: "Berikutnya",
+                        previous: "Sebelumnya"
                     }
-                });
-            }
+                }
+            });
 
-            // Nomor urut selalu benar walau sort/search/paging
+            // Nomor urut selalu benar walau diurutkan/paging
             function renumber() {
                 var info = table.page.info();
                 table.column(0, { page: 'current' }).nodes().each(function(cell, i) {
                     cell.innerHTML = info.start + i + 1;
                 });
             }
-            table.on('order.dt search.dt draw.dt', renumber);
+            table.on('order.dt draw.dt', renumber);
             renumber();
         <?php endif; ?>
 
@@ -563,10 +546,6 @@ if (!function_exists('safe_user_avatar_src')) {
             deleteModal.show();
         });
 
-        // Auto-hide alerts after 5 seconds
-        setTimeout(function() {
-            $('.alert').fadeOut('slow');
-        }, 5000);
     });
 </script>
 <?= $this->endSection() ?>

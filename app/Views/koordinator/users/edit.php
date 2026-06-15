@@ -213,11 +213,6 @@ if (!function_exists('class_label')) {
                         </button>
                     <?php endif; ?>
                 </div>
-
-                <div class="alert alert-info mt-3 mb-0" role="alert">
-                    <i class="mdi mdi-information-outline me-2"></i>
-                    Koordinator hanya boleh mengelola akun <strong>Guru BK</strong> dan <strong>Wali Kelas</strong>.
-                </div>
             </div>
         </div>
     </div>
@@ -258,8 +253,8 @@ if (!function_exists('class_label')) {
                                         <?= esc($errors['role_id']) ?>
                                     </div>
                                 <?php endif; ?>
-                                <small class="form-text text-muted">
-                                    Role dibatasi sesuai kewenangan Koordinator.
+                                <small class="form-text text-dark">
+                                    Semua peran dapat dikelola, kecuali Admin.
                                 </small>
                             </div>
                         </div>

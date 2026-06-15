@@ -120,17 +120,6 @@ $homeroomClass    = $assignedClasses['homeroom'] ?? null;
     </div>
 </div>
 
-<!-- Info aturan -->
-<div class="row">
-    <div class="col-12">
-        <div class="alert alert-info" role="alert">
-            <i class="mdi mdi-information-outline me-2"></i>
-            Koordinator hanya dapat mengelola akun <strong>Guru BK</strong> dan <strong>Wali Kelas</strong>.
-            Jika ada akun di luar cakupan muncul di halaman ini, seharusnya diblok di controller.
-        </div>
-    </div>
-</div>
-
 <!-- Success/Error Messages -->
 <?php if ($flashSuccess): ?>
     <div class="row">
