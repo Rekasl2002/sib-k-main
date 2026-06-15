@@ -559,6 +559,10 @@ class DatabaseSeeder extends Seeder
             ['id' => 4, 'group' => 'privacy', 'key' => 'counseling_notes_visibility', 'value' => 'internal_bk_only', 'type' => 'string', 'autoload' => 1, 'created_at' => $now, 'updated_at' => $now],
             ['id' => 5, 'group' => 'prototype', 'key' => 'demo_date_range', 'value' => '2026-06-01 s.d. 2026-07-05', 'type' => 'string', 'autoload' => 1, 'created_at' => $now, 'updated_at' => $now],
             ['id' => 6, 'group' => 'notifications', 'key' => 'enable_internal', 'value' => '1', 'type' => 'bool', 'autoload' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 7, 'group' => 'consultation', 'key' => 'enabled', 'value' => '1', 'type' => 'bool', 'autoload' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 8, 'group' => 'consultation', 'key' => 'homeroom_enabled', 'value' => '1', 'type' => 'bool', 'autoload' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 9, 'group' => 'consultation', 'key' => 'student_enabled', 'value' => '1', 'type' => 'bool', 'autoload' => 1, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 10, 'group' => 'consultation', 'key' => 'parent_enabled', 'value' => '1', 'type' => 'bool', 'autoload' => 1, 'created_at' => $now, 'updated_at' => $now],
         ]);
     }
 

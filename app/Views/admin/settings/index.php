@@ -95,6 +95,9 @@ $checked = static function($value): bool {
         <li class="nav-item" role="presentation">
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-branding" type="button" role="tab">Branding</button>
         </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-grade" type="button" role="tab">Tingkat Kelas</button>
+        </li>
         <!--<li class="nav-item" role="presentation">
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-academic" type="button" role="tab">Tahun Ajaran</button>
         </li>-->
@@ -106,6 +109,9 @@ $checked = static function($value): bool {
         </li>-->
         <li class="nav-item" role="presentation">
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-security" type="button" role="tab">Keamanan</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-consultation" type="button" role="tab">Konsultasi &amp; Pengaduan</button>
         </li>
       </ul>
 
@@ -240,6 +246,54 @@ $checked = static function($value): bool {
               Pastikan folder tersebut writable di hosting (cPanel) agar upload tidak gagal.
             </div>
           </div>-->
+        </div>
+
+        <!-- ===================== TAB: TINGKAT KELAS ===================== -->
+        <div class="tab-pane fade" id="tab-grade" role="tabpanel" tabindex="0">
+          <div class="mb-3">
+            <div class="fw-semibold">Batas Tingkat Kelas</div>
+            <div class="form-text">
+              Menentukan tingkat kelas terendah dan tertinggi yang boleh dipakai di aplikasi
+              (saat menambah kelas maupun mengimpor siswa). Bawaan: <b>Kelas 7 sampai Kelas 12</b> (MTs + MA).
+              Sekolah lain bisa menyesuaikan, misalnya 1–6 (SD/MI) atau 7–9 (SMP/MTs).
+            </div>
+          </div>
+
+          <?php
+            [$gMin, $gMax] = grade_level_bounds();
+            $gMinCur = (int) old('grade_level_min', $gMin);
+            $gMaxCur = (int) old('grade_level_max', $gMax);
+            $errMin  = $getErr('grade_level_min');
+            $errMax  = $getErr('grade_level_max');
+          ?>
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Tingkat Terendah</label>
+              <select name="grade_level_min" class="form-select <?= $invalidClass($errMin) ?>">
+                <?php for ($i = 1; $i <= 12; $i++): ?>
+                  <option value="<?= $i ?>" <?= $gMinCur === $i ? 'selected' : '' ?>>Kelas <?= $i ?></option>
+                <?php endfor; ?>
+              </select>
+              <?php if ($errMin): ?><div class="invalid-feedback"><?= esc($errMin) ?></div><?php endif; ?>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Tingkat Tertinggi</label>
+              <select name="grade_level_max" class="form-select <?= $invalidClass($errMax) ?>">
+                <?php for ($i = 1; $i <= 12; $i++): ?>
+                  <option value="<?= $i ?>" <?= $gMaxCur === $i ? 'selected' : '' ?>>Kelas <?= $i ?></option>
+                <?php endfor; ?>
+              </select>
+              <?php if ($errMax): ?><div class="invalid-feedback"><?= esc($errMax) ?></div><?php endif; ?>
+            </div>
+          </div>
+
+          <div class="alert alert-info mt-4 mb-0">
+            <div class="fw-semibold mb-1">Apa dampaknya?</div>
+            <div class="small">
+              Saat menambah/mengubah kelas atau mengimpor siswa, tingkat di luar rentang ini akan ditolak.
+              Contoh dengan bawaan 7–12: "Kelas 6" atau "Kelas 13" tidak akan diterima.
+            </div>
+          </div>
         </div>
 
         <!-- ===================== TAB: ACADEMIC ===================== -->
@@ -387,7 +441,7 @@ $checked = static function($value): bool {
           <div class="mb-3">
             <div class="fw-semibold">Notifikasi</div>
             <div class="text-muted">
-              Mengatur cara sistem memberi pemberitahuan. Misalnya saat ada jadwal konseling, pelanggaran, atau informasi penting lainnya.
+              Mengatur cara sistem memberi pemberitahuan. Misalnya saat ada jadwal konseling, konsultasi/pengaduan, atau informasi penting lainnya.
             </div>
           </div>
 
@@ -481,6 +535,74 @@ $checked = static function($value): bool {
                 </div>
               </div>
             </div>-->
+          </div>
+        </div>
+
+        <!-- ===================== TAB: KONSULTASI & PENGADUAN ===================== -->
+        <div class="tab-pane fade" id="tab-consultation" role="tabpanel" tabindex="0">
+          <div class="mb-3">
+            <div class="fw-semibold text-dark">Fitur Konsultasi &amp; Pengaduan</div>
+            <div class="form-text text-dark">
+              Atur siapa saja yang boleh mengirim Konsultasi &amp; Pengaduan. Koordinator BK dan Guru BK
+              selalu dapat memakai fitur ini. Untuk Wali Kelas, Siswa, dan Orang Tua bisa dinyalakan atau
+              dimatikan di bawah. Jika sakelar utama dimatikan, menu Konsultasi &amp; Pengaduan disembunyikan
+              untuk semua orang.
+            </div>
+          </div>
+
+          <?php
+            $cEnabled  = $checked(old('consultation_enabled', setting('consultation.enabled', '1')));
+            $cHomeroom = $checked(old('consultation_homeroom_enabled', setting('consultation.homeroom_enabled', '1')));
+            $cStudent  = $checked(old('consultation_student_enabled', setting('consultation.student_enabled', '1')));
+            $cParent   = $checked(old('consultation_parent_enabled', setting('consultation.parent_enabled', '1')));
+          ?>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <div class="border rounded p-3">
+                <div class="form-check form-switch">
+                  <input type="hidden" name="consultation_enabled" value="0">
+                  <input class="form-check-input" type="checkbox" name="consultation_enabled" id="c_enabled" value="1" <?= $cEnabled ? 'checked' : '' ?>>
+                  <label class="form-check-label fw-semibold text-dark" for="c_enabled">Aktifkan fitur Konsultasi &amp; Pengaduan (sakelar utama)</label>
+                </div>
+                <div class="small text-dark mt-2">
+                  Jika dimatikan, semua peran tidak bisa membuka atau mengirim Konsultasi &amp; Pengaduan.
+                </div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="border rounded p-3 h-100">
+                <div class="form-check form-switch">
+                  <input type="hidden" name="consultation_homeroom_enabled" value="0">
+                  <input class="form-check-input" type="checkbox" name="consultation_homeroom_enabled" id="c_homeroom" value="1" <?= $cHomeroom ? 'checked' : '' ?>>
+                  <label class="form-check-label fw-semibold text-dark" for="c_homeroom">Wali Kelas boleh mengirim</label>
+                </div>
+                <div class="small text-dark mt-2">Wali Kelas dapat membuat laporan/pengaduan pribadinya.</div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="border rounded p-3 h-100">
+                <div class="form-check form-switch">
+                  <input type="hidden" name="consultation_student_enabled" value="0">
+                  <input class="form-check-input" type="checkbox" name="consultation_student_enabled" id="c_student" value="1" <?= $cStudent ? 'checked' : '' ?>>
+                  <label class="form-check-label fw-semibold text-dark" for="c_student">Siswa boleh mengirim</label>
+                </div>
+                <div class="small text-dark mt-2">Siswa dapat membuat konsultasi/pengaduan miliknya sendiri.</div>
+              </div>
+            </div>
+
+            <div class="col-md-4">
+              <div class="border rounded p-3 h-100">
+                <div class="form-check form-switch">
+                  <input type="hidden" name="consultation_parent_enabled" value="0">
+                  <input class="form-check-input" type="checkbox" name="consultation_parent_enabled" id="c_parent" value="1" <?= $cParent ? 'checked' : '' ?>>
+                  <label class="form-check-label fw-semibold text-dark" for="c_parent">Orang Tua boleh mengirim</label>
+                </div>
+                <div class="small text-dark mt-2">Orang Tua dapat membuat laporan tentang anaknya.</div>
+              </div>
+            </div>
           </div>
         </div>
 

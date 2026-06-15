@@ -13,7 +13,7 @@ class SettingService
     /**
      * Daftar group settings yang dikenali oleh halaman admin/settings.
      */
-    protected array $groups = ['general', 'branding', 'academic', 'mail', 'security', 'notifications'];
+    protected array $groups = ['general', 'branding', 'academic', 'mail', 'security', 'notifications', 'consultation'];
 
     public function __construct()
     {
@@ -144,6 +144,26 @@ class SettingService
         return $db->transStatus();
     }
 
+    /**
+     * Simpan batas tingkat kelas yang diizinkan (mis. 7 s/d 12).
+     * Selalu dijalankan (tidak tergantung tahun ajaran).
+     */
+    public function saveGradeRange(array $data): void
+    {
+        $min = (int) ($data['grade_level_min'] ?? 7);
+        $max = (int) ($data['grade_level_max'] ?? 12);
+
+        // Clamp ke rentang jenjang yang masuk akal (1-12) dan pastikan min <= max.
+        $min = max(1, min(12, $min));
+        $max = max(1, min(12, $max));
+        if ($max < $min) {
+            $max = $min;
+        }
+
+        set_setting('academic', 'grade_level_min', $min, 'int');
+        set_setting('academic', 'grade_level_max', $max, 'int');
+    }
+
     public function saveMail(array $data): void
     {
         /**
@@ -219,6 +239,19 @@ class SettingService
             $whatsapp = !empty($data['enable_whatsapp']);
             set_setting('notifications', 'enable_whatsapp', $whatsapp, 'bool');
         }
+    }
+
+    /**
+     * Simpan sakelar fitur Konsultasi & Pengaduan.
+     * Memakai pola hidden input (value=0) + checkbox (value=1) di form,
+     * sehingga sakelar yang dimatikan tetap tersimpan sebagai 0.
+     */
+    public function saveConsultation(array $data): void
+    {
+        set_setting('consultation', 'enabled', ! empty($data['consultation_enabled']), 'bool');
+        set_setting('consultation', 'homeroom_enabled', ! empty($data['consultation_homeroom_enabled']), 'bool');
+        set_setting('consultation', 'student_enabled', ! empty($data['consultation_student_enabled']), 'bool');
+        set_setting('consultation', 'parent_enabled', ! empty($data['consultation_parent_enabled']), 'bool');
     }
 
     // ---------------------------------------------------------------------

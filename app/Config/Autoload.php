@@ -119,6 +119,7 @@ class Autoload extends AutoloadConfig
         'auth',
         'app',
         'settings',
+        'consultation',
     ];
 
     public function __construct()
