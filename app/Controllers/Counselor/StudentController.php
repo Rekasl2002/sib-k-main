@@ -10,12 +10,14 @@ use App\Controllers\BaseController;
 use App\Models\StudentModel;
 use App\Models\UserModel;
 use App\Models\ClassModel;
+use App\Services\StudentService;
 
 class StudentController extends BaseController
 {
     protected StudentModel $studentModel;
     protected UserModel $userModel;
     protected ClassModel $classModel;
+    protected StudentService $studentService;
     protected $db;
 
     public function __construct()
@@ -24,6 +26,7 @@ class StudentController extends BaseController
         $this->studentModel     = new StudentModel();
         $this->userModel        = new UserModel();
         $this->classModel       = new ClassModel();
+        $this->studentService   = new StudentService();
         $this->db               = \Config\Database::connect();
     }
 
@@ -62,6 +65,8 @@ class StudentController extends BaseController
                 'students.address',
                 'students.special_needs',
                 'students.disability',
+                'students.hobi',
+                'students.ekskul_organisasi',
                 'students.kip_pip_number',
                 'students.father_name',
                 'students.mother_name',
@@ -239,7 +244,7 @@ class StudentController extends BaseController
 
             'student'          => $student,
             'classes'          => $classes,
-            'parents'          => [],
+            'parents'          => $this->studentService->getAvailableParents(),
             'status_options'   => ['Aktif', 'Alumni', 'Pindah', 'Keluar'],
             'gender_options'   => ['L' => 'Laki-laki', 'P' => 'Perempuan'],
             'religion_options' => ['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu'],
@@ -257,61 +262,17 @@ class StudentController extends BaseController
             return redirect()->to('counselor/students')->with('error', 'Anda tidak memiliki akses ke siswa ini.');
         }
 
-        $rules = [
-            'full_name'      => 'permit_empty|min_length[3]|max_length[100]',
-            'gender'         => 'permit_empty|in_list[L,P]',
-            'class_id'       => 'permit_empty|is_natural_no_zero',
-            'phone'          => 'permit_empty|max_length[30]',
-            'birth_place'    => 'permit_empty|max_length[100]',
-            'birth_date'     => 'permit_empty|valid_date',
-            'religion'       => 'permit_empty|max_length[20]',
-            'admission_date' => 'permit_empty|valid_date',
-            'address'        => 'permit_empty|max_length[255]',
-            'status'         => 'permit_empty|in_list[Aktif,Alumni,Pindah,Keluar,Tidak Aktif]',
-            'parent_id'      => 'permit_empty|is_natural_no_zero',
-        ];
-
-        if (!$this->validate($rules)) {
-            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
-        }
-
         $post = (array) $this->request->getPost();
 
-        // Update ke tabel users (full_name + phone)
-        $userId = (int) ($exists['user_id'] ?? 0);
-        if ($userId > 0) {
-            $userPayload = [];
-
-            if (!empty($post['full_name'])) {
-                $userPayload['full_name'] = $post['full_name'];
-            }
-            if (array_key_exists('phone', $post) && $post['phone'] !== '') {
-                $userPayload['phone'] = $post['phone'];
-            }
-
-            if (!empty($userPayload)) {
-                $this->userModel->update($userId, $userPayload);
-            }
-        }
-
-        // Update ke tabel students (hindari update kolom yang sebenarnya milik users)
-        $allowedStudent = [
-            'gender','class_id','birth_place','birth_date','religion',
-            'admission_date','address','status','parent_id'
-        ];
-        $data = array_intersect_key($post, array_flip($allowedStudent));
-
-        if (!empty($data['class_id']))  $data['class_id']  = (int) $data['class_id'];
-        if (!empty($data['parent_id'])) $data['parent_id'] = (int) $data['parent_id'];
-
-        // Security: kalau ganti class, pastikan kelas tersebut memang kelas binaan counselor ini
-        if (!empty($data['class_id'])) {
+        // Keamanan: bila kelas diubah, pastikan kelas tujuan adalah kelas binaan counselor ini.
+        $newClassId = (int) ($post['class_id'] ?? 0);
+        if ($newClassId > 0) {
             $okClass = $this->db->table('classes')
                 ->select('id')
                 ->where('deleted_at', null)
                 ->where('is_active', 1)
                 ->where('counselor_id', $uid)
-                ->where('id', (int) $data['class_id'])
+                ->where('id', $newClassId)
                 ->get(1)->getRowArray();
 
             if (!$okClass) {
@@ -319,11 +280,19 @@ class StudentController extends BaseController
             }
         }
 
-        if (!$this->studentModel->update($id, $data)) {
-            return redirect()->back()->withInput()->with('error', 'Gagal menyimpan perubahan.');
+        // Pakai service yang sama dengan Koordinator (sanitasi '' -> null, validasi server,
+        // dukung semua field termasuk hobi/ekskul). Paritas penuh dalam lingkup binaan.
+        $result = $this->studentService->updateStudent($id, $post);
+
+        if (!($result['success'] ?? false)) {
+            $redir = redirect()->back()->withInput();
+            if (!empty($result['errors']) && is_array($result['errors'])) {
+                $redir = $redir->with('errors', $result['errors']);
+            }
+            return $redir->with('error', $result['message'] ?? 'Gagal menyimpan perubahan.');
         }
 
-        return redirect()->to('counselor/students/'.$id)->with('success', 'Data siswa diperbarui.');
+        return redirect()->to('counselor/students/' . $id)->with('success', $result['message'] ?? 'Data siswa diperbarui.');
     }
 
     public function detail($id = null)
