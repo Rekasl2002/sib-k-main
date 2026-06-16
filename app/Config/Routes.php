@@ -519,10 +519,6 @@ $routes->group('koordinator', [
             $routes->get('/', 'AssignmentController::index', ['as' => 'koordinator.assignments.index']);
             $routes->get('create', 'AssignmentController::create', ['as' => 'koordinator.assignments.create']);
             $routes->post('store', 'AssignmentController::store', ['as' => 'koordinator.assignments.store']);
-            $routes->post('promote-guru-bk/(:num)', 'AssignmentController::promoteToCounselor/$1', [
-                'filter' => 'permission:manage_users',
-                'as'     => 'koordinator.assignments.promote_counselor',
-            ]);
             $routes->get('show/(:num)', 'AssignmentController::show/$1', ['as' => 'koordinator.assignments.show']);
             $routes->get('edit/(:num)', 'AssignmentController::edit/$1', ['as' => 'koordinator.assignments.edit']);
             $routes->post('update/(:num)', 'AssignmentController::update/$1', ['as' => 'koordinator.assignments.update']);

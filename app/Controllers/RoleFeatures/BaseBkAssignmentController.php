@@ -122,6 +122,14 @@ abstract class BaseBkAssignmentController extends BaseController
 
     public function status($id)
     {
+        // Penegakan akses: Guru BK hanya boleh memperbarui status tugas yang
+        // ditujukan kepadanya. find() sudah membatasi cakupan per peran, sehingga
+        // tugas milik orang lain tidak akan ditemukan dan permintaan ditolak.
+        $row = $this->service->find((int) $id, $this->roleKey, $this->currentUserId());
+        if (! $row) {
+            return redirect()->to(site_url($this->routePrefix))->with('error', 'Data tidak ditemukan atau tidak bisa diakses.');
+        }
+
         $this->service->updateStatus(
             (int) $id,
             (string) ($this->request->getPost('status') ?? 'Berjalan'),
