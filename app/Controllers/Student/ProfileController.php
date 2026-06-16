@@ -5,16 +5,23 @@ namespace App\Controllers\Student;
 class ProfileController extends BaseStudentController
 {
     /**
+     * Field biodata siswa yang BOLEH diubah sendiri oleh Siswa.
+     * Lima field terkunci (Kelas/class_id, Tingkat, Jurusan, NISN, NIK) TIDAK
+     * pernah ikut disimpan walau dikirim.
+     */
+    private array $editableStudentFields = [
+        'gender', 'birth_place', 'birth_date', 'religion', 'address',
+        'special_needs', 'disability', 'hobi', 'ekskul_organisasi',
+        'kip_pip_number', 'father_name', 'mother_name', 'guardian_name',
+    ];
+
+    /**
      * GET /student/profile
-     * Tampilkan profil siswa (mode view/edit digunakan oleh view untuk UX),
-     * namun biodata resmi tetap read-only sesuai perancangan.
-     * Perubahan Email/Telepon/Foto dilakukan di /profile (Profil Global).
      */
     public function index()
     {
         $this->requireStudent();
 
-        // Ambil profil siswa + info akun + kelas
         $profile = $this->db->table('students s')
             ->select('
                 s.*,
@@ -32,32 +39,96 @@ class ProfileController extends BaseStudentController
             ->get()
             ->getRow();
 
-        // Mode tampilan untuk kebutuhan UI (view/edit)
         $mode = $this->request->getGet('mode') === 'edit' ? 'edit' : 'view';
 
-        // Policy sederhana untuk memberi hint ke view bahwa akun boleh ubah 3 field via /profile
-        $accountEditable = ['email', 'phone', 'profile_photo'];
+        // Lima field terkunci yang tidak boleh diubah Siswa.
+        $lockedFields = ['Kelas', 'Tingkat', 'Jurusan', 'NISN', 'NIK'];
 
         return view('student/profile', [
-            'title'            => 'Profil Siswa',
-            'profile'          => $profile,
-            'mode'             => $mode,
-            'today'            => date('Y-m-d'),
-            'accountEditable'  => $accountEditable, // dipakai view untuk tombol/link ke /profile
+            'title'           => 'Profil Siswa',
+            'profile'         => $profile,
+            'mode'            => $mode,
+            'today'           => date('Y-m-d'),
+            'lockedFields'    => $lockedFields,
+            'accountEditable' => ['email', 'phone', 'profile_photo'],
         ]);
     }
 
     /**
      * POST /student/profile/update
-     * Sesuai kebijakan: tidak mengubah biodata resmi (tabel students).
-     * Arahkan siswa ke Profil Global untuk mengubah Email/Telepon/Foto.
+     * Siswa boleh mengubah seluruh biodata MILIKNYA, KECUALI lima field terkunci
+     * (Kelas, Tingkat, Jurusan, NISN, NIK). Nama & telepon ikut bisa diubah.
      */
     public function update()
     {
         $this->requireStudent();
 
-        return redirect()
-            ->to(route_to('profile') . '?mode=edit')
-            ->with('info', 'Perubahan Email/Telepon/Foto lakukan di Profil Akun. Biodata resmi siswa tidak dapat diubah langsung dari sini.');
+        $rules = [
+            'full_name'   => 'required|max_length[255]',
+            'phone'       => 'permit_empty|max_length[20]|regex_match[/^[0-9+()\s-]{6,20}$/]',
+            'gender'      => 'permit_empty|in_list[L,P]',
+            'birth_place' => 'permit_empty|max_length[100]',
+            'birth_date'  => 'permit_empty|valid_date[Y-m-d]',
+            'religion'    => 'permit_empty|in_list[Islam,Kristen,Katolik,Hindu,Buddha,Konghucu]',
+            'address'     => 'permit_empty|max_length[255]',
+            'special_needs'     => 'permit_empty|max_length[100]',
+            'disability'        => 'permit_empty|max_length[100]',
+            'hobi'              => 'permit_empty|max_length[255]',
+            'ekskul_organisasi' => 'permit_empty|max_length[255]',
+            'kip_pip_number'    => 'permit_empty|max_length[50]',
+            'father_name'       => 'permit_empty|max_length[255]',
+            'mother_name'       => 'permit_empty|max_length[255]',
+            'guardian_name'     => 'permit_empty|max_length[255]',
+        ];
+
+        if (! $this->validate($rules)) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Periksa kembali data yang diisi.')
+                ->with('errors', $this->validator->getErrors());
+        }
+
+        // Susun data biodata siswa (hanya field yang diizinkan; '' → null).
+        $studentData = [];
+        foreach ($this->editableStudentFields as $f) {
+            $val = $this->request->getPost($f);
+            $val = is_string($val) ? trim($val) : $val;
+            $studentData[$f] = ($val === '' || $val === null) ? null : $val;
+        }
+        $studentData['updated_at'] = date('Y-m-d H:i:s');
+
+        // Akun: nama & telepon.
+        $userRow = $this->db->table('students')->select('user_id')
+            ->where('id', $this->studentId)->get()->getRowArray();
+        $userId = (int) ($userRow['user_id'] ?? 0);
+
+        $fullName = trim((string) $this->request->getPost('full_name'));
+        $phone    = trim((string) $this->request->getPost('phone'));
+
+        $this->db->transStart();
+
+        $this->db->table('students')->where('id', $this->studentId)->update($studentData);
+
+        if ($userId > 0) {
+            $this->db->table('users')->where('id', $userId)->update([
+                'full_name'  => $fullName,
+                'phone'      => $phone === '' ? null : $phone,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ]);
+        }
+
+        $this->db->transComplete();
+
+        if ($this->db->transStatus() === false) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Gagal menyimpan perubahan. Coba lagi.');
+        }
+
+        // Segarkan nama di session bila ada.
+        if ($fullName !== '') {
+            session()->set('full_name', $fullName);
+        }
+
+        return redirect()->to(route_to('student.profile'))
+            ->with('success', 'Biodata berhasil diperbarui. (Kelas, Tingkat, Jurusan, NISN, dan NIK hanya dapat diubah oleh sekolah.)');
     }
 }

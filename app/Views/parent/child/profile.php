@@ -176,10 +176,17 @@ $errorsPhoto   = session('errors_photo') ?? [];
 
       <!-- Kanan -->
       <div class="col-lg-8">
-        <!-- Data pribadi anak (read-only) -->
+        <!-- Data pribadi anak -->
         <div class="card">
           <div class="card-body">
-            <h5 class="card-title mb-3">Data Pribadi Anak</h5>
+            <div class="d-flex align-items-center justify-content-between mb-3">
+              <h5 class="card-title mb-0">Data Pribadi Anak</h5>
+              <?php if ($studentId): ?>
+                <a href="<?= route_to('parent.children.edit', $studentId) ?>" class="btn btn-sm btn-primary">
+                  <i class="mdi mdi-account-edit me-1"></i> Ubah Data Anak
+                </a>
+              <?php endif; ?>
+            </div>
             <div class="table-responsive">
               <table class="table table-borderless mb-0">
                 <tbody>
@@ -195,6 +202,8 @@ $errorsPhoto   = session('errors_photo') ?? [];
                     </td>
                   </tr>
                   <tr><th class="text-muted">Agama</th><td><?= v($profile, 'religion', '-') ?></td></tr>
+                  <tr><th class="text-muted">Hobi</th><td><?= v($profile, 'hobi', '-') ?></td></tr>
+                  <tr><th class="text-muted">Ekstrakurikuler/Organisasi</th><td><?= v($profile, 'ekskul_organisasi', '-') ?></td></tr>
                   <tr><th class="text-muted">Alamat</th><td><?= v($profile, 'address', '-') ?></td></tr>
                   <tr><th class="text-muted">Kebutuhan Khusus</th><td><?= v($profile, 'special_needs', '-') ?></td></tr>
                   <tr><th class="text-muted">Disabilitas</th><td><?= v($profile, 'disability', '-') ?></td></tr>

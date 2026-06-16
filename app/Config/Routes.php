@@ -1283,6 +1283,15 @@ $routes->group('parent', [
                 'filter' => 'permission:view_student_portfolio',
                 'as'     => 'parent.children.profile'
             ]);
+            // Edit data anak langsung (kecuali 5 field terkunci).
+            $routes->get('(:num)/edit', 'ChildController::edit/$1', [
+                'filter' => 'permission:view_student_portfolio',
+                'as'     => 'parent.children.edit'
+            ]);
+            $routes->post('(:num)/update', 'ChildController::update/$1', [
+                'filter' => 'permission:view_student_portfolio',
+                'as'     => 'parent.children.update'
+            ]);
             $routes->get('(:num)/staff', 'ChildController::staff/$1', [
                 'filter' => 'permission:view_student_portfolio',
                 'as'     => 'parent.children.staff'

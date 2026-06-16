@@ -109,14 +109,6 @@ if ($avatarPath) {
       <div class="alert alert-info"><?= esc(session('info')) ?></div>
     <?php endif; ?>
 
-    <?php if ($mode === 'edit'): ?>
-      <div class="alert alert-warning">
-        Perubahan biodata resmi dilakukan oleh sekolah. Anda bisa mengubah
-        <strong>Email, No. HP, dan Foto Profil</strong> melalui halaman
-        <a class="alert-link" href="<?= base_url('/profile?mode=edit') ?>">Profil Akun</a>.
-      </div>
-    <?php endif; ?>
-
     <div class="row">
       <!-- Kolom kiri: Info akun & kelas -->
       <div class="col-xl-4">
@@ -187,71 +179,188 @@ if ($avatarPath) {
         </div>
       </div>
 
-      <!-- Kolom kanan: Data Pribadi (read-only) -->
+      <!-- Kolom kanan: Data Pribadi -->
       <div class="col-xl-8">
         <div class="card">
           <div class="card-body">
-            <h5 class="card-title mb-3">Data Pribadi</h5>
-            <div class="row g-3">
-              <div class="col-md-6">
-                <div class="text-muted small mb-1">Nama Lengkap</div>
-                <div class="fw-semibold"><?= esc($valFullName) ?: '—' ?></div>
+            <?php
+              $valReligion = old('religion', $profile['religion'] ?? '');
+              $valSpecial  = old('special_needs', $profile['special_needs'] ?? '');
+              $valDisab    = old('disability', $profile['disability'] ?? '');
+              $valHobi     = old('hobi', $profile['hobi'] ?? '');
+              $valEkskul   = old('ekskul_organisasi', $profile['ekskul_organisasi'] ?? '');
+              $valKip      = old('kip_pip_number', $profile['kip_pip_number'] ?? '');
+              $valFather   = old('father_name', $profile['father_name'] ?? '');
+              $valMother   = old('mother_name', $profile['mother_name'] ?? '');
+              $valGuardian = old('guardian_name', $profile['guardian_name'] ?? '');
+              $valGender   = old('gender', $profile['gender'] ?? '');
+            ?>
+
+            <?php if ($mode === 'edit'): ?>
+              <div class="d-flex align-items-center justify-content-between mb-3">
+                <h5 class="card-title mb-0">Ubah Biodata</h5>
+                <a class="btn btn-sm btn-light" href="<?= route_to('student.profile') ?>">Batal</a>
               </div>
-              <div class="col-md-6">
-                <div class="text-muted small mb-1">Telepon</div>
-                <div class="fw-semibold"><?= esc($valPhone) ?: '—' ?></div>
+              <div class="alert alert-info">
+                Anda boleh mengubah seluruh biodata Anda, <strong>kecuali</strong>
+                Kelas, Tingkat, Jurusan, NISN, dan NIK (hanya sekolah yang dapat mengubahnya).
               </div>
-              <div class="col-md-6">
-                <div class="text-muted small mb-1">Tempat Lahir</div>
-                <div class="fw-semibold"><?= esc($valBirthPl) ?: '—' ?></div>
-              </div>
-              <div class="col-md-6">
-                <div class="text-muted small mb-1">Tanggal Lahir</div>
-                <div class="fw-semibold">
-                  <?= $valBirthDt ? esc($valBirthDt) : '—' ?>
-                  <?php if ($valAge !== '-'): ?><span class="text-muted">(<?= esc($valAge) ?>)</span><?php endif; ?>
+              <form method="post" action="<?= route_to('student.profile.update') ?>">
+                <?= csrf_field() ?>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Nama Lengkap <span class="text-danger">*</span></label>
+                    <input type="text" name="full_name" class="form-control" value="<?= esc($valFullName, 'attr') ?>" required>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Telepon</label>
+                    <input type="text" name="phone" class="form-control" value="<?= esc($valPhone, 'attr') ?>" placeholder="08xxxxxxxxxx">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Jenis Kelamin</label>
+                    <select name="gender" class="form-select">
+                      <option value="">- Pilih -</option>
+                      <option value="L" <?= $valGender === 'L' ? 'selected' : '' ?>>Laki-laki</option>
+                      <option value="P" <?= $valGender === 'P' ? 'selected' : '' ?>>Perempuan</option>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Agama</label>
+                    <select name="religion" class="form-select">
+                      <option value="">- Pilih -</option>
+                      <?php foreach (['Islam','Kristen','Katolik','Hindu','Buddha','Konghucu'] as $ag): ?>
+                        <option value="<?= $ag ?>" <?= $valReligion === $ag ? 'selected' : '' ?>><?= $ag ?></option>
+                      <?php endforeach; ?>
+                    </select>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Tempat Lahir</label>
+                    <input type="text" name="birth_place" class="form-control" value="<?= esc($valBirthPl, 'attr') ?>">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Tanggal Lahir</label>
+                    <input type="date" name="birth_date" class="form-control" value="<?= esc($valBirthDt, 'attr') ?>" max="<?= esc($today, 'attr') ?>">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Hobi</label>
+                    <input type="text" name="hobi" class="form-control" value="<?= esc($valHobi, 'attr') ?>" placeholder="mis. membaca, sepak bola">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Ekstrakurikuler/Organisasi</label>
+                    <input type="text" name="ekskul_organisasi" class="form-control" value="<?= esc($valEkskul, 'attr') ?>" placeholder="mis. Pramuka, OSIS">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Kebutuhan Khusus</label>
+                    <input type="text" name="special_needs" class="form-control" value="<?= esc($valSpecial, 'attr') ?>">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Disabilitas</label>
+                    <input type="text" name="disability" class="form-control" value="<?= esc($valDisab, 'attr') ?>">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Nomor KIP/PIP</label>
+                    <input type="text" name="kip_pip_number" class="form-control" value="<?= esc($valKip, 'attr') ?>">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Nama Ayah Kandung</label>
+                    <input type="text" name="father_name" class="form-control" value="<?= esc($valFather, 'attr') ?>">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Nama Ibu Kandung</label>
+                    <input type="text" name="mother_name" class="form-control" value="<?= esc($valMother, 'attr') ?>">
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-dark">Nama Wali</label>
+                    <input type="text" name="guardian_name" class="form-control" value="<?= esc($valGuardian, 'attr') ?>">
+                  </div>
+                  <div class="col-12">
+                    <label class="form-label text-dark">Alamat</label>
+                    <textarea name="address" class="form-control" rows="2"><?= esc($valAddress) ?></textarea>
+                  </div>
+                </div>
+                <div class="mt-4 d-flex flex-wrap gap-2">
+                  <button type="submit" class="btn btn-primary"><i class="mdi mdi-content-save me-1"></i> Simpan</button>
+                  <a class="btn btn-light" href="<?= route_to('student.profile') ?>">Batal</a>
+                </div>
+              </form>
+            <?php else: ?>
+              <h5 class="card-title mb-3">Data Pribadi</h5>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Nama Lengkap</div>
+                  <div class="fw-semibold text-dark"><?= esc($valFullName) ?: '—' ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Telepon</div>
+                  <div class="fw-semibold text-dark"><?= esc($valPhone) ?: '—' ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Tempat Lahir</div>
+                  <div class="fw-semibold text-dark"><?= esc($valBirthPl) ?: '—' ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Tanggal Lahir</div>
+                  <div class="fw-semibold text-dark">
+                    <?= $valBirthDt ? esc($valBirthDt) : '—' ?>
+                    <?php if ($valAge !== '-'): ?><span class="text-dark">(<?= esc($valAge) ?>)</span><?php endif; ?>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Jenis Kelamin</div>
+                  <div class="fw-semibold text-dark"><?= esc($genderLabel) ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Agama</div>
+                  <div class="fw-semibold text-dark"><?= esc($valReligion ?: '—') ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Hobi</div>
+                  <div class="fw-semibold text-dark"><?= esc($valHobi ?: '—') ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Ekstrakurikuler/Organisasi</div>
+                  <div class="fw-semibold text-dark"><?= esc($valEkskul ?: '—') ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Kebutuhan Khusus</div>
+                  <div class="fw-semibold text-dark"><?= esc($valSpecial ?: '—') ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Disabilitas</div>
+                  <div class="fw-semibold text-dark"><?= esc($valDisab ?: '—') ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Nomor KIP/PIP</div>
+                  <div class="fw-semibold text-dark"><?= esc($valKip ?: '—') ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Nama Ayah Kandung</div>
+                  <div class="fw-semibold text-dark"><?= esc($valFather ?: '—') ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Nama Ibu Kandung</div>
+                  <div class="fw-semibold text-dark"><?= esc($valMother ?: '—') ?></div>
+                </div>
+                <div class="col-md-6">
+                  <div class="text-dark small mb-1">Nama Wali</div>
+                  <div class="fw-semibold text-dark"><?= esc($valGuardian ?: '—') ?></div>
+                </div>
+                <div class="col-12">
+                  <div class="text-dark small mb-1">Alamat</div>
+                  <div class="fw-semibold text-dark"><?= nl2br(esc($valAddress ?: '—')) ?></div>
                 </div>
               </div>
-              <div class="col-md-6">
-                <div class="text-muted small mb-1">Jenis Kelamin</div>
-                <div class="fw-semibold"><?= esc($genderLabel) ?></div>
-              </div>
-              <div class="col-md-6">
-                <div class="text-muted small mb-1">Kebutuhan Khusus</div>
-                <div class="fw-semibold"><?= esc($profile['special_needs'] ?? '—') ?></div>
-              </div>
-              <div class="col-md-6">
-                <div class="text-muted small mb-1">Disabilitas</div>
-                <div class="fw-semibold"><?= esc($profile['disability'] ?? '—') ?></div>
-              </div>
-              <div class="col-md-6">
-                <div class="text-muted small mb-1">Nomor KIP/PIP</div>
-                <div class="fw-semibold"><?= esc($profile['kip_pip_number'] ?? '—') ?></div>
-              </div>
-              <div class="col-md-6">
-                <div class="text-muted small mb-1">Nama Ayah Kandung</div>
-                <div class="fw-semibold"><?= esc($profile['father_name'] ?? '—') ?></div>
-              </div>
-              <div class="col-md-6">
-                <div class="text-muted small mb-1">Nama Ibu Kandung</div>
-                <div class="fw-semibold"><?= esc($profile['mother_name'] ?? '—') ?></div>
-              </div>
-              <div class="col-md-6">
-                <div class="text-muted small mb-1">Nama Wali</div>
-                <div class="fw-semibold"><?= esc($profile['guardian_name'] ?? '—') ?></div>
-              </div>
-              <div class="col-12">
-                <div class="text-muted small mb-1">Alamat</div>
-                <div class="fw-semibold"><?= nl2br(esc($valAddress ?: '—')) ?></div>
-              </div>
-            </div>
 
-            <div class="mt-4 d-flex flex-wrap gap-2">
-              <a class="btn btn-primary" href="<?= base_url('/profile?mode=edit') ?>">
-                <i class="ri-edit-2-line me-1"></i> Ubah Email/HP/Foto (Profil Akun)
-              </a>
-              <a class="btn btn-light" href="<?= route_to('student.dashboard') ?>">Kembali</a>
-            </div>
+              <div class="mt-4 d-flex flex-wrap gap-2">
+                <a class="btn btn-primary" href="<?= route_to('student.profile') ?>?mode=edit">
+                  <i class="mdi mdi-account-edit me-1"></i> Ubah Biodata
+                </a>
+                <a class="btn btn-outline-secondary" href="<?= base_url('/profile?mode=edit') ?>">
+                  <i class="ri-edit-2-line me-1"></i> Ubah Email/Foto (Profil Akun)
+                </a>
+                <a class="btn btn-light" href="<?= route_to('student.dashboard') ?>">Kembali</a>
+              </div>
+            <?php endif; ?>
           </div>
         </div>
       </div>
