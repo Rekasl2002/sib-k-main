@@ -80,7 +80,6 @@ class PermissionModel extends Model
             'User Management' => [],
             'Academic Data'   => [],
             'Counseling'      => [],
-            'Violation Submissions' => [],
             'Assessments'     => [],
             'Reports'         => [],
             'Communication'   => [],
@@ -97,8 +96,6 @@ class PermissionModel extends Model
                 $grouped['Academic Data'][] = $permission;
             } elseif (strpos($name, 'counseling') !== false || strpos($name, 'schedule_counseling') !== false) {
                 $grouped['Counseling'][] = $permission;
-            } elseif (strpos($name, 'violation_submission') !== false) {
-                $grouped['Violation Submissions'][] = $permission;
             } elseif (strpos($name, 'assessment') !== false) {
                 $grouped['Assessments'][] = $permission;
             } elseif (strpos($name, 'report') !== false) {

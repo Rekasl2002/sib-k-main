@@ -1,7 +1,12 @@
-<!-- app/Views/homeroom_teacher/students/index.php -->
+<!--
+  File Path: app/Views/homeroom_teacher/students/index.php
+  Fitur: daftar siswa kelas binaan dan pintu masuk Impor Data Siswa/Orang Tua untuk Wali Kelas.
+  Relasi: HomeroomTeacher\StudentController, HomeroomTeacher\StudentImportController, tabel classes/students/users.
+-->
 <?= $this->extend('layouts/main'); ?>
 <?= $this->section('content'); ?>
 <?php
+helper('permission');
 $class = is_array($class ?? null) ? $class : [];
 $isMultipleClass = ! empty($class['is_multiple']);
 ?>
@@ -29,7 +34,25 @@ $isMultipleClass = ! empty($class['is_multiple']);
             </div>
             <small class="text-muted">Tingkat: <?= esc($class['grade_level']); ?> <?= $class['major'] ? '(' . esc($class['major']) . ')' : ''; ?></small>
           </div>
-          <a href="<?= site_url('homeroom/my-class'); ?>" class="btn btn-outline-secondary btn-sm">Ringkasan Kelas</a>
+          <div class="d-flex gap-2 flex-wrap">
+            <?php if (function_exists('has_permission') && has_permission('manage_students')): ?>
+              <a href="<?= site_url('homeroom/students/create'); ?>" class="btn btn-primary btn-sm">
+                <i class="mdi mdi-account-plus-outline"></i> Tambah Siswa
+              </a>
+              <a href="<?= site_url('homeroom/parents'); ?>" class="btn btn-outline-primary btn-sm">
+                <i class="mdi mdi-account-group-outline"></i> Akun Orang Tua
+              </a>
+            <?php endif; ?>
+            <?php if (function_exists('has_permission') && has_permission('import_export_data')): ?>
+              <a href="<?= site_url('homeroom/students/import'); ?>" class="btn btn-info btn-sm">
+                <i class="mdi mdi-file-import-outline"></i> Impor Data
+              </a>
+              <a href="<?= site_url('homeroom/students/export'); ?>" class="btn btn-outline-success btn-sm">
+                <i class="mdi mdi-file-export-outline"></i> Ekspor CSV
+              </a>
+            <?php endif; ?>
+            <a href="<?= site_url('homeroom/my-class'); ?>" class="btn btn-outline-secondary btn-sm">Ringkasan Kelas</a>
+          </div>
         </div>
 
         <div class="table-responsive">
@@ -42,7 +65,8 @@ $isMultipleClass = ! empty($class['is_multiple']);
                 <th class="d-none d-sm-table-cell">NIK</th>
                 <th class="d-none d-md-table-cell">NISN</th>
                 <th class="text-center">JK</th>
-                <th style="width:7rem"></th>
+                <th>Orang Tua</th>
+                <th style="width:16rem"></th>
               </tr>
             </thead>
             <tbody>
@@ -54,13 +78,35 @@ $isMultipleClass = ! empty($class['is_multiple']);
                   <td class="d-none d-sm-table-cell"><?= esc($st['nik'] ?? '-'); ?></td>
                   <td class="d-none d-md-table-cell"><?= esc($st['nisn'] ?? '-'); ?></td>
                   <td class="text-center"><?= esc($st['gender'] ?? '-'); ?></td>
+                  <td>
+                    <?php if (! empty($st['parent_id'])): ?>
+                      <div class="fw-semibold"><?= esc($st['parent_name'] ?? 'Orang tua/wali'); ?></div>
+                      <small class="text-muted"><?= esc($st['parent_phone'] ?? $st['parent_email'] ?? '-'); ?></small>
+                    <?php else: ?>
+                      <span class="text-muted">Belum terhubung</span>
+                    <?php endif; ?>
+                  </td>
                   <td class="text-end">
-                    <a class="btn btn-sm btn-outline-primary" href="<?= site_url('homeroom/students/'.$st['id']); ?>">Detail</a>
+                    <div class="btn-group btn-group-sm">
+                      <a class="btn btn-outline-primary" href="<?= site_url('homeroom/students/'.$st['id']); ?>">Detail</a>
+                      <?php if (function_exists('has_permission') && has_permission('manage_students')): ?>
+                        <a class="btn btn-outline-secondary" href="<?= site_url('homeroom/students/edit/'.$st['id']); ?>">Edit</a>
+                        <?php if (! empty($st['parent_id'])): ?>
+                          <a class="btn btn-outline-info" href="<?= site_url('homeroom/parents/'.$st['parent_id']); ?>">Orang Tua</a>
+                        <?php endif; ?>
+                      <?php endif; ?>
+                    </div>
+                    <?php if (function_exists('has_permission') && has_permission('manage_students')): ?>
+                      <form action="<?= site_url('homeroom/students/delete/'.$st['id']); ?>" method="post" class="d-inline ms-1" onsubmit="return confirm('Hapus siswa ini dari kelas binaan?')">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Hapus</button>
+                      </form>
+                    <?php endif; ?>
                   </td>
                 </tr>
               <?php endforeach; else: ?>
                 <tr>
-                  <td colspan="<?= $isMultipleClass ? 7 : 6 ?>" class="text-center text-muted">Belum ada siswa aktif pada kelas ini.</td>
+                  <td colspan="<?= $isMultipleClass ? 8 : 7 ?>" class="text-center text-muted">Belum ada siswa aktif pada kelas ini.</td>
                 </tr>
               <?php endif; ?>
             </tbody>

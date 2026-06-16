@@ -43,11 +43,6 @@ class PrototypeController extends BaseController
         return $this->showFeature($key);
     }
 
-    public function violationSubmissions()
-    {
-        return $this->showFeature('consultation');
-    }
-
     public function notifications()
     {
         return $this->showFeature('notifications');

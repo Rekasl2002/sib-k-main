@@ -1,4 +1,7 @@
-<?php // app/Views/koordinator/dashboard.php ?>
+<?php
+// app/Views/koordinator/dashboard.php
+// Fitur Dashboard Koordinator: ringkasan data akademik, asesmen, laporan, dan layanan BK final.
+?>
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
@@ -23,6 +26,7 @@ $activeAcademic = dash_row($activeAcademic ?? []);
 $topCounselors = $topCounselors ?? [];
 $assessmentCompletion = $assessmentCompletion ?? [];
 $recentActivities = $recentActivities ?? [];
+$bkSummary = is_array($bkSummary ?? null) ? $bkSummary : [];
 
 $ay = trim((string) ($activeAcademic['year'] ?? ''));
 $sem = trim((string) ($activeAcademic['semester'] ?? ''));
@@ -62,7 +66,7 @@ $ayText = trim($ay . ($sem !== '' ? ' Semester ' . $sem : ''));
                   <span class="ms-1">- <?= esc($ayText) ?></span>
                 <?php endif; ?>
                 <br>
-                Pantau siswa, sesi konseling, asesmen, laporan, dan aktivitas terbaru.
+                Pantau siswa, layanan BK, asesmen, laporan, dan aktivitas terbaru.
               </p>
             </div>
             <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -82,9 +86,9 @@ $ayText = trim($ay . ($sem !== '' ? ' Semester ' . $sem : ''));
           ['label' => 'Total Siswa', 'value' => $quick['totalStudents'] ?? 0, 'icon' => 'bx bx-group', 'color' => 'primary'],
           ['label' => 'Siswa Aktif', 'value' => $quick['activeStudents'] ?? 0, 'icon' => 'bx bx-user-check', 'color' => 'success'],
           ['label' => 'Staf BK & Wali Kelas', 'value' => $quick['totalStaff'] ?? 0, 'icon' => 'bx bx-user-voice', 'color' => 'info'],
-          ['label' => 'Total Sesi', 'value' => $quick['totalSessions'] ?? 0, 'icon' => 'bx bx-conversation', 'color' => 'warning'],
-          ['label' => 'Sesi Hari Ini', 'value' => $quick['todaySessions'] ?? 0, 'icon' => 'bx bx-calendar-check', 'color' => 'secondary'],
-          ['label' => 'Sesi Mendatang', 'value' => $quick['upcomingSessions'] ?? 0, 'icon' => 'bx bx-calendar-event', 'color' => 'primary'],
+          ['label' => 'Catatan Konseling', 'value' => $quick['totalSessions'] ?? 0, 'icon' => 'bx bx-conversation', 'color' => 'warning'],
+          ['label' => 'Jadwal Hari Ini', 'value' => $quick['todaySessions'] ?? 0, 'icon' => 'bx bx-calendar-check', 'color' => 'secondary'],
+          ['label' => 'Jadwal Mendatang', 'value' => $quick['upcomingSessions'] ?? 0, 'icon' => 'bx bx-calendar-event', 'color' => 'primary'],
           ['label' => 'Asesmen Aktif', 'value' => $quick['activeAssessments'] ?? 0, 'icon' => 'bx bx-clipboard', 'color' => 'success'],
           ['label' => 'Notifikasi Belum Dibaca', 'value' => $quick['unreadNotifications'] ?? 0, 'icon' => 'bx bx-bell', 'color' => 'danger'],
       ];
@@ -109,11 +113,59 @@ $ayText = trim($ay . ($sem !== '' ? ' Semester ' . $sem : ''));
   </div>
 
   <div class="row">
+    <?php
+      $bkCards = [
+          ['label' => 'Layanan BK Final', 'value' => $bkSummary['total_services'] ?? 0, 'icon' => 'mdi mdi-clipboard-text-outline', 'color' => 'primary'],
+          ['label' => 'Jadwal Layanan', 'value' => $bkSummary['scheduled'] ?? 0, 'icon' => 'mdi mdi-calendar-clock', 'color' => 'info'],
+          ['label' => 'Perlu Tindak Lanjut', 'value' => $bkSummary['need_follow_up'] ?? 0, 'icon' => 'mdi mdi-clipboard-clock-outline', 'color' => 'warning'],
+          ['label' => 'Pengaduan Terbuka', 'value' => $bkSummary['complaints_open'] ?? 0, 'icon' => 'mdi mdi-message-alert-outline', 'color' => 'danger'],
+          ['label' => 'Penugasan Berjalan', 'value' => $bkSummary['assignments_open'] ?? 0, 'icon' => 'mdi mdi-account-arrow-right-outline', 'color' => 'success'],
+      ];
+    ?>
+    <?php foreach ($bkCards as $card): ?>
+      <div class="col-xl col-md-4 col-sm-6 mb-3">
+        <div class="card mini-stats-wid shadow-sm border-0 h-100">
+          <div class="card-body">
+            <div class="d-flex">
+              <div class="flex-grow-1">
+                <p class="text-muted fw-medium mb-1"><?= esc($card['label']) ?></p>
+                <h4 class="mb-0"><?= dash_num($card['value']) ?></h4>
+              </div>
+              <div class="avatar-sm rounded-circle bg-soft-<?= esc($card['color']) ?> d-flex align-items-center justify-content-center">
+                <i class="<?= esc($card['icon']) ?> text-<?= esc($card['color']) ?> font-size-20"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  </div>
+
+  <?php if (!empty($bkSummary['by_type']) && is_array($bkSummary['by_type'])): ?>
+    <div class="row">
+      <div class="col-12 mb-3">
+        <div class="card">
+          <div class="card-body">
+            <h5 class="card-title mb-3">
+              <i class="mdi mdi-chart-box-outline text-primary me-1"></i>Jumlah Layanan per Jenis
+            </h5>
+            <div class="d-flex flex-wrap gap-2">
+              <?php foreach ($bkSummary['by_type'] as $type => $count): ?>
+                <span class="badge bg-light text-dark border px-3 py-2"><?= esc($type) ?>: <?= dash_num($count) ?></span>
+              <?php endforeach; ?>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <?php endif; ?>
+
+  <div class="row">
     <div class="col-xl-6 mb-3">
       <div class="card h-100">
         <div class="card-body">
           <h5 class="card-title mb-3">
-            <i class="mdi mdi-account-tie-outline text-primary me-1"></i>Guru BK dengan Sesi Terbanyak
+            <i class="mdi mdi-account-tie-outline text-primary me-1"></i>Guru BK dengan Layanan Terbanyak
           </h5>
           <?php if (!empty($topCounselors)): ?>
             <div class="table-responsive">

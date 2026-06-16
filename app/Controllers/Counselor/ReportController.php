@@ -10,6 +10,7 @@
  * Catatan:
  * - Tidak memakai BaseCounselorController (karena tidak ada).
  * - Extend App\Controllers\BaseController agar $request/$response tersedia.
+ * - Terhubung dengan fitur final BK melalui ReportService::studentIndividualTable().
  */
 
 namespace App\Controllers\Counselor;
@@ -82,6 +83,7 @@ class ReportController extends BaseController
         // jenis laporan default
         $valType = (string)($this->request->getGet('type') ?: 'sessions');
         $students = $this->report->studentOptionsForCounselor($counselorId);
+        $bkCategories = $this->report->individualCategoryOptions();
 
         return view('counselor/reports/index', [
             'pageTitle'   => 'Laporan',
@@ -89,6 +91,7 @@ class ReportController extends BaseController
             'classes'     => $classes,
             'assessments' => $assessments,
             'students'    => $students,
+            'bkCategories'=> $bkCategories,
 
             'valFrom'     => $valFrom,
             'valTo'       => $valTo,
@@ -102,6 +105,7 @@ class ReportController extends BaseController
             'valPaper'    => $valPaper,
             'valOrient'   => $valOrient,
             'valStudent'  => (string)($this->request->getGet('student_id') ?? ''),
+            'valBkCategory' => (string)($this->request->getGet('bk_category') ?? 'all'),
 
             // untuk report asesmen
             'valAssessmentId' => (string)($this->request->getGet('assessment_id') ?? ''),
@@ -237,6 +241,7 @@ class ReportController extends BaseController
             'sort_dir'      => $f['sort_dir'],
             'assessment_id' => $f['assessment_id'],
             'student_id'    => $f['student_id'],
+            'bk_category'   => $f['bk_category'],
         ];
 
         switch ($type) {
@@ -265,7 +270,12 @@ class ReportController extends BaseController
                     break;
                 }
 
-                $out = $this->report->studentIndividualTable($studentId, $filter['date_from'] ?? null, $filter['date_to'] ?? null);
+                $out = $this->report->studentIndividualTable(
+                    $studentId,
+                    $filter['date_from'] ?? null,
+                    $filter['date_to'] ?? null,
+                    (string) ($filter['bk_category'] ?? 'all')
+                );
                 $student = $out['student'] ?? [];
                 $name = (string)($student['full_name'] ?? 'Siswa');
                 $title = 'Laporan Individu Siswa - ' . $name;
@@ -349,6 +359,7 @@ class ReportController extends BaseController
             // khusus asesmen
             'assessment_id' => $this->request->getGet('assessment_id') ? (int)$this->request->getGet('assessment_id') : null,
             'student_id'    => $this->request->getGet('student_id') ? (int)$this->request->getGet('student_id') : null,
+            'bk_category'   => (string)($this->request->getGet('bk_category') ?: 'all'),
         ];
     }
 

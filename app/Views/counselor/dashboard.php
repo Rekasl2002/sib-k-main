@@ -1,3 +1,7 @@
+<?php
+// app/Views/counselor/dashboard.php
+// Fitur Dashboard Guru BK: ringkasan siswa binaan, jadwal, dan layanan BK final.
+?>
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
@@ -18,6 +22,7 @@ $pendingSessions = is_array($pendingSessions ?? null) ? $pendingSessions : [];
 $assignedClasses = is_array($assignedClasses ?? null) ? $assignedClasses : [];
 $currentUser = is_array($currentUser ?? null) ? $currentUser : [];
 $activeAcademic = is_array($activeAcademic ?? null) ? $activeAcademic : [];
+$bkSummary = is_array($bkSummary ?? null) ? $bkSummary : [];
 ?>
 
 <div class="row mb-3">
@@ -50,7 +55,7 @@ $activeAcademic = is_array($activeAcademic ?? null) ? $activeAcademic : [];
                 - Semester <?= esc($activeAcademic['semester']) ?>
               <?php endif; ?>
               <br>
-              Kelola sesi konseling, tindak lanjut siswa, dan laporan layanan BK.
+              Kelola layanan BK, tindak lanjut siswa, dan laporan layanan BK.
             </p>
           </div>
           <div class="col-md-4 text-md-end mt-3 mt-md-0">
@@ -67,8 +72,8 @@ $activeAcademic = is_array($activeAcademic ?? null) ? $activeAcademic : [];
 <div class="row">
   <?php
     $cards = [
-        ['label' => 'Sesi Hari Ini', 'value' => count($todaySessions), 'icon' => 'mdi mdi-calendar-today', 'color' => 'primary'],
-        ['label' => 'Sesi Mendatang', 'value' => count($upcomingSessions), 'icon' => 'mdi mdi-calendar-clock', 'color' => 'success'],
+        ['label' => 'Jadwal Hari Ini', 'value' => count($todaySessions), 'icon' => 'mdi mdi-calendar-today', 'color' => 'primary'],
+        ['label' => 'Jadwal Mendatang', 'value' => count($upcomingSessions), 'icon' => 'mdi mdi-calendar-clock', 'color' => 'success'],
         ['label' => 'Siswa Binaan', 'value' => count($assignedStudents), 'icon' => 'mdi mdi-account-group', 'color' => 'info'],
         ['label' => 'Perlu Tindak Lanjut', 'value' => count($pendingSessions), 'icon' => 'mdi mdi-clipboard-clock-outline', 'color' => 'warning'],
     ];
@@ -93,14 +98,62 @@ $activeAcademic = is_array($activeAcademic ?? null) ? $activeAcademic : [];
 </div>
 
 <div class="row">
+  <?php
+    $bkCards = [
+        ['label' => 'Layanan BK Final', 'value' => $bkSummary['total_services'] ?? 0, 'icon' => 'mdi mdi-clipboard-text-outline', 'color' => 'primary'],
+        ['label' => 'Jadwal Layanan', 'value' => $bkSummary['scheduled'] ?? 0, 'icon' => 'mdi mdi-calendar-clock', 'color' => 'info'],
+        ['label' => 'Perlu Tindak Lanjut', 'value' => $bkSummary['need_follow_up'] ?? 0, 'icon' => 'mdi mdi-clipboard-clock-outline', 'color' => 'warning'],
+        ['label' => 'Pengaduan Terbuka', 'value' => $bkSummary['complaints_open'] ?? 0, 'icon' => 'mdi mdi-message-alert-outline', 'color' => 'danger'],
+        ['label' => 'Tugas Berjalan', 'value' => $bkSummary['assignments_open'] ?? 0, 'icon' => 'mdi mdi-account-arrow-right-outline', 'color' => 'success'],
+    ];
+  ?>
+  <?php foreach ($bkCards as $card): ?>
+    <div class="col-xl col-md-4 col-sm-6 mb-3">
+      <div class="card mini-stats-wid h-100">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-grow-1">
+              <p class="text-muted fw-medium mb-1"><?= esc($card['label']) ?></p>
+              <h4 class="mb-0"><?= counselor_dash_num($card['value']) ?></h4>
+            </div>
+            <div class="avatar-sm rounded-circle bg-soft-<?= esc($card['color']) ?> d-flex align-items-center justify-content-center">
+              <i class="<?= esc($card['icon']) ?> text-<?= esc($card['color']) ?> font-size-22"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  <?php endforeach; ?>
+</div>
+
+<?php if (!empty($bkSummary['by_type']) && is_array($bkSummary['by_type'])): ?>
+  <div class="row">
+    <div class="col-12 mb-3">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title mb-3">
+            <i class="mdi mdi-chart-box-outline text-primary me-1"></i>Jumlah Layanan per Jenis
+          </h5>
+          <div class="d-flex flex-wrap gap-2">
+            <?php foreach ($bkSummary['by_type'] as $type => $count): ?>
+              <span class="badge bg-light text-dark border px-3 py-2"><?= esc($type) ?>: <?= counselor_dash_num($count) ?></span>
+            <?php endforeach; ?>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<?php endif; ?>
+
+<div class="row">
   <div class="col-xl-7 mb-3">
     <div class="card h-100">
       <div class="card-body">
         <div class="d-flex align-items-center justify-content-between mb-3">
           <h5 class="card-title mb-0">
-            <i class="mdi mdi-calendar-check-outline text-primary me-1"></i>Sesi Hari Ini
+            <i class="mdi mdi-calendar-check-outline text-primary me-1"></i>Jadwal Hari Ini
           </h5>
-          <a href="<?= base_url('counselor/sessions') ?>" class="btn btn-sm btn-soft-primary">Lihat Sesi</a>
+          <a href="<?= base_url('counselor/counseling') ?>" class="btn btn-sm btn-soft-primary">Lihat Konseling</a>
         </div>
         <?php if (!empty($todaySessions)): ?>
           <div class="table-responsive">
@@ -121,7 +174,7 @@ $activeAcademic = is_array($activeAcademic ?? null) ? $activeAcademic : [];
             </table>
           </div>
         <?php else: ?>
-          <p class="text-muted mb-0">Tidak ada sesi konseling hari ini.</p>
+          <p class="text-muted mb-0">Tidak ada jadwal konseling hari ini.</p>
         <?php endif; ?>
       </div>
     </div>

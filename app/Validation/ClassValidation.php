@@ -46,10 +46,11 @@ class ClassValidation
             ],
             'grade_level' => [
                 'label' => 'Tingkat Kelas',
-                'rules' => 'required|max_length[20]',
+                'rules' => 'required|max_length[20]|valid_grade_level',
                 'errors' => [
                     'required' => 'Tingkat kelas harus dipilih',
                     'max_length' => 'Tingkat kelas maksimal 20 karakter',
+                    'valid_grade_level' => 'Tingkat kelas di luar rentang yang diizinkan.',
                 ]
             ],
             'major' => [
@@ -124,10 +125,11 @@ class ClassValidation
             ],
             'grade_level' => [
                 'label' => 'Tingkat Kelas',
-                'rules' => 'required|max_length[20]',
+                'rules' => 'required|max_length[20]|valid_grade_level',
                 'errors' => [
                     'required' => 'Tingkat kelas harus dipilih',
                     'max_length' => 'Tingkat kelas maksimal 20 karakter',
+                    'valid_grade_level' => 'Tingkat kelas di luar rentang yang diizinkan.',
                 ]
             ],
             'major' => [
@@ -179,6 +181,21 @@ class ClassValidation
      */
     public static function getGradeLevelOptions()
     {
+        helper('settings');
+
+        // Bangun pilihan tingkat (angka, sesuai database) dari rentang yang diatur
+        // di Pengaturan Admin. Bawaan 7-12.
+        if (function_exists('allowed_grade_levels')) {
+            $options = [];
+            foreach (allowed_grade_levels() as $g) {
+                $options[$g] = 'Kelas ' . $g;
+            }
+            if (! empty($options)) {
+                return $options;
+            }
+        }
+
+        // Fallback 7-12 (angka) bila helper tidak termuat.
         return [
             '7' => 'Kelas 7',
             '8' => 'Kelas 8',
@@ -186,9 +203,6 @@ class ClassValidation
             '10' => 'Kelas 10',
             '11' => 'Kelas 11',
             '12' => 'Kelas 12',
-            'X' => 'Kelas X',
-            'XI' => 'Kelas XI',
-            'XII' => 'Kelas XII',
         ];
     }
 

@@ -50,7 +50,7 @@ class ClassModel extends Model
     protected $validationRules = [
         'academic_year_id'     => 'required|integer|is_not_unique[academic_years.id]',
         'class_name'           => 'required|min_length[3]|max_length[50]',
-        'grade_level'          => 'required|max_length[20]',
+        'grade_level'          => 'required|max_length[20]|valid_grade_level',
         'major'                => 'permit_empty|max_length[50]',
         'homeroom_teacher_id'  => 'permit_empty|integer|is_not_unique[users.id]',
         'counselor_id'         => 'permit_empty|integer|is_not_unique[users.id]',
@@ -70,6 +70,7 @@ class ClassModel extends Model
         'grade_level' => [
             'required' => 'Tingkat kelas harus dipilih',
             'max_length' => 'Tingkat kelas maksimal 20 karakter',
+            'valid_grade_level' => 'Tingkat kelas di luar rentang yang diizinkan.',
         ],
     ];
 

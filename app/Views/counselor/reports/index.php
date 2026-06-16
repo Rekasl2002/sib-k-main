@@ -13,6 +13,7 @@
 $classes     = $classes ?? [];
 $assessments = $assessments ?? [];
 $students    = $students ?? [];
+$bkCategories = is_array($bkCategories ?? null) ? $bkCategories : ['all' => 'Semua Catatan BK'];
 
 $valType   = $valType ?? 'sessions';
 $valFrom   = $valFrom ?? date('Y-m-01');
@@ -22,6 +23,7 @@ $valClass  = $valClass ?? '';
 $valStatus = $valStatus ?? '';
 $valSearch = $valSearch ?? '';
 $valStudent = $valStudent ?? '';
+$valBkCategory = $valBkCategory ?? 'all';
 
 $valSortBy  = $valSortBy ?? '';
 $valSortDir = $valSortDir ?? 'desc';
@@ -84,7 +86,7 @@ if (function_exists('has_permission')) {
             <label class="form-label">Jenis Laporan</label>
             <select name="type" class="form-select" id="typeSelect">
               <option value="students" <?= $valType === 'students' ? 'selected' : '' ?>>Data Siswa (Binaan)</option>
-              <option value="sessions" <?= $valType === 'sessions' ? 'selected' : '' ?>>Sesi Konseling</option>
+              <option value="sessions" <?= $valType === 'sessions' ? 'selected' : '' ?>>Konseling</option>
               <option value="student_individual" <?= $valType === 'student_individual' ? 'selected' : '' ?>>Laporan Individu Siswa</option>
               <!--<option value="assessments" <?= $valType==='assessments'?:'' ?>>Asesmen</option>
               <option value="career" <?= $valType==='career'?:'' ?>>Fitur Info Karier dan Info Studi Lanjut</option>
@@ -146,6 +148,18 @@ if (function_exists('has_permission')) {
             <div class="form-text">Digunakan untuk laporan individu siswa.</div>
           </div>
 
+          <div class="col-12" id="bkTypeWrap">
+            <label class="form-label">Jenis Catatan BK</label>
+            <select name="bk_category" class="form-select">
+              <?php foreach ($bkCategories as $key => $label): ?>
+                <option value="<?= esc($key) ?>" <?= (string)$key === (string)$valBkCategory ? 'selected' : '' ?>>
+                  <?= esc($label) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <div class="form-text">Digunakan untuk laporan individu siswa.</div>
+          </div>
+
           <div class="col-12" id="statusWrap">
             <label class="form-label">Status (opsional)</label>
             <select name="status" class="form-select" id="statusSelect">
@@ -174,8 +188,8 @@ if (function_exists('has_permission')) {
               </div>
               <div class="col-5">
                 <select name="sort_dir" class="form-select" id="sortDir">
-                  <option value="asc" <?= $valSortDir==='asc'?'selected':'' ?>>ASC</option>
-                  <option value="desc" <?= $valSortDir==='desc'?'selected':'' ?>>DESC</option>
+                  <option value="asc" <?= $valSortDir==='asc'?'selected':'' ?>>Naik</option>
+                  <option value="desc" <?= $valSortDir==='desc'?'selected':'' ?>>Turun</option>
                 </select>
               </div>
             </div>
@@ -251,6 +265,7 @@ if (function_exists('has_permission')) {
   const wrapClass = document.getElementById('classWrap');
   const wrapAssess = document.getElementById('assessmentWrap');
   const wrapStudent = document.getElementById('studentWrap');
+  const wrapBkType = document.getElementById('bkTypeWrap');
   const wrapStatus = document.getElementById('statusWrap');
   const wrapSearch = document.getElementById('searchWrap');
   const wrapSort = document.getElementById('sortWrap');
@@ -314,6 +329,7 @@ if (function_exists('has_permission')) {
     wrapClass.style.display = '';
     wrapAssess.style.display = 'none';
     wrapStudent.style.display = 'none';
+    wrapBkType.style.display = 'none';
     wrapStatus.style.display = '';
     wrapSearch.style.display = '';
     wrapSort.style.display = '';
@@ -346,9 +362,9 @@ if (function_exists('has_permission')) {
     if (type === 'sessions') {
       statusOptions = [
         {value:'', label:'Semua Status'},
-        {value:'Scheduled', label:'Scheduled'},
-        {value:'Completed', label:'Completed'},
-        {value:'Cancelled', label:'Cancelled'}
+        {value:'Dijadwalkan', label:'Dijadwalkan'},
+        {value:'Selesai', label:'Selesai'},
+        {value:'Dibatalkan', label:'Dibatalkan'}
       ];
 
       sortOptions = [
@@ -362,6 +378,7 @@ if (function_exists('has_permission')) {
 
     if (type === 'student_individual') {
       wrapStudent.style.display = '';
+      wrapBkType.style.display = '';
       wrapStatus.style.display = 'none';
       wrapSearch.style.display = 'none';
       wrapSort.style.display = 'none';

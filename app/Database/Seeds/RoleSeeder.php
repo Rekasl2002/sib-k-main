@@ -33,7 +33,7 @@ class RoleSeeder extends Seeder
             [
                 'id'          => 4,
                 'role_name'   => 'Wali Kelas',
-                'description' => 'Wali Kelas - Mengelola kelas dan mencatat pelanggaran siswa',
+                'description' => 'Wali Kelas - Mengelola kelas dan mendampingi perkembangan siswa',
                 'created_at'  => date('Y-m-d H:i:s'),
                 'updated_at'  => date('Y-m-d H:i:s'),
             ],
@@ -47,7 +47,7 @@ class RoleSeeder extends Seeder
             [
                 'id'          => 6,
                 'role_name'   => 'Orang Tua',
-                'description' => 'Orang Tua/Wali Siswa - Melihat perkembangan dan pelanggaran anak',
+                'description' => 'Orang Tua/Wali Siswa - Melihat perkembangan dan layanan pendampingan anak',
                 'created_at'  => date('Y-m-d H:i:s'),
                 'updated_at'  => date('Y-m-d H:i:s'),
             ],

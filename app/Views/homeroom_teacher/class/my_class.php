@@ -4,6 +4,8 @@
 
 <?php
 // Helpers ringan supaya view tahan banting untuk array/objek & badge-status
+helper('permission');
+
 if (! function_exists('rowa')) {
     function rowa($r): array
     {
@@ -87,13 +89,31 @@ $studentCount = is_array($students) ? count($students) : 0;
                     <?php endif; ?>
                 </div>
 
-                <div class="page-title-right d-flex align-items-center gap-2">
+                <div class="page-title-right d-flex align-items-center gap-2 flex-wrap justify-content-end">
                     <?php if (! empty($activeYear)) : ?>
                         <span class="badge bg-primary text-white fw-semibold">
                             Tahun Ajaran:
                             <?= esc($activeYear['year_name'] ?? '-') ?>
                             (<?= esc($activeYear['semester'] ?? '-') ?>)
                         </span>
+                    <?php endif; ?>
+
+                    <?php if (function_exists('has_permission') && has_permission('manage_students')) : ?>
+                        <a href="<?= site_url('homeroom/students/create') ?>" class="btn btn-primary btn-sm">
+                            <i class="bi bi-person-plus me-1"></i>Tambah Siswa
+                        </a>
+                        <a href="<?= site_url('homeroom/parents') ?>" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-people me-1"></i>Akun Orang Tua
+                        </a>
+                    <?php endif; ?>
+
+                    <?php if (function_exists('has_permission') && has_permission('import_export_data')) : ?>
+                        <a href="<?= site_url('homeroom/students/import') ?>" class="btn btn-info btn-sm text-white">
+                            <i class="bi bi-file-earmark-arrow-up me-1"></i>Impor
+                        </a>
+                        <a href="<?= site_url('homeroom/students/export') ?>" class="btn btn-outline-success btn-sm">
+                            <i class="bi bi-file-earmark-spreadsheet me-1"></i>Ekspor
+                        </a>
                     <?php endif; ?>
 
                     <ol class="breadcrumb m-0 ms-2">
@@ -104,6 +124,15 @@ $studentCount = is_array($students) ? count($students) : 0;
             </div>
         </div>
     </div>
+
+    <?php foreach (['success' => 'success', 'warning' => 'warning', 'error' => 'danger'] as $flashKey => $flashClass) : ?>
+        <?php if (session()->getFlashdata($flashKey)) : ?>
+            <div class="alert alert-<?= esc($flashClass, 'attr') ?> alert-dismissible fade show" role="alert">
+                <?= esc(session()->getFlashdata($flashKey)) ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
+            </div>
+        <?php endif; ?>
+    <?php endforeach; ?>
 
     <?php if (empty($class)) : ?>
         <div class="alert alert-warning shadow-sm border-0">
@@ -256,8 +285,9 @@ $studentCount = is_array($students) ? count($students) : 0;
                                             <th>Nama</th>
                                             <th class="text-nowrap">NISN</th>
                                             <th class="text-center">JK</th>
+                                            <th>Orang Tua</th>
                                             <th class="text-center">Status</th>
-                                            <th class="text-center" style="width: 90px;">Aksi</th>
+                                            <th class="text-center" style="width: 260px;">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -268,7 +298,8 @@ $studentCount = is_array($students) ? count($students) : 0;
                                                     ($s['full_name'] ?? '') . ' ' .
                                                     ($s['nik'] ?? '') . ' ' .
                                                     ($s['nisn'] ?? '') . ' ' .
-                                                    ($s['class_name'] ?? '')
+                                                    ($s['class_name'] ?? '') . ' ' .
+                                                    ($s['parent_name'] ?? '')
                                                 )
                                             );
                                         ?>
@@ -303,17 +334,57 @@ $studentCount = is_array($students) ? count($students) : 0;
                                                         <?= genderLabel($s['gender'] ?? null) ?>
                                                     </span>
                                                 </td>
+                                                <td>
+                                                    <?php if (! empty($s['parent_id'])) : ?>
+                                                        <div class="fw-semibold"><?= esc($s['parent_name'] ?? 'Orang tua/wali') ?></div>
+                                                        <small class="text-muted"><?= esc($s['parent_phone'] ?? $s['parent_email'] ?? '-') ?></small>
+                                                    <?php else : ?>
+                                                        <span class="text-muted">Belum terhubung</span>
+                                                    <?php endif; ?>
+                                                </td>
                                                 <td class="text-center">
                                                     <span class="<?= statusBadgeClass($s['status'] ?? '') ?>">
                                                         <?= esc($s['status'] ?? '-') ?>
                                                     </span>
                                                 </td>
                                                 <td class="text-center">
-                                                    <a href="<?= site_url('homeroom/students/' . (int) ($s['id'] ?? 0)) ?>"
-                                                       class="btn btn-sm btn-outline-primary">
-                                                        <i class="bi bi-person-lines-fill"></i>
-                                                        <span class="d-none d-xl-inline">Detail</span>
-                                                    </a>
+                                                    <div class="d-flex flex-wrap justify-content-center gap-1">
+                                                        <a href="<?= site_url('homeroom/students/' . (int) ($s['id'] ?? 0)) ?>"
+                                                           class="btn btn-sm btn-outline-primary">
+                                                            <i class="bi bi-person-lines-fill"></i>
+                                                            <span class="d-none d-xl-inline">Detail</span>
+                                                        </a>
+                                                        <?php if (function_exists('has_permission') && has_permission('manage_students')) : ?>
+                                                            <a href="<?= site_url('homeroom/students/edit/' . (int) ($s['id'] ?? 0)) ?>"
+                                                               class="btn btn-sm btn-outline-secondary">
+                                                                <i class="bi bi-pencil-square"></i>
+                                                                <span class="d-none d-xl-inline">Edit</span>
+                                                            </a>
+                                                            <?php if (! empty($s['parent_id'])) : ?>
+                                                                <a href="<?= site_url('homeroom/parents/' . (int) ($s['parent_id'] ?? 0)) ?>"
+                                                                   class="btn btn-sm btn-outline-info">
+                                                                    <i class="bi bi-people"></i>
+                                                                    <span class="d-none d-xl-inline">Orang Tua</span>
+                                                                </a>
+                                                            <?php else : ?>
+                                                                <a href="<?= site_url('homeroom/students/edit/' . (int) ($s['id'] ?? 0)) ?>"
+                                                                   class="btn btn-sm btn-outline-info">
+                                                                    <i class="bi bi-link-45deg"></i>
+                                                                    <span class="d-none d-xl-inline">Hubungkan</span>
+                                                                </a>
+                                                            <?php endif; ?>
+                                                            <form action="<?= site_url('homeroom/students/delete/' . (int) ($s['id'] ?? 0)) ?>"
+                                                                  method="post"
+                                                                  class="d-inline"
+                                                                  onsubmit="return confirm('Hapus siswa ini dari kelas binaan?')">
+                                                                <?= csrf_field() ?>
+                                                                <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                                    <i class="bi bi-trash"></i>
+                                                                    <span class="d-none d-xl-inline">Hapus</span>
+                                                                </button>
+                                                            </form>
+                                                        <?php endif; ?>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         <?php endforeach; ?>

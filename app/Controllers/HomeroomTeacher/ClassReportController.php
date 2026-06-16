@@ -101,7 +101,7 @@ class ClassReportController extends BaseController
         if (($f['mode'] ?? 'class_summary') === 'student_individual') {
             $out = $this->buildIndividualPayload($f);
 
-            return view('counselor/reports/partials/table', [
+            return view('homeroom_teacher/reports/partials/table', [
                 'title' => $out['title'],
                 'columns' => $out['columns'],
                 'rows' => $out['rows'],

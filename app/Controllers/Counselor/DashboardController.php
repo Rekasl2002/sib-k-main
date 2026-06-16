@@ -5,6 +5,7 @@
  *
  * Counselor Dashboard Controller
  * Menampilkan dashboard untuk Guru BK dengan statistik, jadwal, dan data siswa binaan
+ * Pembaruan: menampilkan ringkasan layanan BK final dari bk_service_records.
  *
  * @package    SIB-K
  * @subpackage Controllers/Counselor
@@ -17,6 +18,7 @@ namespace App\Controllers\Counselor;
 
 use App\Controllers\BaseController;
 use App\Services\CounselingService;
+use App\Services\BkServiceService;
 use App\Models\CounselingSessionModel;
 use App\Models\StudentModel;
 use CodeIgniter\I18n\Time;
@@ -90,6 +92,7 @@ class DashboardController extends BaseController
 
         // Get pending sessions (need follow-up)
         $data['pendingSessions'] = $this->getPendingSessions($counselorId);
+        $data['bkSummary'] = $this->tryGetBkSummary('guru-bk', $counselorId);
 
         // ===== Tambahan untuk Welcome Card (Tahun Ajaran + Semester + Kelas Binaan) =====
         $data['activeAcademic']   = $this->getActiveAcademicYear();
@@ -108,6 +111,23 @@ class DashboardController extends BaseController
         ];
 
         return view('counselor/dashboard', $data);
+    }
+
+    private function tryGetBkSummary(string $role, int $userId): array
+    {
+        try {
+            return (new BkServiceService())->dashboardSummary($role, $userId);
+        } catch (\Throwable $e) {
+            log_message('error', 'Counselor dashboard BK summary error: ' . $e->getMessage());
+            return [
+                'total_services' => 0,
+                'scheduled' => 0,
+                'need_follow_up' => 0,
+                'complaints_open' => 0,
+                'assignments_open' => 0,
+                'by_type' => [],
+            ];
+        }
     }
 
     /**
@@ -342,7 +362,7 @@ class DashboardController extends BaseController
                 'title'       => $title,
                 'description' => 'Topik "' . ($session['topic'] ?? '-') . '" dengan ' . $who,
                 'time'        => $this->formatTimeAgoSafe($timeSource),
-                'url'         => base_url('counselor/sessions/detail/' . $session['id']),
+                'url'         => base_url('counselor/counseling'),
             ];
         }
 

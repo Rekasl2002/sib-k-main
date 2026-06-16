@@ -4,7 +4,10 @@
  * File Path: app/Models/SessionParticipantModel.php
  *
  * Session Participant Model
- * Mengelola peserta sesi konseling kelompok atau klasikal
+ * Mengelola peserta sesi konseling lama dan seluruh peserta/undangan fitur
+ * layanan BK baru. Kolom bk_service_record_id dipakai bersama oleh
+ * Bimbingan, Konseling, Kolaborasi Orang Tua, Kunjungan Rumah, dan
+ * Konferensi Kasus agar database tetap ringkas dan ternormalisasi.
  *
  * @package    SIB-K
  * @subpackage Models
@@ -27,8 +30,18 @@ class SessionParticipantModel extends Model
     protected $protectFields    = true;
 
     protected $allowedFields = [
+        'bk_service_record_id',
         'session_id',
         'student_id',
+        'participant_type',
+        'participant_student_id',
+        'participant_user_id',
+        'participant_parent_id',
+        'participant_class_id',
+        'manual_name',
+        'role_in_session',
+        'participant_note',
+        'invitation_status',
         'attendance_status',
         'participation_note',
         'is_active',
@@ -48,9 +61,15 @@ class SessionParticipantModel extends Model
 
     // Validation
     protected $validationRules = [
-        'session_id'        => 'required|integer|is_not_unique[counseling_sessions.id]',
-        'student_id'        => 'required|integer|is_not_unique[students.id]',
+        'session_id'        => 'permit_empty|integer|is_not_unique[counseling_sessions.id]',
+        'bk_service_record_id' => 'permit_empty|integer|is_not_unique[bk_service_records.id]',
+        'student_id'        => 'permit_empty|integer|is_not_unique[students.id]',
+        'participant_student_id' => 'permit_empty|integer|is_not_unique[students.id]',
+        'participant_user_id' => 'permit_empty|integer|is_not_unique[users.id]',
+        'participant_parent_id' => 'permit_empty|integer|is_not_unique[users.id]',
+        'participant_class_id' => 'permit_empty|integer|is_not_unique[classes.id]',
         'attendance_status' => 'permit_empty|in_list[Hadir,Tidak Hadir,Izin,Sakit]',
+        'invitation_status' => 'permit_empty|in_list[Belum Dikirim,Diundang,Konfirmasi,Tidak Hadir]',
         'is_active'         => 'permit_empty|in_list[0,1]',
     ];
 

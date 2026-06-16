@@ -4,7 +4,9 @@
  * File Path: app/Models/CounselingSessionModel.php
  * 
  * Counseling Session Model
- * Mengelola data sesi konseling dengan relasi ke students, counselors, classes, notes, dan participants
+ * Mengelola data sesi konseling lama dan detail fitur Konseling baru.
+ * Dipakai oleh fitur Konseling final serta BkServiceService untuk relasi
+ * counseling_sessions <-> bk_service_records.
  * 
  * @package    SIB-K
  * @subpackage Models
@@ -27,10 +29,12 @@ class CounselingSessionModel extends Model
     protected $protectFields    = true;
 
     protected $allowedFields = [
+        'bk_service_record_id',
         'student_id',
         'counselor_id',
         'class_id',
         'session_type',
+        'counseling_type',
         'session_date',
         'session_time',
         'location',
@@ -42,6 +46,8 @@ class CounselingSessionModel extends Model
         'is_confidential',
         'duration_minutes',
         'cancellation_reason',
+        'privacy_level',
+        'follow_up_status',
     ];
 
     // Dates

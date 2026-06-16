@@ -201,11 +201,16 @@ class ClassController extends BaseController
                 's.nisn',
                 's.birth_date',
                 's.status',
+                's.parent_id',
                 'c.class_name',
                 'c.grade_level',
+                'p.full_name AS parent_name',
+                'p.phone AS parent_phone',
+                'p.email AS parent_email',
             ])
             ->join('users u', 'u.id = s.user_id AND u.deleted_at IS NULL', 'left')
             ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
+            ->join('users p', 'p.id = s.parent_id AND p.deleted_at IS NULL', 'left')
             ->whereIn('s.class_id', $classIds)
             ->where('s.status', 'Aktif');
 

@@ -4,7 +4,7 @@
  *
  * Koordinator BK • Laporan Agregat
  * - Filter + AJAX preview
- * - Export PDF/XLSX (izin: generate_reports_aggregate)
+ * - Unduh PDF/XLSX (izin: generate_reports_aggregate)
  * - UI: preset periode, chips ringkasan, simpan filter
  */
 
@@ -18,6 +18,7 @@ helper(['url']);
 $classes    = $classes ?? [];
 $counselors = $counselors ?? [];
 $students   = $students ?? [];
+$bkCategories = is_array($bkCategories ?? null) ? $bkCategories : ['all' => 'Semua Catatan BK'];
 
 $valFrom    = $valFrom ?? date('Y-m-01');
 $valTo      = $valTo ?? date('Y-m-d');
@@ -26,6 +27,7 @@ $valClass     = $valClass ?? '';
 $valCounselor = $valCounselor ?? '';
 $valMode      = $valMode ?? 'aggregate';
 $valStudent   = $valStudent ?? '';
+$valBkCategory = $valBkCategory ?? 'all';
 
 $valPaper   = $valPaper ?? 'A4';
 $valOrient  = $valOrient ?? 'portrait';
@@ -175,9 +177,21 @@ $downloadUrlBase = route_to('koordinator.reports.download');
             <div class="form-text">Digunakan untuk mode laporan individu.</div>
           </div>
 
+          <div class="col-12" id="bkTypeWrap">
+            <label class="form-label">Jenis Catatan BK</label>
+            <select name="bk_category" class="form-select">
+              <?php foreach ($bkCategories as $key => $label): ?>
+                <option value="<?= esc($key) ?>" <?= (string)$key === (string)$valBkCategory ? 'selected' : '' ?>>
+                  <?= esc($label) ?>
+                </option>
+              <?php endforeach; ?>
+            </select>
+            <div class="form-text">Digunakan untuk mode laporan individu.</div>
+          </div>
+
           <!-- PDF options -->
           <div class="col-12">
-            <label class="form-label">Opsi Export</label>
+            <label class="form-label">Opsi Unduhan</label>
             <div class="row g-2">
               <div class="col-6">
                 <select name="paper" class="form-select">
@@ -211,7 +225,7 @@ $downloadUrlBase = route_to('koordinator.reports.download');
       </div>
     </div>
 
-    <!-- Export card -->
+    <!-- Kartu unduhan -->
     <div class="card">
       <div class="card-body">
         <div class="d-flex align-items-center justify-content-between mb-2">
@@ -219,7 +233,7 @@ $downloadUrlBase = route_to('koordinator.reports.download');
             <h6 class="mb-0">Unduh</h6>
             <small class="text-muted">PDF atau Excel (XLSX)</small>
           </div>
-          <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Export</span>
+          <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Unduh</span>
         </div>
 
         <div class="d-flex gap-2 flex-wrap">
@@ -285,6 +299,7 @@ $downloadUrlBase = route_to('koordinator.reports.download');
   const dateHint  = document.getElementById('dateHint');
   const modeSelect = document.getElementById('modeSelect');
   const studentWrap = document.getElementById('studentWrap');
+  const bkTypeWrap = document.getElementById('bkTypeWrap');
 
   const canDownload = <?= $canDownload ? 'true' : 'false' ?>;
 
@@ -333,6 +348,9 @@ $downloadUrlBase = route_to('koordinator.reports.download');
     const isIndividual = modeSelect && modeSelect.value === 'student_individual';
     if (studentWrap) {
       studentWrap.classList.toggle('d-none', !isIndividual);
+    }
+    if (bkTypeWrap) {
+      bkTypeWrap.classList.toggle('d-none', !isIndividual);
     }
   }
 
@@ -439,10 +457,12 @@ $downloadUrlBase = route_to('koordinator.reports.download');
     const csel     = form.querySelector('[name="counselor_id"]');
     const modeSel  = form.querySelector('[name="mode"]');
     const studentSel = form.querySelector('[name="student_id"]');
+    const bkTypeSel = form.querySelector('[name="bk_category"]');
     if (classSel) classSel.value = '';
     if (csel) csel.value = '';
     if (modeSel) modeSel.value = 'aggregate';
     if (studentSel) studentSel.value = '';
+    if (bkTypeSel) bkTypeSel.value = 'all';
 
     // default export options
     const paper = form.querySelector('[name="paper"]');

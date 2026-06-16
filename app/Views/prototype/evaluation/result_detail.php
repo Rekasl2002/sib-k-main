@@ -8,7 +8,17 @@ $featureNotes  = is_array($featureNotes ?? null) ? $featureNotes : [];
 $questions     = is_array($questions ?? null) ? $questions : [];
 $answerOptions = is_array($answerOptions ?? null) ? $answerOptions : [];
 $reviewOptions = is_array($reviewOptions ?? null) ? $reviewOptions : [];
-$pct           = is_array($pct ?? null) ? $pct : ['percent' => 0, 'category' => '-', 'accepted' => 0, 'total' => 0];
+$pct           = is_array($pct ?? null) ? $pct : [
+    'percent' => 0,
+    'category' => '-',
+    'diterima' => 0,
+    'revisi' => 0,
+    'belum' => 0,
+    'score' => 0,
+    'ideal_score' => 0,
+    'total' => 0,
+    'follow_up' => '-',
+];
 
 if (! function_exists('eval_ans_badge')) {
     function eval_ans_badge(string $a): string
@@ -19,6 +29,25 @@ if (! function_exists('eval_ans_badge')) {
             'belum'    => 'danger',
             default    => 'secondary',
         };
+    }
+}
+
+if (! function_exists('eval_detail_cat_badge')) {
+    function eval_detail_cat_badge(string $cat): string
+    {
+        return match ($cat) {
+            'Diterima' => 'success',
+            'Diterima dengan revisi' => 'info',
+            'Belum diterima' => 'danger',
+            default => 'secondary',
+        };
+    }
+}
+
+if (! function_exists('eval_detail_percent')) {
+    function eval_detail_percent($value): string
+    {
+        return number_format((float) $value, 1, ',', '.') . '%';
     }
 }
 ?>
@@ -53,9 +82,20 @@ if (! function_exists('eval_ans_badge')) {
     <div class="card">
       <div class="card-body text-center">
         <div class="text-muted">Persentase Penerimaan</div>
-        <div class="display-6 fw-bold"><?= (int) $pct['percent'] ?>%</div>
-        <span class="badge bg-<?= $pct['percent'] < 50 ? 'danger' : ($pct['percent'] <= 85 ? 'info' : 'success') ?>"><?= esc($pct['category']) ?></span>
-        <div class="small text-muted mt-2"><?= (int) $pct['accepted'] ?> diterima dari <?= (int) $pct['total'] ?> jawaban</div>
+        <div class="display-6 fw-bold"><?= eval_detail_percent($pct['percent']) ?></div>
+        <span class="badge bg-<?= esc(eval_detail_cat_badge($pct['category'])) ?>"><?= esc($pct['category']) ?></span>
+        <div class="small text-muted mt-2">
+          Total skor <?= (int) $pct['score'] ?> dari skor ideal <?= (int) $pct['ideal_score'] ?>.
+        </div>
+        <div class="small text-muted">
+          Diterima/Revisi/Belum: <?= (int) $pct['diterima'] ?>/<?= (int) $pct['revisi'] ?>/<?= (int) $pct['belum'] ?> dari <?= (int) $pct['total'] ?> item.
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h5 class="mb-0">Tindak Lanjut</h5></div>
+      <div class="card-body">
+        <p class="mb-0 small"><?= esc($pct['follow_up']) ?></p>
       </div>
     </div>
   </div>
@@ -82,7 +122,7 @@ if (! function_exists('eval_ans_badge')) {
             </tbody>
           </table>
           <?php if (! empty($featureNotes[$key])): ?>
-            <div class="alert alert-light border mt-3 mb-0">
+            <div class="bg-light rounded p-3 border mt-3 mb-0">
               <div class="fw-semibold small mb-1"><i class="mdi mdi-note-edit-outline me-1"></i>Catatan/Revisi fitur ini:</div>
               <div class="small"><?= nl2br(esc($featureNotes[$key])) ?></div>
             </div>

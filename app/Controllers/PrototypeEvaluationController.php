@@ -17,7 +17,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
  */
 class PrototypeEvaluationController extends BaseController
 {
-    /** Lima pertanyaan evaluasi (Tabel 3.9 Format Evaluasi Prototipe). */
+    /** Lima pertanyaan evaluasi (format evaluasi prototipe pada Tabel 3.7). */
     private const QUESTIONS = [
         1 => 'Fitur sesuai dengan kebutuhan pengguna.',
         2 => 'Alur penggunaan mudah dipahami.',
@@ -26,11 +26,17 @@ class PrototypeEvaluationController extends BaseController
         5 => 'Tampilan rancangan cukup jelas untuk dipahami.',
     ];
 
-    /** Pilihan jawaban; "diterima" dan "revisi" sama-sama dihitung diterima. */
+    /** Pilihan jawaban evaluasi prototipe. Nilai akhirnya dihitung dengan bobot 3-2-1. */
     private const ANSWERS = [
         'diterima' => 'Setuju / Diterima',
         'revisi'   => 'Setuju / Diterima dengan Revisi',
         'belum'    => 'Tidak Setuju / Belum Diterima',
+    ];
+
+    private const ANSWER_WEIGHTS = [
+        'diterima' => 3,
+        'revisi'   => 2,
+        'belum'    => 1,
     ];
 
     private const REVIEW_OPTIONS = [
@@ -256,7 +262,27 @@ class PrototypeEvaluationController extends BaseController
         // Sheet 1: Responden
         $ws = $spreadsheet->getActiveSheet();
         $ws->setTitle('Responden');
-        $head = ['No', 'Tanggal', 'Nama', 'Peran', 'Kelas/Hubungan/Peran', 'Bersedia', 'Setuju Data', 'Sudah Lihat Prototipe', 'Jumlah Fitur Dinilai', '% Penerimaan', 'Kategori', 'Saran/Revisi'];
+        $head = [
+            'No',
+            'Tanggal',
+            'Nama',
+            'Peran',
+            'Kelas/Hubungan/Peran',
+            'Bersedia',
+            'Setuju Data',
+            'Sudah Lihat Prototipe',
+            'Jumlah Fitur Dinilai',
+            'Total Item',
+            'Diterima',
+            'Diterima dgn Revisi',
+            'Belum Diterima',
+            'Total Skor',
+            'Skor Ideal',
+            '% Penerimaan',
+            'Kategori',
+            'Tindak Lanjut',
+            'Saran/Revisi',
+        ];
         $ws->fromArray($head, null, 'A1');
         $r = 2;
         $no = 1;
@@ -272,8 +298,15 @@ class PrototypeEvaluationController extends BaseController
                 $e['consent_data_usage'] ? 'Ya' : 'Tidak',
                 self::REVIEW_OPTIONS[$e['reviewed_prototype']] ?? $e['reviewed_prototype'],
                 $e['accessible_feature_count'],
+                $pct['total'],
+                $pct['diterima'],
+                $pct['revisi'],
+                $pct['belum'],
+                $pct['score'],
+                $pct['ideal_score'],
                 $pct['percent'] . '%',
                 $pct['category'],
+                $pct['follow_up'],
                 $e['suggestions'],
             ], null, 'A' . $r++);
         }
@@ -317,16 +350,63 @@ class PrototypeEvaluationController extends BaseController
             }
         }
 
-        // Sheet 4: Rekap per fitur x pertanyaan
+        // Sheet 4: Rekap per fitur
         $ws4 = $spreadsheet->createSheet();
-        $ws4->setTitle('Rekap');
-        $ws4->fromArray(['Fitur', 'No', 'Pertanyaan', 'Diterima', 'Diterima dgn Revisi', 'Belum Diterima', 'Jumlah Responden', '% Penerimaan'], null, 'A1');
+        $ws4->setTitle('Rekap Fitur');
+        $ws4->fromArray([
+            'Fitur',
+            'Jenis Fitur',
+            'Total Item',
+            'Diterima',
+            'Diterima dgn Revisi',
+            'Belum Diterima',
+            'Total Skor',
+            'Skor Ideal',
+            '% Penerimaan',
+            'Kategori',
+            'Tindak Lanjut',
+        ], null, 'A1');
         $summary = $this->buildSummary($answers);
+        $r = 2;
+        foreach ($summary as $key => $feat) {
+            $overall = $feat['overall'];
+            $ws4->fromArray([
+                $feat['title'],
+                $feat['category'],
+                $overall['total'],
+                $overall['diterima'],
+                $overall['revisi'],
+                $overall['belum'],
+                $overall['score'],
+                $overall['ideal_score'],
+                $overall['percent'] . '%',
+                $overall['category'],
+                $overall['follow_up'],
+            ], null, 'A' . $r++);
+        }
+
+        // Sheet 5: Rekap per fitur x pertanyaan
+        $ws5 = $spreadsheet->createSheet();
+        $ws5->setTitle('Rekap Pertanyaan');
+        $ws5->fromArray([
+            'Fitur',
+            'No',
+            'Pertanyaan',
+            'Diterima',
+            'Diterima dgn Revisi',
+            'Belum Diterima',
+            'Jumlah Item',
+            'Total Skor',
+            'Skor Ideal',
+            '% Penerimaan',
+            'Kategori',
+            'Tindak Lanjut',
+        ], null, 'A1');
         $r = 2;
         foreach ($summary as $key => $feat) {
             foreach (self::QUESTIONS as $qno => $qtext) {
                 $cell = $feat['questions'][$qno];
-                $ws4->fromArray([
+                $ws5->fromArray([
                     $feat['title'],
                     $qno,
                     $qtext,
@@ -334,12 +414,16 @@ class PrototypeEvaluationController extends BaseController
                     $cell['revisi'],
                     $cell['belum'],
                     $cell['total'],
+                    $cell['score'],
+                    $cell['ideal_score'],
                     $cell['percent'] . '%',
+                    $cell['category'],
+                    $cell['follow_up'],
                 ], null, 'A' . $r++);
             }
         }
 
-        foreach ([$ws, $ws2, $ws3, $ws4] as $sheet) {
+        foreach ([$ws, $ws2, $ws3, $ws4, $ws5] as $sheet) {
             foreach (range('A', $sheet->getHighestColumn()) as $col) {
                 $sheet->getColumnDimension($col)->setAutoSize(true);
             }
@@ -348,6 +432,13 @@ class PrototypeEvaluationController extends BaseController
 
         $filename = 'Hasil_Evaluasi_Prototipe_SIBK_' . date('Y-m-d_His') . '.xlsx';
         $writer = new Xlsx($spreadsheet);
+
+        // Bersihkan seluruh output buffer agar tidak ada byte liar (mis. BOM/whitespace)
+        // yang ikut tertulis sebelum biner XLSX dan membuat file rusak.
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header("Content-Disposition: attachment;filename=\"{$filename}\"");
         header('Cache-Control: max-age=0');
@@ -482,40 +573,42 @@ class PrototypeEvaluationController extends BaseController
         return is_array($decoded) ? $decoded : [];
     }
 
-    /** Hitung persentase penerimaan: "diterima" + "revisi" sama-sama diterima. */
+    /** Hitung penerimaan berbobot: diterima=3, revisi=2, belum=1. */
     private function acceptancePct(array $answers): array
     {
-        $total = count($answers);
-        if ($total === 0) {
-            return ['percent' => 0, 'category' => '-', 'accepted' => 0, 'total' => 0];
-        }
-        $accepted = 0;
+        $counts = $this->emptyScoreCounts();
         foreach ($answers as $a) {
-            if (in_array($a['answer'], ['diterima', 'revisi'], true)) {
-                $accepted++;
+            $ans = (string) ($a['answer'] ?? '');
+            if (isset(self::ANSWER_WEIGHTS[$ans])) {
+                $counts[$ans]++;
+                $counts['total']++;
             }
         }
-        $percent = (int) round($accepted / $total * 100);
 
-        return [
-            'percent'  => $percent,
-            'category' => $this->category($percent),
-            'accepted' => $accepted,
-            'total'    => $total,
-        ];
+        return $this->scoreResult($counts);
     }
 
-    /** Interpretasi penerimaan (Tabel 3.13). */
-    private function category(int $percent): string
+    /** Interpretasi penerimaan (Tabel 3.10). */
+    private function category(float $percent): string
     {
-        if ($percent < 50) {
+        if ($percent < 60) {
             return 'Belum diterima';
         }
-        if ($percent <= 85) {
+        if ($percent <= 80) {
             return 'Diterima dengan revisi';
         }
 
         return 'Diterima';
+    }
+
+    private function followUp(string $category): string
+    {
+        return match ($category) {
+            'Diterima' => 'Dapat dilanjutkan ke tahap implementasi dengan tetap memperhatikan catatan kecil.',
+            'Diterima dengan revisi' => 'Dapat dilanjutkan setelah catatan revisi diperbaiki.',
+            'Belum diterima' => 'Perlu dikaji ulang dan diperbaiki secara menyeluruh.',
+            default => '-',
+        };
     }
 
     private function decorateEvaluations(array $evaluations, array $answers): array
@@ -537,9 +630,14 @@ class PrototypeEvaluationController extends BaseController
         $catalog = $this->featureCatalog();
         $summary = [];
         foreach ($catalog as $key => $feature) {
-            $summary[$key] = ['title' => $feature['title'], 'category' => $feature['category'], 'questions' => []];
+            $summary[$key] = [
+                'title' => $feature['title'],
+                'category' => $feature['category'],
+                'questions' => [],
+                'overall' => $this->scoreResult($this->emptyScoreCounts()),
+            ];
             foreach (self::QUESTIONS as $no => $text) {
-                $summary[$key]['questions'][$no] = ['diterima' => 0, 'revisi' => 0, 'belum' => 0, 'total' => 0, 'percent' => 0];
+                $summary[$key]['questions'][$no] = $this->scoreResult($this->emptyScoreCounts());
             }
         }
 
@@ -550,7 +648,7 @@ class PrototypeEvaluationController extends BaseController
                 continue;
             }
             $ans = $a['answer'];
-            if (! isset($summary[$key]['questions'][$no][$ans])) {
+            if (! isset(self::ANSWER_WEIGHTS[$ans])) {
                 continue;
             }
             $summary[$key]['questions'][$no][$ans]++;
@@ -558,15 +656,52 @@ class PrototypeEvaluationController extends BaseController
         }
 
         foreach ($summary as &$feat) {
+            $overallCounts = $this->emptyScoreCounts();
             foreach ($feat['questions'] as &$cell) {
-                $accepted = $cell['diterima'] + $cell['revisi'];
-                $cell['percent'] = $cell['total'] > 0 ? (int) round($accepted / $cell['total'] * 100) : 0;
+                $overallCounts['diterima'] += $cell['diterima'];
+                $overallCounts['revisi'] += $cell['revisi'];
+                $overallCounts['belum'] += $cell['belum'];
+                $overallCounts['total'] += $cell['total'];
+                $cell = $this->scoreResult($cell);
             }
             unset($cell);
+            $feat['overall'] = $this->scoreResult($overallCounts);
         }
         unset($feat);
 
         return $summary;
+    }
+
+    private function emptyScoreCounts(): array
+    {
+        return ['diterima' => 0, 'revisi' => 0, 'belum' => 0, 'total' => 0];
+    }
+
+    private function scoreResult(array $counts): array
+    {
+        $diterima = (int) ($counts['diterima'] ?? 0);
+        $revisi   = (int) ($counts['revisi'] ?? 0);
+        $belum    = (int) ($counts['belum'] ?? 0);
+        $total    = (int) ($counts['total'] ?? ($diterima + $revisi + $belum));
+
+        $score      = ($diterima * self::ANSWER_WEIGHTS['diterima'])
+            + ($revisi * self::ANSWER_WEIGHTS['revisi'])
+            + ($belum * self::ANSWER_WEIGHTS['belum']);
+        $idealScore = $total * self::ANSWER_WEIGHTS['diterima'];
+        $percent    = $idealScore > 0 ? round(($score / $idealScore) * 100, 1) : 0.0;
+        $category   = $total > 0 ? $this->category($percent) : '-';
+
+        return [
+            'diterima' => $diterima,
+            'revisi' => $revisi,
+            'belum' => $belum,
+            'total' => $total,
+            'score' => $score,
+            'ideal_score' => $idealScore,
+            'percent' => $percent,
+            'category' => $category,
+            'follow_up' => $this->followUp($category),
+        ];
     }
 
     private function introHtml(): string

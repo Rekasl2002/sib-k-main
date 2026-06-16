@@ -94,7 +94,7 @@ class ReportService
             ->orderBy('u.full_name', 'ASC');
     }
 
-    public function studentIndividual(int $studentId, ?string $from = null, ?string $to = null): array
+    public function studentIndividual(int $studentId, ?string $from = null, ?string $to = null, string $category = 'all'): array
     {
         $student = $this->db->table('students s')
             ->select('s.*, u.full_name, c.class_name, c.id as class_id')
@@ -105,15 +105,35 @@ class ReportService
             ->get()
             ->getRowArray();
 
-        $sessions = $this->studentSessions($studentId, $from, $to);
-        $assessments = $this->studentAssessments($studentId, $from, $to);
-        $careers = $this->studentCareers($studentId, $from, $to);
-        $universities = $this->studentUniversities($studentId, $from, $to);
+        $category = $this->normalizeIndividualCategory($category);
+
+        $consultations = $this->shouldIncludeIndividualCategory($category, 'consultation')
+            ? $this->studentConsultations($studentId, $from, $to)
+            : [];
+        $bkServices = $this->studentBkServices($studentId, $from, $to);
+        $sessions = $this->shouldIncludeIndividualCategory($category, 'counseling')
+            ? $this->studentSessions($studentId, $from, $to)
+            : [];
+        $assessments = $this->shouldIncludeIndividualCategory($category, 'assessment')
+            ? $this->studentAssessments($studentId, $from, $to)
+            : [];
+        $careers = $this->shouldIncludeIndividualCategory($category, 'career')
+            ? $this->studentCareers($studentId, $from, $to)
+            : [];
+        $universities = $this->shouldIncludeIndividualCategory($category, 'university')
+            ? $this->studentUniversities($studentId, $from, $to)
+            : [];
+
+        if ($category !== 'all') {
+            $bkServices = array_values(array_filter($bkServices, fn(array $row): bool => $this->serviceTypeKey((string) ($row['service_type'] ?? '')) === $category));
+        }
 
         return [
             'school'               => $this->school(),
             'student'              => $student,
             'period'               => ['from' => $from, 'to' => $to],
+            'consultations'         => $consultations,
+            'bkServices'            => $bkServices,
             'sessions'             => $sessions,
             'assessments'          => $assessments,
             'careerChoices'        => $careers,
@@ -126,15 +146,39 @@ class ReportService
         ];
     }
 
-    public function studentIndividualTable(int $studentId, ?string $from = null, ?string $to = null): array
+    public function studentIndividualTable(int $studentId, ?string $from = null, ?string $to = null, string $category = 'all'): array
     {
-        $data = $this->studentIndividual($studentId, $from, $to);
+        $data = $this->studentIndividual($studentId, $from, $to, $category);
         $rows = [];
 
+        foreach ($data['consultations'] as $row) {
+            $rows[] = [
+                'date'     => $row['created_at'] ?? $row['occurred_at'] ?? '-',
+                'category' => 'Konsultasi & Pengaduan',
+                'activity' => trim((string) ($row['title'] ?? '-')),
+                'status'   => $row['status'] ?? '-',
+                'notes'    => $row['category'] ?? $row['request_type'] ?? '-',
+            ];
+        }
+
+        foreach ($data['bkServices'] as $row) {
+            $rows[] = [
+                'date'     => $row['held_at'] ?? $row['scheduled_at'] ?? $row['created_at'] ?? '-',
+                'category' => $row['service_type'] ?? 'Layanan BK',
+                'activity' => trim((string) ($row['title'] ?? '-')),
+                'status'   => $row['status'] ?? '-',
+                'notes'    => $row['location'] ?? $row['summary'] ?? '-',
+            ];
+        }
+
         foreach ($data['sessions'] as $row) {
+            if (!empty($row['bk_service_record_id'])) {
+                continue;
+            }
+
             $rows[] = [
                 'date'     => $row['session_date'] ?? '-',
-                'category' => 'Sesi Konseling',
+                'category' => 'Konseling',
                 'activity' => trim((string) ($row['topic'] ?? '-')),
                 'status'   => $row['status'] ?? '-',
                 'notes'    => $row['session_summary'] ?? $row['location'] ?? '-',
@@ -178,6 +222,28 @@ class ReportService
             'rows'    => $rows,
             'student' => $data['student'],
             'data'    => $data,
+        ];
+    }
+
+    /**
+     * Pilihan jenis catatan untuk Laporan Individu Siswa.
+     * Dipakai Koordinator BK dan Guru BK agar bisa memilih semua catatan BK atau salah satu fitur.
+     *
+     * @return array<string,string>
+     */
+    public function individualCategoryOptions(): array
+    {
+        return [
+            'all' => 'Semua Catatan BK',
+            'consultation' => 'Konsultasi & Pengaduan',
+            'guidance' => 'Bimbingan',
+            'counseling' => 'Konseling',
+            'parent_collaboration' => 'Kolaborasi Orang Tua',
+            'home_visit' => 'Kunjungan Rumah',
+            'case_conference' => 'Konferensi Kasus',
+            'assessment' => 'Asesmen',
+            'career' => 'Info Karier',
+            'university' => 'Info Studi Lanjut',
         ];
     }
 
@@ -506,6 +572,104 @@ class ReportService
         $this->applyDate($b, $from, $to, 'cs.session_date');
 
         return $b->orderBy('cs.session_date', 'ASC')->orderBy('cs.session_time', 'ASC')->get()->getResultArray();
+    }
+
+    private function studentConsultations(int $studentId, ?string $from, ?string $to): array
+    {
+        if (!$this->db->tableExists('consultation_complaints')) {
+            return [];
+        }
+
+        $b = $this->db->table('consultation_complaints')
+            ->where('subject_student_id', $studentId);
+
+        if ($this->fieldExists('consultation_complaints', 'deleted_at')) {
+            $b->where('deleted_at', null);
+        }
+        if ($from) {
+            $b->where('DATE(COALESCE(occurred_at, created_at)) >=', $from);
+        }
+        if ($to) {
+            $b->where('DATE(COALESCE(occurred_at, created_at)) <=', $to);
+        }
+
+        return $b->orderBy('COALESCE(occurred_at, created_at)', 'DESC', false)
+            ->get()
+            ->getResultArray();
+    }
+
+    private function studentBkServices(int $studentId, ?string $from, ?string $to): array
+    {
+        if (!$this->db->tableExists('bk_service_records')) {
+            return [];
+        }
+
+        $student = $this->db->table('students')
+            ->select('class_id')
+            ->where('id', $studentId)
+            ->get()
+            ->getRowArray();
+        $classId = (int) ($student['class_id'] ?? 0);
+
+        $b = $this->db->table('bk_service_records bsr')
+            ->select('DISTINCT bsr.*', false)
+            ->join('session_participants sp', 'sp.bk_service_record_id = bsr.id AND sp.deleted_at IS NULL', 'left')
+            ->groupStart()
+                ->where('bsr.target_student_id', $studentId)
+                ->orWhere('sp.participant_student_id', $studentId);
+
+        if ($classId > 0) {
+            $b->orWhere('bsr.target_class_id', $classId)
+                ->orWhere('sp.participant_class_id', $classId);
+        }
+
+        $b->groupEnd();
+
+        if ($this->fieldExists('bk_service_records', 'deleted_at')) {
+            $b->where('bsr.deleted_at', null);
+        }
+        if ($from) {
+            $b->where('DATE(COALESCE(bsr.held_at, bsr.scheduled_at, bsr.created_at)) >=', $from);
+        }
+        if ($to) {
+            $b->where('DATE(COALESCE(bsr.held_at, bsr.scheduled_at, bsr.created_at)) <=', $to);
+        }
+
+        return $b->orderBy('COALESCE(bsr.held_at, bsr.scheduled_at, bsr.created_at)', 'DESC', false)
+            ->get()
+            ->getResultArray();
+    }
+
+    private function normalizeIndividualCategory(string $category): string
+    {
+        $category = strtolower(trim($category));
+        return array_key_exists($category, $this->individualCategoryOptions()) ? $category : 'all';
+    }
+
+    private function shouldIncludeIndividualCategory(string $selected, string $target): bool
+    {
+        return $selected === 'all' || $selected === $target;
+    }
+
+    private function serviceTypeKey(string $serviceType): string
+    {
+        return match ($serviceType) {
+            'Bimbingan' => 'guidance',
+            'Konseling' => 'counseling',
+            'Kolaborasi Orang Tua' => 'parent_collaboration',
+            'Kunjungan Rumah' => 'home_visit',
+            'Konferensi Kasus' => 'case_conference',
+            default => 'all',
+        };
+    }
+
+    private function fieldExists(string $table, string $field): bool
+    {
+        try {
+            return $this->db->fieldExists($field, $table);
+        } catch (\Throwable $e) {
+            return false;
+        }
     }
 
     private function studentAssessments(int $studentId, ?string $from, ?string $to): array

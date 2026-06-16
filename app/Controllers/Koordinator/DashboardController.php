@@ -5,6 +5,7 @@
  * Koordinator BK • Dashboard
  * Merangkum statistik sekolah: siswa, staf, sesi konseling, asesmen, laporan, notifikasi.
  * Memakai service yang ada; fallback ke model jika method tidak tersedia.
+ * Pembaruan: menampilkan ringkasan fitur BK final dari bk_service_records.
  */
 
 namespace App\Controllers\Koordinator;
@@ -18,6 +19,7 @@ use App\Services\AssessmentService;
 use App\Services\ReportService;
 use App\Services\StudentService;
 use App\Services\UserService;
+use App\Services\BkServiceService;
 
 // Models (fallback)
 use App\Models\StudentModel;
@@ -89,6 +91,7 @@ class DashboardController extends BaseKoordinatorController
         ];
 
         $quickStats = array_merge($quick, $assessmentQuick, $reportsQuick, $notificationsQuick);
+        $bkSummary = $this->tryGetBkSummary('koordinator', (int) (session('user_id') ?? session('id') ?? 0));
 
         $topCounselors = $this->tryGetTopCounselorsBySessions(5);
 
@@ -107,6 +110,7 @@ class DashboardController extends BaseKoordinatorController
             'currentUser'          => $currentUser,
             'activeAcademic'       => $activeAcademic,
             'quick'                => $quickStats,
+            'bkSummary'            => $bkSummary,
             'topCounselors'        => $topCounselors,
             'assessmentCompletion' => $assessmentCompletion,
             'recentActivities'     => $recentActivities,
@@ -131,6 +135,23 @@ class DashboardController extends BaseKoordinatorController
         } catch (\Throwable $e) {
             log_message('error', 'Dashboard safeCall error: ' . $e->getMessage());
             return null;
+        }
+    }
+
+    protected function tryGetBkSummary(string $role, int $userId): array
+    {
+        try {
+            return (new BkServiceService())->dashboardSummary($role, $userId);
+        } catch (\Throwable $e) {
+            log_message('error', 'tryGetBkSummary error: ' . $e->getMessage());
+            return [
+                'total_services' => 0,
+                'scheduled' => 0,
+                'need_follow_up' => 0,
+                'complaints_open' => 0,
+                'assignments_open' => 0,
+                'by_type' => [],
+            ];
         }
     }
 

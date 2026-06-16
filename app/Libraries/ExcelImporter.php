@@ -73,6 +73,9 @@ class ExcelImporter
         $this->classModel   = new ClassModel();
         $this->roleModel    = new RoleModel();
         $this->db           = \Config\Database::connect();
+
+        // Untuk membaca batas tingkat kelas (grade_level_bounds / is_grade_level_allowed).
+        helper('settings');
     }
 
     /**
@@ -84,6 +87,7 @@ class ExcelImporter
      * - strict_headers: bool (default false) kalau true, wajib format EMIS sekolah
      * - default_admission_date: string (default today Y-m-d)
      * - auto_create_classes: bool (default true) buat kelas rombel jika belum ada
+     * - allowed_class_names: array<string> (optional) batasi impor hanya pada kelas tertentu, dipakai Wali Kelas
      *
      * @param string $filePath Path to Excel file
      * @param array  $options  Import options
@@ -113,6 +117,11 @@ class ExcelImporter
 
         foreach ($worksheets as $worksheet) {
             $this->headerMap = [];
+
+            // Sheet panduan/petunjuk pada template dilewati diam-diam (bukan data siswa).
+            if ($this->isGuidanceSheet($worksheet)) {
+                continue;
+            }
 
             if (!$this->validateHeaders($worksheet, $options)) {
                 $this->results['warnings'][] = 'Sheet "' . $worksheet->getTitle() . '" dilewati karena header tidak dikenali.';
@@ -182,6 +191,14 @@ class ExcelImporter
 
                 // Defaults + normalisasi sesuai kebutuhan sekolah
                 $this->applyDefaultsAndNormalize($rowData, $row, $options);
+
+                // Pembatasan lingkup impor untuk peran non-admin, misalnya Wali Kelas hanya kelas binaannya.
+                if (!$this->isClassAllowedForImport($rowData, $options)) {
+                    $this->db->transRollback();
+                    $this->results['failed']++;
+                    $this->results['errors'][] = "{$rowLabel}: Kelas wajib diisi dan harus sesuai kelas binaan Wali Kelas.";
+                    continue;
+                }
 
                 // Raw phone for validation message clarity
                 $rowData['_raw_student_phone'] = $rowData['_raw_student_phone'] ?? $rowData['student_phone'];
@@ -257,6 +274,26 @@ class ExcelImporter
     protected function rowLabel(Worksheet $worksheet, int $row): string
     {
         return 'Sheet "' . $worksheet->getTitle() . '" baris ' . $row;
+    }
+
+    /**
+     * Deteksi sheet panduan (mis. "Petunjuk Pengisian") agar dilewati saat impor
+     * tanpa memunculkan peringatan yang membingungkan pengguna.
+     */
+    protected function isGuidanceSheet(Worksheet $worksheet): bool
+    {
+        $title = mb_strtolower(trim($worksheet->getTitle()));
+        if ($title === '') {
+            return false;
+        }
+
+        foreach (['petunjuk', 'panduan', 'instruksi', 'cara isi', 'cara pengisian', 'bantuan', 'keterangan'] as $keyword) {
+            if (mb_strpos($title, $keyword) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -490,6 +527,11 @@ class ExcelImporter
             'Agama',
         ]);
 
+        // Jurusan / peminatan kelas (opsional). Jika kosong, default "IPA" saat kelas dibuat.
+        $majorRaw = $this->getCellByHeaderCandidates($worksheet, $row, [
+            'Jurusan', 'Major', 'Peminatan', 'Program',
+        ]);
+
         // Ambil parent name prioritas jika file sekolah: wali -> ibu -> ayah
         // (Kalau header yang ketemu "Nama Ayah Kandung" tapi "Nama Wali" ada juga, kita override dengan prioritas)
         $wali = $this->getCellByHeaderCandidates($worksheet, $row, ['Nama Wali']);
@@ -525,6 +567,7 @@ class ExcelImporter
             'mother_name'    => trim((string) $ibu),
             'guardian_name'  => trim((string) $wali),
             'class_name'     => trim((string) $classRaw),
+            'major'          => $this->normalizeMajorValue($majorRaw),
             'admission_date' => $this->parseDate($admissionRaw),
             'status'         => $statusNorm,
             'parent_name'    => $parentName,
@@ -637,12 +680,18 @@ class ExcelImporter
 
         // 7) Class: jika ada tapi tidak ditemukan, buat otomatis sesuai rombel sekolah.
         if (!empty($rowData['class_name'])) {
-            $resolved = $this->ensureClassExists($rowData['class_name'], $rowNumber, $options);
-            if ($resolved === null) {
-                $this->results['warnings'][] = "Baris {$rowNumber}: Kelas '{$rowData['class_name']}' tidak ditemukan di DB, class_id dikosongkan (null).";
-                $rowData['class_name'] = '';
+            // Tolak tingkat kelas di luar rentang yang diizinkan (bawaan 7-12).
+            $gradeForCheck = $this->inferGradeLevel($rowData['class_name']);
+            if ($gradeForCheck !== null && !$this->isGradeLevelAllowedValue($gradeForCheck)) {
+                $rowData['_class_grade_invalid'] = $gradeForCheck;
             } else {
-                $rowData['class_name'] = $resolved;
+                $resolved = $this->ensureClassExists($rowData['class_name'], $rowNumber, $options, (string) ($rowData['major'] ?? ''));
+                if ($resolved === null) {
+                    $this->results['warnings'][] = "Baris {$rowNumber}: Kelas '{$rowData['class_name']}' tidak ditemukan di DB, class_id dikosongkan (null).";
+                    $rowData['class_name'] = '';
+                } else {
+                    $rowData['class_name'] = $resolved;
+                }
             }
         }
 
@@ -752,7 +801,7 @@ class ExcelImporter
         return date('Y-m-d');
     }
 
-    protected function ensureClassExists(string $classInput, int $rowNumber, array $options = []): ?string
+    protected function ensureClassExists(string $classInput, int $rowNumber, array $options = [], string $majorOverride = ''): ?string
     {
         $input = trim($classInput);
         if ($input === '') {
@@ -781,7 +830,11 @@ class ExcelImporter
             return null;
         }
 
-        $major = $this->inferMajor($input);
+        // Jurusan: dari kolom "Jurusan" (jika ada) -> tebak dari nama kelas -> default "IPA".
+        $major = trim($majorOverride);
+        if ($major === '') {
+            $major = $this->inferMajor($input) ?? 'IPA';
+        }
         $now = date('Y-m-d H:i:s');
 
         $payload = [
@@ -802,6 +855,27 @@ class ExcelImporter
 
         $this->results['warnings'][] = "Baris {$rowNumber}: Kelas '{$input}' dibuat otomatis dari file impor.";
         return $input;
+    }
+
+    /**
+     * Mengecek pembatasan kelas untuk fitur Impor Data Siswa dan Orang Tua.
+     * Koordinator/Admin tidak mengirim opsi ini, sedangkan Wali Kelas mengirim daftar kelas binaannya.
+     */
+    protected function isClassAllowedForImport(array $rowData, array $options): bool
+    {
+        if (empty($options['allowed_class_names']) || !is_array($options['allowed_class_names'])) {
+            return true;
+        }
+
+        $className = trim((string) ($rowData['class_name'] ?? ''));
+        if ($className === '') {
+            return false;
+        }
+
+        $normalize = static fn(string $value): string => preg_replace('/\s+/', ' ', mb_strtolower(trim($value))) ?? '';
+        $allowed = array_map(static fn($value): string => $normalize((string) $value), $options['allowed_class_names']);
+
+        return in_array($normalize($className), $allowed, true);
     }
 
     protected function resolveAcademicYearId(array $options = []): ?int
@@ -841,25 +915,42 @@ class ExcelImporter
         return !empty($row['id']) ? (int) $row['id'] : null;
     }
 
+    /**
+     * Tebak tingkat kelas sebagai ANGKA ("10"/"11"/"12") agar konsisten dengan
+     * format grade_level di database (yang memakai angka, bukan angka Romawi).
+     */
     protected function inferGradeLevel(string $classInput): ?string
     {
         $input = strtoupper(trim($classInput));
 
         if (preg_match('/KELAS\s*(\d{1,2})\b/', $input, $m)) {
-            $grade = (int) $m[1];
-            return $this->toRomanGrade($grade) ?? (string) $grade;
+            return (string) (int) $m[1];
         }
 
         if (preg_match('/\b(7|8|9|10|11|12)\b/', $input, $m)) {
-            $grade = (int) $m[1];
-            return $this->toRomanGrade($grade) ?? (string) $grade;
+            return (string) (int) $m[1];
         }
 
-        if (preg_match('/\b(XII|XI|X)\b/', $input, $m)) {
-            return $m[1];
-        }
+        // Angka Romawi -> angka biasa
+        if (preg_match('/\bXII\b/', $input)) return '12';
+        if (preg_match('/\bXI\b/', $input))  return '11';
+        if (preg_match('/\bX\b/', $input))   return '10';
 
         return null;
+    }
+
+    /**
+     * Apakah tingkat kelas (angka/Romawi) berada dalam rentang yang diizinkan?
+     * Memakai pengaturan admin (bawaan 7-12); ada fallback bila helper tak termuat.
+     */
+    protected function isGradeLevelAllowedValue(string $grade): bool
+    {
+        if (function_exists('is_grade_level_allowed')) {
+            return is_grade_level_allowed($grade);
+        }
+
+        $v = (int) $grade;
+        return $v >= 7 && $v <= 12;
     }
 
     protected function inferMajor(string $classInput): ?string
@@ -874,6 +965,37 @@ class ExcelImporter
         return null;
     }
 
+    /**
+     * Rapikan nilai kolom "Jurusan" dari Excel.
+     * Nilai jurusan yang umum diseragamkan menjadi huruf kapital (IPA, IPS, dll).
+     * Nilai lain dipertahankan apa adanya. Kosong tetap kosong (nanti default "IPA").
+     */
+    protected function normalizeMajorValue($value): string
+    {
+        $v = trim((string) ($value ?? ''));
+        if ($v === '') {
+            return '';
+        }
+
+        $upper = strtoupper(preg_replace('/\s+/', ' ', $v) ?? $v);
+        foreach (['IPA', 'IPS', 'MIPA', 'BAHASA', 'AGAMA'] as $known) {
+            if ($upper === $known) {
+                return $known;
+            }
+        }
+
+        return $v;
+    }
+
+    /**
+     * Cari kelas yang sudah ada untuk nama dari file.
+     *
+     * Pencocokan DIPERKETAT: hanya cocok bila namanya sama persis (mengabaikan
+     * beda spasi dan huruf besar/kecil). Tidak ada tebak-tebakan, supaya
+     * "Kelas 12 - A" dari file TIDAK keliru masuk ke kelas lama seperti
+     * "XII C" atau "12 A". Bila tidak ada yang sama persis -> dianggap belum ada
+     * (nanti dibuat otomatis dengan nama persis seperti di file).
+     */
     protected function resolveClassNameIfExists(string $classInput): ?string
     {
         $input = trim($classInput);
@@ -881,72 +1003,37 @@ class ExcelImporter
             return null;
         }
 
-        // 1) exact match
+        // 1) sama persis
         $class = $this->classModel->where('class_name', $input)->first();
         if ($class) {
             return (string) $class['class_name'];
         }
 
-        // 2) normalized compare
-        $normInput = strtolower(preg_replace('/\s+/', '', $input));
+        // 2) sama setelah dinormalkan (abaikan spasi & kapitalisasi)
+        $normInput = $this->normalizeClassKey($input);
 
-        $classes = $this->classModel->where('is_active', 1)->orderBy('id', 'DESC')->findAll();
-        $best = null;
-        $bestScore = 0;
-
-        // coba deteksi pola "Kelas 10 - A"
-        $gradeRoman = null;
-        $section = null;
-        if (preg_match('/kelas\s*(\d{1,2})\s*-\s*([a-z])/i', $input, $m)) {
-            $grade = (int) $m[1];
-            $section = strtoupper($m[2]);
-            $gradeRoman = $this->toRomanGrade($grade);
-        }
-
+        $classes = $this->classModel->where('is_active', 1)->orderBy('id', 'ASC')->findAll();
         foreach ($classes as $c) {
             $name = (string) ($c['class_name'] ?? '');
-            if ($name === '') continue;
-
-            $normName = strtolower(preg_replace('/\s+/', '', $name));
-            $score = 0;
-
-            if ($normName === $normInput) $score += 100;
-
-            // fuzzy contains
-            if (strpos($normName, $normInput) !== false || strpos($normInput, $normName) !== false) {
-                $score += 30;
+            if ($name === '') {
+                continue;
             }
-
-            // roman + section hint
-            if ($gradeRoman && strpos($name, $gradeRoman) !== false) {
-                $score += 25;
+            if ($this->normalizeClassKey($name) === $normInput) {
+                return $name;
             }
-            if ($section && (strpos($name, '-' . $section) !== false || preg_match('/\b' . preg_quote($section, '/') . '\b/', $name))) {
-                $score += 15;
-            }
-
-            if ($score > $bestScore) {
-                $bestScore = $score;
-                $best = $name;
-            }
-        }
-
-        // Kalau score rendah, anggap tidak ketemu agar "Kelas 11 - A"
-        // tidak keliru masuk ke kelas lama seperti "XI-IPA-1".
-        if ($best !== null && $bestScore >= 40) {
-            return $best;
         }
 
         return null;
     }
 
-    protected function toRomanGrade(int $grade): ?string
+    /**
+     * Kunci pembanding nama kelas: huruf kecil tanpa spasi/tanda baca.
+     * Contoh: "Kelas 12 - A" -> "kelas12a".
+     */
+    protected function normalizeClassKey(string $value): string
     {
-        // untuk kelas 10/11/12
-        if ($grade === 10) return 'X';
-        if ($grade === 11) return 'XI';
-        if ($grade === 12) return 'XII';
-        return null;
+        $v = mb_strtolower(trim($value));
+        return preg_replace('/[^a-z0-9]+/u', '', $v) ?? '';
     }
 
     /**
@@ -1166,6 +1253,12 @@ class ExcelImporter
             $errors[] = 'Status harus salah satu dari: ' . implode(', ', $validStatus);
         }
 
+        // Tingkat kelas di luar rentang yang diizinkan (mis. < 7 atau > 12).
+        if (!empty($rowData['_class_grade_invalid'])) {
+            [$gMin, $gMax] = function_exists('grade_level_bounds') ? grade_level_bounds() : [7, 12];
+            $errors[] = "Tingkat kelas {$rowData['_class_grade_invalid']} di luar rentang yang diizinkan ({$gMin}-{$gMax}). Perbaiki kolom kelas.";
+        }
+
         // Check duplicate NISN di database (include soft deleted)
         $existingNisn = $this->studentModel->withDeleted()->where('nisn', $rowData['nisn'])->first();
         if ($existingNisn) {
@@ -1382,7 +1475,13 @@ class ExcelImporter
     }
 
     /**
-     * Generate Excel template mengikuti format EMIS sekolah.
+     * Generate Excel template impor siswa.
+     *
+     * Susunan kolom meniru file data siswa sekolah (EMIS), TERMASUK kolom "Umur"
+     * yang sengaja diabaikan saat impor (umur dihitung otomatis dari Tanggal Lahir),
+     * ditambah kolom "Jurusan" paling kanan (opsional, default "IPA" bila kosong).
+     * Panduan pengisian diletakkan pada sheet terpisah "Petunjuk Pengisian"
+     * agar tidak mengganggu data.
      */
     public function generateTemplate(?string $savePath = null): string
     {
@@ -1390,25 +1489,30 @@ class ExcelImporter
         $sheet       = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Kelas 12 - A');
 
+        // Susunan kolom mengikuti file sekolah (Umur di kolom H), Jurusan ditambah di paling kanan.
         $headers = [
-            'No',
-            'Nama Lengkap',
-            'NISN',
-            'NIK',
-            'Tempat Lahir',
-            'Tanggal Lahir',
-            'Tingkat - Rombel',
-            'Status',
-            'Jenis Kelamin',
-            'Alamat',
-            'No Telepon',
-            'Kebutuhan Khusus',
-            'Disabilitas',
-            'Nomor KIP/PIP',
-            'Nama Ayah Kandung',
-            'Nama Ibu Kandung',
-            'Nama Wali',
+            'No',                // A
+            'Nama Lengkap',      // B
+            'NISN',              // C
+            'NIK',               // D
+            'Tempat Lahir',      // E
+            'Tanggal Lahir',     // F
+            'Tingkat - Rombel',  // G
+            'Umur',              // H (diabaikan saat impor; dihitung otomatis)
+            'Status',            // I
+            'Jenis Kelamin',     // J
+            'Alamat',            // K
+            'No Telepon',        // L
+            'Kebutuhan Khusus',  // M
+            'Disabilitas',       // N
+            'Nomor KIP/PIP',     // O
+            'Nama Ayah Kandung', // P
+            'Nama Ibu Kandung',  // Q
+            'Nama Wali',         // R
+            'Jurusan',           // S (opsional; kosong = IPA)
         ];
+
+        $lastCol = 'S';
 
         $sheet->fromArray($headers, null, 'A1');
 
@@ -1417,57 +1521,60 @@ class ExcelImporter
             'fill'      => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
             'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER],
         ];
-        $sheet->getStyle('A1:Q1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:' . $lastCol . '1')->applyFromArray($headerStyle);
 
-        foreach (range('A', 'Q') as $col) {
+        // Tandai kolom yang otomatis/opsional dengan warna lembut agar mudah dikenali.
+        $sheet->getStyle('H1')->getFill()
+            ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('A6A6A6'); // Umur (diabaikan)
+        $sheet->getStyle('S1')->getFill()
+            ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('70AD47'); // Jurusan (opsional)
+
+        foreach (range('A', $lastCol) as $col) {
             $sheet->getStyle($col . ':' . $col)
                 ->getNumberFormat()
                 ->setFormatCode('@');
         }
 
         $sampleData = [
-            '1',
-            'Nama Siswa Contoh',
-            '1000000003',
-            '1000000000000003',
-            'BANDUNG',
-            '2007-09-19',
-            'Kelas 12 - A',
-            'Aktif',
-            'Perempuan',
-            'Kp. Contoh, BANJARAN, KABUPATEN BANDUNG, JAWA BARAT, 40377',
-            '6281234567890',
-            'Tidak Ada',
-            'Tidak Ada',
-            '',
-            'NAMA AYAH',
-            'NAMA IBU',
-            'NAMA WALI',
+            '1',                                                          // A No
+            'Nama Siswa Contoh',                                      // B Nama Lengkap
+            '1000000003',                                                 // C NISN
+            '1000000000000003',                                           // D NIK
+            'BANDUNG',                                                    // E Tempat Lahir
+            '2007-09-19',                                                 // F Tanggal Lahir
+            'Kelas 12 - A',                                               // G Tingkat - Rombel
+            '',                                                           // H Umur (biarkan kosong)
+            'Aktif',                                                      // I Status
+            'Perempuan',                                                  // J Jenis Kelamin
+            'Kp. Contoh, BANJARAN, KABUPATEN BANDUNG, JAWA BARAT, 40377', // K Alamat
+            '6281234567890',                                              // L No Telepon
+            'Tidak Ada',                                                  // M Kebutuhan Khusus
+            'Tidak Ada',                                                  // N Disabilitas
+            '',                                                           // O Nomor KIP/PIP
+            'NAMA AYAH',                                                  // P Nama Ayah Kandung
+            'NAMA IBU',                                                   // Q Nama Ibu Kandung
+            'NAMA WALI',                                                  // R Nama Wali
+            'IPA',                                                        // S Jurusan
         ];
 
         $sheet->fromArray([$sampleData], null, 'A2');
+        // Paksa sebagai teks agar angka panjang & nol depan tidak rusak.
         $sheet->setCellValueExplicit('C2', '1000000003', DataType::TYPE_STRING);
         $sheet->setCellValueExplicit('D2', '1000000000000003', DataType::TYPE_STRING);
-        $sheet->setCellValueExplicit('K2', '6281234567890', DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit('L2', '6281234567890', DataType::TYPE_STRING);
 
-        foreach (range('A', 'Q') as $col) {
+        foreach (range('A', $lastCol) as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
-        $sheet->getCell('A4')->setValue('PETUNJUK:');
-        $sheet->getCell('A5')->setValue('1. Template ini mengikuti format file EMIS sekolah, tanpa kolom Umur. Umur dihitung otomatis dari Tanggal Lahir.');
-        $sheet->getCell('A6')->setValue('2. Minimal data yang perlu ada: NISN, Nama Lengkap, Tanggal Lahir, Jenis Kelamin. NIK opsional mengikuti isi file EMIS.');
-        $sheet->getCell('A7')->setValue('3. Email tidak wajib dan tidak ada di format EMIS ini. Login siswa memakai username/NISN.');
-        $sheet->getCell('A8')->setValue('4. Tanggal Lahir boleh YYYY-MM-DD seperti file EMIS, atau DD-MM-YYYY / DD/MM/YYYY / DDMMYYYY.');
-        $sheet->getCell('A9')->setValue('5. Tingkat - Rombel boleh seperti "Kelas 12 - A"; sistem akan membuat kelas otomatis jika belum ada.');
-        $sheet->getCell('A10')->setValue('6. No Telepon opsional. Jika diisi boleh 08, 62, atau +62; sistem akan menormalkan ke 08.');
-        $sheet->getCell('A11')->setValue('7. Nama Wali akan dipakai sebagai prioritas orang tua, lalu Nama Ibu Kandung, lalu Nama Ayah Kandung.');
-        $sheet->getCell('A12')->setValue("8. Password default akun siswa/orang tua memakai tanggal lahir DDMMYYYY, atau 'password123' bila tanggal lahir tidak valid.");
+        // Bekukan baris judul agar tetap terlihat saat menggulir.
+        $sheet->freezePane('A2');
 
         $maxRow = 500;
 
+        // Dropdown Jenis Kelamin (kolom J)
         $genderList = '"Laki-laki,Perempuan,L,P"';
-        $genderDv = $sheet->getCell('I2')->getDataValidation();
+        $genderDv = $sheet->getCell('J2')->getDataValidation();
         $genderDv->setType(DataValidation::TYPE_LIST);
         $genderDv->setErrorStyle(DataValidation::STYLE_WARNING);
         $genderDv->setAllowBlank(false);
@@ -1481,11 +1588,12 @@ class ExcelImporter
         $genderDv->setFormula1($genderList);
 
         for ($row = 2; $row <= $maxRow; $row++) {
-            $sheet->getCell('I' . $row)->setDataValidation(clone $genderDv);
+            $sheet->getCell('J' . $row)->setDataValidation(clone $genderDv);
         }
 
+        // Dropdown Status (kolom I)
         $statusList = '"Aktif,Tidak Aktif,Alumni,Pindah,Keluar"';
-        $statusDv = $sheet->getCell('H2')->getDataValidation();
+        $statusDv = $sheet->getCell('I2')->getDataValidation();
         $statusDv->setType(DataValidation::TYPE_LIST);
         $statusDv->setErrorStyle(DataValidation::STYLE_WARNING);
         $statusDv->setAllowBlank(false);
@@ -1499,9 +1607,29 @@ class ExcelImporter
         $statusDv->setFormula1($statusList);
 
         for ($row = 2; $row <= $maxRow; $row++) {
-            $sheet->getCell('H' . $row)->setDataValidation(clone $statusDv);
+            $sheet->getCell('I' . $row)->setDataValidation(clone $statusDv);
         }
 
+        // Dropdown Jurusan (kolom S) — opsional, kosong = IPA
+        $majorList = '"IPA,IPS,Bahasa,Agama,MIPA"';
+        $majorDv = $sheet->getCell('S2')->getDataValidation();
+        $majorDv->setType(DataValidation::TYPE_LIST);
+        $majorDv->setErrorStyle(DataValidation::STYLE_WARNING);
+        $majorDv->setAllowBlank(true);
+        $majorDv->setShowInputMessage(true);
+        $majorDv->setShowErrorMessage(true);
+        $majorDv->setShowDropDown(true);
+        $majorDv->setErrorTitle('Jurusan tidak dikenal');
+        $majorDv->setError('Pilih jurusan dari daftar, atau lanjutkan dengan hati-hati.');
+        $majorDv->setPromptTitle('Pilih Jurusan (opsional)');
+        $majorDv->setPrompt('Boleh dikosongkan. Jika kosong, jurusan otomatis menjadi IPA.');
+        $majorDv->setFormula1($majorList);
+
+        for ($row = 2; $row <= $maxRow; $row++) {
+            $sheet->getCell('S' . $row)->setDataValidation(clone $majorDv);
+        }
+
+        // Dropdown Tingkat - Rombel (kolom G)
         $classRecords = $this->classModel
             ->where('is_active', 1)
             ->orderBy('class_name', 'ASC')
@@ -1542,6 +1670,10 @@ class ExcelImporter
             }
         }
 
+        // Sheet panduan terpisah agar tidak mengganggu kolom data.
+        $this->buildGuidanceSheet($spreadsheet);
+        $spreadsheet->setActiveSheetIndex(0);
+
         if (!$savePath) {
             $savePath = WRITEPATH . 'uploads/template_import_siswa.xlsx';
         }
@@ -1555,6 +1687,66 @@ class ExcelImporter
         $writer->save($savePath);
 
         return $savePath;
+    }
+
+    /**
+     * Buat sheet "Petunjuk Pengisian" berisi panduan sederhana.
+     * Sheet ini otomatis dilewati saat impor (lihat isGuidanceSheet()).
+     */
+    protected function buildGuidanceSheet(Spreadsheet $spreadsheet): void
+    {
+        $guide = $spreadsheet->createSheet();
+        $guide->setTitle('Petunjuk Pengisian');
+
+        $lines = [
+            ['PETUNJUK PENGISIAN DATA SISWA', 'title'],
+            ['', 'spacer'],
+            ['Isi data pada sheet "Kelas 12 - A" (lihat tab di bawah). Ganti baris contoh dengan data siswa yang sebenarnya, atau hapus baris contoh itu.', 'text'],
+            ['', 'spacer'],
+            ['A. Kolom yang WAJIB diisi', 'head'],
+            ['1. NISN — 10 angka. Contoh: 1000000003 (boleh diawali angka 0).', 'text'],
+            ['2. Nama Lengkap — nama lengkap siswa.', 'text'],
+            ['3. Tanggal Lahir — contoh: 19-09-2007 atau 2007-09-19.', 'text'],
+            ['4. Jenis Kelamin — pilih Laki-laki atau Perempuan (boleh juga L atau P).', 'text'],
+            ['', 'spacer'],
+            ['B. Kolom yang BOLEH dikosongkan', 'head'],
+            ['- Kolom "Umur" tidak perlu diisi. Umur dihitung sendiri oleh aplikasi dari Tanggal Lahir.', 'text'],
+            ['- Kolom "Jurusan" boleh dikosongkan. Jika kosong, otomatis menjadi IPA.', 'text'],
+            ['- NIK, Alamat, No Telepon, Nomor KIP/PIP, Nama Ayah/Ibu/Wali boleh dikosongkan.', 'text'],
+            ['', 'spacer'],
+            ['C. Hal-hal penting', 'head'],
+            ['- Tingkat - Rombel cukup ditulis seperti "Kelas 12 - A" (tingkat yang diizinkan: Kelas 7 sampai Kelas 12). Jika kelas itu belum ada, aplikasi membuatnya otomatis.', 'text'],
+            ['- NIK yang diawali tanda kutip aman, contoh: \'1000000000000003 — tanda kutip diabaikan otomatis.', 'text'],
+            ['- No Telepon boleh diawali 08, 62, atau +62. Semua diubah otomatis menjadi 08.', 'text'],
+            ['- Password awal untuk masuk = tanggal lahir 8 angka (hari-bulan-tahun). Contoh lahir 19-09-2007 menjadi 19092007.', 'text'],
+            ['- Jika nama Wali / Ibu / Ayah diisi, akun orang tua dibuat otomatis (yang dipakai: Wali, lalu Ibu, lalu Ayah).', 'text'],
+            ['- File data siswa dari sekolah (EMIS/Dapodik) juga bisa langsung diunggah tanpa template ini, asalkan ada kolom NISN, Nama, Tanggal Lahir, dan Jenis Kelamin.', 'text'],
+            ['', 'spacer'],
+            ['D. Cara mengunggah', 'head'],
+            ['1. Isi data di sheet "Kelas 12 - A", lalu simpan file ini.', 'text'],
+            ['2. Buka halaman Impor, pilih file ini, lalu klik "Unggah & Impor".', 'text'],
+            ['3. Baris yang salah tidak akan masuk dan akan ditampilkan di layar. Baris yang benar tetap diproses.', 'text'],
+        ];
+
+        $rowNum = 1;
+        foreach ($lines as [$text, $type]) {
+            $cell = 'A' . $rowNum;
+            $guide->setCellValue($cell, $text);
+            $style = $guide->getStyle($cell);
+
+            if ($type === 'title') {
+                $style->getFont()->setBold(true)->setSize(16)->getColor()->setRGB('1F3864');
+            } elseif ($type === 'head') {
+                $style->getFont()->setBold(true)->setSize(12)->getColor()->setRGB('1F3864');
+            } else {
+                $style->getFont()->setSize(11)->getColor()->setRGB('000000');
+            }
+
+            $rowNum++;
+        }
+
+        $guide->getColumnDimension('A')->setWidth(115);
+        $guide->getStyle('A1:A' . ($rowNum - 1))->getAlignment()->setWrapText(true);
     }
 
     protected function resetResults(): void

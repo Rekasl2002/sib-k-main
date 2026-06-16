@@ -255,6 +255,14 @@ class ValidationHelper
      */
     public static function valid_grade_level($grade)
     {
+        helper('settings');
+
+        // Pakai rentang yang diatur di Pengaturan Admin (bawaan 7-12).
+        if (function_exists('is_grade_level_allowed')) {
+            return is_grade_level_allowed($grade);
+        }
+
+        // Fallback bila helper tidak termuat: terima 7-12 (angka atau Romawi).
         return in_array((string) $grade, ['7', '8', '9', '10', '11', '12', 'X', 'XI', 'XII'], true);
     }
 

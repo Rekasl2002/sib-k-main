@@ -2,7 +2,11 @@
 
 /**
  * File Path  : app/Models/SessionNoteModel.php
- * Deskripsi  : Model untuk catatan sesi konseling (notes) sesuai skema DB.
+ * Deskripsi  : Model untuk catatan sesi konseling lama dan session_notes
+ *              bersama pada fitur layanan BK baru. Relasi baru memakai
+ *              bk_service_record_id agar catatan Bimbingan, Konseling,
+ *              Kolaborasi Orang Tua, Kunjungan Rumah, Konferensi Kasus,
+ *              dan tindak lanjut tetap berada pada satu tabel catatan.
  * Framework  : CodeIgniter 4
  */
 
@@ -22,6 +26,7 @@ class SessionNoteModel extends Model
 
     // Kolom sesuai tabel `session_notes`
     protected $allowedFields = [
+        'bk_service_record_id', // FK -> bk_service_records.id untuk layanan BK baru
         'session_id',        // FK -> counseling_sessions.id
         'created_by',        // FK -> users.id (pembuat catatan)
         'note_type',         // ENUM: Observasi/Diagnosis/Intervensi/Follow-up/Lainnya
@@ -29,6 +34,12 @@ class SessionNoteModel extends Model
         'is_confidential',   // 0/1
         'is_important',      // 0/1
         'attachments',       // JSON text (opsional)
+        'related_participant_id',
+        'visibility_level',
+        'follow_up_status',
+        'assigned_to_user_id',
+        'due_date',
+        'completed_at',
         // boleh diisi manual bila perlu (mis. migrasi/seed):
         'created_at', 'updated_at',
     ];
@@ -42,7 +53,8 @@ class SessionNoteModel extends Model
 
     // Validasi
     protected $validationRules = [
-        'session_id'      => 'required|integer|is_not_unique[counseling_sessions.id]',
+        'session_id'      => 'permit_empty|integer|is_not_unique[counseling_sessions.id]',
+        'bk_service_record_id' => 'permit_empty|integer|is_not_unique[bk_service_records.id]',
         'created_by'      => 'required|integer|is_not_unique[users.id]',
         'note_type'       => 'permit_empty|in_list[Observasi,Diagnosis,Intervensi,Follow-up,Lainnya]',
         'note_content'    => 'required|string|min_length[5]',

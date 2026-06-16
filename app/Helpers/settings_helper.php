@@ -144,3 +144,90 @@ if (! function_exists('forget_setting')) {
         }
     }
 }
+
+if (! function_exists('grade_level_bounds')) {
+    /**
+     * Batas tingkat kelas yang diizinkan (bisa diatur di Pengaturan Admin).
+     * Bawaan 7-12 (MTs + MA). Dibatasi aman pada rentang 1-12.
+     *
+     * @return array{0:int,1:int} [min, max]
+     */
+    function grade_level_bounds(): array
+    {
+        $min = (int) setting('grade_level_min', 7, 'academic');
+        $max = (int) setting('grade_level_max', 12, 'academic');
+
+        // Jaga agar tetap masuk akal (jenjang Indonesia: 1-12).
+        if ($min < 1)  $min = 1;
+        if ($min > 12) $min = 12;
+        if ($max < 1)  $max = 1;
+        if ($max > 12) $max = 12;
+        if ($max < $min) $max = $min;
+
+        return [$min, $max];
+    }
+}
+
+if (! function_exists('normalize_grade_level')) {
+    /**
+     * Seragamkan nilai tingkat menjadi ANGKA ("7".."12"), sesuai format database.
+     * Menerima angka maupun angka Romawi (VII..XII). Mengembalikan null bila tidak dikenali.
+     *
+     * @param mixed $grade
+     */
+    function normalize_grade_level($grade): ?string
+    {
+        $g = strtoupper(trim((string) $grade));
+        if ($g === '') {
+            return null;
+        }
+
+        $roman = ['VII' => '7', 'VIII' => '8', 'IX' => '9', 'X' => '10', 'XI' => '11', 'XII' => '12'];
+        if (isset($roman[$g])) {
+            return $roman[$g];
+        }
+
+        if (preg_match('/^\d{1,2}$/', $g)) {
+            return (string) (int) $g;
+        }
+
+        return null;
+    }
+}
+
+if (! function_exists('allowed_grade_levels')) {
+    /**
+     * Daftar tingkat kelas yang diizinkan dalam bentuk angka string, mis. ["7","8",...,"12"].
+     *
+     * @return list<string>
+     */
+    function allowed_grade_levels(): array
+    {
+        [$min, $max] = grade_level_bounds();
+        $out = [];
+        for ($g = $min; $g <= $max; $g++) {
+            $out[] = (string) $g;
+        }
+        return $out;
+    }
+}
+
+if (! function_exists('is_grade_level_allowed')) {
+    /**
+     * Apakah tingkat kelas berada dalam rentang yang diizinkan?
+     *
+     * @param mixed $grade
+     */
+    function is_grade_level_allowed($grade): bool
+    {
+        $n = normalize_grade_level($grade);
+        if ($n === null) {
+            return false;
+        }
+
+        [$min, $max] = grade_level_bounds();
+        $v = (int) $n;
+
+        return $v >= $min && $v <= $max;
+    }
+}

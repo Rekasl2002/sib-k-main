@@ -11,6 +11,11 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
+/**
+ * File Path: app/Controllers/Koordinator/ReportController.php
+ * Fitur: laporan agregat dan laporan individu siswa untuk Koordinator BK.
+ * Relasi: ReportService, fitur BK final, asesmen, karier/studi lanjut, dan tabel laporan PDF/XLSX.
+ */
 class ReportController extends BaseKoordinatorController
 {
     protected ReportService $report;
@@ -48,6 +53,7 @@ class ReportController extends BaseKoordinatorController
             ->get()->getResultArray();
 
         $students = $this->report->studentOptionsAll();
+        $bkCategories = $this->report->individualCategoryOptions();
 
         // default: bulan ini
         $valFrom = (string) ($req->getGet('date_from') ?: date('Y-m-01'));
@@ -63,6 +69,7 @@ class ReportController extends BaseKoordinatorController
             'classes'     => $classes,
             'counselors'  => $counselors,
             'students'    => $students,
+            'bkCategories'=> $bkCategories,
 
             'valFrom'     => $valFrom,
             'valTo'       => $valTo,
@@ -71,6 +78,7 @@ class ReportController extends BaseKoordinatorController
             'valCounselor' => (string) ($req->getGet('counselor_id') ?? ''),
             'valMode'      => (string) ($req->getGet('mode') ?? 'aggregate'),
             'valStudent'   => (string) ($req->getGet('student_id') ?? ''),
+            'valBkCategory'=> (string) ($req->getGet('bk_category') ?? 'all'),
 
             'valPaper'    => $valPaper,
             'valOrient'   => $valOrient,
@@ -89,7 +97,7 @@ class ReportController extends BaseKoordinatorController
             if (($f['mode'] ?? 'aggregate') === 'student_individual') {
                 $out = $this->buildIndividualPayload($f);
 
-                return view('counselor/reports/partials/table', [
+                return view('koordinator/reports/partials/table', [
                     'title'   => $out['title'],
                     'columns' => $out['columns'],
                     'rows'    => $out['rows'],
@@ -252,6 +260,7 @@ class ReportController extends BaseKoordinatorController
             'counselor_id' => $this->request->getGet('counselor_id') ? (int) $this->request->getGet('counselor_id') : null,
             'mode'         => (string)($this->request->getGet('mode') ?: 'aggregate'),
             'student_id'   => $this->request->getGet('student_id') ? (int) $this->request->getGet('student_id') : null,
+            'bk_category'  => (string)($this->request->getGet('bk_category') ?: 'all'),
         ];
     }
 
@@ -266,7 +275,12 @@ class ReportController extends BaseKoordinatorController
             ];
         }
 
-        $out = $this->report->studentIndividualTable($studentId, $f['date_from'] ?? null, $f['date_to'] ?? null);
+        $out = $this->report->studentIndividualTable(
+            $studentId,
+            $f['date_from'] ?? null,
+            $f['date_to'] ?? null,
+            (string) ($f['bk_category'] ?? 'all')
+        );
         $student = $out['student'] ?? [];
 
         return [
