@@ -41,6 +41,22 @@ $recentSessions = $recentSessions ?? [];
   </div>
 </div>
 
+<!-- Akses Cepat (Fase 7: dashboard fokus jadwal mendatang + tombol cepat) -->
+<?php
+helper('url');
+$quickShortcuts = [
+  ['label' => 'Kelas Binaan', 'url' => base_url('homeroom/my-class'), 'icon' => 'mdi-google-classroom', 'color' => 'primary'],
+  ['label' => 'Jadwal Kegiatan/Acara BK', 'url' => base_url('homeroom/jadwal-bk'), 'icon' => 'mdi-calendar-heart', 'color' => 'success'],
+];
+if (! function_exists('consultation_role_can_view') || consultation_role_can_view('wali kelas')) {
+  $quickShortcuts[] = ['label' => 'Konsultasi & Pengaduan', 'url' => base_url('homeroom/consultations'), 'icon' => 'mdi-message-alert-outline', 'color' => 'warning'];
+}
+$quickShortcuts[] = ['label' => 'Impor Data Siswa', 'url' => base_url('homeroom/students/import'), 'icon' => 'mdi-file-import-outline', 'color' => 'info'];
+$quickShortcuts[] = ['label' => 'Info Karier & Studi', 'url' => base_url('homeroom/career-info'), 'icon' => 'mdi-school-outline', 'color' => 'secondary'];
+$quickShortcuts[] = ['label' => 'Laporan', 'url' => base_url('homeroom/reports'), 'icon' => 'mdi-file-chart', 'color' => 'primary'];
+echo $this->include('role_features/_quick_actions');
+?>
+
 <div class="row">
   <div class="col-lg-12">
     <div class="card welcome-card">

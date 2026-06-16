@@ -116,6 +116,23 @@ if (!function_exists('badgeClass')) {
     </div>
 </div>
 
+<!-- Akses Cepat (Fase 7: dashboard fokus jadwal mendatang + tombol cepat) -->
+<?php
+helper('url');
+$quickShortcuts = [
+  ['label' => 'Jadwal Kegiatan/Acara BK', 'url' => base_url('student/jadwal-bk'), 'icon' => 'mdi-calendar-heart', 'color' => 'success'],
+  ['label' => 'Profil Saya', 'url' => base_url('student/profile'), 'icon' => 'mdi-account-circle', 'color' => 'primary'],
+  ['label' => 'Info Guru', 'url' => base_url('student/staff'), 'icon' => 'mdi-account-tie', 'color' => 'info'],
+  ['label' => 'Asesmen', 'url' => base_url('student/assessments'), 'icon' => 'mdi-clipboard-list-outline', 'color' => 'warning'],
+];
+if (! function_exists('consultation_role_can_view') || consultation_role_can_view('siswa')) {
+  $quickShortcuts[] = ['label' => 'Konsultasi & Pengaduan', 'url' => base_url('student/consultations'), 'icon' => 'mdi-message-alert-outline', 'color' => 'danger'];
+}
+$quickShortcuts[] = ['label' => 'Info Karier & Studi', 'url' => base_url('student/career'), 'icon' => 'mdi-school-outline', 'color' => 'secondary'];
+$quickShortcuts[] = ['label' => 'Pesan', 'url' => base_url('student/messages'), 'icon' => 'mdi-email', 'color' => 'primary'];
+echo $this->include('role_features/_quick_actions');
+?>
+
     <!-- Welcome + Info ringkas -->
     <div class="row">
       <div class="col-xl-8">

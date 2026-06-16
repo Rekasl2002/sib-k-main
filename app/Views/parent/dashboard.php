@@ -163,65 +163,21 @@ function avatar_url($row): string {
 </div>
 </div>
 
-<!-- Daftar Anak -->
-<div class="card shadow-sm mb-3">
-<div class="card-body">
-  <h6 class="mb-3">Daftar Anak</h6>
-
-  <?php if (empty($children)): ?>
-    <div class="text-muted">Belum ada data anak terhubung.</div>
-  <?php else: ?>
-    <div class="table-responsive">
-      <table class="table align-middle">
-        <thead>
-          <tr>
-            <th style="width:42px;"></th>
-            <th>Nama</th>
-            <th>Kelas</th>
-            <th>NIK</th>
-            <th>NISN</th>
-            <?php if ($hasUpcoming): ?><th class="text-center">Sesi</th><?php endif; ?>
-            <th class="text-end">Aksi</th>
-          </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($children as $c): ?>
-          <?php $childName = $c['full_name'] ?? '—'; ?>
-          <tr>
-            <td>
-              <img
-                src="<?= esc(avatar_url($c), 'attr') ?>"
-                class="rounded-circle"
-                width="36"
-                height="36"
-                alt="<?= esc($childName, 'attr') ?>"
-                loading="lazy"
-                style="object-fit:cover;"
-                onerror="this.onerror=null;this.src='<?= esc($defaultAvatar, 'attr') ?>';"
-              >
-            </td>
-            <td class="fw-semibold"><?= h($childName) ?></td>
-            <td><?= h($c['class_name'] ?? '—') ?></td>
-            <td><?= h($c['nik'] ?? '—') ?></td>
-            <td><?= h($c['nisn'] ?? '—') ?></td>
-            <?php if ($hasUpcoming): ?>
-              <td class="text-center"><?= (int)($c['upcoming_sessions'] ?? 0) ?></td>
-            <?php endif; ?>
-            <td class="text-end">
-              <div class="btn-group">
-                <a class="btn btn-outline-primary btn-sm" href="<?= route_to('parent.children.profile', $c['id']) ?>">Profil</a>
-                <a class="btn btn-outline-success btn-sm" href="<?= route_to('parent.children.sessions', $c['id']) ?>">Sesi</a>
-                <a class="btn btn-outline-info btn-sm" href="<?= route_to('parent.children.staff', $c['id']) ?>">Info Guru</a>
-              </div>
-            </td>
-          </tr>
-        <?php endforeach; ?>
-        </tbody>
-      </table>
-    </div>
-  <?php endif; ?>
-</div>
-</div>
+<!-- Akses Cepat (daftar anak dipindah ke menu "Daftar Anak" di sidebar) -->
+<?php
+helper('url');
+$quickShortcuts = [
+  ['label' => 'Daftar Anak', 'url' => base_url('parent/children'), 'icon' => 'mdi-account-child-circle', 'color' => 'primary'],
+  ['label' => 'Jadwal Kegiatan/Acara BK', 'url' => base_url('parent/jadwal-bk'), 'icon' => 'mdi-calendar-heart', 'color' => 'success'],
+];
+if (! function_exists('consultation_role_can_view') || consultation_role_can_view('orang tua')) {
+  $quickShortcuts[] = ['label' => 'Konsultasi & Pengaduan', 'url' => base_url('parent/consultations'), 'icon' => 'mdi-message-alert-outline', 'color' => 'warning'];
+}
+$quickShortcuts[] = ['label' => 'Info Karier & Studi', 'url' => base_url('parent/career'), 'icon' => 'mdi-school-outline', 'color' => 'info'];
+$quickShortcuts[] = ['label' => 'Laporan Anak', 'url' => base_url('parent/reports/children'), 'icon' => 'mdi-file-chart', 'color' => 'secondary'];
+$quickShortcuts[] = ['label' => 'Pesan', 'url' => base_url('parent/messages'), 'icon' => 'mdi-email', 'color' => 'primary'];
+echo $this->include('role_features/_quick_actions');
+?>
 
 <div class="row g-3">
 <!-- Jadwal Konseling Mendatang -->
