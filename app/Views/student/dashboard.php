@@ -95,7 +95,7 @@ if (!function_exists('badgeClass')) {
                         </p>
 
                         <p class="text-white-50 mb-0">
-                            Akses data pribadi, jadwal konseling, riwayat kasus ringkas, asesmen, serta fitur info karier dan info studi lanjut.
+                            Di sini Anda dapat melihat data pribadi, jadwal kegiatan/acara BK, asesmen, serta info karier dan info studi lanjut.
                         </p>
                     </div>
 
@@ -139,13 +139,13 @@ echo $this->include('role_features/_quick_actions');
         <div class="card">
           <div class="card-body">
             <div class="row g-3">
-              <div class="col-md-3">
+              <div class="col-md-4">
                 <div class="p-3 bg-light rounded">
                   <div class="fw-semibold">Kelas</div>
                   <div><?= v($student ?? [],'class_name','-') ?></div>
                 </div>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-4">
                 <div class="p-3 bg-light rounded">
                   <div class="fw-semibold">NIK / NISN</div>
                   <div class="small">
@@ -153,7 +153,7 @@ echo $this->include('role_features/_quick_actions');
                   </div>
                 </div>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-4">
                 <div class="p-3 bg-light rounded">
                   <div class="fw-semibold">Tahun Ajaran Aktif</div>
                   <div>
@@ -163,10 +163,6 @@ echo $this->include('role_features/_quick_actions');
                       (<?= v($activeYear ?? [],'semester','') ?>)
                     <?php endif; ?>
                   </div>
-                </div>
-              </div>
-              <div class="col-md-3">
-                <div class="p-3 bg-light rounded">
                 </div>
               </div>
             </div>
@@ -183,7 +179,7 @@ echo $this->include('role_features/_quick_actions');
                 <i class="mdi mdi-chart-line me-1"></i> Hasil Saya
               </a>-->
               <a href="<?= base_url('student/schedule') ?>" class="btn btn-sm btn-outline-secondary">
-                <i class="mdi mdi-alert-outline me-1"></i> Sesi Konseling
+                <i class="mdi mdi-calendar-month-outline me-1"></i> Jadwal Konseling
               </a>
               <!--<a href="<?= base_url('student/career') ?>" class="btn btn-sm btn-outline-info">
                 <i class="mdi mdi-compass-outline me-1"></i> Jelajahi Karier
@@ -225,7 +221,7 @@ echo $this->include('role_features/_quick_actions');
                 </table>
               </div>
             <?php else: ?>
-              <p class="text-muted mb-0">Belum ada jadwal konseling terdekat.</p>
+              <p class="text-dark mb-0">Belum ada jadwal konseling terdekat.</p>
             <?php endif; ?>
           </div>
         </div>
@@ -308,18 +304,18 @@ echo $this->include('role_features/_quick_actions');
           </div>
         </div>-->
 
-        <!-- Opsional: Highlight Karier -->
+        <!-- Opsional: Sorotan Karier -->
         <?php if (!empty($careerHighlights) && is_array($careerHighlights)): ?>
         <div class="card">
           <div class="card-body">
-            <h5 class="card-title mb-3">Highlight Karier</h5>
+            <h5 class="card-title mb-3">Sorotan Karier</h5>
             <ul class="list-group">
               <?php foreach ($careerHighlights as $c): ?>
                 <?php $c = is_array($c) ? $c : (array)$c; ?>
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                   <div class="me-auto">
                     <div class="fw-semibold"><?= esc($c['title'] ?? 'Karier') ?></div>
-                    <small class="text-muted"><?= esc($c['sector'] ?? '-') ?></small>
+                    <small class="text-dark"><?= esc($c['sector'] ?? '-') ?></small>
                   </div>
                   <a class="btn btn-sm btn-outline-info" href="<?= base_url('student/career/'.(int)($c['id'] ?? 0)) ?>">Detail</a>
                 </li>
