@@ -15,7 +15,7 @@ if (!function_exists('ht_report_n0')) {
 
 <div class="mb-3">
   <h5 class="mb-1">Laporan Kelas (Wali Kelas)</h5>
-  <div class="text-muted small">
+  <div class="text-dark small">
     <?= esc($school['name'] ?? '-') ?> - Periode: <b><?= esc($period) ?></b> - Kelas: <?= esc($scope) ?><br>
     Dibuat: <?= esc($data['generated_at'] ?? '-') ?>
   </div>
@@ -29,31 +29,31 @@ if (!function_exists('ht_report_n0')) {
 <div class="row g-3">
   <div class="col-md-4">
     <div class="p-3 border rounded">
-      <div class="text-muted">Total Siswa</div>
+      <div class="text-dark">Total Siswa</div>
       <div class="h4 mb-0"><?= esc(ht_report_n0($kpi['students_total'] ?? 0)) ?></div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="p-3 border rounded">
-      <div class="text-muted">Total Sesi</div>
+      <div class="text-dark">Total Catatan Konseling</div>
       <div class="h4 mb-0"><?= esc(ht_report_n0($kpi['sessions_total'] ?? 0)) ?></div>
-      <div class="small text-muted">Durasi: <?= esc(ht_report_n0($kpi['sessions_duration_total'] ?? 0)) ?> menit</div>
+      <div class="small text-dark">Durasi: <?= esc(ht_report_n0($kpi['sessions_duration_total'] ?? 0)) ?> menit</div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="p-3 border rounded">
-      <div class="text-muted">Asesmen Selesai</div>
+      <div class="text-dark">Asesmen Selesai</div>
       <div class="h4 mb-0">
         <?= esc(ht_report_n0($kpi['assessments_completed'] ?? 0)) ?>/<?= esc(ht_report_n0($kpi['assessments_assigned'] ?? 0)) ?>
       </div>
-      <div class="small text-muted">Rata-rata: <?= esc($kpi['assessments_avg_percentage'] ?? 0) ?>%</div>
+      <div class="small text-dark">Rata-rata: <?= esc($kpi['assessments_avg_percentage'] ?? 0) ?>%</div>
     </div>
   </div>
 </div>
 
 <hr class="my-4">
 
-<h6 class="mb-2">Rekap Sesi Konseling</h6>
+<h6 class="mb-2">Rekap Catatan Konseling</h6>
 <div class="row g-3">
   <div class="col-md-6">
     <div class="table-responsive">
@@ -70,7 +70,7 @@ if (!function_exists('ht_report_n0')) {
             </tr>
           <?php endforeach; ?>
           <?php if (empty($data['sessions']['byType'])): ?>
-            <tr><td colspan="3" class="text-muted">(tidak ada data)</td></tr>
+            <tr><td colspan="3" class="text-dark">(tidak ada data)</td></tr>
           <?php endif; ?>
         </tbody>
       </table>
@@ -92,7 +92,7 @@ if (!function_exists('ht_report_n0')) {
             </tr>
           <?php endforeach; ?>
           <?php if (empty($data['sessions']['byCounselor'])): ?>
-            <tr><td colspan="3" class="text-muted">(tidak ada data)</td></tr>
+            <tr><td colspan="3" class="text-dark">(tidak ada data)</td></tr>
           <?php endif; ?>
         </tbody>
       </table>
@@ -100,6 +100,6 @@ if (!function_exists('ht_report_n0')) {
   </div>
 </div>
 
-<div class="mt-3 text-muted small">
-  Catatan: Ringkasan ini tidak menampilkan isi/catatan sesi konseling untuk menjaga kerahasiaan.
+<div class="mt-3 text-dark small">
+  Catatan: Ringkasan ini tidak menampilkan isi/catatan konseling untuk menjaga kerahasiaan.
 </div>

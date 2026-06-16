@@ -269,7 +269,7 @@ class ClassReportController extends BaseController
 
         if ($studentId <= 0 || !in_array($studentId, $allowed, true)) {
             return [
-                'title' => 'Laporan Individu Siswa',
+                'title' => 'Laporan Per Siswa',
                 'columns' => ['Tanggal', 'Kategori', 'Kegiatan', 'Status', 'Catatan'],
                 'rows' => [],
             ];
@@ -279,7 +279,7 @@ class ClassReportController extends BaseController
         $student = $out['student'] ?? [];
 
         return [
-            'title' => 'Laporan Individu Siswa - ' . (string)($student['full_name'] ?? 'Siswa'),
+            'title' => 'Laporan Per Siswa - ' . (string)($student['full_name'] ?? 'Siswa'),
             'columns' => $out['columns'] ?? [],
             'rows' => $out['rows'] ?? [],
         ];
@@ -412,7 +412,7 @@ class ClassReportController extends BaseController
         $spreadsheet = new Spreadsheet();
 
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Overview');
+        $sheet->setTitle('Ringkasan');
 
         $school = $data['school'] ?? [];
         $period = $data['period']['label'] ?? '-';
@@ -421,7 +421,7 @@ class ClassReportController extends BaseController
             ['Judul', 'Laporan Kelas (Wali Kelas)'],
             ['Sekolah', (string)($school['name'] ?? '-')],
             ['Periode', (string)$period],
-            ['Scope', (string)($data['scope']['label'] ?? 'Kelas')],
+            ['Lingkup', (string)($data['scope']['label'] ?? 'Kelas')],
             ['Dibuat', (string)($data['generated_at'] ?? date('Y-m-d H:i:s'))],
         ];
 
@@ -433,18 +433,18 @@ class ClassReportController extends BaseController
         }
 
         $row += 1;
-        $sheet->setCellValueExplicit("A{$row}", 'Ringkasan KPI', DataType::TYPE_STRING);
+        $sheet->setCellValueExplicit("A{$row}", 'Ringkasan Angka Penting', DataType::TYPE_STRING);
         $sheet->getStyle("A{$row}")->getFont()->setBold(true);
         $row++;
 
         $kpi = $data['kpi'] ?? [];
         $kpiPairs = [
             ['Total Siswa', (string)($kpi['students_total'] ?? 0)],
-            ['Total Sesi', (string)($kpi['sessions_total'] ?? 0)],
+            ['Total Catatan Konseling', (string)($kpi['sessions_total'] ?? 0)],
             ['Total Durasi (menit)', (string)($kpi['sessions_duration_total'] ?? 0)],
-            ['Asesmen Assigned', (string)($kpi['assessments_assigned'] ?? 0)],
-            ['Asesmen Completed', (string)($kpi['assessments_completed'] ?? 0)],
-            ['Avg Score (%)', (string)($kpi['assessments_avg_percentage'] ?? 0)],
+            ['Asesmen Ditugaskan', (string)($kpi['assessments_assigned'] ?? 0)],
+            ['Asesmen Selesai', (string)($kpi['assessments_completed'] ?? 0)],
+            ['Rata-rata Nilai (%)', (string)($kpi['assessments_avg_percentage'] ?? 0)],
         ];
 
         foreach ($kpiPairs as $pair) {
@@ -458,7 +458,7 @@ class ClassReportController extends BaseController
         }
 
         $sessionsSheet = $spreadsheet->createSheet();
-        $sessionsSheet->setTitle('Sessions');
+        $sessionsSheet->setTitle('Catatan Konseling');
 
         $this->writeTable(
             $sessionsSheet,
@@ -478,7 +478,7 @@ class ClassReportController extends BaseController
         $this->writeTable(
             $sessionsSheet,
             $start,
-            ['Konselor', 'Jumlah', 'Durasi (menit)'],
+            ['Guru BK', 'Jumlah', 'Durasi (menit)'],
             array_map(static function ($r) {
                 return [
                     (string)($r['label'] ?? ''),
@@ -489,12 +489,12 @@ class ClassReportController extends BaseController
         );
 
         $assSheet = $spreadsheet->createSheet();
-        $assSheet->setTitle('Assessments');
+        $assSheet->setTitle('Asesmen');
 
         $this->writeTable(
             $assSheet,
             1,
-            ['Asesmen', 'Assigned', 'Completed', 'Avg (%)'],
+            ['Asesmen', 'Ditugaskan', 'Selesai', 'Rata-rata (%)'],
             array_map(static function ($r) {
                 return [
                     (string)($r['label'] ?? ''),
@@ -517,7 +517,7 @@ class ClassReportController extends BaseController
     {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Report');
+        $sheet->setTitle('Laporan');
 
         $sheet->setCellValueExplicit('A1', 'Judul', DataType::TYPE_STRING);
         $sheet->setCellValueExplicit('B1', $title, DataType::TYPE_STRING);

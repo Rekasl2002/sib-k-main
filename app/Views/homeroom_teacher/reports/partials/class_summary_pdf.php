@@ -49,7 +49,7 @@ if (!function_exists('hr_n0')) {
         <div class="right"><?= hr_n0($kpi['students_total'] ?? 0) ?></div>
       </td>
       <td>
-        <b>Total Sesi</b>
+        <b>Total Catatan Konseling</b>
         <div class="right"><?= hr_n0($kpi['sessions_total'] ?? 0) ?></div>
         <div class="muted right">Durasi: <?= hr_n0($kpi['sessions_duration_total'] ?? 0) ?> m</div>
       </td>
@@ -61,7 +61,7 @@ if (!function_exists('hr_n0')) {
     </tr>
   </table>
 
-  <h3>Rekap Sesi Konseling (per Jenis)</h3>
+  <h3>Rekap Catatan Konseling (per Jenis)</h3>
   <table>
     <thead><tr><th>Jenis</th><th class="right">Jumlah</th><th class="right">Durasi (m)</th></tr></thead>
     <tbody>
@@ -78,7 +78,7 @@ if (!function_exists('hr_n0')) {
     </tbody>
   </table>
 
-  <h3>Rekap Sesi Konseling (per Guru BK)</h3>
+  <h3>Rekap Catatan Konseling (per Guru BK)</h3>
   <table>
     <thead><tr><th>Guru BK</th><th class="right">Jumlah</th><th class="right">Durasi (m)</th></tr></thead>
     <tbody>

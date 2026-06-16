@@ -34,9 +34,9 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
 
 <div class="row">
   <div class="col-xl-4">
-    <div class="card">
-      <div class="card-header">
-        <h5 class="mb-0">Filter Laporan</h5>
+    <div class="card filter-compact">
+      <div class="card-header py-2">
+        <h5 class="mb-0">Filter/Saring Laporan</h5>
       </div>
 
       <div class="card-body">
@@ -51,10 +51,10 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
         <form id="classReportForm" method="get" action="<?= route_to('homeroom.reports.preview') ?>" class="row g-3" autocomplete="off">
 
           <div class="col-12">
-            <label class="form-label">Mode Laporan</label>
+            <label class="form-label">Jenis Laporan</label>
             <select name="mode" class="form-select" id="modeSelect" <?= !$hasClasses ? 'disabled' : '' ?>>
               <option value="class_summary" <?= $valMode === 'class_summary' ? 'selected' : '' ?>>Ringkasan Kelas</option>
-              <option value="student_individual" <?= $valMode === 'student_individual' ? 'selected' : '' ?>>Individu Siswa</option>
+              <option value="student_individual" <?= $valMode === 'student_individual' ? 'selected' : '' ?>>Per Siswa</option>
             </select>
           </div>
 
@@ -111,7 +111,7 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
           </div>
 
           <div class="col-12">
-            <label class="form-label">Opsi PDF</label>
+            <label class="form-label">Opsi Unduhan</label>
             <div class="row g-2">
               <div class="col-6">
                 <select name="paper" class="form-select" <?= !$hasClasses ? 'disabled' : '' ?>>
@@ -123,8 +123,8 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
               </div>
               <div class="col-6">
                 <select name="orientation" class="form-select" <?= !$hasClasses ? 'disabled' : '' ?>>
-                  <option value="portrait" <?= $valOrient === 'portrait' ? 'selected' : '' ?>>Portrait</option>
-                  <option value="landscape" <?= $valOrient === 'landscape' ? 'selected' : '' ?>>Landscape</option>
+                  <option value="portrait" <?= $valOrient === 'portrait' ? 'selected' : '' ?>>Tegak</option>
+                  <option value="landscape" <?= $valOrient === 'landscape' ? 'selected' : '' ?>>Mendatar</option>
                 </select>
                 <div class="form-text">Orientasi</div>
               </div>
@@ -153,7 +153,7 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
     <div class="card">
       <div class="card-header d-flex align-items-center justify-content-between">
         <h5 class="mb-0">Pratinjau</h5>
-        <small class="text-muted">Klik "Pratinjau" untuk memuat data.</small>
+        <small class="text-dark">Klik "Pratinjau" untuk memuat data.</small>
       </div>
       <div class="card-body" id="previewArea">
         <?php if (!$hasClasses): ?>
@@ -161,7 +161,7 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
             Tidak ada kelas binaan, jadi laporan belum bisa dibuat.
           </div>
         <?php else: ?>
-          <div class="text-muted">
+          <div class="text-dark">
             Pilih periode, lalu klik <b>Pratinjau</b>.
           </div>
         <?php endif; ?>
@@ -212,7 +212,7 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
 
     syncDownloadLinks();
 
-    preview.innerHTML = '<div class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Memuat pratinjau...</div>';
+    preview.innerHTML = '<div class="text-center text-dark py-4"><div class="spinner-border spinner-border-sm me-2"></div>Memuat pratinjau...</div>';
 
     try {
       const url = form.action + "?" + qs();

@@ -17,7 +17,7 @@ $recentSessions = $recentSessions ?? [];
                 <div class="card-body text-center py-5">
                     <i class="mdi mdi-alert-circle-outline text-warning" style="font-size: 64px;"></i>
                     <h4 class="mt-3">Belum Ada Kelas yang Ditugaskan</h4>
-                    <p class="text-muted"><?= esc($message) ?></p>
+                    <p class="text-dark"><?= esc($message) ?></p>
                     <a href="<?= base_url('/') ?>" class="btn btn-primary mt-3">
                         <i class="mdi mdi-home me-1"></i> Kembali ke Beranda
                     </a>
@@ -87,7 +87,7 @@ echo $this->include('role_features/_quick_actions');
       <div class="card-body">
         <div class="d-flex">
           <div class="flex-grow-1">
-            <p class="text-muted fw-medium mb-2">Total Siswa Aktif</p>
+            <p class="text-dark fw-medium mb-2">Total Siswa Aktif</p>
             <h4 class="mb-0 counter"><?= number_format($totalActiveStudents) ?></h4>
           </div>
           <div class="mini-stat-icon avatar-sm rounded-circle bg-soft-primary align-self-center">
@@ -97,7 +97,7 @@ echo $this->include('role_features/_quick_actions');
           </div>
         </div>
         <div class="mt-3">
-          <small class="text-muted">
+          <small class="text-dark">
             <i class="mdi mdi-gender-male text-info"></i> <?= $genderMale ?> Laki-laki
             <span class="mx-2">|</span>
             <i class="mdi mdi-gender-female text-danger"></i> <?= $genderFemale ?> Perempuan
@@ -112,7 +112,7 @@ echo $this->include('role_features/_quick_actions');
       <div class="card-body">
         <div class="d-flex">
           <div class="flex-grow-1">
-            <p class="text-muted fw-medium mb-2">Dalam Konseling</p>
+            <p class="text-dark fw-medium mb-2">Sedang Dikonseling</p>
             <h4 class="mb-0 counter"><?= number_format((int) ($stats['students_in_counseling'] ?? 0)) ?></h4>
           </div>
           <div class="mini-stat-icon avatar-sm rounded-circle bg-soft-success align-self-center">
@@ -122,7 +122,7 @@ echo $this->include('role_features/_quick_actions');
           </div>
         </div>
         <div class="mt-3">
-          <small class="text-muted">Siswa bulan ini</small>
+          <small class="text-dark">Siswa bulan ini</small>
         </div>
       </div>
     </div>
@@ -133,7 +133,7 @@ echo $this->include('role_features/_quick_actions');
       <div class="card-body">
         <div class="d-flex">
           <div class="flex-grow-1">
-            <p class="text-muted fw-medium mb-2">Kelas Binaan</p>
+            <p class="text-dark fw-medium mb-2">Kelas Binaan</p>
             <h4 class="mb-0 counter"><?= number_format((int) ($class['class_count'] ?? 1)) ?></h4>
           </div>
           <div class="mini-stat-icon avatar-sm rounded-circle bg-soft-info align-self-center">
@@ -143,7 +143,7 @@ echo $this->include('role_features/_quick_actions');
           </div>
         </div>
         <div class="mt-3">
-          <small class="text-muted"><?= esc($class['class_name'] ?? '-') ?></small>
+          <small class="text-dark"><?= esc($class['class_name'] ?? '-') ?></small>
         </div>
       </div>
     </div>
@@ -156,7 +156,7 @@ echo $this->include('role_features/_quick_actions');
       <div class="card-body">
         <div class="d-flex align-items-center justify-content-between mb-3">
           <h5 class="card-title mb-0">
-            <i class="mdi mdi-calendar-clock text-primary me-2"></i>Sesi Konseling Terbaru
+            <i class="mdi mdi-calendar-clock text-primary me-2"></i>Catatan Konseling Terbaru
           </h5>
           <a href="<?= base_url('homeroom/reports') ?>" class="btn btn-sm btn-soft-primary">Lihat Laporan</a>
         </div>
@@ -178,7 +178,7 @@ echo $this->include('role_features/_quick_actions');
                     <td><small><?= esc($session['session_date'] ?? '-') ?></small></td>
                     <td>
                       <div class="fw-semibold"><?= esc($session['student_name'] ?? '-') ?></div>
-                      <small class="text-muted"><?= esc($session['class_name'] ?? $class['class_name'] ?? '-') ?></small>
+                      <small class="text-dark"><?= esc($session['class_name'] ?? $class['class_name'] ?? '-') ?></small>
                     </td>
                     <td><?= esc($session['topic'] ?? '-') ?></td>
                     <td><span class="badge bg-light text-dark border"><?= esc($session['status'] ?? '-') ?></span></td>
@@ -189,8 +189,8 @@ echo $this->include('role_features/_quick_actions');
           </div>
         <?php else: ?>
           <div class="text-center py-4">
-            <i class="mdi mdi-calendar-blank-outline text-muted font-size-48"></i>
-            <p class="text-muted mt-2 mb-0">Belum ada sesi konseling terbaru.</p>
+            <i class="mdi mdi-calendar-blank-outline text-dark font-size-48"></i>
+            <p class="text-dark mt-2 mb-0">Belum ada catatan konseling terbaru.</p>
           </div>
         <?php endif; ?>
       </div>
@@ -216,7 +216,7 @@ echo $this->include('role_features/_quick_actions');
                   </div>
                   <div class="flex-grow-1">
                     <h6 class="mb-1 font-size-14"><?= esc($student['full_name'] ?? $student['student_name'] ?? 'Tanpa Nama') ?></h6>
-                    <small class="text-muted">
+                    <small class="text-dark">
                       NIK: <?= esc($student['nik'] ?? '-') ?> | NISN: <?= esc($student['nisn'] ?? '-') ?>
                     </small>
                     <?php if (!empty($student['status'])): ?>
@@ -232,7 +232,7 @@ echo $this->include('role_features/_quick_actions');
         <?php else: ?>
           <div class="text-center py-3">
             <i class="mdi mdi-check-circle-outline text-success font-size-36"></i>
-            <p class="text-muted mt-2 mb-0">Belum ada siswa yang ditandai perlu perhatian khusus.</p>
+            <p class="text-dark mt-2 mb-0">Belum ada siswa yang ditandai perlu perhatian khusus.</p>
           </div>
         <?php endif; ?>
       </div>
