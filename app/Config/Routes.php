@@ -505,6 +505,8 @@ $routes->group('koordinator', [
             $routes->post('delete/(:num)', $controller . '::delete/$1', ['as' => $alias . '.delete']);
             $routes->post('note/(:num)', $controller . '::addNote/$1', ['as' => $alias . '.note']);
             $routes->post('participants/(:num)', $controller . '::updateParticipant/$1', ['as' => $alias . '.participant']);
+            $routes->post('participant-delete/(:num)', $controller . '::deleteParticipant/$1', ['as' => $alias . '.participantDelete']);
+            $routes->post('note-delete/(:num)', $controller . '::deleteNote/$1', ['as' => $alias . '.noteDelete']);
         };
 
         $routes->group('guidance', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'GuidanceController', 'koordinator.guidance'));
@@ -696,6 +698,8 @@ $routes->group('counselor', [
             $routes->post('delete/(:num)', $controller . '::delete/$1', ['as' => $alias . '.delete']);
             $routes->post('note/(:num)', $controller . '::addNote/$1', ['as' => $alias . '.note']);
             $routes->post('participants/(:num)', $controller . '::updateParticipant/$1', ['as' => $alias . '.participant']);
+            $routes->post('participant-delete/(:num)', $controller . '::deleteParticipant/$1', ['as' => $alias . '.participantDelete']);
+            $routes->post('note-delete/(:num)', $controller . '::deleteNote/$1', ['as' => $alias . '.noteDelete']);
         };
 
         $routes->group('guidance', ['filter' => 'permission:any,manage_bk_services,view_bk_services'], static fn($routes) => $bkServiceRoutes($routes, 'GuidanceController', 'counselor.guidance'));

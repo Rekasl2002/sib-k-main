@@ -190,6 +190,36 @@ abstract class BaseBkServiceController extends BaseController
             ->with('success', 'Kehadiran peserta berhasil diperbarui.');
     }
 
+    public function deleteParticipant($id)
+    {
+        if (! $this->canManage) {
+            return $this->deny();
+        }
+
+        $recordId = (int) ($this->request->getPost('record_id') ?? 0);
+        $back = (string) ($this->request->getPost('back') ?? 'show');
+        $this->service->deleteParticipant((int) $id, $recordId, $this->currentUserId());
+
+        $target = $back === 'edit'
+            ? site_url($this->routePrefix . '/edit/' . $recordId)
+            : site_url($this->routePrefix . '/show/' . $recordId);
+
+        return redirect()->to($target)->with('success', 'Peserta berhasil dihapus.');
+    }
+
+    public function deleteNote($id)
+    {
+        if (! $this->canManage) {
+            return $this->deny();
+        }
+
+        $recordId = (int) ($this->request->getPost('record_id') ?? 0);
+        $ok = $this->service->deleteNote((int) $id, $recordId, $this->currentUserId());
+
+        return redirect()->to(site_url($this->routePrefix . '/show/' . $recordId))
+            ->with($ok ? 'success' : 'error', $ok ? 'Catatan berhasil dihapus.' : 'Anda hanya dapat menghapus catatan yang Anda buat sendiri.');
+    }
+
     protected function render(string $view, array $data = [])
     {
         $meta = $this->service->meta($this->serviceType);

@@ -115,7 +115,7 @@ class BkServiceService
 
         $record['detail'] = $this->detailFor((int) $record['id'], (string) $record['service_type']);
         $record['participants'] = $this->participantsFor((int) $record['id']);
-        $record['notes'] = $this->notesFor((int) $record['id'], $role);
+        $record['notes'] = $this->notesFor((int) $record['id'], $role, ! empty($record['visible_to_homeroom']));
 
         return $record;
     }
@@ -140,9 +140,16 @@ class BkServiceService
 
         $this->recordModel->update($id, $this->servicePayload($serviceType, $post, $userId, false));
         $this->upsertDetail($id, $serviceType, $post);
-        if (isset($post['replace_participants'])) {
-            $this->db->table('session_participants')->where('bk_service_record_id', $id)->delete();
-            $this->saveParticipants($id, $post);
+        // Tambahkan peserta baru tanpa menghapus yang sudah ada (status kehadiran
+        // yang sudah disetel tetap aman). Penghapusan peserta dilakukan terpisah.
+        $this->saveParticipants($id, $post);
+        // Catatan baru opsional dari form edit.
+        if (trim((string) ($post['initial_note'] ?? '')) !== '') {
+            $this->addNote($id, [
+                'note_type' => 'Observasi',
+                'note_content' => trim((string) $post['initial_note']),
+                'visible_to_homeroom' => $post['visible_to_homeroom'] ?? 0,
+            ], $userId);
         }
 
         $this->db->transComplete();
@@ -157,6 +164,11 @@ class BkServiceService
 
     public function addNote(int $recordId, array $post, int $userId): bool
     {
+        // Alih fungsi opsi "dirahasiakan": jika diizinkan, catatan boleh dilihat
+        // Wali Kelas terkait (visibility 'Ringkasan Wali Kelas'); bawaan internal BK.
+        $visibleToHomeroom = ! empty($post['visible_to_homeroom']);
+        $visibility = $post['visibility_level'] ?? ($visibleToHomeroom ? 'Ringkasan Wali Kelas' : 'Internal BK');
+
         return $this->insertFiltered('session_notes', [
             'bk_service_record_id' => $recordId,
             'session_id' => null,
@@ -164,14 +176,37 @@ class BkServiceService
             'note_type' => $post['note_type'] ?? 'Observasi',
             'note_content' => trim((string) ($post['note_content'] ?? '')),
             'is_important' => ! empty($post['is_important']) ? 1 : 0,
-            'is_confidential' => ! empty($post['is_confidential']) ? 1 : 0,
-            'visibility_level' => $post['visibility_level'] ?? 'Internal BK',
+            'is_confidential' => $visibleToHomeroom ? 0 : 1,
+            'visibility_level' => $visibility,
             'follow_up_status' => $post['follow_up_status'] ?? null,
             'assigned_to_user_id' => $this->nullableInt($post['assigned_to_user_id'] ?? null),
             'due_date' => $post['due_date'] ?? null,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
+    }
+
+    /**
+     * Hapus (soft delete) catatan. Hanya pembuat catatan yang boleh menghapus
+     * catatannya sendiri (peran lain tidak bisa).
+     */
+    public function deleteNote(int $noteId, int $recordId, int $userId): bool
+    {
+        $note = $this->db->table('session_notes')
+            ->where('id', $noteId)
+            ->where('bk_service_record_id', $recordId)
+            ->where('deleted_at', null)
+            ->get()->getRowArray();
+        if (! $note || (int) ($note['created_by'] ?? 0) !== $userId) {
+            return false;
+        }
+
+        $update = ['deleted_at' => date('Y-m-d H:i:s')];
+        if ($this->db->fieldExists('deleted_by', 'session_notes')) {
+            $update['deleted_by'] = $userId;
+        }
+
+        return (bool) $this->db->table('session_notes')->where('id', $noteId)->update($update);
     }
 
     public function updateParticipant(int $participantId, array $post): bool
@@ -251,6 +286,8 @@ class BkServiceService
             'students' => $this->studentsForRole($role, $userId),
             'classes' => $this->classesForRole($role, $userId),
             'counselors' => $this->usersByRoleIds([2, 3]),
+            'parents' => $this->usersByRoleIds([6]),
+            'homeroom_teachers' => $this->usersByRoleIds([4]),
             'assignments' => $this->assignmentsForUser($role, $userId),
         ];
     }
@@ -417,6 +454,9 @@ class BkServiceService
             'status' => $post['status'] ?? 'Dijadwalkan',
             'duration_minutes' => $this->nullableInt($post['duration_minutes'] ?? null),
             'privacy_level' => $post['privacy_level'] ?? 'Rahasia BK',
+            // Izin apakah catatan layanan BK boleh dilihat Wali Kelas terkait
+            // (alih fungsi opsi "dirahasiakan" lama). Bawaan MATI.
+            'visible_to_homeroom' => ! empty($post['visible_to_homeroom']) ? 1 : 0,
         ];
 
         if ($insert) {
@@ -498,75 +538,203 @@ class BkServiceService
         $this->addNote($recordId, [
             'note_type' => 'Observasi',
             'note_content' => $content,
-            'is_confidential' => 1,
-            'visibility_level' => 'Internal BK',
+            'visible_to_homeroom' => $post['visible_to_homeroom'] ?? 0,
         ], $userId);
     }
 
+    /**
+     * Simpan peserta/undangan. AMAN untuk dipanggil ulang saat edit: peserta yang
+     * sudah ada (dengan kunci sama) TIDAK diduplikasi sehingga status kehadiran
+     * yang sudah disetel tidak hilang. Sumber peserta:
+     *  - subjek utama (target_student_id / target_class_id)
+     *  - Siswa data (participant_student_ids[]), Kelas data (participant_class_ids[])
+     *  - Orang Tua data (participant_parent_ids[]), Wali Kelas data (participant_user_ids[])
+     *  - Peserta Tambahan manual (manual_participants[] atau teks dipisah baris/koma)
+     */
     private function saveParticipants(int $recordId, array $post): void
     {
         $now = date('Y-m-d H:i:s');
+        $existing = $this->existingParticipantKeys($recordId);
         $rows = [];
 
+        $base = [
+            'bk_service_record_id' => $recordId,
+            'attendance_status' => 'Hadir',
+            'invitation_status' => 'Konfirmasi',
+            'is_active' => 1,
+            'joined_at' => $now,
+            'created_at' => $now,
+            'updated_at' => $now,
+        ];
+
+        $push = static function (string $key, array $row) use (&$rows, &$existing): void {
+            if (isset($existing[$key])) {
+                return;
+            }
+            $existing[$key] = true;
+            $rows[] = $row;
+        };
+
+        // Siswa subjek utama + Siswa dari pilihan ganda.
+        $studentIds = [];
         foreach (['target_student_id', 'student_id'] as $key) {
-            $studentId = $this->nullableInt($post[$key] ?? null);
-            if ($studentId) {
-                $rows[] = [
-                    'bk_service_record_id' => $recordId,
-                    'participant_type' => 'student',
-                    'participant_student_id' => $studentId,
-                    'student_id' => $studentId,
-                    'role_in_session' => 'Siswa terkait',
-                    'attendance_status' => 'Hadir',
-                    'invitation_status' => 'Konfirmasi',
-                    'is_active' => 1,
-                    'joined_at' => $now,
-                    'created_at' => $now,
-                    'updated_at' => $now,
-                ];
+            $sid = $this->nullableInt($post[$key] ?? null);
+            if ($sid) {
+                $studentIds[] = $sid;
+            }
+        }
+        foreach ((array) ($post['participant_student_ids'] ?? []) as $sid) {
+            $sid = (int) $sid;
+            if ($sid > 0) {
+                $studentIds[] = $sid;
+            }
+        }
+        foreach (array_unique($studentIds) as $sid) {
+            $push('student:' . $sid, $base + [
+                'participant_type' => 'student',
+                'participant_student_id' => $sid,
+                'student_id' => $sid,
+                'role_in_session' => 'Siswa terkait',
+            ]);
+        }
+
+        // Kelas subjek utama + Kelas dari pilihan ganda.
+        $classIds = [];
+        $mainClass = $this->nullableInt($post['target_class_id'] ?? $post['class_id'] ?? null);
+        if ($mainClass) {
+            $classIds[] = $mainClass;
+        }
+        foreach ((array) ($post['participant_class_ids'] ?? []) as $cid) {
+            $cid = (int) $cid;
+            if ($cid > 0) {
+                $classIds[] = $cid;
+            }
+        }
+        foreach (array_unique($classIds) as $cid) {
+            $push('class:' . $cid, $base + [
+                'participant_type' => 'class',
+                'participant_class_id' => $cid,
+                'role_in_session' => 'Kelas sasaran',
+            ]);
+        }
+
+        // Orang Tua dari data.
+        foreach ((array) ($post['participant_parent_ids'] ?? []) as $pid) {
+            $pid = (int) $pid;
+            if ($pid > 0) {
+                $push('parent:' . $pid, $base + [
+                    'participant_type' => 'parent',
+                    'participant_parent_id' => $pid,
+                    'role_in_session' => 'Orang Tua',
+                ]);
             }
         }
 
-        $classId = $this->nullableInt($post['target_class_id'] ?? $post['class_id'] ?? null);
-        if ($classId) {
-            $rows[] = [
-                'bk_service_record_id' => $recordId,
-                'participant_type' => 'class',
-                'participant_class_id' => $classId,
-                'role_in_session' => 'Kelas sasaran',
-                'attendance_status' => 'Hadir',
-                'invitation_status' => 'Konfirmasi',
-                'is_active' => 1,
-                'joined_at' => $now,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
+        // Wali Kelas / pengguna lain dari data.
+        foreach ((array) ($post['participant_user_ids'] ?? []) as $uid) {
+            $uid = (int) $uid;
+            if ($uid > 0) {
+                $push('user:' . $uid, $base + [
+                    'participant_type' => 'user',
+                    'participant_user_id' => $uid,
+                    'role_in_session' => 'Wali Kelas/Petugas',
+                ]);
+            }
         }
 
-        $manualText = trim((string) ($post['manual_participants'] ?? $post['external_attendees'] ?? $post['parent_names'] ?? ''));
-        foreach (preg_split('/\r\n|\r|\n|,/', $manualText) ?: [] as $line) {
-            $line = trim($line);
+        // Peserta Tambahan manual (array baris atau teks lama dipisah baris/koma).
+        $manualLines = [];
+        if (isset($post['manual_participants']) && is_array($post['manual_participants'])) {
+            $manualLines = $post['manual_participants'];
+        } else {
+            $manualText = trim((string) ($post['manual_participants'] ?? $post['external_attendees'] ?? $post['parent_names'] ?? ''));
+            $manualLines = preg_split('/\r\n|\r|\n|,/', $manualText) ?: [];
+        }
+        foreach ($manualLines as $line) {
+            $line = trim((string) $line);
             if ($line === '') {
                 continue;
             }
             [$name, $role] = array_pad(array_map('trim', explode('-', $line, 2)), 2, 'Peserta');
-            $rows[] = [
-                'bk_service_record_id' => $recordId,
+            if ($name === '') {
+                continue;
+            }
+            // Manual selalu ditambah (tak ada kunci unik), namun hindari dobel persis.
+            $push('manual:' . mb_strtolower($name) . ':' . mb_strtolower($role ?: 'peserta'), $base + [
                 'participant_type' => 'manual',
                 'manual_name' => $name,
                 'role_in_session' => $role ?: 'Peserta',
-                'attendance_status' => 'Hadir',
-                'invitation_status' => 'Konfirmasi',
-                'is_active' => 1,
-                'joined_at' => $now,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ];
+            ]);
         }
 
         foreach ($rows as $row) {
             $this->insertFiltered('session_participants', $row);
         }
+    }
+
+    /**
+     * Kunci peserta yang sudah tercatat (belum dihapus) agar tidak diduplikasi
+     * saat form edit menyimpan ulang.
+     *
+     * @return array<string,bool>
+     */
+    private function existingParticipantKeys(int $recordId): array
+    {
+        $keys = [];
+        if (! $this->db->tableExists('session_participants')) {
+            return $keys;
+        }
+
+        $rows = $this->db->table('session_participants')
+            ->select('participant_type, participant_student_id, participant_class_id, participant_parent_id, participant_user_id, manual_name, role_in_session')
+            ->where('bk_service_record_id', $recordId)
+            ->where('deleted_at', null)
+            ->get()->getResultArray();
+
+        foreach ($rows as $r) {
+            switch ($r['participant_type']) {
+                case 'student':
+                    $keys['student:' . (int) $r['participant_student_id']] = true;
+                    break;
+                case 'class':
+                    $keys['class:' . (int) $r['participant_class_id']] = true;
+                    break;
+                case 'parent':
+                    $keys['parent:' . (int) $r['participant_parent_id']] = true;
+                    break;
+                case 'user':
+                    $keys['user:' . (int) $r['participant_user_id']] = true;
+                    break;
+                case 'manual':
+                    $keys['manual:' . mb_strtolower((string) $r['manual_name']) . ':' . mb_strtolower((string) ($r['role_in_session'] ?: 'peserta'))] = true;
+                    break;
+            }
+        }
+
+        return $keys;
+    }
+
+    /**
+     * Hapus (soft delete) satu peserta/undangan dari sebuah layanan. Dipakai untuk
+     * menghapus peserta tambahan di halaman edit.
+     */
+    public function deleteParticipant(int $participantId, int $recordId, int $userId): bool
+    {
+        $row = $this->db->table('session_participants')
+            ->where('id', $participantId)
+            ->where('bk_service_record_id', $recordId)
+            ->where('deleted_at', null)
+            ->get()->getRowArray();
+        if (! $row) {
+            return false;
+        }
+
+        $update = ['deleted_at' => date('Y-m-d H:i:s')];
+        if ($this->db->fieldExists('deleted_by', 'session_participants')) {
+            $update['deleted_by'] = $userId;
+        }
+
+        return (bool) $this->db->table('session_participants')->where('id', $participantId)->update($update);
     }
 
     /**
@@ -615,9 +783,21 @@ class BkServiceService
     /**
      * @return list<array<string,mixed>>
      */
-    private function notesFor(int $recordId, string $role): array
+    private function notesFor(int $recordId, string $role, bool $visibleToHomeroom = false): array
     {
         if (! $this->db->tableExists('session_notes')) {
+            return [];
+        }
+
+        // Siswa & Orang Tua TIDAK pernah melihat detail/catatan layanan BK
+        // (hanya jadwal). Kerahasiaan dijaga di sisi server.
+        if (in_array($role, ['siswa', 'orang-tua'], true)) {
+            return [];
+        }
+
+        // Wali Kelas hanya boleh melihat catatan bila Koordinator BK/Guru BK
+        // mengizinkan pada data tersebut (visible_to_homeroom = 1). Bawaan mati.
+        if ($role === 'wali-kelas' && ! $visibleToHomeroom) {
             return [];
         }
 
@@ -627,7 +807,7 @@ class BkServiceService
             ->where('sn.bk_service_record_id', $recordId)
             ->where('sn.deleted_at', null);
 
-        if (! in_array($role, ['admin', 'koordinator-bk', 'guru-bk'], true)) {
+        if ($role === 'wali-kelas') {
             $builder->groupStart()
                 ->where('sn.is_confidential', 0)
                 ->orWhereIn('sn.visibility_level', ['Ringkasan Wali Kelas', 'Publik Terbatas'])
