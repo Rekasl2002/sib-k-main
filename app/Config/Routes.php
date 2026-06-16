@@ -491,6 +491,8 @@ $routes->group('koordinator', [
             $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'koordinator.consultations.update']);
             $routes->post('delete/(:num)', 'ConsultationController::delete/$1', ['as' => 'koordinator.consultations.delete']);
             $routes->post('review/(:num)', 'ConsultationController::review/$1', ['as' => 'koordinator.consultations.review']);
+            $routes->get('attachment/(:num)', 'ConsultationController::downloadAttachment/$1', ['as' => 'koordinator.consultations.attachment']);
+            $routes->post('attachment-delete/(:num)', 'ConsultationController::deleteAttachment/$1', ['as' => 'koordinator.consultations.attachmentDelete']);
         });
 
         $bkServiceRoutes = static function ($routes, string $controller, string $alias): void {
@@ -680,6 +682,8 @@ $routes->group('counselor', [
             $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'counselor.consultations.update']);
             $routes->post('delete/(:num)', 'ConsultationController::delete/$1', ['as' => 'counselor.consultations.delete']);
             $routes->post('review/(:num)', 'ConsultationController::review/$1', ['as' => 'counselor.consultations.review']);
+            $routes->get('attachment/(:num)', 'ConsultationController::downloadAttachment/$1', ['as' => 'counselor.consultations.attachment']);
+            $routes->post('attachment-delete/(:num)', 'ConsultationController::deleteAttachment/$1', ['as' => 'counselor.consultations.attachmentDelete']);
         });
 
         $bkServiceRoutes = static function ($routes, string $controller, string $alias): void {
@@ -864,6 +868,8 @@ $routes->group('homeroom', [
             $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'homeroom.consultations.edit']);
             $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'homeroom.consultations.update']);
             $routes->post('delete/(:num)', 'ConsultationController::delete/$1', ['as' => 'homeroom.consultations.delete']);
+            $routes->get('attachment/(:num)', 'ConsultationController::downloadAttachment/$1', ['as' => 'homeroom.consultations.attachment']);
+            $routes->post('attachment-delete/(:num)', 'ConsultationController::deleteAttachment/$1', ['as' => 'homeroom.consultations.attachmentDelete']);
         });
 
         $bkReadRoutes = static function ($routes, string $controller, string $alias): void {
@@ -1143,6 +1149,8 @@ $routes->group('student', [
             $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'student.consultations.edit']);
             $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'student.consultations.update']);
             $routes->post('delete/(:num)', 'ConsultationController::delete/$1', ['as' => 'student.consultations.delete']);
+            $routes->get('attachment/(:num)', 'ConsultationController::downloadAttachment/$1', ['as' => 'student.consultations.attachment']);
+            $routes->post('attachment-delete/(:num)', 'ConsultationController::deleteAttachment/$1', ['as' => 'student.consultations.attachmentDelete']);
         });
         $routes->group('guidance', ['filter' => 'permission:view_bk_services'], function ($routes) {
             $routes->get('/', 'GuidanceController::index', ['as' => 'student.guidance.index']);
@@ -1298,6 +1306,8 @@ $routes->group('parent', [
             $routes->get('edit/(:num)', 'ConsultationController::edit/$1', ['as' => 'parent.consultations.edit']);
             $routes->post('update/(:num)', 'ConsultationController::update/$1', ['as' => 'parent.consultations.update']);
             $routes->post('delete/(:num)', 'ConsultationController::delete/$1', ['as' => 'parent.consultations.delete']);
+            $routes->get('attachment/(:num)', 'ConsultationController::downloadAttachment/$1', ['as' => 'parent.consultations.attachment']);
+            $routes->post('attachment-delete/(:num)', 'ConsultationController::deleteAttachment/$1', ['as' => 'parent.consultations.attachmentDelete']);
         });
 
         $bkReadRoutes = static function ($routes, string $controller, string $alias): void {

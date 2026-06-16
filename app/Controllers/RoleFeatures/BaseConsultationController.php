@@ -11,6 +11,7 @@
 namespace App\Controllers\RoleFeatures;
 
 use App\Controllers\BaseController;
+use App\Models\ConsultationComplaintAttachmentModel;
 use App\Services\ConsultationComplaintService;
 
 abstract class BaseConsultationController extends BaseController
@@ -23,11 +24,19 @@ abstract class BaseConsultationController extends BaseController
     protected bool $canReview = false;
 
     protected ConsultationComplaintService $service;
+    protected ConsultationComplaintAttachmentModel $attachment;
+
+    /** Batas unggah lampiran bukti. */
+    protected int $maxAttachments = 5;
+    protected int $maxAttachmentSizeKb = 5120; // 5 MB per berkas
+    /** @var list<string> Ekstensi yang diizinkan. */
+    protected array $allowedAttachmentExt = ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip'];
 
     public function __construct()
     {
         helper(['form', 'url', 'auth', 'permission', 'notification']);
         $this->service = new ConsultationComplaintService();
+        $this->attachment = new ConsultationComplaintAttachmentModel();
     }
 
     public function index()
@@ -42,6 +51,7 @@ abstract class BaseConsultationController extends BaseController
         return $this->render('index', [
             'title' => 'Konsultasi & Pengaduan',
             'rows' => $this->service->list($this->roleKey, $this->currentUserId(), $filters),
+            'stats' => $this->service->stats($this->roleKey, $this->currentUserId()),
             'filters' => $filters,
         ]);
     }
@@ -68,8 +78,13 @@ abstract class BaseConsultationController extends BaseController
         if (! $this->canSubmit && ! $this->canReview) {
             return $this->deny();
         }
+        if ($err = $this->validateAttachments()) {
+            return redirect()->back()->withInput()->with('error', $err);
+        }
 
         $id = $this->service->create($this->request->getPost() ?? [], $this->roleKey, $this->currentUserId());
+
+        $this->storeAttachments((int) $id, $this->currentUserId());
 
         $this->notifyHandlersNewComplaint((int) $id, (string) ($this->request->getPost('title') ?? ''));
 
@@ -87,6 +102,8 @@ abstract class BaseConsultationController extends BaseController
         return $this->render('show', [
             'title' => 'Detail Konsultasi & Pengaduan',
             'row' => $row,
+            'subjects' => $this->service->subjects((int) $id),
+            'attachments' => $this->attachment->where('complaint_id', (int) $id)->where('deleted_at', null)->orderBy('id', 'ASC')->findAll(),
             'options' => $this->service->formOptions($this->roleKey, $this->currentUserId()),
         ]);
     }
@@ -104,6 +121,8 @@ abstract class BaseConsultationController extends BaseController
         return $this->render('form', [
             'title' => 'Edit Konsultasi & Pengaduan',
             'row' => $row,
+            'subjects' => $this->service->subjects((int) $id),
+            'attachments' => $this->attachment->where('complaint_id', (int) $id)->where('deleted_at', null)->orderBy('id', 'ASC')->findAll(),
             'options' => $this->service->formOptions($this->roleKey, $this->currentUserId()),
             'action' => site_url($this->routePrefix . '/update/' . (int) $id),
         ]);
@@ -118,7 +137,18 @@ abstract class BaseConsultationController extends BaseController
             return $this->deny();
         }
 
-        $this->service->update((int) $id, $this->request->getPost() ?? []);
+        // Hanya pemilik yang boleh memperbarui isi laporannya.
+        $row = $this->service->find((int) $id, $this->roleKey, $this->currentUserId());
+        if (! $row || (int) ($row['reporter_user_id'] ?? 0) !== $this->currentUserId()) {
+            return redirect()->to(site_url($this->routePrefix))->with('error', 'Anda hanya dapat mengubah laporan milik sendiri.');
+        }
+        if ($err = $this->validateAttachments()) {
+            return redirect()->back()->withInput()->with('error', $err);
+        }
+
+        $this->service->update((int) $id, $this->request->getPost() ?? [], $this->roleKey, $this->currentUserId());
+
+        $this->storeAttachments((int) $id, $this->currentUserId());
 
         return redirect()->to(site_url($this->routePrefix . '/show/' . (int) $id))->with('success', 'Data berhasil diperbarui.');
     }
@@ -149,6 +179,135 @@ abstract class BaseConsultationController extends BaseController
 
         return redirect()->to(site_url($this->routePrefix))
             ->with($res['success'] ? 'success' : 'error', $res['message']);
+    }
+
+    /**
+     * Unduh berkas bukti. Hanya pengguna yang berhak melihat laporannya.
+     */
+    public function downloadAttachment($id)
+    {
+        $att = $this->attachment->where('id', (int) $id)->where('deleted_at', null)->first();
+        if (! $att) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Lampiran tidak ditemukan.');
+        }
+
+        // Gerbang akses: laporan terkait harus dapat dilihat oleh peran/pengguna ini.
+        $row = $this->service->find((int) $att['complaint_id'], $this->roleKey, $this->currentUserId());
+        if (! $row) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Akses lampiran ditolak.');
+        }
+
+        $fullPath = WRITEPATH . 'uploads/consultations/' . $att['file_path'];
+        if (! is_file($fullPath)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('Berkas lampiran tidak tersedia.');
+        }
+
+        return $this->response->download($fullPath, null)->setFileName($att['file_name'] ?: $att['file_path']);
+    }
+
+    /**
+     * Hapus berkas bukti. Hanya pengunggah berkas yang boleh.
+     */
+    public function deleteAttachment($id)
+    {
+        $att = $this->attachment->where('id', (int) $id)->where('deleted_at', null)->first();
+        if (! $att) {
+            return redirect()->back()->with('error', 'Lampiran tidak ditemukan.');
+        }
+
+        $complaintId = (int) $att['complaint_id'];
+
+        if ((int) ($att['uploaded_by'] ?? 0) !== $this->currentUserId()) {
+            return redirect()->to(site_url($this->routePrefix . '/show/' . $complaintId))
+                ->with('error', 'Anda hanya dapat menghapus lampiran yang Anda unggah.');
+        }
+
+        $this->attachment->update((int) $id, ['deleted_by' => $this->currentUserId()]);
+        $this->attachment->delete((int) $id);
+
+        return redirect()->to(site_url($this->routePrefix . '/show/' . $complaintId))
+            ->with('success', 'Lampiran dihapus.');
+    }
+
+    /**
+     * Validasi berkas lampiran (jumlah, ukuran, ekstensi). Pesan berbahasa sederhana.
+     */
+    protected function validateAttachments(): ?string
+    {
+        $files = $this->request->getFileMultiple('attachments');
+        if (empty($files)) {
+            return null;
+        }
+
+        $files = array_filter($files, static fn($f) => $f && $f->getName() !== '');
+        if (empty($files)) {
+            return null;
+        }
+
+        if (count($files) > $this->maxAttachments) {
+            return 'Lampiran maksimal ' . $this->maxAttachments . ' berkas sekaligus.';
+        }
+
+        foreach ($files as $file) {
+            if (! $file->isValid()) {
+                return 'Berkas lampiran gagal diunggah, silakan coba lagi.';
+            }
+            if ($file->getSizeByUnit('kb') > $this->maxAttachmentSizeKb) {
+                return 'Setiap berkas lampiran maksimal ' . (int) ($this->maxAttachmentSizeKb / 1024) . ' MB.';
+            }
+            $ext = strtolower((string) $file->getClientExtension());
+            if (! in_array($ext, $this->allowedAttachmentExt, true)) {
+                return 'Jenis berkas "' . esc($ext) . '" tidak diizinkan.';
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Pindahkan berkas bukti ke disk (di luar public) dan catat metadata.
+     */
+    protected function storeAttachments(int $complaintId, int $uid): void
+    {
+        if ($complaintId <= 0) {
+            return;
+        }
+
+        $files = $this->request->getFileMultiple('attachments');
+        if (empty($files)) {
+            return;
+        }
+
+        $dir = WRITEPATH . 'uploads/consultations';
+        if (! is_dir($dir)) {
+            @mkdir($dir, 0775, true);
+        }
+
+        $now = date('Y-m-d H:i:s');
+        foreach ($files as $file) {
+            if (! $file || $file->getName() === '' || ! $file->isValid()) {
+                continue;
+            }
+
+            $newName = $file->getRandomName();
+            try {
+                $file->move($dir, $newName);
+            } catch (\Throwable $e) {
+                log_message('error', '[CONSULTATION] Gagal menyimpan lampiran: ' . $e->getMessage());
+                continue;
+            }
+
+            $this->attachment->insert([
+                'complaint_id' => $complaintId,
+                'file_path'    => $newName,
+                'file_name'    => mb_substr($file->getClientName(), 0, 255),
+                'file_type'    => $file->getClientMimeType(),
+                'file_size'    => $file->getSize(),
+                'uploaded_by'  => $uid,
+                'created_at'   => $now,
+                'updated_at'   => $now,
+            ]);
+        }
     }
 
     /**
