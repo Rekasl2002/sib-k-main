@@ -201,7 +201,6 @@ echo $this->include('role_features/_quick_actions');
                       <th>Waktu</th>
                       <th>Jenis</th>
                       <th>Lokasi</th>
-                      <th>Topik</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -213,7 +212,6 @@ echo $this->include('role_features/_quick_actions');
                         <td><?= esc(($s['session_time'] ?? '') ?: '-') ?></td>
                         <td><?= esc($s['session_type'] ?? '-') ?></td>
                         <td><?= esc(($s['location'] ?? '') ?: '-') ?></td>
-                        <td><?= esc($s['topic'] ?? '-') ?></td>
                         <td><span class="badge <?= badgeClass($s['status'] ?? '') ?>"><?= esc($s['status'] ?? '-') ?></span></td>
                       </tr>
                     <?php endforeach; ?>
