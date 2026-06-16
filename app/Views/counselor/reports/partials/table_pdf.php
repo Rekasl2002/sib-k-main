@@ -57,7 +57,7 @@ function filter_label_type(?string $type): string
     $type = strtolower(trim((string)$type));
     return match ($type) {
         'students'           => 'Data Siswa (Binaan)',
-        'sessions'           => 'Sesi Konseling',
+        'sessions'           => 'Catatan Konseling',
         'assessments'        => 'Asesmen (Binaan)',
         'career'             => 'Fitur Info Karier dan Info Studi Lanjut',
         'universities'       => 'Info Perguruan Tinggi',
@@ -88,7 +88,7 @@ if (!empty($filters['search'])) {
 }
 if (!empty($filters['sort_by'])) {
     $dir = (string)($filters['sort_dir'] ?? 'asc');
-    $filterLines[] = 'Sort: ' . esc((string)$filters['sort_by']) . ' (' . esc(strtoupper($dir)) . ')';
+    $filterLines[] = 'Urutkan: ' . esc((string)$filters['sort_by']) . ' (' . esc(strtoupper($dir)) . ')';
 }
 ?>
 <!doctype html>
@@ -219,7 +219,7 @@ if (!empty($filters['sort_by'])) {
   </table>
 
   <div class="note">
-    Catatan: Laporan Counselor dibatasi pada data binaan sesuai hak akses.
+    Catatan: Laporan Guru BK dibatasi pada data binaan sesuai hak akses.
   </div>
 
 </body>

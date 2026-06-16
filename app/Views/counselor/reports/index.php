@@ -43,7 +43,7 @@ if (function_exists('has_permission')) {
 <div class="row">
   <div class="col-12">
     <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-      <h4 class="mb-sm-0">Laporan (Guru BK)</h4>
+      <h4 class="mb-sm-0">Laporan BK (Guru BK)</h4>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
           <li class="breadcrumb-item"><a href="<?= site_url('counselor/dashboard') ?>">Dashboard</a></li>
@@ -68,10 +68,10 @@ if (function_exists('has_permission')) {
 
 <div class="row">
   <div class="col-xl-4">
-    <div class="card">
-      <div class="card-header">
-        <h5 class="mb-0">Filter Laporan</h5>
-        <small class="text-muted">Data dibatasi ke siswa/aktivitas binaan Guru BK.</small>
+    <div class="card filter-compact">
+      <div class="card-header py-2">
+        <h5 class="mb-0">Filter/Saring Laporan</h5>
+        <small class="text-dark">Data dibatasi ke siswa/aktivitas binaan Guru BK.</small>
       </div>
 
       <div class="card-body">
@@ -87,7 +87,7 @@ if (function_exists('has_permission')) {
             <select name="type" class="form-select" id="typeSelect">
               <option value="students" <?= $valType === 'students' ? 'selected' : '' ?>>Data Siswa (Binaan)</option>
               <option value="sessions" <?= $valType === 'sessions' ? 'selected' : '' ?>>Konseling</option>
-              <option value="student_individual" <?= $valType === 'student_individual' ? 'selected' : '' ?>>Laporan Individu Siswa</option>
+              <option value="student_individual" <?= $valType === 'student_individual' ? 'selected' : '' ?>>Per Siswa</option>
               <!--<option value="assessments" <?= $valType==='assessments'?:'' ?>>Asesmen</option>
               <option value="career" <?= $valType==='career'?:'' ?>>Fitur Info Karier dan Info Studi Lanjut</option>
               <option value="universities" <?= $valType==='universities'?:'' ?>>Info Perguruan Tinggi</option>
@@ -101,11 +101,11 @@ if (function_exists('has_permission')) {
             <div class="row g-2">
               <div class="col-6">
                 <input type="date" name="date_from" class="form-control" value="<?= esc($valFrom) ?>">
-                <div class="form-text">Dari</div>
+                <div class="form-text text-dark">Dari</div>
               </div>
               <div class="col-6">
                 <input type="date" name="date_to" class="form-control" value="<?= esc($valTo) ?>">
-                <div class="form-text">Sampai</div>
+                <div class="form-text text-dark">Sampai</div>
               </div>
             </div>
           </div>
@@ -132,7 +132,7 @@ if (function_exists('has_permission')) {
                 </option>
               <?php endforeach; ?>
             </select>
-            <div class="form-text">Hanya untuk laporan Asesmen.</div>
+            <div class="form-text text-dark">Hanya untuk laporan Asesmen.</div>
           </div>
 
           <div class="col-12" id="studentWrap">
@@ -145,7 +145,7 @@ if (function_exists('has_permission')) {
                 </option>
               <?php endforeach; ?>
             </select>
-            <div class="form-text">Digunakan untuk laporan individu siswa.</div>
+            <div class="form-text text-dark">Digunakan untuk laporan individu siswa.</div>
           </div>
 
           <div class="col-12" id="bkTypeWrap">
@@ -157,7 +157,7 @@ if (function_exists('has_permission')) {
                 </option>
               <?php endforeach; ?>
             </select>
-            <div class="form-text">Digunakan untuk laporan individu siswa.</div>
+            <div class="form-text text-dark">Digunakan untuk laporan individu siswa.</div>
           </div>
 
           <div class="col-12" id="statusWrap">
@@ -196,7 +196,7 @@ if (function_exists('has_permission')) {
           </div>
 
           <div class="col-12">
-            <label class="form-label">Opsi PDF</label>
+            <label class="form-label">Opsi Unduhan</label>
             <div class="row g-2">
               <div class="col-6">
                 <select name="paper" class="form-select">
@@ -204,14 +204,14 @@ if (function_exists('has_permission')) {
                   <option value="letter" <?= strtolower($valPaper)==='letter'?'selected':'' ?>>Letter</option>
                   <option value="legal" <?= strtolower($valPaper)==='legal'?'selected':'' ?>>Legal</option>
                 </select>
-                <div class="form-text">Kertas</div>
+                <div class="form-text text-dark">Ukuran kertas (PDF)</div>
               </div>
               <div class="col-6">
                 <select name="orientation" class="form-select">
-                  <option value="portrait" <?= $valOrient==='portrait'?'selected':'' ?>>Portrait</option>
-                  <option value="landscape" <?= $valOrient==='landscape'?'selected':'' ?>>Landscape</option>
+                  <option value="portrait" <?= $valOrient==='portrait'?'selected':'' ?>>Tegak</option>
+                  <option value="landscape" <?= $valOrient==='landscape'?'selected':'' ?>>Mendatar</option>
                 </select>
-                <div class="form-text">Orientasi</div>
+                <div class="form-text text-dark">Arah kertas (PDF)</div>
               </div>
             </div>
           </div>
@@ -238,11 +238,11 @@ if (function_exists('has_permission')) {
     <div class="card">
       <div class="card-header d-flex align-items-center justify-content-between">
         <h5 class="mb-0">Pratinjau</h5>
-        <small class="text-muted">Klik “Pratinjau” untuk memuat data.</small>
+        <small class="text-dark">Klik “Pratinjau” untuk memuat data.</small>
       </div>
       <div class="card-body" id="previewArea">
-        <div class="text-muted">
-          Pilih filter di kiri, lalu klik <b>Pratinjau</b>. 📄
+        <div class="text-dark">
+          Pilih saringan di kiri, lalu klik <b>Pratinjau</b>. 📊
         </div>
       </div>
     </div>
@@ -475,7 +475,7 @@ if (function_exists('has_permission')) {
     syncDownloadLinks();
 
     preview.innerHTML =
-      '<div class="text-center text-muted py-4">' +
+      '<div class="text-center text-dark py-4">' +
         '<div class="spinner-border spinner-border-sm me-2"></div>' +
         'Memuat pratinjau...' +
       '</div>';

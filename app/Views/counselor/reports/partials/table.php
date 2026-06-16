@@ -92,10 +92,10 @@ if (empty($columnLabels)) {
     <div>
       <div class="fw-semibold"><?= esc($title) ?></div>
       <?php if (!empty($periodLabel)): ?>
-        <div class="text-muted small"><?= esc($periodLabel) ?></div>
+        <div class="text-dark small"><?= esc($periodLabel) ?></div>
       <?php endif; ?>
     </div>
-    <div class="text-muted small">Total baris: <?= (int)count($rows) ?></div>
+    <div class="text-dark small">Total baris: <?= (int)count($rows) ?></div>
   </div>
 
   <table class="table table-hover align-middle mb-0">
@@ -196,7 +196,7 @@ if (empty($columnLabels)) {
         <?php endforeach; ?>
       <?php else: ?>
         <tr>
-          <td colspan="<?= (int)count($columnLabels) ?>" class="text-center text-muted">(tidak ada data)</td>
+          <td colspan="<?= (int)count($columnLabels) ?>" class="text-center text-dark">(tidak ada data)</td>
         </tr>
       <?php endif; ?>
     </tbody>

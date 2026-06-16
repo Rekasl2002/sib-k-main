@@ -253,7 +253,7 @@ class ReportController extends BaseController
                 break;
 
             case 'sessions':
-                $title = 'Laporan Sesi Konseling';
+                $title = 'Laporan Catatan Konseling';
                 $out = $this->report->sessions($filter, $counselorId);
                 $columns = $out['columns'] ?? [];
                 $rows    = $out['rows'] ?? [];
@@ -308,7 +308,7 @@ class ReportController extends BaseController
                 break;
 
             default:
-                $title = 'Laporan Sesi Konseling';
+                $title = 'Laporan Catatan Konseling';
                 $out = $this->report->sessions($filter, $counselorId);
                 $columns = $out['columns'] ?? [];
                 $rows    = $out['rows'] ?? [];
