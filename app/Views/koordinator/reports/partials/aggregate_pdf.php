@@ -25,7 +25,7 @@ $renderEmptyRow = function(int $colspan, string $text = '(tidak ada data)') {
 <html lang="id">
 <head>
     <meta charset="utf-8">
-    <title>Laporan Agregat BK</title>
+    <title>Laporan Rekap BK</title>
     <style>
         body { font-family: DejaVu Sans, Arial, sans-serif; font-size: 12px; color: #111; margin: 0; padding: 0; }
         .muted { color: #666; }
@@ -58,7 +58,7 @@ $renderEmptyRow = function(int $colspan, string $text = '(tidak ada data)') {
     <table class="header-table" style="width:100%;">
         <tr>
             <td style="vertical-align:top;">
-                <div class="h1">Laporan Agregat BK</div>
+                <div class="h1">Laporan Rekap BK</div>
                 <div class="small muted mt8">
                     <b><?= esc($school['name'] ?? '-') ?></b><br>
                     Periode: <?= esc($period) ?><br>
@@ -80,7 +80,7 @@ $renderEmptyRow = function(int $colspan, string $text = '(tidak ada data)') {
         </td>
         <td>
             <div class="box">
-                <div class="kpi-title muted">Total Sesi</div>
+                <div class="kpi-title muted">Total Catatan Konseling</div>
                 <div class="kpi-value"><?= n0($kpi['sessions_total'] ?? 0) ?></div>
                 <div class="muted small">Durasi: <?= n0($kpi['sessions_duration_total'] ?? 0) ?> menit</div>
             </div>
@@ -95,7 +95,7 @@ $renderEmptyRow = function(int $colspan, string $text = '(tidak ada data)') {
     </tr>
 </table>
 
-<div class="h2">A. Rekap Sesi Konseling</div>
+<div class="h2">A. Rekap Catatan Konseling</div>
 <table class="two-col">
     <tr>
         <td class="padR">

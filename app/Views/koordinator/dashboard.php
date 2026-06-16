@@ -39,7 +39,7 @@ $ayText = trim($ay . ($sem !== '' ? ' Semester ' . $sem : ''));
       <div class="page-title-box d-flex align-items-center justify-content-between">
         <div>
           <h4 class="mb-1">Dashboard Koordinator BK</h4>
-          <p class="text-muted mb-0">Ikhtisar layanan BK seluruh madrasah.</p>
+          <p class="text-dark mb-0">Ringkasan layanan BK seluruh madrasah.</p>
         </div>
         <div class="page-title-right">
           <ol class="breadcrumb m-0">
@@ -99,7 +99,7 @@ $ayText = trim($ay . ($sem !== '' ? ' Semester ' . $sem : ''));
           <div class="card-body">
             <div class="d-flex">
               <div class="flex-grow-1">
-                <p class="text-muted fw-medium mb-1"><?= esc($card['label']) ?></p>
+                <p class="text-dark fw-medium mb-1"><?= esc($card['label']) ?></p>
                 <h4 class="mb-0"><?= dash_num($card['value']) ?></h4>
               </div>
               <div class="avatar-sm rounded-circle bg-soft-<?= esc($card['color']) ?> d-flex align-items-center justify-content-center">
@@ -115,10 +115,10 @@ $ayText = trim($ay . ($sem !== '' ? ' Semester ' . $sem : ''));
   <div class="row">
     <?php
       $bkCards = [
-          ['label' => 'Layanan BK Final', 'value' => $bkSummary['total_services'] ?? 0, 'icon' => 'mdi mdi-clipboard-text-outline', 'color' => 'primary'],
+          ['label' => 'Total Layanan BK', 'value' => $bkSummary['total_services'] ?? 0, 'icon' => 'mdi mdi-clipboard-text-outline', 'color' => 'primary'],
           ['label' => 'Jadwal Layanan', 'value' => $bkSummary['scheduled'] ?? 0, 'icon' => 'mdi mdi-calendar-clock', 'color' => 'info'],
           ['label' => 'Perlu Tindak Lanjut', 'value' => $bkSummary['need_follow_up'] ?? 0, 'icon' => 'mdi mdi-clipboard-clock-outline', 'color' => 'warning'],
-          ['label' => 'Pengaduan Terbuka', 'value' => $bkSummary['complaints_open'] ?? 0, 'icon' => 'mdi mdi-message-alert-outline', 'color' => 'danger'],
+          ['label' => 'Konsultasi & Pengaduan Aktif', 'value' => $bkSummary['complaints_open'] ?? 0, 'icon' => 'mdi mdi-message-alert-outline', 'color' => 'danger'],
           ['label' => 'Penugasan Berjalan', 'value' => $bkSummary['assignments_open'] ?? 0, 'icon' => 'mdi mdi-account-arrow-right-outline', 'color' => 'success'],
       ];
     ?>
@@ -128,7 +128,7 @@ $ayText = trim($ay . ($sem !== '' ? ' Semester ' . $sem : ''));
           <div class="card-body">
             <div class="d-flex">
               <div class="flex-grow-1">
-                <p class="text-muted fw-medium mb-1"><?= esc($card['label']) ?></p>
+                <p class="text-dark fw-medium mb-1"><?= esc($card['label']) ?></p>
                 <h4 class="mb-0"><?= dash_num($card['value']) ?></h4>
               </div>
               <div class="avatar-sm rounded-circle bg-soft-<?= esc($card['color']) ?> d-flex align-items-center justify-content-center">
@@ -171,7 +171,7 @@ $ayText = trim($ay . ($sem !== '' ? ' Semester ' . $sem : ''));
             <div class="table-responsive">
               <table class="table table-sm table-hover align-middle mb-0">
                 <thead class="table-light">
-                  <tr><th>Guru BK</th><th>Kelas</th><th class="text-end">Sesi</th><th class="text-end">Durasi</th></tr>
+                  <tr><th>Guru BK</th><th>Kelas</th><th class="text-end">Catatan</th><th class="text-end">Durasi</th></tr>
                 </thead>
                 <tbody>
                   <?php foreach ($topCounselors as $row): ?>
@@ -186,7 +186,7 @@ $ayText = trim($ay . ($sem !== '' ? ' Semester ' . $sem : ''));
               </table>
             </div>
           <?php else: ?>
-            <p class="text-muted mb-0">Belum ada data sesi konseling.</p>
+            <p class="text-dark mb-0">Belum ada catatan konseling.</p>
           <?php endif; ?>
         </div>
       </div>
@@ -215,7 +215,7 @@ $ayText = trim($ay . ($sem !== '' ? ' Semester ' . $sem : ''));
               </table>
             </div>
           <?php else: ?>
-            <p class="text-muted mb-0">Belum ada data asesmen terisi.</p>
+            <p class="text-dark mb-0">Belum ada data asesmen terisi.</p>
           <?php endif; ?>
         </div>
       </div>
@@ -247,7 +247,7 @@ $ayText = trim($ay . ($sem !== '' ? ' Semester ' . $sem : ''));
               </table>
             </div>
           <?php else: ?>
-            <p class="text-muted mb-0">Belum ada aktivitas terbaru.</p>
+            <p class="text-dark mb-0">Belum ada aktivitas terbaru.</p>
           <?php endif; ?>
         </div>
       </div>

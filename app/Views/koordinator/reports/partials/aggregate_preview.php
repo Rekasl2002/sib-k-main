@@ -8,7 +8,7 @@ $kpi    = $data['kpi'] ?? [];
 $n0 = static fn($v) => number_format((float)($v ?? 0), 0, ',', '.');
 
 $assessmentStatusLabel = static function ($status): string {
-    if ($status === null) return 'Unknown';
+    if ($status === null) return 'Tidak Diketahui';
 
     if (is_numeric($status)) {
         return match ((int)$status) {
@@ -16,7 +16,7 @@ $assessmentStatusLabel = static function ($status): string {
             1 => 'Sedang Dikerjakan',
             2 => 'Selesai',
             3 => 'Dinilai',
-            default => 'Unknown',
+            default => 'Tidak Diketahui',
         };
     }
 
@@ -38,7 +38,7 @@ $assessmentStatusLabel = static function ($status): string {
 
 $renderStatusBadges = static function ($items, callable $labelFn) use ($n0) {
     if (!$items) {
-        echo '<span class="text-muted">(tidak ada data)</span>';
+        echo '<span class="text-dark">(tidak ada data)</span>';
         return;
     }
 
@@ -59,8 +59,8 @@ $renderStatusBadges = static function ($items, callable $labelFn) use ($n0) {
 ?>
 
 <div class="mb-3">
-  <h5 class="mb-1">Laporan Agregat BK</h5>
-  <div class="text-muted small">
+  <h5 class="mb-1">Laporan Rekap BK</h5>
+  <div class="text-dark small">
     <?= esc($school['name'] ?? '-') ?> - Periode: <b><?= esc($period) ?></b> - Lingkup: <?= esc($scope) ?><br>
     Dibuat: <?= esc($data['generated_at'] ?? '-') ?>
   </div>
@@ -69,29 +69,29 @@ $renderStatusBadges = static function ($items, callable $labelFn) use ($n0) {
 <div class="row g-3">
   <div class="col-md-4">
     <div class="p-3 border rounded">
-      <div class="text-muted">Total Siswa</div>
+      <div class="text-dark">Total Siswa</div>
       <div class="h4 mb-0"><?= $n0($kpi['students_total'] ?? 0) ?></div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="p-3 border rounded">
-      <div class="text-muted">Total Sesi</div>
+      <div class="text-dark">Total Catatan Konseling</div>
       <div class="h4 mb-0"><?= $n0($kpi['sessions_total'] ?? 0) ?></div>
-      <div class="small text-muted">Durasi: <?= $n0($kpi['sessions_duration_total'] ?? 0) ?> menit</div>
+      <div class="small text-dark">Durasi: <?= $n0($kpi['sessions_duration_total'] ?? 0) ?> menit</div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="p-3 border rounded">
-      <div class="text-muted">Asesmen Selesai</div>
+      <div class="text-dark">Asesmen Selesai</div>
       <div class="h4 mb-0"><?= $n0($kpi['assessments_completed'] ?? 0) ?>/<?= $n0($kpi['assessments_assigned'] ?? 0) ?></div>
-      <div class="small text-muted">Rata-rata: <?= esc($kpi['assessments_avg_percentage'] ?? 0) ?>%</div>
+      <div class="small text-dark">Rata-rata: <?= esc($kpi['assessments_avg_percentage'] ?? 0) ?>%</div>
     </div>
   </div>
 </div>
 
 <hr class="my-4">
 
-<h6 class="mb-2">Rekap Sesi Konseling</h6>
+<h6 class="mb-2">Rekap Catatan Konseling</h6>
 <div class="row g-3">
   <div class="col-md-6">
     <div class="table-responsive">
@@ -108,7 +108,7 @@ $renderStatusBadges = static function ($items, callable $labelFn) use ($n0) {
             </tr>
           <?php endforeach; ?>
           <?php if (empty($data['sessions']['byType'])): ?>
-            <tr><td colspan="3" class="text-muted">(tidak ada data)</td></tr>
+            <tr><td colspan="3" class="text-dark">(tidak ada data)</td></tr>
           <?php endif; ?>
         </tbody>
       </table>
@@ -130,7 +130,7 @@ $renderStatusBadges = static function ($items, callable $labelFn) use ($n0) {
             </tr>
           <?php endforeach; ?>
           <?php if (empty($data['sessions']['byCounselor'])): ?>
-            <tr><td colspan="3" class="text-muted">(tidak ada data)</td></tr>
+            <tr><td colspan="3" class="text-dark">(tidak ada data)</td></tr>
           <?php endif; ?>
         </tbody>
       </table>
@@ -156,13 +156,13 @@ $renderStatusBadges = static function ($items, callable $labelFn) use ($n0) {
         </tr>
       <?php endforeach; ?>
       <?php if (empty($data['assessments']['byAssessment'])): ?>
-        <tr><td colspan="4" class="text-muted">(tidak ada data)</td></tr>
+        <tr><td colspan="4" class="text-dark">(tidak ada data)</td></tr>
       <?php endif; ?>
     </tbody>
   </table>
 </div>
 
-<div class="small text-muted mb-1">Status asesmen:</div>
+<div class="small text-dark mb-1">Status asesmen:</div>
 <div>
   <?php $renderStatusBadges(($data['assessments']['byStatus'] ?? []), $assessmentStatusLabel); ?>
 </div>

@@ -57,7 +57,7 @@ $downloadUrlBase = route_to('koordinator.reports.download');
 <div class="row">
   <div class="col-12">
     <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-      <h4 class="mb-sm-0">Laporan Agregat (Koordinator BK)</h4>
+      <h4 class="mb-sm-0">Laporan BK (Koordinator BK)</h4>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
           <li class="breadcrumb-item"><a href="<?= site_url('koordinator/dashboard') ?>">Dashboard</a></li>
@@ -77,15 +77,15 @@ $downloadUrlBase = route_to('koordinator.reports.download');
 <div class="row">
   <!-- LEFT: FILTER -->
   <div class="col-xl-4">
-    <div class="card">
-      <div class="card-header">
+    <div class="card filter-compact">
+      <div class="card-header py-2">
         <div class="d-flex align-items-start justify-content-between">
           <div>
-            <h5 class="mb-1">Filter Laporan</h5>
-            <small class="text-muted">Rekap agregat tanpa menampilkan catatan sesi rahasia (privacy-safe).</small>
+            <h5 class="mb-1">Filter/Saring Laporan</h5>
+            <small class="text-dark">Laporan ringkasan tanpa menampilkan catatan rahasia konseling.</small>
           </div>
           <div class="text-end">
-            <span class="badge bg-info-subtle text-info border border-info-subtle">Agregat</span>
+            <span class="badge bg-info-subtle text-info border border-info-subtle">Rekap</span>
           </div>
         </div>
       </div>
@@ -95,10 +95,10 @@ $downloadUrlBase = route_to('koordinator.reports.download');
 
           <!-- Preset -->
           <div class="col-12">
-            <label class="form-label">Mode Laporan</label>
+            <label class="form-label">Jenis Laporan</label>
             <select name="mode" class="form-select" id="modeSelect">
-              <option value="aggregate" <?= $valMode === 'aggregate' ? 'selected' : '' ?>>Agregat Sekolah/Kelas</option>
-              <option value="student_individual" <?= $valMode === 'student_individual' ? 'selected' : '' ?>>Individu Siswa</option>
+              <option value="aggregate" <?= $valMode === 'aggregate' ? 'selected' : '' ?>>Rekap Sekolah/Kelas</option>
+              <option value="student_individual" <?= $valMode === 'student_individual' ? 'selected' : '' ?>>Per Siswa</option>
             </select>
           </div>
 
@@ -157,11 +157,11 @@ $downloadUrlBase = route_to('koordinator.reports.download');
               <option value="">Semua Guru BK</option>
               <?php foreach ($counselors as $u): ?>
                 <option value="<?= esc($u['id']) ?>" <?= (string)$u['id'] === (string)$valCounselor ? 'selected' : '' ?>>
-                  <?= esc($u['full_name'] ?? ('User #'.$u['id'])) ?><?= !empty($u['role_name']) ? ' • '.esc($u['role_name']) : '' ?>
+                  <?= esc($u['full_name'] ?? ('Pengguna #'.$u['id'])) ?><?= !empty($u['role_name']) ? ' • '.esc($u['role_name']) : '' ?>
                 </option>
               <?php endforeach; ?>
             </select>
-            <div class="form-text">Filter ini akan mempersempit rekap sesi dan asesmen sesuai pembuat/penanggung jawab.</div>
+            <div class="form-text text-dark">Pilihan ini mempersempit rekap catatan dan asesmen sesuai pembuat/penanggung jawab.</div>
           </div>
 
           <div class="col-12" id="studentWrap">
@@ -174,7 +174,7 @@ $downloadUrlBase = route_to('koordinator.reports.download');
                 </option>
               <?php endforeach; ?>
             </select>
-            <div class="form-text">Digunakan untuk mode laporan individu.</div>
+            <div class="form-text text-dark">Digunakan untuk laporan per siswa.</div>
           </div>
 
           <div class="col-12" id="bkTypeWrap">
@@ -186,7 +186,7 @@ $downloadUrlBase = route_to('koordinator.reports.download');
                 </option>
               <?php endforeach; ?>
             </select>
-            <div class="form-text">Digunakan untuk mode laporan individu.</div>
+            <div class="form-text text-dark">Digunakan untuk laporan per siswa.</div>
           </div>
 
           <!-- PDF options -->
@@ -199,14 +199,14 @@ $downloadUrlBase = route_to('koordinator.reports.download');
                   <option value="letter" <?= $valPaper === 'letter' ? 'selected' : '' ?>>Letter</option>
                   <option value="legal" <?= $valPaper === 'legal' ? 'selected' : '' ?>>Legal</option>
                 </select>
-                <div class="form-text">Kertas (PDF)</div>
+                <div class="form-text text-dark">Ukuran kertas (PDF)</div>
               </div>
               <div class="col-6">
                 <select name="orientation" class="form-select">
-                  <option value="portrait" <?= $valOrient === 'portrait' ? 'selected' : '' ?>>Portrait</option>
-                  <option value="landscape" <?= $valOrient === 'landscape' ? 'selected' : '' ?>>Landscape</option>
+                  <option value="portrait" <?= $valOrient === 'portrait' ? 'selected' : '' ?>>Tegak</option>
+                  <option value="landscape" <?= $valOrient === 'landscape' ? 'selected' : '' ?>>Mendatar</option>
                 </select>
-                <div class="form-text">Orientasi (PDF)</div>
+                <div class="form-text text-dark">Arah kertas (PDF)</div>
               </div>
             </div>
           </div>
@@ -231,7 +231,7 @@ $downloadUrlBase = route_to('koordinator.reports.download');
         <div class="d-flex align-items-center justify-content-between mb-2">
           <div>
             <h6 class="mb-0">Unduh</h6>
-            <small class="text-muted">PDF atau Excel (XLSX)</small>
+            <small class="text-dark">PDF atau Excel</small>
           </div>
           <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Unduh</span>
         </div>
@@ -246,8 +246,8 @@ $downloadUrlBase = route_to('koordinator.reports.download');
           </a>
         </div>
 
-        <div class="small text-muted mt-2">
-          Tips: pilih <b>Landscape</b> kalau tabel rekapnya panjang.
+        <div class="small text-dark mt-2">
+          Tips: pilih <b>Mendatar</b> bila tabel rekapnya panjang.
         </div>
       </div>
     </div>
@@ -264,10 +264,10 @@ $downloadUrlBase = route_to('koordinator.reports.download');
               <span class="badge bg-light text-dark border">Kelas: <?= esc($classLabel) ?></span>
             <?php endif; ?>
             <?php if ($counselorLabel): ?>
-              <span class="badge bg-light text-dark border">BK: <?= esc($counselorLabel) ?></span>
+              <span class="badge bg-light text-dark border">Guru BK: <?= esc($counselorLabel) ?></span>
             <?php endif; ?>
             <?php if ($valMode === 'student_individual'): ?>
-              <span class="badge bg-light text-dark border">Mode: Individu Siswa</span>
+              <span class="badge bg-light text-dark border">Jenis: Per Siswa</span>
             <?php endif; ?>
           </div>
         </div>
@@ -277,8 +277,8 @@ $downloadUrlBase = route_to('koordinator.reports.download');
       </div>
 
       <div class="card-body" id="previewArea">
-        <div class="text-muted">
-          Pilih filter di kiri, lalu klik <b>Pratinjau</b>. 📊
+        <div class="text-dark">
+          Pilih saringan di kiri, lalu klik <b>Pratinjau</b>. 📊
         </div>
       </div>
     </div>
@@ -424,7 +424,7 @@ $downloadUrlBase = route_to('koordinator.reports.download');
     saveFilters();
 
     preview.innerHTML = `
-      <div class="text-center text-muted py-4">
+      <div class="text-center text-dark py-4">
         <div class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></div>
         Memuat pratinjau...
       </div>
@@ -474,7 +474,7 @@ $downloadUrlBase = route_to('koordinator.reports.download');
     syncMode();
     syncDownloadLinks();
     saveFilters();
-    preview.innerHTML = '<div class="text-muted">Filter direset. Klik <b>Pratinjau</b> untuk memuat data.</div>';
+    preview.innerHTML = '<div class="text-dark">Saringan direset. Klik <b>Pratinjau</b> untuk memuat data.</div>';
   }
 
   async function copyLink() {
