@@ -877,6 +877,16 @@ $routes->group('homeroom', [
             $routes->get('show/(:num)', $controller . '::show/$1', ['as' => $alias . '.show']);
         };
 
+        // Halaman terpadu Jadwal Kegiatan/Acara BK (+ Riwayat di dalam halaman).
+        $routes->get('jadwal-bk', 'BkScheduleController::index', [
+            'filter' => 'permission:view_bk_services',
+            'as'     => 'homeroom.bk_schedule'
+        ]);
+        $routes->get('jadwal-bk/riwayat', 'BkScheduleController::history', [
+            'filter' => 'permission:view_bk_services',
+            'as'     => 'homeroom.bk_schedule.history'
+        ]);
+
         $routes->group('guidance', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'GuidanceController', 'homeroom.guidance'));
         $routes->group('counseling', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'CounselingController', 'homeroom.counseling'));
         $routes->group('parent-collaborations', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'ParentCollaborationController', 'homeroom.parent_collaborations'));
@@ -1152,6 +1162,12 @@ $routes->group('student', [
             $routes->get('attachment/(:num)', 'ConsultationController::downloadAttachment/$1', ['as' => 'student.consultations.attachment']);
             $routes->post('attachment-delete/(:num)', 'ConsultationController::deleteAttachment/$1', ['as' => 'student.consultations.attachmentDelete']);
         });
+        // Halaman terpadu Jadwal Kegiatan/Acara BK (jadwal saja, tanpa detail).
+        $routes->get('jadwal-bk', 'BkScheduleController::index', [
+            'filter' => 'permission:view_bk_services',
+            'as'     => 'student.bk_schedule'
+        ]);
+
         $routes->group('guidance', ['filter' => 'permission:view_bk_services'], function ($routes) {
             $routes->get('/', 'GuidanceController::index', ['as' => 'student.guidance.index']);
             $routes->get('show/(:num)', 'GuidanceController::show/$1', ['as' => 'student.guidance.show']);
@@ -1314,6 +1330,12 @@ $routes->group('parent', [
             $routes->get('/', $controller . '::index', ['as' => $alias . '.index']);
             $routes->get('show/(:num)', $controller . '::show/$1', ['as' => $alias . '.show']);
         };
+
+        // Halaman terpadu Jadwal Kegiatan/Acara BK (jadwal saja + pengingat asesmen anak).
+        $routes->get('jadwal-bk', 'BkScheduleController::index', [
+            'filter' => 'permission:view_bk_services',
+            'as'     => 'parent.bk_schedule'
+        ]);
 
         $routes->group('guidance', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'GuidanceController', 'parent.guidance'));
         $routes->group('counseling', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'CounselingController', 'parent.counseling'));

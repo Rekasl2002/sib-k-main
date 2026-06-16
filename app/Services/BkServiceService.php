@@ -331,6 +331,64 @@ class BkServiceService
         return $summary;
     }
 
+    /**
+     * Agregasi JADWAL kegiatan/acara BK per jenis layanan untuk peran read-only
+     * (Siswa, Orang Tua, Wali Kelas). Hanya jadwal (tanggal–waktu–lokasi), tanpa
+     * detail catatan. Dipakai halaman terpadu "Jadwal Kegiatan/Acara BK".
+     *
+     * @param string $when 'upcoming' (akan datang) atau 'past' (riwayat).
+     * @return array<string,array<int,array<string,mixed>>> [serviceType => rows]
+     */
+    public function scheduleByType(string $role, int $userId, string $when = 'upcoming'): array
+    {
+        $today = date('Y-m-d');
+        $result = [];
+
+        foreach ($this->serviceTypes() as $type) {
+            $rows = $this->list($type, $role, $userId);
+            $bucket = [];
+
+            foreach ($rows as $row) {
+                $raw = ! empty($row['scheduled_at']) ? $row['scheduled_at'] : ($row['held_at'] ?? null);
+                $date = $raw ? substr((string) $raw, 0, 10) : null;
+                $status = (string) ($row['status'] ?? '');
+                $finished = in_array($status, ['Selesai', 'Dibatalkan'], true);
+
+                // "Akan datang": punya tanggal >= hari ini dan belum selesai/dibatalkan.
+                $isUpcoming = ($date !== null && $date >= $today && ! $finished);
+
+                if ($when === 'upcoming' ? $isUpcoming : ! $isUpcoming) {
+                    $bucket[] = $row;
+                }
+            }
+
+            usort($bucket, static function ($a, $b) use ($when) {
+                $da = $a['scheduled_at'] ?? $a['held_at'] ?? $a['created_at'] ?? '';
+                $db = $b['scheduled_at'] ?? $b['held_at'] ?? $b['created_at'] ?? '';
+                return $when === 'upcoming'
+                    ? strcmp((string) $da, (string) $db)
+                    : strcmp((string) $db, (string) $da);
+            });
+
+            $result[$type] = $bucket;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Hitung total entri jadwal "akan datang" (semua jenis layanan) untuk ringkasan
+     * dashboard peran read-only.
+     */
+    public function upcomingScheduleCount(string $role, int $userId): int
+    {
+        $total = 0;
+        foreach ($this->scheduleByType($role, $userId, 'upcoming') as $rows) {
+            $total += count($rows);
+        }
+        return $total;
+    }
+
     private function baseListBuilder(?string $serviceType): BaseBuilder
     {
         $builder = $this->db->table('bk_service_records bsr')
