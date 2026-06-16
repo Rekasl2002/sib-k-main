@@ -27,13 +27,28 @@ $__appName = function_exists('setting') ? setting('app_name', 'SIB-K', 'general'
 
 // Resolve dashboard/home URL by role (robust)
 $__role = strtolower((string) $userRole);
+$__roleId = (int) session('role_id');
 $__homeUrl = base_url('/');
-if (str_contains($__role, 'admin')) $__homeUrl = base_url('admin/dashboard');
-elseif (str_contains($__role, 'koordinator')) $__homeUrl = base_url('koordinator/dashboard');
-elseif (str_contains($__role, 'counselor') || str_contains($__role, 'guru')) $__homeUrl = base_url('counselor/dashboard');
-elseif (str_contains($__role, 'homeroom') || str_contains($__role, 'wali')) $__homeUrl = base_url('homeroom/dashboard');
-elseif (str_contains($__role, 'student') || str_contains($__role, 'siswa')) $__homeUrl = base_url('student/dashboard');
-elseif (str_contains($__role, 'parent') || str_contains($__role, 'orang')) $__homeUrl = base_url('parent/dashboard');
+$__rolePrefix = 'dashboard';
+if (str_contains($__role, 'admin') || $__roleId === 1) {
+    $__rolePrefix = 'admin';
+    $__homeUrl = base_url('admin/dashboard');
+} elseif (str_contains($__role, 'koordinator') || $__roleId === 2) {
+    $__rolePrefix = 'koordinator';
+    $__homeUrl = base_url('koordinator/dashboard');
+} elseif (str_contains($__role, 'counselor') || str_contains($__role, 'guru') || $__roleId === 3) {
+    $__rolePrefix = 'counselor';
+    $__homeUrl = base_url('counselor/dashboard');
+} elseif (str_contains($__role, 'homeroom') || str_contains($__role, 'wali') || $__roleId === 4) {
+    $__rolePrefix = 'homeroom';
+    $__homeUrl = base_url('homeroom/dashboard');
+} elseif (str_contains($__role, 'student') || str_contains($__role, 'siswa') || $__roleId === 5) {
+    $__rolePrefix = 'student';
+    $__homeUrl = base_url('student/dashboard');
+} elseif (str_contains($__role, 'parent') || str_contains($__role, 'orang') || $__roleId === 6) {
+    $__rolePrefix = 'parent';
+    $__homeUrl = base_url('parent/dashboard');
+}
 
 // Logo resolver (optional, aman jika file tidak ada)
 $__logoUrl = null;
@@ -65,15 +80,26 @@ if ($__avatar && defined('FCPATH') && is_file(FCPATH . ltrim($__avatar, '/'))) {
 $__uid             = (int) session('user_id');
 $__unread          = 0;
 $__items           = [];
-$__urlIndex        = site_url('notifications');
-$__urlMarkRead     = site_url('notifications/mark-read');
-$__urlMarkAll      = site_url('notifications/mark-all-read');
-$__urlCount        = site_url('notifications/count');
+$__urlIndex        = site_url($__rolePrefix . '/notifications');
+$__urlMarkRead     = site_url($__rolePrefix . '/notifications/mark-read');
+$__urlMarkAll      = site_url($__rolePrefix . '/notifications/mark-all-read');
+$__urlCount        = site_url($__rolePrefix . '/notifications/count');
 
 if ($__uid && class_exists(\App\Models\NotificationModel::class)) {
     $__model  = new \App\Models\NotificationModel();
     $__unread = (int) $__model->where('user_id', $__uid)->where('is_read', 0)->countAllResults();
     $__items  = $__model->where('user_id', $__uid)->orderBy('created_at', 'DESC')->findAll(10);
+
+    // Kerahasiaan: Siswa & Orang Tua hanya melihat garis besar aman untuk notifikasi layanan BK.
+    if (in_array($__rolePrefix, ['student', 'parent'], true)) {
+        foreach ($__items as &$__it) {
+            if (($__it['type'] ?? '') === 'session') {
+                $__it['title']   = 'Jadwal Kegiatan/Acara BK';
+                $__it['message'] = 'Ada jadwal kegiatan/acara BK untuk Anda. Silakan cek halaman Jadwal Kegiatan/Acara BK.';
+            }
+        }
+        unset($__it);
+    }
 }
 $__badgeZero = ($__unread <= 0) ? '1' : '0';
 

@@ -170,13 +170,13 @@ helper('app');
 <!-- Filter Card (konsisten ala counselor/sessions) -->
 <div class="row">
     <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h4 class="card-title mb-0">
-                    <i class="mdi mdi-filter-variant me-2"></i>Filter Data
-                </h4>
+        <div class="card filter-compact">
+            <div class="card-header py-2">
+                <h5 class="card-title mb-0 text-dark">
+                    <i class="mdi mdi-filter-variant me-2"></i>Filter/Saring Data
+                </h5>
             </div>
-            <div class="card-body">
+            <div class="card-body py-3">
                 <form action="<?= base_url('admin/students') ?>" method="get" id="filterForm">
                     <div class="row g-3">
                         <div class="col-md-3">
@@ -293,7 +293,7 @@ helper('app');
                                 <th>NISN</th>
                                 <th>NIK</th>
                                 <th>Kelas</th>
-                                <th>Gender</th>
+                                <th>Jenis Kelamin</th>
                                 <th>Status</th>
                                 <th style="width:150px;">Aksi</th>
                             </tr>

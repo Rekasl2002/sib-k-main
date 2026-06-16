@@ -9,4 +9,5 @@ class NotificationController extends BaseRoleNotificationController
     protected string $routePrefix = 'parent';
     protected string $viewPrefix = 'parent/notifications';
     protected string $roleLabel = 'Orang Tua';
+    protected bool $restrictBkDetail = true;
 }

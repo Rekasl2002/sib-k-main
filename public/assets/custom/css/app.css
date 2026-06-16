@@ -1473,5 +1473,104 @@ body.sibk-theme .vertical-menu.sibk-sidebar .user-wid .user-img img.avatar-md{
 
 
 /* ==========================================================================
+   AKSESIBILITAS: Teks gelap (hindari abu-abu)
+   Ditambahkan agar seluruh teks informasi berwarna hitam pekat & mudah dibaca,
+   termasuk untuk pengguna dengan gangguan penglihatan.
+
+   AKAR MASALAH: tema Bootstrap memakai --bs-body-color: #8687a7 (abu-abu) dan
+   komponen seperti .card / .breadcrumb / .table mengambil warna langsung dari
+   variabel itu, sehingga teks di dalam kartu tetap abu walau "body" sudah gelap.
+   Maka di sini variabel --bs-body-color-nya yang digelapkan agar menyebar ke
+   seluruh komponen. Diletakkan paling akhir agar menimpa aturan tema.
+   ========================================================================== */
+:root,
+:root[data-bs-theme="light"],
+[data-bs-theme="light"] {
+  --text-strong: #15171c;                 /* hitam pekat namun lembut agar rapi */
+  --bs-body-color: #15171c;               /* teks utama Bootstrap */
+  --bs-body-color-rgb: 21, 23, 28;
+  --bs-secondary-color: rgba(21, 23, 28, 0.85);
+  --bs-tertiary-color: rgba(21, 23, 28, 0.70);
+  --bs-emphasis-color: #000000;
+  --gray-600: #15171c;                    /* dipakai .text-muted & .form-text di atas */
+  --gray-700: #15171c;                    /* dipakai sebagai warna body di atas */
+}
+
+/* Teks utama dokumen */
+body {
+  color: var(--text-strong);
+}
+
+/* Komponen yang mengambil warna dari variabel tema -> pastikan ikut gelap.
+   (.card adalah penyebab utama teks abu di dalam kartu) */
+.card,
+.card-body,
+.breadcrumb,
+.table,
+.list-group,
+.accordion,
+.dropdown-menu,
+.popover {
+  color: var(--text-strong);
+}
+
+/* Kelas utilitas yang biasanya abu-abu -> dijadikan hitam pekat.
+   ":not(.text-white)" menjaga teks pada latar berwarna tetap putih bila ada. */
+.text-muted:not(.text-white),
+.text-secondary:not(.text-white),
+small.text-muted,
+.text-body-secondary,
+.form-text,
+.form-label,
+.text-black-50,
+.help-block,
+.breadcrumb-item.active {
+  color: var(--text-strong) !important;
+}
+
+/* Teks di dalam kartu/badge berlatar warna TETAP putih (jangan ikut digelapkan) */
+.bg-primary, .bg-primary .card-text, .bg-primary .card-title,
+.bg-success, .bg-success .card-text, .bg-success .card-title,
+.bg-danger,  .bg-danger .card-text,  .bg-danger .card-title,
+.bg-info,    .bg-info .card-text,    .bg-info .card-title,
+.bg-dark,    .bg-dark .card-text,    .bg-dark .card-title,
+.text-white, .text-white .card-text, .text-white .card-title {
+  color: #ffffff !important;
+}
+
+/* Tombol mempertahankan warna teksnya sendiri (mis. .btn-light tetap gelap) */
+.btn-light, .btn-light * { color: #15171c !important; }
+
+/* Placeholder input dibuat cukup gelap agar tetap terbaca (bukan abu pucat) */
+::placeholder { color: #5f636a !important; opacity: 1 !important; }
+
+/* ==========================================================================
+   Kartu Filter/Saring RINGKAS — dipakai di halaman daftar (Manajemen Siswa &
+   Pengguna serta seluruh Layanan BK). Membuat kartu filter lebih kecil/padat
+   tanpa menghilangkan isinya. (Sebelumnya kelas .filter-compact tak bergaya.)
+   ========================================================================== */
+.filter-compact .card-header { padding-top: .5rem; padding-bottom: .5rem; }
+.filter-compact .card-body { padding: .65rem .9rem; }
+.filter-compact .card-title { font-size: .95rem; }
+.filter-compact .form-label { font-size: .78rem; margin-bottom: .2rem; font-weight: 500; }
+.filter-compact .form-control,
+.filter-compact .form-select {
+  font-size: .85rem;
+  padding-top: .3rem;
+  padding-bottom: .3rem;
+  min-height: calc(1.5em + .6rem + 2px);
+}
+.filter-compact .btn { font-size: .85rem; padding-top: .35rem; padding-bottom: .35rem; }
+.filter-compact .row { --bs-gutter-y: .5rem; }
+
+/* Select2 (single) disamakan tingginya dengan input ringkas */
+.filter-compact .select2-container--default .select2-selection--single { height: calc(1.5em + .6rem + 2px); }
+.filter-compact .select2-container--default .select2-selection--single .select2-selection__rendered {
+  line-height: calc(1.5em + .6rem);
+  font-size: .85rem;
+}
+.filter-compact .select2-container--default .select2-selection--single .select2-selection__arrow { height: calc(1.5em + .6rem); }
+
+/* ==========================================================================
    END OF STYLESHEET
    ========================================================================== */

@@ -15,10 +15,32 @@ if ($uid <= 0) {
     return;
 }
 
+$roleId = (int) session('role_id');
+$rolePrefix = match ($roleId) {
+    1 => 'admin',
+    2 => 'koordinator',
+    3 => 'counselor',
+    4 => 'homeroom',
+    5 => 'student',
+    6 => 'parent',
+    default => 'dashboard',
+};
+
 // 3) Ambil data notifikasi
 $model  = new \App\Models\NotificationModel();
 $unread = $model->where('user_id', $uid)->where('is_read', 0)->countAllResults();
 $items  = $model->where('user_id', $uid)->orderBy('created_at', 'DESC')->findAll(10);
+
+// Kerahasiaan: Siswa & Orang Tua hanya melihat garis besar aman untuk notifikasi layanan BK.
+if (in_array($rolePrefix, ['student', 'parent'], true)) {
+    foreach ($items as &$__it) {
+        if (($__it['type'] ?? '') === 'session') {
+            $__it['title']   = 'Jadwal Kegiatan/Acara BK';
+            $__it['message'] = 'Ada jadwal kegiatan/acara BK untuk Anda. Silakan cek halaman Jadwal Kegiatan/Acara BK.';
+        }
+    }
+    unset($__it);
+}
 
 // 4) Siapkan token CSRF untuk AJAX (sesuai .env kamu: headerName = X-CSRF-TOKEN)
 $csrfHeader = config('Security')->headerName; // biasanya 'X-CSRF-TOKEN'
@@ -79,7 +101,7 @@ $csrfHash   = csrf_hash();
     if (!a) return;
 
     const id  = a.getAttribute('data-notif-id');
-    const url = <?= json_encode(site_url('notifications/mark-read')) ?> + '/' + id;
+    const url = <?= json_encode(site_url($rolePrefix . '/notifications/mark-read')) ?> + '/' + id;
 
     const headers = {'X-Requested-With':'XMLHttpRequest'};
     headers[CSRF_HEADER] = CSRF_TOKEN;
@@ -91,7 +113,7 @@ $csrfHash   = csrf_hash();
 
   // Tandai semua sebagai dibaca
   document.getElementById('notifMarkAll')?.addEventListener('click', function(){
-    const url = <?= json_encode(site_url('notifications/mark-all-read')) ?>;
+    const url = <?= json_encode(site_url($rolePrefix . '/notifications/mark-all-read')) ?>;
 
     const headers = {'X-Requested-With':'XMLHttpRequest'};
     headers[CSRF_HEADER] = CSRF_TOKEN;

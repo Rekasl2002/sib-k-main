@@ -13,6 +13,13 @@ abstract class BaseRoleNotificationController extends BaseController
     protected string $viewPrefix = '';
     protected string $roleLabel = '';
 
+    /**
+     * Bila true (peran Siswa & Orang Tua), isi notifikasi terkait layanan BK
+     * dipaksa hanya menampilkan garis besar aman (tanpa topik/detail) walau
+     * isi tersimpan memuat rincian. Lapis pertahanan kerahasiaan di sisi tampilan.
+     */
+    protected bool $restrictBkDetail = false;
+
     protected NotificationModel $notif;
     protected SettingModel $settings;
 
@@ -37,7 +44,7 @@ abstract class BaseRoleNotificationController extends BaseController
 
         return view($this->viewPrefix . '/index', [
             'title'     => 'Notifikasi Internal',
-            'items'     => $items,
+            'items'     => $this->maskBkDetail($items),
             'pager'     => $this->notif->pager,
             'basePath'  => trim($this->routePrefix, '/'),
             'roleLabel' => $this->roleLabel,
@@ -61,7 +68,7 @@ abstract class BaseRoleNotificationController extends BaseController
             ->orderBy('created_at', 'DESC')
             ->findAll(20);
 
-        return $this->noCache()->response->setJSON($items);
+        return $this->noCache()->response->setJSON($this->maskBkDetail($items));
     }
 
     public function markAsRead($id)
@@ -199,6 +206,29 @@ abstract class BaseRoleNotificationController extends BaseController
             ->with('success', 'Preferensi notifikasi berhasil disimpan.');
     }
 
+    /**
+     * Sembunyikan rincian notifikasi layanan BK untuk Siswa & Orang Tua.
+     * Hanya notifikasi bertipe 'session' (jadwal/undangan layanan BK) yang
+     * dipaksa menjadi garis besar aman; tipe lain (pesan, asesmen, konsultasi
+     * milik sendiri) tetap apa adanya.
+     */
+    protected function maskBkDetail(array $items): array
+    {
+        if (! $this->restrictBkDetail) {
+            return $items;
+        }
+
+        foreach ($items as &$item) {
+            if (($item['type'] ?? '') === 'session') {
+                $item['title']   = 'Jadwal Kegiatan/Acara BK';
+                $item['message'] = 'Ada jadwal kegiatan/acara BK untuk Anda. Silakan cek halaman Jadwal Kegiatan/Acara BK.';
+            }
+        }
+        unset($item);
+
+        return $items;
+    }
+
     protected function currentUserId(): int
     {
         return (int) (session('user_id') ?? 0);
@@ -224,7 +254,6 @@ abstract class BaseRoleNotificationController extends BaseController
     {
         return [
             'message'              => 'Pesan internal',
-            'violation_submission' => 'Pengaduan pelanggaran',
             'assessment'           => 'Asesmen',
             'career'               => 'Fitur info karier dan info studi lanjut',
             'session'              => 'Sesi konseling',

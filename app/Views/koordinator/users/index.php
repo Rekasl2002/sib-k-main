@@ -163,7 +163,7 @@ if (!function_exists('safe_user_avatar_src')) {
 <!-- Filter Card (konsisten dengan counselor/sessions) -->
 <div class="row">
     <div class="col-12">
-        <div class="card">
+        <div class="card filter-compact">
             <div class="card-header py-2">
                 <h5 class="card-title mb-0 text-dark">
                     <i class="mdi mdi-filter-variant me-2"></i>Filter/Saring Data
