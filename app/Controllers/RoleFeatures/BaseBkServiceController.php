@@ -29,7 +29,7 @@ abstract class BaseBkServiceController extends BaseController
 
     public function __construct()
     {
-        helper(['form', 'url', 'auth', 'permission']);
+        helper(['form', 'url', 'auth', 'permission', 'notification']);
         $this->service = new BkServiceService();
     }
 
@@ -73,6 +73,8 @@ abstract class BaseBkServiceController extends BaseController
         }
 
         $id = $this->service->create($this->serviceType, $this->request->getPost() ?? [], $this->currentUserId());
+
+        $this->notifyScheduleParticipants((int) $id);
 
         return redirect()->to(site_url($this->routePrefix . '/show/' . $id))
             ->with('success', $this->service->meta($this->serviceType)['title'] . ' berhasil dicatat.');
@@ -118,6 +120,8 @@ abstract class BaseBkServiceController extends BaseController
         }
 
         $this->service->update((int) $id, $this->serviceType, $this->request->getPost() ?? [], $this->currentUserId());
+
+        $this->notifyScheduleParticipants((int) $id);
 
         return redirect()->to(site_url($this->routePrefix . '/show/' . (int) $id))
             ->with('success', 'Data berhasil diperbarui.');
@@ -209,5 +213,34 @@ abstract class BaseBkServiceController extends BaseController
     protected function deny()
     {
         return redirect()->to(site_url($this->routePrefix))->with('error', 'Akses tidak tersedia untuk peran ini.');
+    }
+
+    /**
+     * Beritahu peserta/undangan (Siswa & Orang Tua) tentang jadwal kegiatan BK.
+     * Hanya RINGKASAN AMAN (tanpa topik/detail) sesuai aturan kerahasiaan:
+     * Siswa/Orang Tua hanya boleh melihat jadwal, bukan detail catatan layanan BK.
+     */
+    protected function notifyScheduleParticipants(int $recordId): void
+    {
+        if ($recordId <= 0) {
+            return;
+        }
+
+        $me = $this->currentUserId();
+        foreach ($this->service->notifiableUserIds($recordId) as $uid) {
+            $uid = (int) $uid;
+            if ($uid <= 0 || $uid === $me) {
+                continue;
+            }
+            $prefix = role_route_prefix($uid);
+            send_notification(
+                $uid,
+                'Jadwal Kegiatan/Acara BK',
+                'Ada jadwal kegiatan/acara BK untuk Anda. Silakan cek halaman Jadwal Kegiatan/Acara BK.',
+                'session',
+                ['bk_service_record_id' => $recordId],
+                $prefix !== '' ? site_url($prefix . '/dashboard') : null
+            );
+        }
     }
 }

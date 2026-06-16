@@ -3,9 +3,9 @@
 <?= $this->section('content') ?>
 <?php
 /**
- * File: app/Views/koordinator/messages/detail.php
+ * File: app/Views/admin/messages/detail.php
  * Fitur: Pesan Internal.
- * Peran/izin: Koordinator BK memakai tampilan mandiri; logika data tetap dari controller per peran dan service terkait.
+ * Peran/izin: Admin memakai tampilan mandiri; logika data tetap dari controller per peran dan service terkait.
  */
 ?>
 <?php
@@ -77,3 +77,4 @@ $msg = is_array($msg ?? null) ? $msg : [];
 </div>
 
 <?= $this->endSection() ?>
+

@@ -109,6 +109,32 @@ if (!function_exists('notification_allowed')) {
     }
 }
 
+if (!function_exists('role_route_prefix')) {
+    /**
+     * Segmen rute (URL prefix) sesuai peran pengguna, untuk membangun tautan
+     * notifikasi yang benar per peran. Mengembalikan '' bila tidak diketahui.
+     */
+    function role_route_prefix(int $user_id): string
+    {
+        try {
+            $db = \Config\Database::connect();
+            $row = $db->table('users')->select('role_id')->where('id', $user_id)->get()->getRowArray();
+
+            return match ((int) ($row['role_id'] ?? 0)) {
+                1 => 'admin',
+                2 => 'koordinator',
+                3 => 'counselor',
+                4 => 'homeroom',
+                5 => 'student',
+                6 => 'parent',
+                default => '',
+            };
+        } catch (\Throwable $e) {
+            return '';
+        }
+    }
+}
+
 if (!function_exists('notify_users')) {
     /**
      * Send notification to multiple users

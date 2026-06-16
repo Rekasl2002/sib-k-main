@@ -3,9 +3,9 @@
 <?= $this->section('content') ?>
 <?php
 /**
- * File: app/Views/parent/messages/compose.php
+ * File: app/Views/admin/messages/compose.php
  * Fitur: Pesan Internal.
- * Peran/izin: Orang Tua memakai tampilan mandiri; logika data tetap dari controller per peran dan service terkait.
+ * Peran/izin: Admin memakai tampilan mandiri; logika data tetap dari controller per peran dan service terkait.
  */
 ?>
 <?php $basePath = trim((string)($basePath ?? ''), '/'); ?>
@@ -56,3 +56,4 @@
 </div>
 
 <?= $this->endSection() ?>
+

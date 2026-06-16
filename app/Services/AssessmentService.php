@@ -528,6 +528,53 @@ class AssessmentService
     }
 
     /**
+     * Beritahu siswa bahwa ada asesmen baru yang ditugaskan kepadanya.
+     * Dipanggil dari controller saat penugasan asesmen (Koordinator BK & Guru BK).
+     *
+     * @param array<int,mixed> $studentIds Daftar students.id yang ditugaskan.
+     */
+    public function notifyStudentsAssessmentAssigned(int $assessmentId, array $studentIds): void
+    {
+        $studentIds = array_values(array_unique(array_map('intval', array_filter($studentIds, static fn($v) => (int) $v > 0))));
+        if (empty($studentIds)) {
+            return;
+        }
+
+        $ass = $this->assessments->asArray()->find($assessmentId);
+        if (! $ass) {
+            return;
+        }
+
+        helper('notification');
+
+        $rows = $this->db->table('students')
+            ->select('user_id')
+            ->whereIn('id', $studentIds)
+            ->where('deleted_at', null)
+            ->get()->getResultArray();
+
+        $title    = trim((string) ($ass['title'] ?? '')) !== '' ? $ass['title'] : 'Asesmen';
+        $deadline = trim((string) ($ass['end_date'] ?? ''));
+        $message  = 'Ada asesmen baru untuk Anda: ' . $title
+            . ($deadline !== '' ? '. Tenggat: ' . $deadline : '') . '.';
+
+        foreach ($rows as $r) {
+            $uid = (int) ($r['user_id'] ?? 0);
+            if ($uid <= 0) {
+                continue;
+            }
+            send_notification(
+                $uid,
+                'Asesmen Baru',
+                $message,
+                'assessment',
+                ['assessment_id' => $assessmentId],
+                site_url('student/assessments')
+            );
+        }
+    }
+
+    /**
      * Cabut penugasan siswa.
      * - Hapus dari assessment_assignees (bila ada).
      * - Hapus assessment_results yang statusnya masih "Assigned".

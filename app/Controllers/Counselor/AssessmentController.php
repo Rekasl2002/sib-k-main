@@ -1123,6 +1123,9 @@ class AssessmentController extends BaseController
             }
         }
 
+        // Beritahu siswa yang ditugaskan asesmen (Fase 3 - notifikasi antarfitur).
+        $this->svc->notifyStudentsAssessmentAssigned((int)$id, $eligibleToAssign);
+
         $msg = "Asesmen ditugaskan ke {$created} siswa.";
         if ($removedCount > 0) $msg .= " {$removedCount} penugasan dicabut (replace mode).";
         if ($skippedInProg > 0) $msg .= " {$skippedInProg} siswa dilewati karena masih punya attempt berjalan.";

@@ -824,6 +824,7 @@ class AssessmentController extends BaseController
         $skippedQuota  = 0;
 
         $maxAttempts = (int)($assessment['max_attempts'] ?? 0); // 0=unlimited
+        $notifyIds   = [];
 
         foreach ($finalIds as $sid) {
             $sid = (int)$sid;
@@ -843,9 +844,12 @@ class AssessmentController extends BaseController
 
             if (method_exists($resultModel, 'createAssignment')) {
                 $rid = $resultModel->createAssignment((int)$id, $sid);
-                if ($rid) $created++;
+                if ($rid) { $created++; $notifyIds[] = $sid; }
             }
         }
+
+        // Beritahu siswa yang baru ditugaskan asesmen (Fase 3 - notifikasi antarfitur).
+        $this->svc->notifyStudentsAssessmentAssigned((int)$id, $notifyIds);
 
         $msg = "Asesmen ditugaskan ke {$created} siswa.";
         if ($removedCount > 0) $msg .= " {$removedCount} penugasan dicabut (replace mode).";

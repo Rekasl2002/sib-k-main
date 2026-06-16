@@ -218,6 +218,7 @@ $routes->group('admin', [
             $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'admin.messages.reply']);
             $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'admin.messages.delete']);
             $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'admin.messages.read']);
+            $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'admin.messages.attachment']);
         });
 
         // USER MANAGEMENT (izin: manage_users)
@@ -368,6 +369,7 @@ $routes->group('koordinator', [
             $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'koordinator.messages.reply']);
             $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'koordinator.messages.delete']);
             $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'koordinator.messages.read']);
+            $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'koordinator.messages.attachment']);
         });
 
         // USER MANAGEMENT (izin: manage_users)
@@ -651,6 +653,7 @@ $routes->group('counselor', [
             $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'counselor.messages.reply']);
             $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'counselor.messages.delete']);
             $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'counselor.messages.read']);
+            $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'counselor.messages.attachment']);
         });
 
         $routes->get('sessions', static fn() => redirect()->to('/counselor/counseling'), ['as' => 'counselor.sessions']);
@@ -848,6 +851,7 @@ $routes->group('homeroom', [
             $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'homeroom.messages.reply']);
             $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'homeroom.messages.delete']);
             $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'homeroom.messages.read']);
+            $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'homeroom.messages.attachment']);
         });
 
 
@@ -1107,6 +1111,7 @@ $routes->group('student', [
             $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'student.messages.reply']);
             $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'student.messages.delete']);
             $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'student.messages.read']);
+            $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'student.messages.attachment']);
         });
 
         // Data pribadi siswa
@@ -1229,6 +1234,7 @@ $routes->group('parent', [
             $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'parent.messages.reply']);
             $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'parent.messages.delete']);
             $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'parent.messages.read']);
+            $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'parent.messages.attachment']);
         });
 
         $routes->get('profile', static fn() => redirect()->to('/profile'), [
