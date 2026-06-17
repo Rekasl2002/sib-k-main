@@ -52,26 +52,23 @@ if (!function_exists('slugify')) {
 }
 ?>
 
-<!-- Page Header -->
-<div class="page-header mb-4">
-    <div class="row align-items-center">
-        <div class="col-md-8">
-            <h2 class="page-title mb-0">
-                <i class="fas fa-user-plus me-2"></i>
-                Tugaskan Asesmen
-            </h2>
-            <p class="text-muted mb-0">
-                Pilih siswa yang akan mengerjakan asesmen:
-                <strong><?= esc($assessment['title']) ?></strong>
-            </p>
-        </div>
-        <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <a href="<?= base_url('counselor/assessments/' . $assessment['id']) ?>" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-2"></i>
-                Kembali
-            </a>
-        </div>
+<?php
+// Label sasaran dalam bahasa Indonesia (nilai DB tetap bahasa Inggris untuk logika).
+$targetTextMap = ['Individual' => 'Individu', 'Class' => 'Kelas', 'Grade' => 'Tingkat', 'All' => 'Semua Siswa'];
+?>
+<!-- Judul Halaman -->
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <div>
+        <h4 class="mb-sm-0 text-dark"><i class="mdi mdi-account-plus me-1"></i>Tugaskan Asesmen</h4>
+        <p class="text-dark mb-0">Pilih siswa yang akan mengerjakan asesmen: <strong><?= esc($assessment['title']) ?></strong></p>
+      </div>
+      <a href="<?= base_url('counselor/assessments/' . $assessment['id']) ?>" class="btn btn-secondary mt-2 mt-sm-0">
+        <i class="mdi mdi-arrow-left me-1"></i> Kembali
+      </a>
     </div>
+  </div>
 </div>
 
 <?php if (session()->getFlashdata('success')): ?>
@@ -126,7 +123,7 @@ if (!function_exists('slugify')) {
 
                     <?php
                       $target = (string)($assessment['target_audience'] ?? 'All');
-                      $targetLabel = $target;
+                      $targetLabel = $targetTextMap[$target] ?? $target;
                       if ($target === 'Class' && !empty($assessment['target_class_id'])) { $targetLabel .= ' (per Kelas)'; }
                       if ($target === 'Grade' && !empty($assessment['target_grade'])) { $targetLabel .= ' (Tingkat: '.$assessment['target_grade'].')'; }
                     ?>
@@ -303,7 +300,7 @@ if (!function_exists('slugify')) {
                         <label class="small text-muted mb-1">Target/Sasaran</label>
                         <div>
                             <?php $target = (string)($assessment['target_audience'] ?? 'All'); ?>
-                            <span class="badge bg-primary"><?= esc($target) ?></span>
+                            <span class="badge bg-primary"><?= esc($targetTextMap[$target] ?? $target) ?></span>
                             <?php if ($target === 'Class' && !empty($assessment['target_class_id'])): ?>
                                 <span class="small text-muted ms-1">(ID Kelas: <?= (int)$assessment['target_class_id'] ?>)</span>
                             <?php elseif ($target === 'Grade' && !empty($assessment['target_grade'])): ?>

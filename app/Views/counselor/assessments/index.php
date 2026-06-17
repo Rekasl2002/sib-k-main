@@ -1,416 +1,315 @@
+<?php
+/**
+ * Daftar Asesmen — Guru BK
+ * Seragam ala Manajemen Siswa / halaman Bimbingan (counselor/guidance):
+ * page-title-box + kartu statistik + kartu Filter/Saring + DataTables (Indonesia).
+ * Tombol aksi berupa IKON VERTIKAL (ditumpuk) ber-tooltip.
+ */
+?>
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-
 <?php
-// ===== Prefetch peserta per assessment agar akurat dan hemat query =====
-$participantMap = [];
-try {
-    if (!empty($assessments) && is_array($assessments)) {
-        $ids = array_values(array_unique(array_map(fn($a) => (int)($a['id'] ?? 0), $assessments)));
-        $ids = array_filter($ids, fn($v) => $v > 0);
+$assessments      = is_array($assessments ?? null) ? $assessments : [];
+$assessment_types = is_array($assessment_types ?? null) ? $assessment_types : [];
+$filters          = is_array($filters ?? null) ? $filters : [];
+$stats            = is_array($stats ?? null) ? $stats : [];
 
-        if (!empty($ids)) {
-            $db = \Config\Database::connect();
-            // Hitung peserta dari assessment_results (Assigned, In Progress, Completed, Graded, dll)
-            $rows = $db->table('assessment_results')
-                ->select('assessment_id, COUNT(DISTINCT student_id) AS cnt')
-                ->whereIn('assessment_id', $ids)
-                ->where('deleted_at', null)
-                ->groupBy('assessment_id')
-                ->get()
-                ->getResultArray();
+$prefix = 'counselor/assessments';
 
-            foreach ($rows as $r) {
-                $participantMap[(int)$r['assessment_id']] = (int)$r['cnt'];
-            }
-        }
-    }
-} catch (\Throwable $e) {
-    // Jika terjadi error, biarkan participantMap kosong. View akan fallback.
-}
+// Peta tampilan target peserta (hindari istilah Inggris).
+$targetLabels = [
+    'Individual' => 'Individu',
+    'Class'      => 'Kelas',
+    'Grade'      => 'Tingkat',
+    'All'        => 'Semua Siswa',
+];
+$targetIcons = [
+    'Individual' => 'mdi-account',
+    'Class'      => 'mdi-account-group',
+    'Grade'      => 'mdi-school',
+    'All'        => 'mdi-earth',
+];
 ?>
 
-<!-- Page Header -->
-<div class="page-header mb-4">
-    <div class="row align-items-center">
-        <div class="col-md-6">
-            <h2 class="page-title mb-0">
-                <i class="fas fa-clipboard-list me-2"></i>
-                Manajemen Asesmen
-            </h2>
-            <p class="text-muted mb-0">Kelola asesmen psikologi dan minat bakat siswa</p>
-        </div>
-        <div class="col-md-6 text-md-end mt-3 mt-md-0">
-            <a href="<?= base_url('counselor/assessments/create') ?>" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i>
-                Buat Asesmen Baru
-            </a>
-        </div>
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <div>
+        <h4 class="mb-sm-0 text-dark">Asesmen</h4>
+        <p class="text-dark mb-0">Kelola asesmen psikologi, minat bakat, dan lainnya untuk siswa.</p>
+      </div>
+      <a href="<?= site_url($prefix . '/create') ?>" class="btn btn-primary">
+        <i class="mdi mdi-plus me-1"></i> Tambah Asesmen
+      </a>
     </div>
+  </div>
 </div>
 
-<?php if (session()->getFlashdata('success')): ?>
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="fas fa-check-circle me-2"></i>
-        <?= esc(session()->getFlashdata('success')) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<?php foreach (['success' => 'check-circle', 'error' => 'alert-circle', 'warning' => 'alert'] as $type => $icon): ?>
+  <?php if (session()->getFlashdata($type)): ?>
+    <div class="alert alert-<?= $type === 'error' ? 'danger' : $type ?> alert-dismissible fade show" role="alert">
+      <i class="mdi mdi-<?= $icon ?> me-2"></i><?= esc(session()->getFlashdata($type)) ?>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Tutup"></button>
     </div>
-<?php endif; ?>
+  <?php endif; ?>
+<?php endforeach; ?>
 
-<?php if (session()->getFlashdata('error')): ?>
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="fas fa-exclamation-circle me-2"></i>
-        <?= esc(session()->getFlashdata('error')) ?>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-<?php endif; ?>
-
-<!-- Statistics Cards -->
-<div class="row g-3 mb-4">
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle bg-primary bg-opacity-10 p-3">
-                            <i class="fas fa-clipboard-list text-primary fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="text-muted mb-1">Total Asesmen</h6>
-                        <h3 class="mb-0"><?= (int)($stats['total_assessments'] ?? 0) ?></h3>
-                    </div>
-                </div>
+<!-- Kartu Statistik -->
+<div class="row">
+  <?php
+  $miniCards = [
+      ['label' => 'Total Asesmen', 'value' => $stats['total_assessments'] ?? 0, 'bg' => 'bg-primary', 'icon' => 'mdi-clipboard-text'],
+      ['label' => 'Dipublikasikan', 'value' => $stats['published'] ?? 0, 'bg' => 'bg-success', 'icon' => 'mdi-check-decagram'],
+      ['label' => 'Draf', 'value' => $stats['draft'] ?? 0, 'bg' => 'bg-warning', 'icon' => 'mdi-file-document-edit'],
+      ['label' => 'Aktif', 'value' => $stats['active'] ?? 0, 'bg' => 'bg-info', 'icon' => 'mdi-toggle-switch'],
+  ];
+  ?>
+  <?php foreach ($miniCards as $mc): ?>
+    <div class="col-6 col-md-3">
+      <div class="card mini-stats-wid">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-grow-1">
+              <p class="text-dark fw-medium mb-2"><?= esc($mc['label']) ?></p>
+              <h4 class="mb-0 text-dark"><?= number_format((int) $mc['value']) ?></h4>
             </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle bg-success bg-opacity-10 p-3">
-                            <i class="fas fa-check-circle text-success fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="text-muted mb-1">Dipublikasi</h6>
-                        <h3 class="mb-0"><?= (int)($stats['published'] ?? 0) ?></h3>
-                    </div>
-                </div>
+            <div class="flex-shrink-0 align-self-center">
+              <div class="mini-stat-icon avatar-sm rounded-circle <?= esc($mc['bg'], 'attr') ?>">
+                <span class="avatar-title bg-transparent"><i class="mdi <?= esc($mc['icon'], 'attr') ?> font-size-24"></i></span>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
     </div>
-
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle bg-warning bg-opacity-10 p-3">
-                            <i class="fas fa-file-alt text-warning fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="text-muted mb-1">Draft</h6>
-                        <h3 class="mb-0"><?= (int)($stats['draft'] ?? 0) ?></h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="flex-shrink-0">
-                        <div class="rounded-circle bg-info bg-opacity-10 p-3">
-                            <i class="fas fa-users text-info fa-2x"></i>
-                        </div>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="text-muted mb-1">Aktif</h6>
-                        <h3 class="mb-0"><?= (int)($stats['active'] ?? 0) ?></h3>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+  <?php endforeach; ?>
 </div>
 
-<!-- Filter Card -->
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
-        <form method="get" action="<?= base_url('counselor/assessments') ?>">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label">Tipe Asesmen</label>
-                    <select name="assessment_type" class="form-select">
-                        <option value="">Semua Tipe</option>
-                        <?php foreach ($assessment_types as $key => $value): ?>
-                            <option value="<?= esc($key) ?>" <?= (($filters['assessment_type'] ?? '') == $key) ? 'selected' : '' ?>>
-                                <?= esc($value) ?>
-                            </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Status Publikasi</label>
-                    <select name="is_published" class="form-select">
-                        <option value="">Semua Status</option>
-                        <option value="1" <?= (($filters['is_published'] ?? '') === '1') ? 'selected' : '' ?>>Dipublikasi</option>
-                        <option value="0" <?= (($filters['is_published'] ?? '') === '0') ? 'selected' : '' ?>>Draft</option>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Target Peserta</label>
-                    <select name="target_audience" class="form-select">
-                        <option value="">Semua Target</option>
-                        <option value="Individual" <?= (($filters['target_audience'] ?? '') == 'Individual') ? 'selected' : '' ?>>Individual</option>
-                        <option value="Class" <?= (($filters['target_audience'] ?? '') == 'Class') ? 'selected' : '' ?>>Kelas</option>
-                        <option value="Grade" <?= (($filters['target_audience'] ?? '') == 'Grade') ? 'selected' : '' ?>>Tingkat</option>
-                        <option value="All" <?= (($filters['target_audience'] ?? '') == 'All') ? 'selected' : '' ?>>Semua</option>
-                    </select>
-                </div>
-
-                <div class="col-md-3">
-                    <label class="form-label">Pencarian</label>
-                    <div class="input-group">
-                        <input type="text" name="search" class="form-control" placeholder="Cari asesmen..." value="<?= esc($filters['search'] ?? '') ?>">
-                        <button class="btn btn-primary" type="submit">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </div>
+<!-- Kartu Filter/Saring -->
+<div class="row">
+  <div class="col-12">
+    <div class="card filter-compact">
+      <div class="card-header py-2">
+        <h5 class="card-title mb-0 text-dark"><i class="mdi mdi-filter-variant me-2"></i>Filter/Saring Data</h5>
+      </div>
+      <div class="card-body py-3">
+        <form method="get" action="<?= site_url($prefix) ?>">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label text-dark">Tipe Asesmen</label>
+              <select name="assessment_type" class="form-select">
+                <option value="">Semua Tipe</option>
+                <?php foreach ($assessment_types as $key => $value): ?>
+                  <option value="<?= esc($key) ?>" <?= (($filters['assessment_type'] ?? '') == $key) ? 'selected' : '' ?>><?= esc($value) ?></option>
+                <?php endforeach; ?>
+              </select>
             </div>
-
-            <div class="mt-3">
-                <button type="submit" class="btn btn-primary">
-                    <i class="fas fa-filter me-2"></i>Terapkan Filter
-                </button>
-                <a href="<?= base_url('counselor/assessments') ?>" class="btn btn-secondary">
-                    <i class="fas fa-redo me-2"></i>Reset
-                </a>
+            <div class="col-md-3">
+              <label class="form-label text-dark">Status Publikasi</label>
+              <select name="is_published" class="form-select">
+                <option value="">Semua Status</option>
+                <option value="1" <?= (($filters['is_published'] ?? '') === '1') ? 'selected' : '' ?>>Dipublikasikan</option>
+                <option value="0" <?= (($filters['is_published'] ?? '') === '0') ? 'selected' : '' ?>>Draf</option>
+              </select>
             </div>
+            <div class="col-md-3">
+              <label class="form-label text-dark">Target Peserta</label>
+              <select name="target_audience" class="form-select">
+                <option value="">Semua Target</option>
+                <option value="Individual" <?= (($filters['target_audience'] ?? '') == 'Individual') ? 'selected' : '' ?>>Individu</option>
+                <option value="Class" <?= (($filters['target_audience'] ?? '') == 'Class') ? 'selected' : '' ?>>Kelas</option>
+                <option value="Grade" <?= (($filters['target_audience'] ?? '') == 'Grade') ? 'selected' : '' ?>>Tingkat</option>
+                <option value="All" <?= (($filters['target_audience'] ?? '') == 'All') ? 'selected' : '' ?>>Semua Siswa</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label text-dark">Pencarian</label>
+              <input type="text" name="search" class="form-control" value="<?= esc($filters['search'] ?? '') ?>" placeholder="Cari judul atau keterangan asesmen">
+            </div>
+          </div>
+          <div class="row mt-2 g-3">
+            <div class="col-md-2">
+              <label class="form-label d-block">&nbsp;</label>
+              <button type="submit" class="btn btn-primary w-100"><i class="mdi mdi-magnify me-1"></i> Filter/Saring</button>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label d-block">&nbsp;</label>
+              <a href="<?= site_url($prefix) ?>" class="btn btn-secondary w-100"><i class="mdi mdi-refresh me-1"></i> Reset</a>
+            </div>
+          </div>
         </form>
+      </div>
     </div>
+  </div>
 </div>
 
-<!-- Assessments List -->
-<div class="card border-0 shadow-sm">
-    <div class="card-header bg-white py-3">
-        <h5 class="mb-0">Daftar Asesmen</h5>
+<!-- Daftar Asesmen -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header">
+        <h4 class="card-title mb-0 text-dark"><i class="mdi mdi-clipboard-text me-2"></i>Daftar Asesmen</h4>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table id="assessmentTable" class="table table-hover table-bordered nowrap w-100">
+            <thead class="table-light">
+              <tr>
+                <th style="width:60px;" class="text-center">No</th>
+                <th>Judul Asesmen</th>
+                <th style="width:130px;">Tipe</th>
+                <th style="width:150px;">Target</th>
+                <th style="width:90px;" class="text-center">Jumlah Soal</th>
+                <th style="width:90px;" class="text-center">Peserta</th>
+                <th style="width:140px;" class="text-center">Status</th>
+                <th style="width:150px;" class="text-center">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($assessments as $a): ?>
+                <?php
+                  $aid          = (int) ($a['id'] ?? 0);
+                  $tipe         = (string) ($a['assessment_type'] ?? '-');
+                  $targetRaw    = (string) ($a['target_audience'] ?? 'All');
+                  $targetText   = $targetLabels[$targetRaw] ?? $targetRaw;
+                  $targetIcon   = $targetIcons[$targetRaw] ?? 'mdi-account-group';
+                  $jumlahSoal   = (int) ($a['total_questions'] ?? 0);
+                  $peserta      = (int) ($a['total_participants'] ?? 0);
+                  $published    = ! empty($a['is_published']);
+                  $aktif        = ! empty($a['is_active']);
+                ?>
+                <tr>
+                  <td class="text-center"></td>
+                  <td>
+                    <div class="fw-semibold text-dark">
+                      <a href="<?= site_url($prefix . '/' . $aid) ?>" class="text-dark text-decoration-none"><?= esc($a['title'] ?? '-') ?></a>
+                    </div>
+                    <?php if (! empty($a['description'])): ?>
+                      <small class="text-dark"><?= esc(mb_substr((string) $a['description'], 0, 70)) ?><?= mb_strlen((string) $a['description']) > 70 ? '…' : '' ?></small>
+                    <?php endif; ?>
+                  </td>
+                  <td><span class="badge bg-info text-white"><?= esc($tipe) ?></span></td>
+                  <td class="text-dark">
+                    <span class="badge bg-secondary"><i class="mdi <?= esc($targetIcon, 'attr') ?> me-1"></i><?= esc($targetText) ?></span>
+                    <?php if (! empty($a['target_class_name'])): ?>
+                      <div><small class="text-dark"><?= esc($a['target_class_name']) ?></small></div>
+                    <?php endif; ?>
+                  </td>
+                  <td class="text-center"><span class="badge bg-primary rounded-pill"><?= $jumlahSoal ?></span></td>
+                  <td class="text-center"><span class="badge bg-success rounded-pill"><?= $peserta ?></span></td>
+                  <td class="text-center">
+                    <?php if ($published): ?>
+                      <span class="badge bg-success"><i class="mdi mdi-check-circle me-1"></i>Dipublikasikan</span>
+                    <?php else: ?>
+                      <span class="badge bg-warning"><i class="mdi mdi-file-document-edit me-1"></i>Draf</span>
+                    <?php endif; ?>
+                    <?php if ($aktif): ?>
+                      <div class="mt-1"><span class="badge bg-info"><i class="mdi mdi-circle-medium"></i>Aktif</span></div>
+                    <?php endif; ?>
+                  </td>
+                  <td>
+                    <div class="d-flex flex-column gap-1 action-stack mx-auto">
+                      <a href="<?= site_url($prefix . '/' . $aid) ?>" class="btn btn-sm btn-info text-start" data-bs-toggle="tooltip" title="Lihat detail asesmen">
+                        <i class="mdi mdi-eye me-1"></i> Detail
+                      </a>
+                      <a href="<?= site_url($prefix . '/' . $aid . '/questions') ?>" class="btn btn-sm btn-secondary text-start" data-bs-toggle="tooltip" title="Kelola soal/pertanyaan">
+                        <i class="mdi mdi-help-box me-1"></i> Soal
+                      </a>
+                      <a href="<?= site_url($prefix . '/' . $aid . '/assign') ?>" class="btn btn-sm btn-primary text-start" data-bs-toggle="tooltip" title="Tugaskan ke siswa">
+                        <i class="mdi mdi-account-plus me-1"></i> Tugaskan
+                      </a>
+                      <a href="<?= site_url($prefix . '/' . $aid . '/results') ?>" class="btn btn-sm btn-dark text-start" data-bs-toggle="tooltip" title="Lihat hasil pengerjaan">
+                        <i class="mdi mdi-chart-bar me-1"></i> Hasil
+                      </a>
+                      <a href="<?= site_url($prefix . '/' . $aid . '/edit') ?>" class="btn btn-sm btn-warning text-start" data-bs-toggle="tooltip" title="Ubah asesmen">
+                        <i class="mdi mdi-pencil me-1"></i> Edit
+                      </a>
+                      <?php if (! $published): ?>
+                        <form method="post" action="<?= site_url($prefix . '/' . $aid . '/publish') ?>" onsubmit="return confirm('Publikasikan asesmen ini?');">
+                          <?= csrf_field() ?>
+                          <button type="submit" class="btn btn-sm btn-success text-start w-100" data-bs-toggle="tooltip" title="Publikasikan asesmen">
+                            <i class="mdi mdi-share me-1"></i> Publikasi
+                          </button>
+                        </form>
+                      <?php else: ?>
+                        <form method="post" action="<?= site_url($prefix . '/' . $aid . '/unpublish') ?>" onsubmit="return confirm('Batalkan publikasi asesmen ini?');">
+                          <?= csrf_field() ?>
+                          <button type="submit" class="btn btn-sm btn-outline-success text-start w-100" data-bs-toggle="tooltip" title="Batalkan publikasi">
+                            <i class="mdi mdi-share-off me-1"></i> Batal Publikasi
+                          </button>
+                        </form>
+                      <?php endif; ?>
+                      <form method="post" action="<?= site_url($prefix . '/' . $aid . '/duplicate') ?>" onsubmit="return confirm('Salin/duplikat asesmen ini?');">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-sm btn-light border text-start w-100" data-bs-toggle="tooltip" title="Salin asesmen">
+                          <i class="mdi mdi-content-copy me-1"></i> Salin
+                        </button>
+                      </form>
+                      <form method="post" action="<?= site_url($prefix . '/' . $aid . '/delete') ?>" onsubmit="return confirm('Hapus asesmen ini? Semua data terkait akan ikut terhapus.');">
+                        <?= csrf_field() ?>
+                        <button type="submit" class="btn btn-sm btn-danger text-start w-100" data-bs-toggle="tooltip" title="Hapus asesmen">
+                          <i class="mdi mdi-delete me-1"></i> Hapus
+                        </button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+              <?php endforeach; ?>
+              <?php if (! $assessments): ?>
+                <tr>
+                  <td colspan="8" class="text-center py-5">
+                    <i class="mdi mdi-clipboard-off text-dark" style="font-size:48px;"></i>
+                    <p class="text-dark mt-2 mb-0">Belum ada asesmen. Klik "Tambah Asesmen" untuk membuat yang pertama.</p>
+                  </td>
+                </tr>
+              <?php endif; ?>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="card-body p-0">
-        <?php if (empty($assessments)): ?>
-            <div class="text-center py-5">
-                <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
-                <h5 class="text-muted">Belum ada asesmen</h5>
-                <p class="text-muted">Mulai buat asesmen baru untuk siswa Anda</p>
-                <a href="<?= base_url('counselor/assessments/create') ?>" class="btn btn-primary mt-3">
-                    <i class="fas fa-plus me-2"></i>Buat Asesmen Pertama
-                </a>
-            </div>
-        <?php else: ?>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Judul Asesmen</th>
-                            <th>Tipe</th>
-                            <th>Target</th>
-                            <th class="text-center">Total Soal</th>
-                            <th class="text-center">Peserta</th>
-                            <th class="text-center">Status</th>
-                            <th class="text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($assessments as $assessment): ?>
-                            <?php
-                                $aid = (int)($assessment['id'] ?? 0);
-                                $participantCount = (int)($participantMap[$aid] ?? ($assessment['total_participants'] ?? 0));
-                            ?>
-                            <tr>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <div class="flex-shrink-0">
-                                            <div class="avatar-sm bg-primary bg-opacity-10 rounded d-flex align-items-center justify-content-center">
-                                                <i class="fas fa-clipboard-check text-primary"></i>
-                                            </div>
-                                        </div>
-                                        <div class="flex-grow-1 ms-3">
-                                            <h6 class="mb-0">
-                                                <a href="<?= base_url('counselor/assessments/' . $aid) ?>" class="text-dark text-decoration-none">
-                                                    <?= esc($assessment['title']) ?>
-                                                </a>
-                                            </h6>
-                                            <?php if (!empty($assessment['description'])): ?>
-                                                <small class="text-muted">
-                                                    <?= esc(substr($assessment['description'], 0, 60)) ?>
-                                                    <?= strlen($assessment['description']) > 60 ? '...' : '' ?>
-                                                </small>
-                                            <?php endif; ?>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <span class="badge bg-info bg-opacity-10 text-info">
-                                        <?= esc($assessment['assessment_type']) ?>
-                                    </span>
-                                </td>
-                                <td>
-                                    <?php
-                                    $targetIcon = [
-                                        'Individual' => 'fa-user',
-                                        'Class'      => 'fa-users',
-                                        'Grade'      => 'fa-graduation-cap',
-                                        'All'        => 'fa-globe'
-                                    ];
-                                    ?>
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">
-                                        <i class="fas <?= $targetIcon[$assessment['target_audience']] ?? 'fa-users' ?> me-1"></i>
-                                        <?= esc($assessment['target_audience']) ?>
-                                    </span>
-                                    <?php if (!empty($assessment['target_class_name'])): ?>
-                                        <br>
-                                        <small class="text-muted"><?= esc($assessment['target_class_name']) ?></small>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="text-center">
-                                    <span class="badge bg-primary rounded-pill"><?= (int)$assessment['total_questions'] ?></span>
-                                </td>
-
-                                <td class="text-center">
-                                    <span class="badge bg-success rounded-pill"><?= $participantCount ?></span>
-                                </td>
-
-                                <td class="text-center">
-                                    <?php if (!empty($assessment['is_published'])): ?>
-                                        <span class="badge bg-success">
-                                            <i class="fas fa-check-circle me-1"></i>Published
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="badge bg-warning">
-                                            <i class="fas fa-file-alt me-1"></i>Draft
-                                        </span>
-                                    <?php endif; ?>
-                                    <?php if (!empty($assessment['is_active'])): ?>
-                                        <br>
-                                        <span class="badge bg-info mt-1">
-                                            <i class="fas fa-circle me-1"></i>Active
-                                        </span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="text-center">
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-sm btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </button>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li>
-                                                <a class="dropdown-item" href="<?= base_url('counselor/assessments/' . $aid) ?>">
-                                                    <i class="fas fa-eye me-2"></i>Lihat Detail
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="<?= base_url('counselor/assessments/' . $aid . '/questions') ?>">
-                                                    <i class="fas fa-question-circle me-2"></i>Kelola Soal
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="<?= base_url('counselor/assessments/' . $aid . '/results') ?>">
-                                                    <i class="fas fa-chart-bar me-2"></i>Lihat Hasil
-                                                </a>
-                                            </li>
-                                            <li><hr class="dropdown-divider"></li>
-                                            <li>
-                                                <a class="dropdown-item" href="<?= base_url('counselor/assessments/' . $aid . '/edit') ?>">
-                                                    <i class="fas fa-edit me-2"></i>Edit
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="<?= base_url('counselor/assessments/' . $aid . '/assign') ?>">
-                                                    <i class="fas fa-user-plus me-2"></i>Tugaskan
-                                                </a>
-                                            </li>
-
-                                            <!-- ACTIONS THAT REQUIRE POST -->
-                                            <?php if (empty($assessment['is_published'])): ?>
-                                                <li>
-                                                    <form method="post" action="<?= base_url('counselor/assessments/' . $aid . '/publish') ?>" onsubmit="return confirm('Publikasikan asesmen ini?')">
-                                                        <?= csrf_field() ?>
-                                                        <button type="submit" class="dropdown-item">
-                                                            <i class="fas fa-share me-2"></i>Publikasi
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                            <?php else: ?>
-                                                <li>
-                                                    <form method="post" action="<?= base_url('counselor/assessments/' . $aid . '/unpublish') ?>" onsubmit="return confirm('Nonaktifkan publikasi asesmen ini?')">
-                                                        <?= csrf_field() ?>
-                                                        <button type="submit" class="dropdown-item">
-                                                            <i class="fas fa-times-circle me-2"></i>Unpublish
-                                                        </button>
-                                                    </form>
-                                                </li>
-                                            <?php endif; ?>
-
-                                            <li>
-                                                <form method="post" action="<?= base_url('counselor/assessments/' . $aid . '/duplicate') ?>">
-                                                    <?= csrf_field() ?>
-                                                    <button type="submit" class="dropdown-item">
-                                                        <i class="fas fa-copy me-2"></i>Duplikat
-                                                    </button>
-                                                </form>
-                                            </li>
-
-                                            <li><hr class="dropdown-divider"></li>
-
-                                            <li>
-                                                <form method="post" action="<?= base_url('counselor/assessments/' . $aid . '/delete') ?>" onsubmit="return confirm('Apakah Anda yakin ingin menghapus asesmen ini? Semua data terkait akan terhapus.')">
-                                                    <?= csrf_field() ?>
-                                                    <button type="submit" class="dropdown-item text-danger">
-                                                        <i class="fas fa-trash me-2"></i>Hapus
-                                                    </button>
-                                                </form>
-                                            </li>
-                                            <!-- END POST ACTIONS -->
-                                        </ul>
-                                    </div>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        <?php endif; ?>
-    </div>
+  </div>
 </div>
+<?= $this->endSection() ?>
 
-<script>
-    // Auto dismiss alerts after 5 seconds
-    document.addEventListener('DOMContentLoaded', function() {
-        setTimeout(function() {
-            const alerts = document.querySelectorAll('.alert');
-            alerts.forEach(function(alert) {
-                const bsAlert = new bootstrap.Alert(alert);
-                bsAlert.close();
-            });
-        }, 5000);
-    });
-</script>
-
+<?= $this->section('scripts') ?>
+<link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
 <style>
-    .avatar-sm { width: 40px; height: 40px; }
-    .table> :not(caption)>*>* { padding: 1rem 0.75rem; }
-    .card { transition: transform 0.2s; }
-    .card:hover { transform: translateY(-2px); }
+  .action-stack { max-width: 160px; }
+  .action-stack .btn { font-size: .78rem; }
 </style>
-
+<script>
+  $(document).ready(function () {
+    [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (el) { return new bootstrap.Tooltip(el); });
+    <?php if (! empty($assessments)): ?>
+      var table = $('#assessmentTable').DataTable({
+        responsive: true,
+        pageLength: 10,
+        order: [[1, 'asc']],
+        columnDefs: [{ orderable: false, targets: [0, 7] }],
+        dom: "rt" +
+             "<'row align-items-center mt-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-start'p>>" +
+             "<'row'<'col-12 mt-2'i>>",
+        language: {
+          lengthMenu: "Tampilkan _MENU_ data",
+          info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+          infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+          infoFiltered: "(disaring dari _MAX_ total data)",
+          zeroRecords: "Tidak ada data yang sesuai",
+          emptyTable: "Tidak ada data tersedia",
+          paginate: { first: "Pertama", last: "Terakhir", next: "Berikutnya", previous: "Sebelumnya" }
+        }
+      });
+      function renumber() {
+        var info = table.page.info();
+        table.column(0, { page: 'current' }).nodes().each(function (cell, i) { cell.innerHTML = info.start + i + 1; });
+      }
+      table.on('order.dt draw.dt', renumber);
+      renumber();
+    <?php endif; ?>
+  });
+</script>
 <?= $this->endSection() ?>

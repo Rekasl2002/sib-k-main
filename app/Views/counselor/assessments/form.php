@@ -57,28 +57,28 @@ $flashError   = session()->getFlashdata('error');
 $errors       = session('errors') ?? [];
 ?>
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-    <h4 class="mb-0">
-        <i class="fas fa-clipboard-list me-2"></i>
-        <?= $method === 'edit' ? 'Ubah Asesmen' : 'Buat Asesmen' ?>
-    </h4>
-
-    <div class="d-flex gap-2">
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <h4 class="mb-sm-0 text-dark">
+        <i class="mdi mdi-clipboard-text me-1"></i>
+        <?= $method === 'edit' ? 'Ubah Asesmen' : 'Tambah Asesmen' ?>
+      </h4>
+      <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0">
         <?php if ($method === 'edit' && ! empty($A['id'])): ?>
-            <a class="btn btn-outline-primary btn-sm"
-               href="<?= site_url('counselor/assessments/' . (int) $A['id']) ?>">
-                <i class="fas fa-eye me-1"></i> Lihat Detail
-            </a>
-            <a class="btn btn-outline-success btn-sm"
-               href="<?= site_url('counselor/assessments/' . (int) $A['id'] . '/assign') ?>">
-                <i class="fas fa-paper-plane me-1"></i> Tugaskan Asesmen
-            </a>
+          <a class="btn btn-sm btn-outline-primary" href="<?= site_url('counselor/assessments/' . (int) $A['id']) ?>">
+            <i class="mdi mdi-eye me-1"></i> Lihat Detail
+          </a>
+          <a class="btn btn-sm btn-outline-success" href="<?= site_url('counselor/assessments/' . (int) $A['id'] . '/assign') ?>">
+            <i class="mdi mdi-account-plus me-1"></i> Tugaskan
+          </a>
         <?php endif; ?>
-
         <a href="<?= site_url('counselor/assessments') ?>" class="btn btn-sm btn-outline-secondary">
-            &larr; Kembali ke Daftar Asesmen
+          <i class="mdi mdi-arrow-left me-1"></i> Kembali ke Daftar Asesmen
         </a>
+      </div>
     </div>
+  </div>
 </div>
 
 <!-- Petunjuk umum agar guru awam paham alur -->

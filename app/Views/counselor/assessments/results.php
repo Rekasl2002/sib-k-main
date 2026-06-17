@@ -85,37 +85,40 @@
     $filters = $filters ?? [
         'status' => '', 'class_id' => '', 'is_passed' => '', 'search' => ''
     ];
+
+    // Label status dalam bahasa Indonesia (nilai DB tetap bahasa Inggris untuk logika).
+    $statusLabels = [
+        'Assigned'    => 'Ditugaskan',
+        'In Progress' => 'Sedang Dikerjakan',
+        'Completed'   => 'Selesai (Belum Dinilai)',
+        'Graded'      => 'Sudah Dinilai',
+        'Expired'     => 'Kedaluwarsa',
+        'Abandoned'   => 'Ditinggalkan',
+    ];
 ?>
 
-<!-- Page Header -->
-<div class="page-header mb-4">
-    <div class="row align-items-center">
-        <div class="col-md-8">
-            <h2 class="page-title mb-0">
-                <i class="fas fa-chart-bar me-2"></i>
-                Hasil Asesmen
-            </h2>
-            <p class="text-muted mb-0">
-                <strong><?= esc($assessment['title'] ?? '-') ?></strong>
-            </p>
-        </div>
-        <div class="col-md-4 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end flex-wrap">
-            <a href="<?= base_url('counselor/assessments/' . $assessmentId) ?>" class="btn btn-secondary">
-                <i class="fas fa-arrow-left me-2"></i>
-                Kembali
-            </a>
-            <?php if (function_exists('site_url')): ?>
-                <a href="<?= site_url('counselor/assessments/'.$assessmentId.'/assign') ?>" class="btn btn-outline-primary">
-                    <i class="fas fa-user-plus me-2"></i>Tugaskan
+<!-- Judul Halaman -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+            <div>
+                <h4 class="mb-sm-0 text-dark">Hasil Asesmen</h4>
+                <p class="text-dark mb-0"><strong><?= esc($assessment['title'] ?? '-') ?></strong></p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0">
+                <a href="<?= base_url('counselor/assessments/' . $assessmentId) ?>" class="btn btn-secondary">
+                    <i class="mdi mdi-arrow-left me-1"></i> Kembali
                 </a>
-                <!-- Sinkronkan penugasan ke results (Assigned) -->
+                <a href="<?= site_url('counselor/assessments/'.$assessmentId.'/assign') ?>" class="btn btn-outline-primary">
+                    <i class="mdi mdi-account-plus me-1"></i> Tugaskan
+                </a>
                 <form method="post" action="<?= site_url('counselor/assessments/'.$assessmentId.'/assign/sync') ?>" class="d-inline">
                     <?= csrf_field() ?>
                     <button class="btn btn-outline-dark">
-                        <i class="fas fa-sync-alt me-2"></i>Sinkronkan Penugasan
+                        <i class="mdi mdi-sync me-1"></i> Selaraskan Penugasan
                     </button>
                 </form>
-            <?php endif; ?>
+            </div>
         </div>
     </div>
 </div>
@@ -150,7 +153,7 @@
                         <h6 class="text-muted mb-1">Total Peserta</h6>
                         <h3 class="mb-0"><?= (int)$totalParticipants ?></h3>
                         <small class="text-muted d-block mt-1">
-                            Assigned: <strong><?= (int)$assignedCnt ?></strong> • In Progress: <strong><?= (int)$inProgressCnt ?></strong>
+                            Ditugaskan: <strong><?= (int)$assignedCnt ?></strong> • Sedang Dikerjakan: <strong><?= (int)$inProgressCnt ?></strong>
                         </small>
                     </div>
                 </div>
@@ -190,7 +193,7 @@
                         <h6 class="text-muted mb-1">Nilai Rata-rata</h6>
                         <h3 class="mb-0"><?= number_format($avgScore, 1) ?></h3>
                         <small class="text-muted">
-                            Range: <?= number_format($lowScore, 1) ?> - <?= number_format($highScore, 1) ?>
+                            Rentang: <?= number_format($lowScore, 1) ?> - <?= number_format($highScore, 1) ?>
                         </small>
                     </div>
                 </div>
@@ -229,7 +232,7 @@
                     <label class="form-label">Status Pengerjaan</label>
                     <select name="status" class="form-select">
                         <option value="">Semua Status</option>
-                        <option value="Assigned"    <?= (($filters['status'] ?? '') === 'Assigned')    ? 'selected' : '' ?>>Assigned (Belum Mulai)</option>
+                        <option value="Assigned"    <?= (($filters['status'] ?? '') === 'Assigned')    ? 'selected' : '' ?>>Ditugaskan (Belum Mulai)</option>
                         <option value="In Progress" <?= (($filters['status'] ?? '') === 'In Progress') ? 'selected' : '' ?>>Sedang Dikerjakan</option>
                         <option value="Completed"   <?= (($filters['status'] ?? '') === 'Completed')   ? 'selected' : '' ?>>Selesai</option>
                         <option value="Graded"      <?= (($filters['status'] ?? '') === 'Graded')      ? 'selected' : '' ?>>Dinilai</option>
@@ -279,7 +282,7 @@
                     <i class="fas fa-redo me-2"></i>Reset
                 </a>
                 <button type="button" class="btn btn-success" onclick="exportToExcel()">
-                    <i class="fas fa-file-excel me-2"></i>Export Excel
+                    <i class="fas fa-file-excel me-2"></i>Ekspor Excel
                 </button>
             </div>
         </form>
@@ -300,14 +303,14 @@
     <div class="card-body pt-0">
         <!-- Toolbar Bulk Actions -->
         <div class="d-flex justify-content-between align-items-center py-3">
-            <div class="small text-muted">
+            <div class="small text-dark">
                 <i class="fas fa-info-circle me-1"></i>
-                Status <strong>Assigned</strong> berarti ditugaskan dan belum mulai; <strong>Completed</strong> selesai namun belum dinilai; <strong>Graded</strong> sudah dinilai.
+                <strong>Ditugaskan</strong> = sudah ditugaskan tetapi belum mulai; <strong>Selesai (Belum Dinilai)</strong> = sudah dikerjakan namun belum dinilai; <strong>Sudah Dinilai</strong> = penilaian selesai.
             </div>
             <form id="bulkRevokeForm" class="d-flex gap-2" method="post" action="<?= site_url('counselor/assessments/'.$assessmentId.'/assign/revoke') ?>">
                 <?= csrf_field() ?>
                 <button type="submit" id="btnBulkRevoke" class="btn btn-outline-danger btn-sm" disabled>
-                    <i class="fas fa-user-slash me-1"></i> Cabut Penugasan (Assigned)
+                    <i class="fas fa-user-slash me-1"></i> Cabut Penugasan
                 </button>
             </form>
         </div>
@@ -392,7 +395,7 @@
                                 <td><span class="text-muted"><?= esc($nisMixed) ?></span></td>
                                 <td>
                                     <?php if (!empty($result['class_name'])): ?>
-                                        <span class="badge bg-secondary bg-opacity-10 text-secondary">
+                                        <span class="badge bg-secondary">
                                             <?= esc($result['class_name']) ?>
                                         </span>
                                     <?php else: ?>
@@ -404,7 +407,7 @@
                                 </td>
                                 <td class="text-center">
                                     <span class="badge bg-<?= $badgeClass ?>">
-                                        <i class="fas <?= $iconClass ?> me-1"></i><?= esc($status) ?>
+                                        <i class="fas <?= $iconClass ?> me-1"></i><?= esc($statusLabels[$status] ?? $status) ?>
                                     </span>
                                 </td>
                                 <td class="text-center">
@@ -472,7 +475,7 @@
                                             <?php if ($status === 'Graded'): ?>
                                                 <form method="post" action="<?= site_url("counselor/assessments/{$assessmentId}/results/{$resId}/ungrade") ?>" class="d-inline">
                                                     <?= csrf_field() ?>
-                                                    <button class="btn btn-outline-secondary" title="Batalkan status Graded">
+                                                    <button class="btn btn-outline-secondary" title="Batalkan status Sudah Dinilai">
                                                         <i class="fas fa-undo"></i>
                                                     </button>
                                                 </form>
@@ -495,11 +498,11 @@
 <?php
     // Siapkan dataset status untuk grafik donat
     $chartStatus = [
-        'Assigned'               => $assignedCnt,
-        'In Progress'            => $inProgressCnt,
-        'Completed / Graded'     => ($statusCounts['Completed'] + $statusCounts['Graded']),
-        'Expired'                => $statusCounts['Expired'],
-        'Abandoned'              => $statusCounts['Abandoned'],
+        'Ditugaskan'              => $assignedCnt,
+        'Sedang Dikerjakan'       => $inProgressCnt,
+        'Selesai / Sudah Dinilai' => ($statusCounts['Completed'] + $statusCounts['Graded']),
+        'Kedaluwarsa'             => $statusCounts['Expired'],
+        'Ditinggalkan'            => $statusCounts['Abandoned'],
     ];
 
     // Siapkan scores graded untuk distribusi
@@ -524,7 +527,7 @@
             <div class="card-header bg-white py-3">
                 <h5 class="mb-0">
                     <i class="fas fa-chart-pie me-2 text-primary"></i>
-                    Distribusi Nilai (Graded)
+                    Distribusi Nilai (Sudah Dinilai)
                 </h5>
             </div>
             <div class="card-body">

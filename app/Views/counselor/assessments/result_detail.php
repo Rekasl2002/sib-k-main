@@ -139,6 +139,17 @@ $badgeStatusCls = [
 ];
 $badge = $badgeStatusCls[$status] ?? 'secondary';
 
+// Label status dalam bahasa Indonesia (nilai DB tetap bahasa Inggris untuk logika).
+$statusLabels = [
+    'Assigned'    => 'Ditugaskan (Belum Mulai)',
+    'In Progress' => 'Sedang Dikerjakan',
+    'Completed'   => 'Selesai (Belum Dinilai)',
+    'Graded'      => 'Sudah Dinilai',
+    'Expired'     => 'Kedaluwarsa',
+    'Abandoned'   => 'Ditinggalkan',
+    'Not Started' => 'Belum Mulai',
+];
+
 // Data review yang tersimpan (bila ada)
 $interpretation = $result['interpretation']  ?? '';
 $recommendations= $result['recommendations'] ?? '';
@@ -180,7 +191,6 @@ $flashError   = session()->getFlashdata('error');
     </h4>
     <div class="text-muted">
       <i class="fas fa-user-graduate me-1"></i><?= h($studentName) ?>
-      <span class="mx-2">•</span>NISN: <?= h($NISN) ?>
       <span class="mx-2">•</span>NISN: <?= h($nisn) ?>
       <span class="mx-2">•</span>Kelas: <?= h($className) ?>
     </div>
@@ -189,8 +199,8 @@ $flashError   = session()->getFlashdata('error');
     <?php if ($status === 'Graded'): ?>
       <form method="post" action="<?= site_url("counselor/assessments/{$assessmentId}/results/{$resultId}/ungrade") ?>">
         <?= csrf_field() ?>
-        <button class="btn btn-outline-danger" title="Batalkan status Graded (kembali jadi Completed)">
-          <i class="fas fa-undo me-1"></i> Batalkan “Graded”/Dinilai
+        <button class="btn btn-outline-danger" title="Batalkan status Sudah Dinilai (kembali ke Selesai)">
+          <i class="fas fa-undo me-1"></i> Batalkan Status Dinilai
         </button>
       </form>
     <?php endif; ?>
@@ -218,7 +228,7 @@ $flashError   = session()->getFlashdata('error');
           <div>
             <div class="text-muted small">Status</div>
             <div class="mt-1">
-              <span class="badge bg-<?= h($badge) ?>"><?= h($status === 'Assigned' ? 'Assigned (Belum Mulai)' : $status) ?></span>
+              <span class="badge bg-<?= h($badge) ?>"><?= h($statusLabels[$status] ?? $status) ?></span>
             </div>
           </div>
           <i class="fas fa-traffic-light fa-lg text-muted"></i>
@@ -271,7 +281,7 @@ $flashError   = session()->getFlashdata('error');
             <span class="text-muted">Tidak berlaku</span>
           <?php endif; ?>
         </div>
-        <div class="mt-2 small"><span class="text-muted">Passing:</span> <?= $passingScore !== null ? h(number_format($passingScore, 2)).'%' : '-' ?></div>
+        <div class="mt-2 small"><span class="text-muted">Nilai Lulus:</span> <?= $passingScore !== null ? h(number_format($passingScore, 2)).'%' : '-' ?></div>
       </div>
     </div>
   </div>
@@ -322,7 +332,7 @@ $flashError   = session()->getFlashdata('error');
 <!-- Review & Penilaian (meta) -->
 <div class="card mb-3" id="review">
   <div class="card-header d-flex align-items-center justify-content-between">
-    <div><i class="fas fa-pen-alt me-2"></i>Review & Penilaian Ringkas</div>
+    <div><i class="fas fa-pen-alt me-2"></i>Tinjauan & Penilaian Ringkas</div>
     <?php if ($reviewedAt): ?>
       <div class="small text-muted">
         Terakhir ditinjau: <?= h(fmtDate($reviewedAt)) ?><?= $reviewedBy ? ' oleh #'.h($reviewedBy) : '' ?>
@@ -369,7 +379,7 @@ $flashError   = session()->getFlashdata('error');
 
       <div class="mt-3 d-flex gap-2">
         <button type="submit" class="btn btn-primary">
-          <i class="fas fa-save me-1"></i> Simpan Review
+          <i class="fas fa-save me-1"></i> Simpan Tinjauan
         </button>
         <a class="btn btn-outline-secondary" href="<?= site_url("counselor/assessments/{$assessmentId}/results") ?>">
           Kembali
@@ -411,7 +421,7 @@ $flashError   = session()->getFlashdata('error');
       <?php if ($status === 'Assigned'): ?>
         <div class="p-3 alert alert-secondary border-0 rounded-0 mb-0">
           <i class="fas fa-circle me-2"></i>
-          Asesmen sudah <strong>Assigned</strong> kepada siswa ini, namun belum ada jawaban karena siswa belum memulai.
+          Asesmen sudah <strong>Ditugaskan</strong> kepada siswa ini, namun belum ada jawaban karena siswa belum memulai.
         </div>
       <?php endif; ?>
       <div class="list-group list-group-flush" id="qaList">

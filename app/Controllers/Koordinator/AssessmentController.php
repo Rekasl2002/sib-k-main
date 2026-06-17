@@ -352,16 +352,20 @@ class AssessmentController extends BaseController
             $questions = $qm->where('assessment_id', (int)$id)->where('deleted_at', null)->orderBy('order_number', 'ASC')->findAll();
         }
 
-        $stats = [];
-        if (method_exists($this->svc, 'getAssessmentStatistics')) {
-            $s = $this->svc->getAssessmentStatistics((int)$id);
-            $stats = (array)($s['data'] ?? []);
-        }
+        // Statistik & peringkat nilai tertinggi (selaras dengan tampilan Guru BK).
+        $resultModel = new AssessmentResultModel();
+        $statistics  = method_exists($resultModel, 'getAssessmentStatistics')
+            ? (array) $resultModel->getAssessmentStatistics((int)$id)
+            : [];
+        $topPerformers = method_exists($resultModel, 'getTopPerformers')
+            ? (array) $resultModel->getTopPerformers((int)$id, 5)
+            : [];
 
         return view('koordinator/assessments/show', [
-            'assessment' => $assessment,
-            'questions'  => $questions,
-            'stats'      => $stats,
+            'assessment'    => $assessment,
+            'questions'     => $questions,
+            'statistics'    => $statistics,
+            'topPerformers' => $topPerformers,
         ]);
     }
 

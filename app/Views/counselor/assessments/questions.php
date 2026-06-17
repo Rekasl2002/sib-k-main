@@ -15,18 +15,22 @@ $flashError   = session()->getFlashdata('error');
 $errors       = session('errors') ?? [];
 ?>
 
-<div class="d-flex align-items-center justify-content-between mb-3">
-  <h4 class="mb-0">
-    <i class="fas fa-question-circle me-2"></i>
-    Pertanyaan: <?= esc($assessment['title'] ?? '') ?>
-  </h4>
-  <div>
-    <a class="btn btn-secondary btn-sm" href="<?= site_url('counselor/assessments/'.$assessment['id']) ?>">
-      <i class="fas fa-arrow-left me-1"></i> Detail Asesmen
-    </a>
-    <a class="btn btn-outline-secondary btn-sm" href="<?= site_url('counselor/assessments') ?>">
-      <i class="fas fa-list me-1"></i> Semua Asesmen
-    </a>
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <h4 class="mb-sm-0 text-dark">
+        <i class="mdi mdi-help-box me-1"></i>
+        Soal: <?= esc($assessment['title'] ?? '') ?>
+      </h4>
+      <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0">
+        <a class="btn btn-secondary btn-sm" href="<?= site_url('counselor/assessments/'.$assessment['id']) ?>">
+          <i class="mdi mdi-arrow-left me-1"></i> Detail Asesmen
+        </a>
+        <a class="btn btn-outline-secondary btn-sm" href="<?= site_url('counselor/assessments') ?>">
+          <i class="mdi mdi-format-list-bulleted me-1"></i> Semua Asesmen
+        </a>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -72,7 +76,7 @@ $errors       = session('errors') ?? [];
               <option><?= $t ?></option>
             <?php endforeach; ?>
           </select>
-          <div class="form-text">Untuk tipe selain Essay, isi Options.</div>
+          <div class="form-text">Untuk tipe selain Esai, isi Pilihan Jawaban.</div>
         </div>
 
         <div class="col-md-2">
@@ -92,7 +96,7 @@ $errors       = session('errors') ?? [];
         <!-- OPTIONS BUILDER (add) -->
         <div class="col-12" id="options-builder">
           <label class="form-label d-flex align-items-center gap-2">
-            <span>Options</span>
+            <span>Pilihan Jawaban</span>
             <small class="text-muted" id="hint-by-type"></small>
           </label>
 
@@ -186,7 +190,7 @@ $errors       = session('errors') ?? [];
             <th>Pertanyaan</th>
             <th style="width:12%">Tipe</th>
             <th style="width:8%" class="text-center">Poin</th>
-            <th style="width:18%">Options</th>
+            <th style="width:18%">Pilihan Jawaban</th>
             <th style="width:16%">Jawaban Benar</th>
             <th style="width:10%" class="text-center">Wajib</th>
             <th style="width:10%">Dimensi</th>
@@ -421,7 +425,7 @@ $errors       = session('errors') ?? [];
                   <option><?= $t ?></option>
                 <?php endforeach; ?>
               </select>
-              <div class="form-text">Untuk tipe selain Essay, isi/cek Options.</div>
+              <div class="form-text">Untuk tipe selain Esai, isi/cek Pilihan Jawaban.</div>
             </div>
 
             <div class="col-md-2">
@@ -446,7 +450,7 @@ $errors       = session('errors') ?? [];
             <!-- OPTIONS BUILDER (edit) -->
             <div class="col-12" id="e_options_block">
               <label class="form-label d-flex justify-content-between align-items-center">
-                <span>Options</span>
+                <span>Pilihan Jawaban</span>
                 <div class="d-flex flex-wrap gap-2">
                   <button type="button" class="btn btn-sm btn-outline-primary" id="e_btnAddOption">
                     <i class="fas fa-plus me-1"></i>Tambah Option

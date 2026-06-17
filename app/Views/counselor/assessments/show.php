@@ -76,46 +76,31 @@ if ($target === 'Class' && !empty($assessment['target_class_name'])) {
 }
 ?>
 
-<!-- Header -->
-<div class="page-header mb-4">
-  <div class="row align-items-center">
-    <div class="col-md-8">
-      <h2 class="page-title mb-0">
-        <i class="fas fa-clipboard-check me-2"></i>
-        <?= esc($assessment['title'] ?? 'Asesmen') ?>
-      </h2>
-      <div class="text-muted">
-        <span class="me-2">
-          <i class="fas fa-tag me-1"></i><?= esc($assessment['assessment_type'] ?? '-') ?>
-        </span>
-        <span class="me-2">
-          <i class="fas fa-bullseye me-1"></i><?= esc($targetDesc) ?>
-        </span>
-        <span>
+<!-- Judul Halaman -->
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
+      <div>
+        <h4 class="mb-sm-0 text-dark"><i class="mdi mdi-clipboard-check me-1"></i><?= esc($assessment['title'] ?? 'Asesmen') ?></h4>
+        <div class="text-dark mt-1">
+          <span class="me-2"><i class="mdi mdi-tag me-1"></i><?= esc($assessment['assessment_type'] ?? '-') ?></span>
+          <span class="me-2"><i class="mdi mdi-bullseye-arrow me-1"></i><?= esc($targetDesc) ?></span>
           <?php if (!empty($assessment['is_published'])): ?>
-            <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Published</span>
+            <span class="badge bg-success"><i class="mdi mdi-check-circle me-1"></i>Dipublikasikan</span>
           <?php else: ?>
-            <span class="badge bg-warning"><i class="fas fa-file-alt me-1"></i>Draft</span>
+            <span class="badge bg-warning"><i class="mdi mdi-file-document-edit me-1"></i>Draf</span>
           <?php endif; ?>
           <?php if (!empty($assessment['is_active'])): ?>
-            <span class="badge bg-info ms-1"><i class="fas fa-circle me-1"></i>Active</span>
+            <span class="badge bg-info ms-1"><i class="mdi mdi-circle-medium"></i>Aktif</span>
           <?php endif; ?>
-        </span>
+        </div>
       </div>
-    </div>
-    <div class="col-md-4 text-md-end mt-3 mt-md-0">
-      <a href="<?= base_url('counselor/assessments') ?>" class="btn btn-secondary me-2">
-        <i class="fas fa-arrow-left me-2"></i>Kembali
-      </a>
-      <a href="<?= base_url('counselor/assessments/'.$aid.'/questions') ?>" class="btn btn-outline-primary me-2">
-        <i class="fas fa-question-circle me-2"></i>Kelola Soal
-      </a>
-      <a href="<?= base_url('counselor/assessments/'.$aid.'/results') ?>" class="btn btn-outline-info me-2">
-        <i class="fas fa-chart-bar me-2"></i>Hasil
-      </a>
-      <a href="<?= base_url('counselor/assessments/'.$aid.'/edit') ?>" class="btn btn-outline-secondary">
-        <i class="fas fa-edit me-2"></i>Edit
-      </a>
+      <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0">
+        <a href="<?= base_url('counselor/assessments') ?>" class="btn btn-secondary"><i class="mdi mdi-arrow-left me-1"></i>Kembali</a>
+        <a href="<?= base_url('counselor/assessments/'.$aid.'/questions') ?>" class="btn btn-outline-primary"><i class="mdi mdi-help-box me-1"></i>Kelola Soal</a>
+        <a href="<?= base_url('counselor/assessments/'.$aid.'/results') ?>" class="btn btn-outline-info"><i class="mdi mdi-chart-bar me-1"></i>Hasil</a>
+        <a href="<?= base_url('counselor/assessments/'.$aid.'/edit') ?>" class="btn btn-outline-secondary"><i class="mdi mdi-pencil me-1"></i>Edit</a>
+      </div>
     </div>
   </div>
 </div>
@@ -145,8 +130,8 @@ if ($target === 'Class' && !empty($assessment['target_class_name'])) {
           <div class="text-muted">Peserta</div>
           <div class="fs-3 fw-bold"><?= $participants ?></div>
           <small class="text-muted d-block mt-1">
-            Assigned: <strong><?= (int)$statusCounts['Assigned'] ?></strong>
-            &nbsp;•&nbsp; In Progress: <strong><?= (int)$inProgress ?></strong>
+            Ditugaskan: <strong><?= (int)$statusCounts['Assigned'] ?></strong>
+            &nbsp;•&nbsp; Sedang Dikerjakan: <strong><?= (int)$inProgress ?></strong>
           </small>
         </div>
       </div>
@@ -189,7 +174,7 @@ if ($target === 'Class' && !empty($assessment['target_class_name'])) {
           <i class="fas fa-trophy text-warning fa-2x"></i>
         </div>
         <div>
-          <div class="text-muted">Pass Rate</div>
+          <div class="text-muted">Tingkat Kelulusan</div>
           <div class="fs-3 fw-bold"><?= number_format($passRate, 1) ?>%</div>
         </div>
       </div>
@@ -272,7 +257,7 @@ if ($target === 'Class' && !empty($assessment['target_class_name'])) {
                 <tr>
                   <td><?= $no++ ?></td>
                   <td><?= esc($q['question_text'] ?? '') ?></td>
-                  <td><span class="badge bg-secondary bg-opacity-10 text-secondary"><?= esc($q['question_type'] ?? '-') ?></span></td>
+                  <td><span class="badge bg-secondary"><?= esc($q['question_type'] ?? '-') ?></span></td>
                   <td class="text-center"><?= (float)($q['points'] ?? 0) ?></td>
                 </tr>
               <?php endforeach; ?>
@@ -302,7 +287,7 @@ if ($target === 'Class' && !empty($assessment['target_class_name'])) {
           <?php else: ?>
             <form method="post" action="<?= base_url('counselor/assessments/'.$aid.'/unpublish') ?>" onsubmit="return confirm('Batalkan publikasi asesmen ini?')">
               <?= csrf_field() ?>
-              <button type="submit" class="btn btn-warning w-100"><i class="fas fa-times-circle me-2"></i>Unpublish</button>
+              <button type="submit" class="btn btn-warning w-100"><i class="fas fa-times-circle me-2"></i>Batalkan Publikasi</button>
             </form>
           <?php endif; ?>
 
@@ -319,7 +304,7 @@ if ($target === 'Class' && !empty($assessment['target_class_name'])) {
           <form method="post" action="<?= base_url('counselor/assessments/'.$aid.'/assign/sync') ?>" onsubmit="return confirm('Sinkronkan penugasan ke daftar hasil?')">
             <?= csrf_field() ?>
             <button type="submit" class="btn btn-outline-dark w-100">
-              <i class="fas fa-sync-alt me-2"></i>Sinkronkan Penugasan
+              <i class="fas fa-sync-alt me-2"></i>Selaraskan Penugasan
             </button>
           </form>
 
@@ -333,7 +318,7 @@ if ($target === 'Class' && !empty($assessment['target_class_name'])) {
 
     <div class="card border-0 shadow-sm">
       <div class="card-header bg-white py-3">
-        <h6 class="mb-0"><i class="fas fa-trophy me-2 text-warning"></i>Top Performers</h6>
+        <h6 class="mb-0"><i class="fas fa-trophy me-2 text-warning"></i>Nilai Tertinggi</h6>
       </div>
       <div class="card-body">
         <?php if (empty($topPerformers)): ?>
