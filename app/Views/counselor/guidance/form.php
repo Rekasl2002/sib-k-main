@@ -13,6 +13,10 @@
  *    ke dirinya sendiri; Koordinator BK bebas memilih. Khusus Konferensi Kasus: hanya
  *    Koordinator BK; Guru BK tidak memilih siapa pun (dikosongkan, ditetapkan Koordinator).
  * Field khusus ditampilkan berdasarkan $serviceType.
+ *  - Tanda wajib (*): Judul, Penanggung Jawab (kecuali Konferensi Kasus oleh Guru BK),
+ *    Tanggal & Jam, Lama Kegiatan, Tempat/Lokasi/Alamat, dan field deskripsi utama
+ *    (Ringkasan Materi/Deskripsi Masalah/Ringkasan/Hasil Kunjungan/Kronologi).
+ *    Siswa/Kelas Sasaran & peserta TIDAK wajib. Penegakan PIC juga di sisi server.
  */
 ?>
 <?= $this->extend('layouts/main') ?>
@@ -93,7 +97,7 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
         <div class="card-body">
           <h5 class="card-title mb-3 text-dark">Data Utama</h5>
           <div class="mb-3">
-            <label class="form-label text-dark">Judul/Topik/Masalah</label>
+            <label class="form-label text-dark">Judul/Topik/Masalah <span class="text-danger">*</span></label>
             <input type="text" name="title" class="form-control" required value="<?= esc($value('title')) ?>">
           </div>
 
@@ -137,7 +141,7 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
 
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label text-dark"><?= esc($pjLabel) ?></label>
+              <label class="form-label text-dark"><?= esc($pjLabel) ?><?php if (! ($isGuruBk && $isKonferensi)): ?> <span class="text-danger">*</span><?php endif; ?></label>
               <?php
                 // Nama PJ yang sedang terpilih (untuk chip awal). Cari di daftar pilihan;
                 // jika tak ada, pakai nama akun sendiri / nama dari record.
@@ -215,17 +219,17 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
           </div>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label text-dark">Tanggal &amp; Jam Kegiatan</label>
-              <input type="datetime-local" name="scheduled_at" class="form-control" value="<?= esc(str_replace(' ', 'T', substr((string) $value('scheduled_at'), 0, 16))) ?>">
+              <label class="form-label text-dark">Tanggal &amp; Jam Kegiatan <span class="text-danger">*</span></label>
+              <input type="datetime-local" name="scheduled_at" class="form-control" required value="<?= esc(str_replace(' ', 'T', substr((string) $value('scheduled_at'), 0, 16))) ?>">
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label text-dark">Lama Kegiatan (menit)</label>
-              <input type="number" name="duration_minutes" class="form-control" value="<?= esc($value('duration_minutes', 60)) ?>">
+              <label class="form-label text-dark">Lama Kegiatan (menit) <span class="text-danger">*</span></label>
+              <input type="number" name="duration_minutes" class="form-control" min="1" required value="<?= esc($value('duration_minutes', 60)) ?>">
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label text-dark">Tempat/Lokasi/Alamat</label>
-            <textarea name="location" class="form-control" rows="2" placeholder="Contoh: Ruang BK, ruang kelas, atau alamat lengkap"><?= esc($value('location')) ?></textarea>
+            <label class="form-label text-dark">Tempat/Lokasi/Alamat <span class="text-danger">*</span></label>
+            <textarea name="location" class="form-control" rows="2" required placeholder="Contoh: Ruang BK, ruang kelas, atau alamat lengkap"><?= esc($value('location')) ?></textarea>
           </div>
 
           <?php if ($serviceType === 'Bimbingan'): ?>
@@ -238,8 +242,8 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label text-dark">Ringkasan Materi</label>
-              <textarea name="summary" class="form-control" rows="4"><?= esc($value('summary')) ?></textarea>
+              <label class="form-label text-dark">Ringkasan Materi <span class="text-danger">*</span></label>
+              <textarea name="summary" class="form-control" rows="4" required><?= esc($value('summary')) ?></textarea>
             </div>
           <?php elseif ($serviceType === 'Konseling'): ?>
             <div class="mb-3">
@@ -251,8 +255,8 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label text-dark">Deskripsi Masalah</label>
-              <textarea name="problem_description" class="form-control" rows="4"><?= esc($value('problem_description')) ?></textarea>
+              <label class="form-label text-dark">Deskripsi Masalah <span class="text-danger">*</span></label>
+              <textarea name="problem_description" class="form-control" rows="4" required><?= esc($value('problem_description')) ?></textarea>
             </div>
             <div class="mb-3">
               <label class="form-label text-dark">Rencana Tindak Lanjut</label>
@@ -260,14 +264,14 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
             </div>
           <?php elseif ($serviceType === 'Kolaborasi Orang Tua'): ?>
             <div class="mb-3">
-              <label class="form-label text-dark">Ringkasan dan Tindak Lanjut</label>
-              <textarea name="summary" class="form-control" rows="4"><?= esc($value('summary')) ?></textarea>
+              <label class="form-label text-dark">Ringkasan dan Tindak Lanjut <span class="text-danger">*</span></label>
+              <textarea name="summary" class="form-control" rows="4" required><?= esc($value('summary')) ?></textarea>
             </div>
             <small class="text-dark d-block mb-2"><i class="mdi mdi-information-outline me-1"></i>Pilih Orang Tua yang hadir pada kartu <strong>Peserta Tambahan dan Catatan</strong> di samping (dari data atau tulis manual). Mereka otomatis tercatat sebagai peserta dan bisa diatur kehadirannya.</small>
           <?php elseif ($serviceType === 'Kunjungan Rumah'): ?>
             <div class="mb-3">
-              <label class="form-label text-dark">Hasil Kunjungan</label>
-              <textarea name="visit_result" class="form-control" rows="4"><?= esc($value('visit_result')) ?></textarea>
+              <label class="form-label text-dark">Hasil Kunjungan <span class="text-danger">*</span></label>
+              <textarea name="visit_result" class="form-control" rows="4" required><?= esc($value('visit_result')) ?></textarea>
             </div>
             <div class="mb-3">
               <label class="form-label text-dark">Tindak Lanjut</label>
@@ -276,8 +280,8 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
             <small class="text-dark d-block mb-2"><i class="mdi mdi-information-outline me-1"></i>Alamat kunjungan diisi pada kolom <strong>Tempat/Lokasi/Alamat</strong> di atas. Pilih Orang Tua &amp; Wali Kelas yang ditemui pada kartu <strong>Peserta Tambahan dan Catatan</strong>.</small>
           <?php elseif ($serviceType === 'Konferensi Kasus'): ?>
             <div class="mb-3">
-              <label class="form-label text-dark">Kronologi/Ringkasan Masalah</label>
-              <textarea name="chronology" class="form-control" rows="3"><?= esc($value('chronology')) ?></textarea>
+              <label class="form-label text-dark">Kronologi/Ringkasan Masalah <span class="text-danger">*</span></label>
+              <textarea name="chronology" class="form-control" rows="3" required><?= esc($value('chronology')) ?></textarea>
             </div>
             <div class="mb-3">
               <label class="form-label text-dark">Pembahasan dan Keputusan</label>

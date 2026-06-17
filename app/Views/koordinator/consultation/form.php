@@ -2,8 +2,16 @@
 /**
  * View form Konsultasi & Pengaduan (seragam semua peran).
  * Bahasa non-teknis untuk Guru Pesantren, siswa, dan orang tua.
- * Fase 2: subjek (siswa) lebih dari satu (data + manual + tombol "+"),
- * unggah lampiran bukti, dan sakelar privasi (boleh dilihat Wali Kelas/Orang Tua/Anak).
+ * Fase 2: subjek (siswa) lebih dari satu, unggah lampiran bukti, dan sakelar
+ * privasi (boleh dilihat Wali Kelas/Orang Tua/Anak).
+ * Perbaikan Kedua (Versi 2):
+ *  - "Siswa Terkait" memakai pola chip ala Bimbingan: klik pilihan -> langsung
+ *    jadi chip; opsi yang sudah dipakai disembunyikan agar tak terpilih dua kali;
+ *    tetap bisa dicari dengan diketik.
+ *  - Hapus kotak "Saksi/Pihak Terkait" (mubazir); saksi cukup ditulis di deskripsi.
+ *  - Penjelasan Jenis Laporan mengikuti jenis yang diizinkan peran.
+ *  - Tanda wajib: Judul, Cerita/Deskripsi, Waktu. Lokasi wajib hanya bagi peninjau
+ *    (Koordinator BK/Guru BK); opsional bagi pelapor (Siswa/Orang Tua/Wali Kelas).
  */
 ?>
 <?= $this->extend('layouts/main') ?>
@@ -82,16 +90,36 @@ $showStudent  = in_array($roleKey, ['orang-tua', 'wali-kelas'], true) || ! empty
             </div>
           </div>
 
-          <div class="mb-3">
-            <label class="form-label text-dark">Siswa Terkait (dari data) &mdash; boleh lebih dari satu</label>
-            <select name="subject_student_ids[]" class="form-select select2-search" multiple>
+          <!-- Siswa Terkait: klik pilihan -> langsung jadi chip (boleh lebih dari satu). -->
+          <?php
+            $studentNameById = [];
+            foreach (($options['students'] ?? []) as $st) {
+                $studentNameById[(int) $st['id']] = ($st['full_name'] ?? '-') . ' - ' . ($st['class_name'] ?? '-');
+            }
+            $preStudentCount = 0;
+          ?>
+          <div class="mb-3 js-multi" data-name="subject_student_ids[]">
+            <label class="form-label text-dark">Siswa Terkait <span class="text-dark fw-normal">(dari data &mdash; boleh lebih dari satu)</span></label>
+            <div class="js-chips border rounded p-2 mb-2 bg-light">
+              <?php foreach ($selectedStudentIds as $sid): ?>
+                <?php $sid = (int) $sid; if ($sid <= 0) { continue; } $preStudentCount++; ?>
+                <span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;">
+                  <span><?= esc($studentNameById[$sid] ?? ('Siswa #' . $sid)) ?></span>
+                  <input type="hidden" name="subject_student_ids[]" value="<?= esc((string) $sid, 'attr') ?>">
+                  <button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>
+                </span>
+              <?php endforeach; ?>
+              <span class="text-dark js-chip-empty"<?= $preStudentCount > 0 ? ' style="display:none;"' : '' ?>>Belum ada siswa dipilih.</span>
+            </div>
+            <select class="form-select select2-search js-picker">
+              <option value="">Ketik untuk mencari siswa&hellip;</option>
               <?php foreach (($options['students'] ?? []) as $student): ?>
-                <option value="<?= esc((string) $student['id']) ?>" <?= in_array((int) $student['id'], $selectedStudentIds, true) ? 'selected' : '' ?>>
+                <option value="<?= esc((string) $student['id']) ?>">
                   <?= esc(($student['full_name'] ?? '-') . ' - ' . ($student['class_name'] ?? '-')) ?>
                 </option>
               <?php endforeach; ?>
             </select>
-            <small class="text-dark">Ketik untuk mencari nama siswa di data. Bisa memilih lebih dari satu.</small>
+            <small class="text-dark d-block mt-1">Klik nama siswa pada daftar &mdash; otomatis masuk ke kotak di atas. Bisa lebih dari satu; nama yang sudah dipilih tidak muncul lagi.</small>
           </div>
 
           <div class="mb-3">
@@ -108,26 +136,22 @@ $showStudent  = in_array($roleKey, ['orang-tua', 'wali-kelas'], true) || ! empty
           </div>
 
           <div class="mb-3">
-            <label class="form-label text-dark">Judul/Topik/Masalah</label>
+            <label class="form-label text-dark">Judul/Topik/Masalah <span class="text-danger">*</span></label>
             <input type="text" name="title" class="form-control" required value="<?= esc($value('title')) ?>">
           </div>
           <div class="mb-3">
-            <label class="form-label text-dark">Ceritakan kebutuhan atau kejadian</label>
+            <label class="form-label text-dark">Ceritakan kebutuhan atau kejadian <span class="text-danger">*</span></label>
             <textarea name="description" class="form-control" rows="6" required><?= esc($value('description')) ?></textarea>
           </div>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label text-dark">Waktu Kejadian / Jadwal yang Diinginkan</label>
-              <input type="datetime-local" name="occurred_at" class="form-control" value="<?= esc(str_replace(' ', 'T', substr((string) $value('occurred_at'), 0, 16))) ?>">
+              <label class="form-label text-dark">Waktu Kejadian / Jadwal yang Diinginkan <span class="text-danger">*</span></label>
+              <input type="datetime-local" name="occurred_at" class="form-control" required value="<?= esc(str_replace(' ', 'T', substr((string) $value('occurred_at'), 0, 16))) ?>">
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label text-dark">Tempat/Lokasi/Alamat</label>
-              <textarea name="location" class="form-control" rows="2" placeholder="Contoh: Ruang kelas, rumah, atau alamat lengkap"><?= esc($value('location')) ?></textarea>
+              <label class="form-label text-dark">Tempat/Lokasi/Alamat <?php if (! empty($canReview)): ?><span class="text-danger">*</span><?php endif; ?></label>
+              <textarea name="location" class="form-control" rows="2" placeholder="Contoh: Ruang kelas, rumah, atau alamat lengkap" <?= ! empty($canReview) ? 'required' : '' ?>><?= esc($value('location')) ?></textarea>
             </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label text-dark">Saksi / Pihak Terkait</label>
-            <textarea name="witness" class="form-control" rows="2" placeholder="Sebutkan saksi atau pihak terkait (boleh dikosongkan)"><?= esc($value('witness')) ?></textarea>
           </div>
         </div>
       </div>
@@ -159,13 +183,26 @@ $showStudent  = in_array($roleKey, ['orang-tua', 'wali-kelas'], true) || ! empty
       <div class="card">
         <div class="card-body">
           <h5 class="card-title text-dark"><i class="mdi mdi-information-outline me-2"></i>Penjelasan Jenis Laporan</h5>
+          <?php
+            // Penjelasan hanya untuk jenis yang boleh dipilih peran ini.
+            $typeDesc = [
+                'Konsultasi'                          => 'ingin berbicara atau meminta saran kepada Guru BK.',
+                'Pengaduan'                           => 'melaporkan kejadian/masalah yang perlu ditindaklanjuti.',
+                'Permintaan Konseling'                => 'meminta dijadwalkan sesi konseling.',
+                'Permintaan Bimbingan'                => 'meminta dijadwalkan bimbingan (kelompok/klasikal).',
+                'Permintaan Informasi Karier/Studi'   => 'meminta informasi atau arahan karier dan studi lanjut.',
+                'Permintaan Mediasi'                  => 'meminta bantuan menyelesaikan perselisihan antar pihak.',
+                'Laporan Orang Tua'                   => 'laporan atau masukan dari orang tua.',
+                'Laporan Wali Kelas'                  => 'laporan atau masukan dari wali kelas.',
+                'Lainnya/Tidak Bisa Menentukan'       => 'bila belum yakin termasuk jenis yang mana.',
+            ];
+          ?>
           <ul class="mb-0 text-dark">
-            <li><strong>Konsultasi</strong> &mdash; ingin berbicara atau meminta saran kepada Guru BK.</li>
-            <li><strong>Pengaduan</strong> &mdash; melaporkan kejadian/masalah yang perlu ditindaklanjuti.</li>
-            <li><strong>Permintaan Konseling</strong> &mdash; meminta dijadwalkan sesi konseling.</li>
-            <li><strong>Laporan Orang Tua</strong> &mdash; laporan atau masukan dari orang tua.</li>
-            <li><strong>Laporan Wali Kelas</strong> &mdash; laporan atau masukan dari wali kelas.</li>
-            <li><strong>Lainnya/Tidak Bisa Menentukan</strong> &mdash; bila belum yakin termasuk jenis yang mana.</li>
+            <?php foreach ($requestTypes as $type): ?>
+              <?php if (isset($typeDesc[$type])): ?>
+                <li><strong><?= esc($type) ?></strong> &mdash; <?= esc($typeDesc[$type]) ?></li>
+              <?php endif; ?>
+            <?php endforeach; ?>
           </ul>
         </div>
       </div>
@@ -242,6 +279,61 @@ $showStudent  = in_array($roleKey, ['orang-tua', 'wali-kelas'], true) || ! empty
     if (window.jQuery && $.fn.select2) {
       $('.select2-search').select2({ theme: 'bootstrap-5', width: '100%', allowClear: true, placeholder: 'Ketik untuk mencari...' });
     }
+
+    // ---- Pemilihan banyak siswa: klik pilihan -> LANGSUNG jadi "chip".
+    // Opsi yang sudah dipakai disembunyikan dari daftar agar tak terpilih dua kali;
+    // muncul lagi saat chip-nya dihapus. (Pola sama dengan form Bimbingan.) ----
+    function pickerOptionByValue($picker, val) {
+      return $picker.find('option').filter(function () { return this.value === String(val); });
+    }
+    function detachOption($chip, $picker, val) {
+      var $opt = pickerOptionByValue($picker, val);
+      if ($opt.length) { $chip.data('opt', $opt); $chip.data('optParent', $opt.parent()); $opt.detach(); }
+    }
+    function restoreOption($chip) {
+      var $opt = $chip.data('opt'); var $parent = $chip.data('optParent');
+      if ($opt && $parent && $parent.length) { $parent.append($opt); }
+    }
+    function addChip($widget, val, text) {
+      if (!val) { return null; }
+      var name = $widget.data('name');
+      var $chips = $widget.find('.js-chips');
+      var dup = false;
+      $chips.find('input[type=hidden]').each(function () {
+        if (this.name === name && this.value === String(val)) { dup = true; }
+      });
+      if (dup) { return null; }
+      var $chip = $('<span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;"></span>');
+      $('<span></span>').text(text).appendTo($chip);
+      $('<input type="hidden">').attr('name', name).val(val).appendTo($chip);
+      $('<button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>').appendTo($chip);
+      $widget.find('.js-chip-empty').hide().before($chip);
+      return $chip;
+    }
+    // Saat membuka Edit: sembunyikan dari daftar opsi yang chip-nya sudah tampil.
+    $('.js-multi').each(function () {
+      var $widget = $(this);
+      var $picker = $widget.find('.js-picker');
+      $widget.find('.js-chip').each(function () {
+        detachOption($(this), $picker, $(this).find('input[type=hidden]').val());
+      });
+    });
+    $('.js-multi .js-picker').on('select2:select', function () {
+      var $widget = $(this).closest('.js-multi');
+      var $picker = $(this);
+      var val = $picker.val();
+      var text = $.trim($picker.find('option:selected').text());
+      var $chip = addChip($widget, val, text);
+      $picker.val('').trigger('change');
+      if ($chip) { detachOption($chip, $picker, val); }
+    });
+    $('.js-multi').on('click', '.js-chip-remove', function () {
+      var $widget = $(this).closest('.js-multi');
+      var $chip = $(this).closest('.js-chip');
+      restoreOption($chip);
+      $chip.remove();
+      if ($widget.find('.js-chip').length === 0) { $widget.find('.js-chip-empty').show(); }
+    });
 
     // Tambah/hapus baris nama manual.
     $('#addManualSubject').on('click', function () {

@@ -40,11 +40,14 @@ class ConsultationComplaintService
      */
     public function allowedRequestTypes(string $role): array
     {
+        // Jenis "permintaan" yang relevan untuk semua pelapor (Perbaikan Kedua).
+        $permintaan = ['Permintaan Konseling', 'Permintaan Bimbingan', 'Permintaan Informasi Karier/Studi', 'Permintaan Mediasi'];
+
         return match ($role) {
-            'siswa'      => ['Konsultasi', 'Pengaduan', 'Permintaan Konseling', 'Lainnya/Tidak Bisa Menentukan'],
-            'orang-tua'  => ['Konsultasi', 'Pengaduan', 'Laporan Orang Tua', 'Permintaan Konseling', 'Lainnya/Tidak Bisa Menentukan'],
-            'wali-kelas' => ['Konsultasi', 'Pengaduan', 'Laporan Wali Kelas', 'Permintaan Konseling', 'Lainnya/Tidak Bisa Menentukan'],
-            default      => ['Konsultasi', 'Pengaduan', 'Permintaan Konseling', 'Laporan Orang Tua', 'Laporan Wali Kelas', 'Lainnya/Tidak Bisa Menentukan'],
+            'siswa'      => ['Konsultasi', 'Pengaduan', ...$permintaan, 'Lainnya/Tidak Bisa Menentukan'],
+            'orang-tua'  => ['Konsultasi', 'Pengaduan', ...$permintaan, 'Laporan Orang Tua', 'Lainnya/Tidak Bisa Menentukan'],
+            'wali-kelas' => ['Konsultasi', 'Pengaduan', ...$permintaan, 'Laporan Wali Kelas', 'Lainnya/Tidak Bisa Menentukan'],
+            default      => ['Konsultasi', 'Pengaduan', ...$permintaan, 'Laporan Orang Tua', 'Laporan Wali Kelas', 'Lainnya/Tidak Bisa Menentukan'],
         };
     }
 

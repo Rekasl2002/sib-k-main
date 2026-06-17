@@ -71,6 +71,9 @@ abstract class BaseBkServiceController extends BaseController
         if (! $this->canManage) {
             return $this->deny();
         }
+        if ($err = $this->validateRequired($this->request->getPost() ?? [])) {
+            return redirect()->back()->withInput()->with('error', $err);
+        }
 
         $id = $this->service->create($this->serviceType, $this->request->getPost() ?? [], $this->currentUserId());
 
@@ -117,6 +120,9 @@ abstract class BaseBkServiceController extends BaseController
     {
         if (! $this->canManage) {
             return $this->deny();
+        }
+        if ($err = $this->validateRequired($this->request->getPost() ?? [])) {
+            return redirect()->back()->withInput()->with('error', $err);
         }
 
         $this->service->update((int) $id, $this->serviceType, $this->request->getPost() ?? [], $this->currentUserId());
@@ -218,6 +224,54 @@ abstract class BaseBkServiceController extends BaseController
 
         return redirect()->to(site_url($this->routePrefix . '/show/' . $recordId))
             ->with($ok ? 'success' : 'error', $ok ? 'Catatan berhasil dihapus.' : 'Anda hanya dapat menghapus catatan yang Anda buat sendiri.');
+    }
+
+    /**
+     * Validasi field wajib (Perbaikan Kedua / Versi 2). Mengembalikan pesan
+     * kesalahan berbahasa sederhana, atau null bila lolos.
+     *
+     * Wajib: Judul, Penanggung Jawab (kecuali Konferensi Kasus oleh Guru BK yang
+     * ditetapkan Koordinator), Tanggal & Jam, Lama Kegiatan, Tempat/Lokasi/Alamat,
+     * serta field deskripsi utama sesuai jenis layanan. Siswa/Kelas/peserta TIDAK wajib.
+     */
+    protected function validateRequired(array $post): ?string
+    {
+        $req = static fn(string $key): bool => trim((string) ($post[$key] ?? '')) !== '';
+
+        if (! $req('title')) {
+            return 'Judul/Topik/Masalah wajib diisi.';
+        }
+
+        // Penanggung Jawab wajib, kecuali Konferensi Kasus yang dibuat Guru BK
+        // (PIC ditetapkan Koordinator BK).
+        $pjOptional = ($this->serviceType === 'Konferensi Kasus' && $this->roleKey === 'guru-bk');
+        if (! $pjOptional && (int) ($post['counselor_id'] ?? 0) <= 0) {
+            return 'Penanggung Jawab wajib dipilih.';
+        }
+
+        if (! $req('scheduled_at') && ! $req('scheduled_date')) {
+            return 'Tanggal & Jam Kegiatan wajib diisi.';
+        }
+        if ((int) ($post['duration_minutes'] ?? 0) <= 0) {
+            return 'Lama Kegiatan (menit) wajib diisi.';
+        }
+        if (! $req('location')) {
+            return 'Tempat/Lokasi/Alamat wajib diisi.';
+        }
+
+        // Field deskripsi utama per jenis layanan.
+        $descField = [
+            'Bimbingan'             => 'summary',
+            'Konseling'             => 'problem_description',
+            'Kolaborasi Orang Tua'  => 'summary',
+            'Kunjungan Rumah'       => 'visit_result',
+            'Konferensi Kasus'      => 'chronology',
+        ][$this->serviceType] ?? '';
+        if ($descField !== '' && ! $req($descField)) {
+            return 'Bagian deskripsi/ringkasan wajib diisi.';
+        }
+
+        return null;
     }
 
     protected function render(string $view, array $data = [])
