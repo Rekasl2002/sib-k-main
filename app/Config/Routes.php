@@ -208,16 +208,11 @@ $routes->group('admin', [
 
         $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
             $routes->get('/', 'MessageController::index', ['as' => 'admin.messages']);
-            $routes->get('inbox', 'MessageController::inbox', ['as' => 'admin.messages.inbox']);
-            $routes->get('sent', 'MessageController::sent', ['as' => 'admin.messages.sent']);
-            $routes->get('compose', 'MessageController::compose', ['as' => 'admin.messages.compose']);
-            $routes->post('send', 'MessageController::send', ['as' => 'admin.messages.send']);
-            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'admin.messages.detail']);
-            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'admin.messages.edit']);
-            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'admin.messages.update']);
-            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'admin.messages.reply']);
-            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'admin.messages.delete']);
-            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'admin.messages.read']);
+            $routes->get('summary', 'MessageController::summary', ['as' => 'admin.messages.summary']);
+            $routes->get('chat/(:num)', 'MessageController::chat/$1', ['as' => 'admin.messages.chat']);
+            $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'admin.messages.poll']);
+            $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'admin.messages.send']);
+            $routes->post('delete', 'MessageController::delete', ['as' => 'admin.messages.delete']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'admin.messages.attachment']);
         });
 
@@ -359,16 +354,11 @@ $routes->group('koordinator', [
 
         $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
             $routes->get('/', 'MessageController::index', ['as' => 'koordinator.messages']);
-            $routes->get('inbox', 'MessageController::inbox', ['as' => 'koordinator.messages.inbox']);
-            $routes->get('sent', 'MessageController::sent', ['as' => 'koordinator.messages.sent']);
-            $routes->get('compose', 'MessageController::compose', ['as' => 'koordinator.messages.compose']);
-            $routes->post('send', 'MessageController::send', ['as' => 'koordinator.messages.send']);
-            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'koordinator.messages.detail']);
-            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'koordinator.messages.edit']);
-            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'koordinator.messages.update']);
-            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'koordinator.messages.reply']);
-            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'koordinator.messages.delete']);
-            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'koordinator.messages.read']);
+            $routes->get('summary', 'MessageController::summary', ['as' => 'koordinator.messages.summary']);
+            $routes->get('chat/(:num)', 'MessageController::chat/$1', ['as' => 'koordinator.messages.chat']);
+            $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'koordinator.messages.poll']);
+            $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'koordinator.messages.send']);
+            $routes->post('delete', 'MessageController::delete', ['as' => 'koordinator.messages.delete']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'koordinator.messages.attachment']);
         });
 
@@ -643,16 +633,11 @@ $routes->group('counselor', [
 
         $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
             $routes->get('/', 'MessageController::index', ['as' => 'counselor.messages']);
-            $routes->get('inbox', 'MessageController::inbox', ['as' => 'counselor.messages.inbox']);
-            $routes->get('sent', 'MessageController::sent', ['as' => 'counselor.messages.sent']);
-            $routes->get('compose', 'MessageController::compose', ['as' => 'counselor.messages.compose']);
-            $routes->post('send', 'MessageController::send', ['as' => 'counselor.messages.send']);
-            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'counselor.messages.detail']);
-            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'counselor.messages.edit']);
-            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'counselor.messages.update']);
-            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'counselor.messages.reply']);
-            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'counselor.messages.delete']);
-            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'counselor.messages.read']);
+            $routes->get('summary', 'MessageController::summary', ['as' => 'counselor.messages.summary']);
+            $routes->get('chat/(:num)', 'MessageController::chat/$1', ['as' => 'counselor.messages.chat']);
+            $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'counselor.messages.poll']);
+            $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'counselor.messages.send']);
+            $routes->post('delete', 'MessageController::delete', ['as' => 'counselor.messages.delete']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'counselor.messages.attachment']);
         });
 
@@ -845,16 +830,11 @@ $routes->group('homeroom', [
 
         $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
             $routes->get('/', 'MessageController::index', ['as' => 'homeroom.messages']);
-            $routes->get('inbox', 'MessageController::inbox', ['as' => 'homeroom.messages.inbox']);
-            $routes->get('sent', 'MessageController::sent', ['as' => 'homeroom.messages.sent']);
-            $routes->get('compose', 'MessageController::compose', ['as' => 'homeroom.messages.compose']);
-            $routes->post('send', 'MessageController::send', ['as' => 'homeroom.messages.send']);
-            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'homeroom.messages.detail']);
-            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'homeroom.messages.edit']);
-            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'homeroom.messages.update']);
-            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'homeroom.messages.reply']);
-            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'homeroom.messages.delete']);
-            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'homeroom.messages.read']);
+            $routes->get('summary', 'MessageController::summary', ['as' => 'homeroom.messages.summary']);
+            $routes->get('chat/(:num)', 'MessageController::chat/$1', ['as' => 'homeroom.messages.chat']);
+            $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'homeroom.messages.poll']);
+            $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'homeroom.messages.send']);
+            $routes->post('delete', 'MessageController::delete', ['as' => 'homeroom.messages.delete']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'homeroom.messages.attachment']);
         });
 
@@ -1117,16 +1097,11 @@ $routes->group('student', [
 
         $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
             $routes->get('/', 'MessageController::index', ['as' => 'student.messages']);
-            $routes->get('inbox', 'MessageController::inbox', ['as' => 'student.messages.inbox']);
-            $routes->get('sent', 'MessageController::sent', ['as' => 'student.messages.sent']);
-            $routes->get('compose', 'MessageController::compose', ['as' => 'student.messages.compose']);
-            $routes->post('send', 'MessageController::send', ['as' => 'student.messages.send']);
-            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'student.messages.detail']);
-            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'student.messages.edit']);
-            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'student.messages.update']);
-            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'student.messages.reply']);
-            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'student.messages.delete']);
-            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'student.messages.read']);
+            $routes->get('summary', 'MessageController::summary', ['as' => 'student.messages.summary']);
+            $routes->get('chat/(:num)', 'MessageController::chat/$1', ['as' => 'student.messages.chat']);
+            $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'student.messages.poll']);
+            $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'student.messages.send']);
+            $routes->post('delete', 'MessageController::delete', ['as' => 'student.messages.delete']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'student.messages.attachment']);
         });
 
@@ -1248,16 +1223,11 @@ $routes->group('parent', [
 
         $routes->group('messages', ['filter' => 'permission:send_messages'], function ($routes) {
             $routes->get('/', 'MessageController::index', ['as' => 'parent.messages']);
-            $routes->get('inbox', 'MessageController::inbox', ['as' => 'parent.messages.inbox']);
-            $routes->get('sent', 'MessageController::sent', ['as' => 'parent.messages.sent']);
-            $routes->get('compose', 'MessageController::compose', ['as' => 'parent.messages.compose']);
-            $routes->post('send', 'MessageController::send', ['as' => 'parent.messages.send']);
-            $routes->get('detail/(:num)', 'MessageController::detail/$1', ['as' => 'parent.messages.detail']);
-            $routes->get('edit/(:num)', 'MessageController::edit/$1', ['as' => 'parent.messages.edit']);
-            $routes->post('update/(:num)', 'MessageController::update/$1', ['as' => 'parent.messages.update']);
-            $routes->post('reply/(:num)', 'MessageController::reply/$1', ['as' => 'parent.messages.reply']);
-            $routes->post('delete/(:num)', 'MessageController::delete/$1', ['as' => 'parent.messages.delete']);
-            $routes->post('mark-read/(:num)', 'MessageController::markAsRead/$1', ['as' => 'parent.messages.read']);
+            $routes->get('summary', 'MessageController::summary', ['as' => 'parent.messages.summary']);
+            $routes->get('chat/(:num)', 'MessageController::chat/$1', ['as' => 'parent.messages.chat']);
+            $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'parent.messages.poll']);
+            $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'parent.messages.send']);
+            $routes->post('delete', 'MessageController::delete', ['as' => 'parent.messages.delete']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'parent.messages.attachment']);
         });
 
@@ -1438,10 +1408,12 @@ $roleScopedUrl = static function (string $path): string {
 
 $routes->group('messages', ['filter' => 'auth'], function ($routes) use ($roleScopedUrl) {
     $routes->get('/', static fn() => redirect()->to($roleScopedUrl('messages')), ['as' => 'messages.index']);
-    $routes->get('inbox', static fn() => redirect()->to($roleScopedUrl('messages/inbox')), ['as' => 'messages.inbox']);
-    $routes->get('sent', static fn() => redirect()->to($roleScopedUrl('messages/sent')), ['as' => 'messages.sent']);
-    $routes->get('compose', static fn() => redirect()->to($roleScopedUrl('messages/compose')), ['as' => 'messages.compose']);
-    $routes->get('detail/(:num)', static fn($id) => redirect()->to($roleScopedUrl('messages/detail/' . (int) $id)), ['as' => 'messages.detail']);
+    // Kompatibilitas tautan lama (model email) → arahkan ke halaman utama Pesan baru.
+    $routes->get('inbox', static fn() => redirect()->to($roleScopedUrl('messages')), ['as' => 'messages.inbox']);
+    $routes->get('sent', static fn() => redirect()->to($roleScopedUrl('messages')), ['as' => 'messages.sent']);
+    $routes->get('compose', static fn() => redirect()->to($roleScopedUrl('messages')), ['as' => 'messages.compose']);
+    $routes->get('detail/(:num)', static fn($id) => redirect()->to($roleScopedUrl('messages')), ['as' => 'messages.detail']);
+    $routes->get('chat/(:num)', static fn($id) => redirect()->to($roleScopedUrl('messages/chat/' . (int) $id)), ['as' => 'messages.chat']);
 });
 
 $routes->group('notifications', ['filter' => 'auth'], function ($routes) use ($roleScopedUrl) {

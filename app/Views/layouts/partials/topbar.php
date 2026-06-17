@@ -103,6 +103,15 @@ if ($__uid && class_exists(\App\Models\NotificationModel::class)) {
 }
 $__badgeZero = ($__unread <= 0) ? '1' : '0';
 
+// --- Pesan (jumlah belum dibaca) ---
+$__urlMessages      = site_url($__rolePrefix . '/messages');
+$__urlMessagesCount = site_url('api/messages/unread-count');
+$__msgUnread        = 0;
+if ($__uid && class_exists(\App\Models\MessageParticipantModel::class)) {
+    $__msgUnread = (int) (new \App\Models\MessageParticipantModel())
+        ->where('user_id', $__uid)->where('is_read', 0)->where('deleted_at', null)->countAllResults();
+}
+
 // CSRF cookie name (CI4 ambil dari config Security)
 $__csrfCookieName = '';
 try {
@@ -138,6 +147,15 @@ try {
             <button type="button" class="btn header-item noti-icon waves-effect" data-toggle="fullscreen" aria-label="Fullscreen">
               <i class="mdi mdi-fullscreen"></i>
             </button>
+          </div>
+
+          <!-- Pesan -->
+          <div class="dropdown d-inline-block">
+            <a href="<?= esc($__urlMessages) ?>" class="btn header-item noti-icon position-relative" aria-label="Pesan" title="Pesan">
+              <i class="mdi mdi-message-text-outline"></i>
+              <span class="badge rounded-pill bg-danger" id="message-badge"
+                    style="<?= $__msgUnread <= 0 ? 'display:none;' : '' ?>"><?= (int) $__msgUnread ?></span>
+            </a>
           </div>
 
           <!-- Notifications 
@@ -340,6 +358,27 @@ try {
       // Jalankan sekali saat load, lalu interval
       refreshCount();
       setInterval(refreshCount, 30000);
+
+      // Polling jumlah Pesan belum dibaca (badge ikon Pesan di header)
+      async function refreshMsgCount(){
+          if (document.visibilityState !== 'visible') return;
+          try {
+              const r = await fetch('<?= $__urlMessagesCount ?>', {
+                  headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                  cache: 'no-store'
+              });
+              if (!r.ok) return;
+              const j = await r.json();
+              const badge = document.getElementById('message-badge');
+              if (!badge) return;
+              const c = (j && typeof j.count !== 'undefined') ? parseInt(j.count, 10) : 0;
+              const safe = isNaN(c) ? 0 : c;
+              badge.textContent = String(safe);
+              badge.style.display = (safe <= 0) ? 'none' : '';
+          } catch (e) {}
+      }
+      refreshMsgCount();
+      setInterval(refreshMsgCount, 30000);
   })();
   </script>
 </header>

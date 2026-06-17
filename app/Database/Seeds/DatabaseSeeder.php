@@ -33,8 +33,10 @@ class DatabaseSeeder extends Seeder
         'assessment_assignees',
         'assessment_questions',
         'assessments',
+        'message_attachments',
         'message_participants',
         'messages',
+        'conversations',
         'notifications',
         'students',
         'classes',
@@ -513,23 +515,42 @@ class DatabaseSeeder extends Seeder
             ['id' => 5, 'user_id' => 2, 'title' => 'Konferensi kasus menunggu peserta', 'message' => 'Peserta konferensi kasus Siswa 2 belum semuanya mengonfirmasi.', 'type' => 'case_conference', 'link' => '/prototype/case-conferences', 'data' => json_encode(['service_id' => 5]), 'is_read' => 0, 'created_at' => '2026-06-08 14:00:00', 'updated_at' => $now],
         ]);
 
-        $this->insertRows('messages', [
-            ['id' => 1, 'subject' => 'Koordinasi bimbingan klasikal X IPA C', 'body' => 'Mohon konfirmasi jam bimbingan klasikal pada Jumat, 12 Juni 2026.', 'created_by' => 3, 'is_draft' => 0, 'created_at' => '2026-06-05 10:00:00', 'updated_at' => $now],
-            ['id' => 2, 'subject' => 'Permohonan jadwal konsultasi lanjutan', 'body' => 'Kami ingin memastikan jadwal pendampingan anak setelah pertemuan orang tua.', 'created_by' => 12, 'is_draft' => 0, 'created_at' => '2026-06-06 14:00:00', 'updated_at' => $now],
-            ['id' => 3, 'subject' => 'Undangan konferensi kasus', 'body' => 'Konferensi kasus adaptasi belajar Siswa 2 dijadwalkan pada 20 Juni 2026.', 'created_by' => 2, 'is_draft' => 0, 'created_at' => '2026-06-08 14:10:00', 'updated_at' => $now],
-            ['id' => 4, 'subject' => 'Pertanyaan pengisian asesmen', 'body' => 'Apakah asesmen minat karier bisa dikerjakan ulang bila jawaban kurang sesuai?', 'created_by' => 8, 'is_draft' => 0, 'created_at' => '2026-06-09 08:30:00', 'updated_at' => $now],
+        // Pesan ala media sosial (percakapan 1-lawan-1). Tiap percakapan berisi
+        // beberapa gelembung; recipient tiap gelembung dicatat di message_participants
+        // (penanda dibaca). user_one_id selalu <= user_two_id.
+        $this->insertRows('conversations', [
+            // Koordinator(2) <-> Guru BK Guru BK 1(3)
+            ['id' => 1, 'user_one_id' => 2, 'user_two_id' => 3, 'last_message_id' => 2, 'last_message_at' => '2026-06-05 10:05:00', 'created_by' => 2, 'created_at' => '2026-06-05 10:00:00', 'updated_at' => $now],
+            // Guru BK Guru BK 1(3) <-> Wali Kelas Wali Kelas 1(6)
+            ['id' => 2, 'user_one_id' => 3, 'user_two_id' => 6, 'last_message_id' => 4, 'last_message_at' => '2026-06-06 09:20:00', 'created_by' => 3, 'created_at' => '2026-06-06 09:00:00', 'updated_at' => $now],
+            // Orang Tua 1(12) <-> Guru BK Guru BK 1(3)
+            ['id' => 3, 'user_one_id' => 3, 'user_two_id' => 12, 'last_message_id' => 6, 'last_message_at' => '2026-06-07 14:10:00', 'created_by' => 12, 'created_at' => '2026-06-07 14:00:00', 'updated_at' => $now],
+            // Siswa Siswa 1(9) <-> Guru BK Guru BK 1(3)
+            ['id' => 4, 'user_one_id' => 3, 'user_two_id' => 9, 'last_message_id' => 7, 'last_message_at' => '2026-06-09 08:30:00', 'created_by' => 3, 'created_at' => '2026-06-09 08:30:00', 'updated_at' => $now],
         ]);
 
+        $this->insertRows('messages', [
+            ['id' => 1, 'conversation_id' => 1, 'subject' => '', 'body' => 'Guru BK 1, mohon konfirmasi jam bimbingan klasikal X IPA C pada Jumat ini.', 'created_by' => 2, 'is_draft' => 0, 'created_at' => '2026-06-05 10:00:00', 'updated_at' => $now],
+            ['id' => 2, 'conversation_id' => 1, 'subject' => '', 'body' => 'Baik Pak, jam ke-3 dan ke-4 insyaAllah siap.', 'created_by' => 3, 'is_draft' => 0, 'created_at' => '2026-06-05 10:05:00', 'updated_at' => $now],
+            ['id' => 3, 'conversation_id' => 2, 'subject' => '', 'body' => 'Wali Kelas 1, ada perkembangan baik dari ananda di kelas binaan Ibu.', 'created_by' => 3, 'is_draft' => 0, 'created_at' => '2026-06-06 09:00:00', 'updated_at' => $now],
+            ['id' => 4, 'conversation_id' => 2, 'subject' => '', 'body' => 'Alhamdulillah, terima kasih informasinya Guru BK 1.', 'created_by' => 6, 'is_draft' => 0, 'created_at' => '2026-06-06 09:20:00', 'updated_at' => $now],
+            ['id' => 5, 'conversation_id' => 3, 'subject' => '', 'body' => 'Assalamualaikum Bu, kami ingin memastikan jadwal pendampingan ananda.', 'created_by' => 12, 'is_draft' => 0, 'created_at' => '2026-06-07 14:00:00', 'updated_at' => $now],
+            ['id' => 6, 'conversation_id' => 3, 'subject' => '', 'body' => 'Waalaikumsalam Bu, akan kami atur pekan depan dan kabari kembali.', 'created_by' => 3, 'is_draft' => 0, 'created_at' => '2026-06-07 14:10:00', 'updated_at' => $now],
+            ['id' => 7, 'conversation_id' => 4, 'subject' => '', 'body' => 'Nak, jangan lupa mengisi asesmen minat karier ya sebelum tenggat.', 'created_by' => 3, 'is_draft' => 0, 'created_at' => '2026-06-09 08:30:00', 'updated_at' => $now],
+        ]);
+
+        // Recipient tiap gelembung (penanda dibaca). Sebagian sengaja belum dibaca
+        // agar badge "belum dibaca" terlihat saat demo.
         $this->insertRows('message_participants', [
-            ['id' => 1, 'message_id' => 1, 'user_id' => 3, 'role' => 'sender', 'is_read' => 1, 'read_at' => '2026-06-05 10:00:00', 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 2, 'message_id' => 1, 'user_id' => 6, 'role' => 'recipient', 'is_read' => 0, 'starred' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 3, 'message_id' => 2, 'user_id' => 12, 'role' => 'sender', 'is_read' => 1, 'read_at' => '2026-06-06 14:00:00', 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 4, 'message_id' => 2, 'user_id' => 3, 'role' => 'recipient', 'is_read' => 0, 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 5, 'message_id' => 3, 'user_id' => 2, 'role' => 'sender', 'is_read' => 1, 'read_at' => '2026-06-08 14:10:00', 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 6, 'message_id' => 3, 'user_id' => 4, 'role' => 'recipient', 'is_read' => 0, 'starred' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 7, 'message_id' => 3, 'user_id' => 6, 'role' => 'recipient', 'is_read' => 0, 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 8, 'message_id' => 4, 'user_id' => 8, 'role' => 'sender', 'is_read' => 1, 'read_at' => '2026-06-09 08:30:00', 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
-            ['id' => 9, 'message_id' => 4, 'user_id' => 4, 'role' => 'recipient', 'is_read' => 0, 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 1, 'message_id' => 1, 'user_id' => 3, 'role' => 'recipient', 'is_read' => 1, 'read_at' => '2026-06-05 10:04:00', 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 2, 'message_id' => 2, 'user_id' => 2, 'role' => 'recipient', 'is_read' => 1, 'read_at' => '2026-06-05 10:06:00', 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 3, 'message_id' => 3, 'user_id' => 6, 'role' => 'recipient', 'is_read' => 1, 'read_at' => '2026-06-06 09:19:00', 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 4, 'message_id' => 4, 'user_id' => 3, 'role' => 'recipient', 'is_read' => 1, 'read_at' => '2026-06-06 09:25:00', 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 5, 'message_id' => 5, 'user_id' => 3, 'role' => 'recipient', 'is_read' => 1, 'read_at' => '2026-06-07 14:05:00', 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
+            // Balasan Guru BK ke Orang Tua belum dibaca orang tua (badge).
+            ['id' => 6, 'message_id' => 6, 'user_id' => 12, 'role' => 'recipient', 'is_read' => 0, 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
+            // Pesan Guru BK ke Siswa belum dibaca siswa (badge).
+            ['id' => 7, 'message_id' => 7, 'user_id' => 9, 'role' => 'recipient', 'is_read' => 0, 'starred' => 0, 'created_at' => $now, 'updated_at' => $now],
         ]);
     }
 

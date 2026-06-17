@@ -11,5 +11,5 @@ class MessageModel extends Model
     protected $useSoftDeletes = true;
     protected $useTimestamps  = true;
 
-    protected $allowedFields = ['subject','body','created_by','is_draft'];
+    protected $allowedFields = ['subject','body','created_by','is_draft','conversation_id'];
 }
