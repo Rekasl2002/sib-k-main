@@ -412,7 +412,7 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
           <li>
             <a href="<?= base_url('koordinator/career-info') ?>" class="waves-effect<?= $__active('koordinator/career-info*') ?>">
               <i class="mdi mdi-school-outline"></i>
-              <span>Fitur Info Karier dan Info Studi Lanjut</span>
+              <span>Info Karier dan Studi Lanjut</span>
             </a>
           </li>
           <?php endif; ?>
@@ -496,7 +496,7 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
           <li>
             <a href="<?= base_url('counselor/career-info') ?>" class="waves-effect<?= $__active('counselor/career-info*') ?>">
               <i class="mdi mdi-school-outline"></i>
-              <span>Fitur Info Karier dan Info Studi Lanjut</span>
+              <span>Info Karier dan Studi Lanjut</span>
             </a>
           </li>
           <?php endif; ?>
@@ -563,7 +563,7 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
           <li>
             <a href="<?= base_url('homeroom/career-info') ?>" class="waves-effect<?= $__active('homeroom/career-info*') ?>">
               <i class="mdi mdi-briefcase-outline"></i>
-              <span>Info Karier dan Info Studi Lanjut</span>
+              <span>Info Karier dan Studi Lanjut</span>
             </a>
           </li>
           <?php endif; ?>
@@ -639,7 +639,7 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
           <li>
             <a href="<?= base_url('student/career') ?>" class="waves-effect<?= $__active('student/career*') ?>">
               <i class="mdi mdi-school-outline"></i>
-              <span>Info Karier dan Info Studi Lanjut</span>
+              <span>Info Karier dan Studi Lanjut</span>
             </a>
           </li>
           <?php endif; ?>
@@ -688,7 +688,7 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
           <li>
             <a href="<?= base_url('parent/career') ?>" class="waves-effect<?= $__active('parent/career*') ?>">
               <i class="mdi mdi-school-outline"></i>
-              <span>Info Karier dan Info Studi Lanjut</span>
+              <span>Info Karier dan Studi Lanjut</span>
             </a>
           </li>
           <?php endif; ?>

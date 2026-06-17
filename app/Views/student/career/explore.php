@@ -51,16 +51,41 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
 ?>
 
 <div class="container-fluid">
-  <!-- Header + Tabs: mirip tampilan Guru BK tapi versi siswa -->
-  <div class="card shadow-sm mb-3">
+  <!-- Page Title -->
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-flex align-items-center justify-content-between">
+        <h4 class="mb-0">Info Karier dan Studi Lanjut</h4>
+        <div class="page-title-right">
+          <ol class="breadcrumb m-0">
+            <li class="breadcrumb-item"><a href="<?= base_url('student/dashboard') ?>">Siswa</a></li>
+            <li class="breadcrumb-item active">Info Karier dan Studi Lanjut</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <?php if (session()->getFlashdata('success')): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="mdi mdi-check-circle me-2"></i><?= esc(session()->getFlashdata('success')) ?>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <?php endif; ?>
+  <?php if (session()->getFlashdata('error')): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <i class="mdi mdi-alert-circle me-2"></i><?= esc(session()->getFlashdata('error')) ?>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  <?php endif; ?>
+
+  <!-- Kontrol + Tabs -->
+  <div class="card">
     <div class="card-body pb-0">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <div>
-          <h4 class="mb-0">Fitur Info Karier dan Info Studi Lanjut</h4>
-          <div class="small text-muted">
-            Jelajahi pilihan karier dan perguruan tinggi yang sudah dikurasi oleh Guru BK.
-          </div>
-        </div>
+        <p class="text-dark mb-0">
+          Jelajahi pilihan karier dan perguruan tinggi yang sudah dikurasi oleh Guru BK.
+        </p>
         <div class="d-flex gap-2">
           <a href="<?= site_url('student/career/saved') ?>" class="btn btn-outline-primary btn-sm">
             <i class="mdi mdi-bookmark-outline me-1"></i>Item Tersimpan

@@ -1,341 +1,483 @@
 <?php
 /**
  * File Path: app/Views/homeroom_teacher/career/index.php
- * Halaman utama Fitur Info Karier dan Info Studi Lanjut (Wali Kelas)
+ * Halaman utama Info Karier dan Studi Lanjut (Wali Kelas)
  *
- * Variabel:
- * - $careers, $careerPager, $careerFilters
- * - $universities, $uniPager
- * - $activeTab ('careers'|'universities')
+ * Tampilan diseragamkan dengan Manajemen Siswa (koordinator/students):
+ * page-title-box, kartu statistik, kartu Filter/Saring Data, kartu daftar + DataTables.
+ *
+ * Variabel dari Controller:
+ * - $careers (array penuh), $careerFilters
+ * - $universities (array penuh), $uniFilters
+ * - $stats, $activeTab
  */
 
 $this->extend('layouts/main');
 $this->section('content');
 
-$flashSuccess = session()->getFlashdata('success');
-$flashError   = session()->getFlashdata('error');
-$req          = service('request');
+helper('url');
 
-// Prefill filter karier
-$careerFilters = $careerFilters ?? [
-    'q'      => $req->getGet('q'),
-    'sector' => $req->getGet('sector'),
-    'edu'    => $req->getGet('edu'),
-    'status' => $req->getGet('status'),
-    'pub'    => $req->getGet('pub'),
-    'sort'   => $req->getGet('sort'),
-];
+$careerFilters = $careerFilters ?? [];
+$uniFilters    = $uniFilters ?? [];
+$stats         = $stats ?? [];
+$activeTab      = $activeTab ?? 'careers';
 
-// Prefill filter universitas (opsional)
-$uniFilters = [
-    'q'      => $req->getGet('uq'),
-    'acc'    => $req->getGet('uacc'),
-    'loc'    => $req->getGet('uloc'),
-    'status' => $req->getGet('ustat'),
-];
+$sectors = [];
+foreach (($careers ?? []) as $c) {
+    if (!empty($c['sector'])) $sectors[$c['sector']] = $c['sector'];
+}
+ksort($sectors);
+
+$accs = [];
+$locs = [];
+foreach (($universities ?? []) as $u) {
+    if (!empty($u['accreditation'])) $accs[$u['accreditation']] = $u['accreditation'];
+    if (!empty($u['location']))      $locs[$u['location']]      = $u['location'];
+}
+foreach (['Unggul','A','B','C','Baik','Baik Sekali'] as $std) { $accs[$std] = $accs[$std] ?? $std; }
+ksort($accs); ksort($locs);
 ?>
 
-<div class="page-content">
-  <div class="container-fluid">
-
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
-      <div>
-        <h4 class="mb-1">Fitur Info Karier dan Info Studi Lanjut</h4>
-        <p class="text-muted mb-0">
-          Referensi untuk mendampingi perencanaan karier dan studi lanjut siswa di kelas perwalian Anda.
-        </p>
-      </div>
-    </div>
-
-    <?php if ($flashSuccess): ?>
-      <div class="alert alert-success"><?= esc($flashSuccess) ?></div>
-    <?php endif; ?>
-    <?php if ($flashError): ?>
-      <div class="alert alert-danger"><?= esc($flashError) ?></div>
-    <?php endif; ?>
-
-    <!-- Tabs + tombol aksi kanan -->
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-      <ul class="nav nav-tabs mb-0">
-        <li class="nav-item">
-          <a class="nav-link <?= ($activeTab === 'careers' ? 'active' : '') ?>"
-             href="<?= site_url('homeroom/career-info?tab=careers') ?>">
-            Karier
-          </a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link <?= ($activeTab === 'universities' ? 'active' : '') ?>"
-             href="<?= site_url('homeroom/career-info?tab=universities') ?>">
-            Perguruan Tinggi
-          </a>
-        </li>
-      </ul>
-
-      <div class="d-flex align-items-center gap-2">
-        <!-- Rekap pilihan siswa -->
-        <a href="<?= route_to('homeroom.career.choices') ?>" class="btn btn-outline-secondary btn-sm shadow-sm">
-          <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Karier dan Studi Lanjut Siswa
-        </a>
-        <?php if ($activeTab === 'careers'): ?>
-          <a href="<?= site_url('homeroom/career-info/careers/create') ?>" class="btn btn-success btn-sm shadow-sm">
-            <i class="mdi mdi-plus me-1"></i> Tambah Karier
-          </a>
-        <?php else: ?>
-          <a href="<?= site_url('homeroom/career-info/universities/create') ?>" class="btn btn-success btn-sm shadow-sm">
-            <i class="mdi mdi-plus me-1"></i> Tambah Info Studi Lanjut
-          </a>
-        <?php endif; ?>
-      </div>
-    </div>
-
-    <div class="tab-content">
-      <!-- TAB: Karier -->
-      <div class="tab-pane <?= ($activeTab === 'careers' ? 'active show' : '') ?>" id="tab-careers">
-
-        <div class="card">
-          <div class="card-body">
-
-            <form class="row g-2 mb-3" method="get" action="<?= site_url('homeroom/career-info') ?>">
-              <input type="hidden" name="tab" value="careers">
-
-              <div class="col-md-3">
-                <label class="form-label">Cari</label>
-                <input type="text" name="q" value="<?= esc($careerFilters['q'] ?? '') ?>"
-                       class="form-control form-control-sm" placeholder="Judul / sektor / deskripsi">
-              </div>
-
-              <div class="col-md-2">
-                <label class="form-label">Sektor</label>
-                <input type="text" name="sector" value="<?= esc($careerFilters['sector'] ?? '') ?>"
-                       class="form-control form-control-sm" placeholder="Mis. Kesehatan">
-              </div>
-
-              <div class="col-md-2">
-                <label class="form-label">Min. Pendidikan</label>
-                <input type="text" name="edu" value="<?= esc($careerFilters['edu'] ?? '') ?>"
-                       class="form-control form-control-sm" placeholder="SMA/SMK/D3/S1">
-              </div>
-
-              <div class="col-md-2">
-                <label class="form-label">Status</label>
-                <select name="status" class="form-select form-select-sm">
-                  <option value="">Semua</option>
-                  <option value="1" <?= ($careerFilters['status'] === '1' ? 'selected' : '') ?>>Aktif</option>
-                  <option value="0" <?= ($careerFilters['status'] === '0' ? 'selected' : '') ?>>Nonaktif</option>
-                </select>
-              </div>
-
-              <div class="col-md-2">
-                <label class="form-label">Publikasi</label>
-                <select name="pub" class="form-select form-select-sm">
-                  <option value="">Semua</option>
-                  <option value="1" <?= ($careerFilters['pub'] === '1' ? 'selected' : '') ?>>Publik</option>
-                  <option value="0" <?= ($careerFilters['pub'] === '0' ? 'selected' : '') ?>>Internal</option>
-                </select>
-              </div>
-
-              <div class="col-md-1 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
-              </div>
-            </form>
-
-            <div class="table-responsive">
-              <table class="table table-sm align-middle table-bordered">
-                <thead class="table-light">
-                  <tr>
-                    <th>#</th>
-                    <th>Judul Karier</th>
-                    <th>Sektor</th>
-                    <th>Min. Pendidikan</th>
-                    <th>Dibuat Oleh</th>
-                    <th>Status</th>
-                    <th>Publik</th>
-                    <th>Aksi</th>
-                  </tr>
-                </thead>
-                <tbody>
-                <?php if (!empty($careers) && count($careers)): ?>
-                  <?php $no = 1 + ((int) ($careerPager?->getCurrentPage('careers') ?? 1) - 1) * (int) ($careerPager?->getPerPage('careers') ?? 10); ?>
-                  <?php foreach ($careers as $career): ?>
-                    <tr>
-                      <td><?= $no++ ?></td>
-                      <td><?= esc($career['title'] ?? '') ?></td>
-                      <td><?= esc($career['sector'] ?? '-') ?></td>
-                      <td><?= esc($career['min_education'] ?? '-') ?></td>
-                      <td><?= esc($career['created_by_name'] ?? '-') ?></td>
-                      <td>
-                        <?php if (!empty($career['is_active'])): ?>
-                          <span class="badge bg-success">Aktif</span>
-                        <?php else: ?>
-                          <span class="badge bg-secondary">Nonaktif</span>
-                        <?php endif; ?>
-                      </td>
-                      <td>
-                        <?php if (!empty($career['is_public'])): ?>
-                          <span class="badge bg-info text-dark">Publik</span>
-                        <?php else: ?>
-                          <span class="badge bg-warning text-dark">Internal</span>
-                        <?php endif; ?>
-                      </td>
-                      <td>
-                        <div class="btn-group btn-group-sm" role="group">
-                          <a href="<?= site_url('homeroom/career-info/careers/edit/' . (int)$career['id']) ?>" class="btn btn-outline-primary">Edit</a>
-                          <form method="post" action="<?= site_url('homeroom/career-info/careers/toggle/' . (int)$career['id']) ?>">
-                            <?= csrf_field() ?>
-                            <button type="submit" class="btn btn-outline-warning">Status</button>
-                          </form>
-                          <form method="post" action="<?= site_url('homeroom/career-info/careers/publish/' . (int)$career['id']) ?>">
-                            <?= csrf_field() ?>
-                            <button type="submit" class="btn btn-outline-info">Publikasi</button>
-                          </form>
-                          <form method="post" action="<?= site_url('homeroom/career-info/careers/delete/' . (int)$career['id']) ?>" onsubmit="return confirm('Hapus info karier ini?')">
-                            <?= csrf_field() ?>
-                            <button type="submit" class="btn btn-outline-danger">Hapus</button>
-                          </form>
-                        </div>
-                      </td>
-                    </tr>
-                  <?php endforeach; ?>
-                <?php else: ?>
-                  <tr>
-                    <td colspan="8" class="text-center text-muted">Belum ada data karier.</td>
-                  </tr>
-                <?php endif; ?>
-                </tbody>
-              </table>
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0">Info Karier dan Studi Lanjut</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Wali Kelas</a></li>
+                    <li class="breadcrumb-item active">Info Karier dan Studi Lanjut</li>
+                </ol>
             </div>
-
-            <?php if ($careerPager): ?>
-              <div class="mt-2">
-                <?= $careerPager->links('careers', 'default_full') ?>
-              </div>
-            <?php endif; ?>
-
-          </div>
         </div>
-
-      </div>
-
-      <!-- TAB: Universitas -->
-      <div class="tab-pane <?= ($activeTab === 'universities' ? 'active show' : '') ?>" id="tab-universities">
-
-        <div class="card">
-          <div class="card-body">
-
-            <form class="row g-2 mb-3" method="get" action="<?= site_url('homeroom/career-info') ?>">
-              <input type="hidden" name="tab" value="universities">
-
-              <div class="col-md-4">
-                <label class="form-label">Cari</label>
-                <input type="text" name="uq" value="<?= esc($uniFilters['q'] ?? '') ?>"
-                       class="form-control form-control-sm" placeholder="Nama universitas / prodi / lokasi">
-              </div>
-
-              <div class="col-md-2">
-                <label class="form-label">Akreditasi</label>
-                <input type="text" name="uacc" value="<?= esc($uniFilters['acc'] ?? '') ?>"
-                       class="form-control form-control-sm" placeholder="A/B/C/unggul">
-              </div>
-
-              <div class="col-md-3">
-                <label class="form-label">Lokasi</label>
-                <input type="text" name="uloc" value="<?= esc($uniFilters['loc'] ?? '') ?>"
-                       class="form-control form-control-sm" placeholder="Kota / provinsi">
-              </div>
-
-              <div class="col-md-2">
-                <label class="form-label">Status</label>
-                <input type="text" name="ustat" value="<?= esc($uniFilters['status'] ?? '') ?>"
-                       class="form-control form-control-sm" placeholder="Negeri / swasta">
-              </div>
-
-              <div class="col-md-1 d-flex align-items-end">
-                <button type="submit" class="btn btn-primary btn-sm w-100">Filter</button>
-              </div>
-            </form>
-
-            <div class="table-responsive">
-              <table class="table table-sm align-middle table-bordered">
-                <thead class="table-light">
-                    <tr>
-                    <th>#</th>
-                    <th>Nama Universitas</th>
-                    <th>Akreditasi</th>
-                    <th>Lokasi</th>
-                    <th>Dibuat Oleh</th>
-                    <th>Status</th>
-                    <th>Publik</th>
-                    <th>Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                <?php if (!empty($universities) && count($universities)): ?>
-                    <?php
-                    $no = 1 + ((int) ($uniPager?->getCurrentPage('universities') ?? 1) - 1)
-                            * (int) ($uniPager?->getPerPage('universities') ?? 10);
-                    ?>
-                    <?php foreach ($universities as $univ): ?>
-                    <tr>
-                        <td><?= $no++ ?></td>
-                        <td><?= esc($univ['university_name'] ?? '') ?></td>
-                        <td><?= esc($univ['accreditation'] ?? '-') ?></td>
-                        <td><?= esc($univ['location'] ?? '-') ?></td>
-                        <td><?= esc($univ['created_by_name'] ?? '-') ?></td>
-                        <td>
-                        <?php if (!empty($univ['is_active'])): ?>
-                            <span class="badge bg-success">Aktif</span>
-                        <?php else: ?>
-                            <span class="badge bg-secondary">Nonaktif</span>
-                        <?php endif; ?>
-                        </td>
-                        <td>
-                        <?php if (!empty($univ['is_public'])): ?>
-                            <span class="badge bg-info text-dark">Publik</span>
-                        <?php else: ?>
-                            <span class="badge bg-warning text-dark">Internal</span>
-                        <?php endif; ?>
-                        </td>
-                        <td>
-                        <div class="btn-group btn-group-sm" role="group">
-                            <a href="<?= site_url('homeroom/career-info/universities/edit/' . (int)$univ['id']) ?>" class="btn btn-outline-primary">Edit</a>
-                            <form method="post" action="<?= site_url('homeroom/career-info/universities/toggle/' . (int)$univ['id']) ?>">
-                            <?= csrf_field() ?>
-                            <button type="submit" class="btn btn-outline-warning">Status</button>
-                            </form>
-                            <form method="post" action="<?= site_url('homeroom/career-info/universities/publish/' . (int)$univ['id']) ?>">
-                            <?= csrf_field() ?>
-                            <button type="submit" class="btn btn-outline-info">Publikasi</button>
-                            </form>
-                            <form method="post" action="<?= site_url('homeroom/career-info/universities/delete/' . (int)$univ['id']) ?>" onsubmit="return confirm('Hapus info studi lanjut ini?')">
-                            <?= csrf_field() ?>
-                            <button type="submit" class="btn btn-outline-danger">Hapus</button>
-                            </form>
-                        </div>
-                        </td>
-                    </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
-                    <tr>
-                    <td colspan="8" class="text-center text-muted">Belum ada data universitas.</td>
-                    </tr>
-                <?php endif; ?>
-                </tbody>
-                </table>
-            </div>
-
-            <?php if ($uniPager): ?>
-              <div class="mt-2">
-                <?= $uniPager->links('universities', 'default_full') ?>
-              </div>
-            <?php endif; ?>
-
-          </div>
-        </div>
-
-      </div>
     </div>
-
-  </div>
 </div>
 
-<?php $this->endSection(); ?>
+<?php if (session()->getFlashdata('success')): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="mdi mdi-check-circle me-2"></i><?= esc(session()->getFlashdata('success')) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+<?php if (session()->getFlashdata('error')): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="mdi mdi-alert-circle me-2"></i><?= esc(session()->getFlashdata('error')) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<!-- Statistics Cards -->
+<div class="row">
+    <?php
+    $miniCards = [
+        ['label' => 'Total Pilihan Karier', 'value' => $stats['careers_total'] ?? 0,  'bg' => 'bg-primary', 'icon' => 'mdi-briefcase-outline'],
+        ['label' => 'Karier Aktif',         'value' => $stats['careers_active'] ?? 0, 'bg' => 'bg-success', 'icon' => 'mdi-briefcase-check-outline'],
+        ['label' => 'Total Perguruan Tinggi','value' => $stats['uni_total'] ?? 0,      'bg' => 'bg-info',    'icon' => 'mdi-town-hall'],
+        ['label' => 'Perguruan Tinggi Aktif','value' => $stats['uni_active'] ?? 0,     'bg' => 'bg-secondary','icon' => 'mdi-school-outline'],
+    ];
+    ?>
+    <?php foreach ($miniCards as $mc): ?>
+        <div class="col-6 col-md-3">
+            <div class="card mini-stats-wid">
+                <div class="card-body">
+                    <div class="d-flex">
+                        <div class="flex-grow-1">
+                            <p class="text-dark fw-medium mb-2"><?= esc($mc['label']) ?></p>
+                            <h4 class="mb-0 text-dark"><?= number_format((int) $mc['value']) ?></h4>
+                        </div>
+                        <div class="flex-shrink-0 align-self-center">
+                            <div class="mini-stat-icon avatar-sm rounded-circle <?= esc($mc['bg'], 'attr') ?>">
+                                <span class="avatar-title"><i class="mdi <?= esc($mc['icon'], 'attr') ?> font-size-24"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    <?php endforeach; ?>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link <?= ($activeTab === 'careers' ? 'active' : '') ?>" href="<?= site_url('homeroom/career-info?tab=careers') ?>">
+            <i class="mdi mdi-briefcase-outline me-1"></i>Pilihan Karier
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link <?= ($activeTab === 'universities' ? 'active' : '') ?>" href="<?= site_url('homeroom/career-info?tab=universities') ?>">
+            <i class="mdi mdi-town-hall me-1"></i>Info Perguruan Tinggi
+        </a>
+    </li>
+</ul>
+
+<div class="tab-content">
+    <!-- TAB: KARIER -->
+    <div class="tab-pane fade <?= ($activeTab === 'careers' ? 'show active' : '') ?>">
+        <div class="row">
+            <div class="col-12">
+                <div class="card filter-compact">
+                    <div class="card-header py-2">
+                        <h5 class="card-title mb-0 text-dark"><i class="mdi mdi-filter-variant me-2"></i>Filter/Saring Data</h5>
+                    </div>
+                    <div class="card-body py-3">
+                        <form action="<?= site_url('homeroom/career-info') ?>" method="get">
+                            <input type="hidden" name="tab" value="careers">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <label class="form-label">Sektor</label>
+                                    <select name="sector" class="form-select">
+                                        <option value="">Semua Sektor</option>
+                                        <?php foreach ($sectors as $s): ?>
+                                            <option value="<?= esc($s) ?>" <?= (($careerFilters['sector'] ?? '') === $s) ? 'selected' : '' ?>><?= esc($s) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Pendidikan Minimal</label>
+                                    <select name="edu" class="form-select">
+                                        <option value="">Semua Tingkat</option>
+                                        <?php foreach (['SMA/SMK','D3','S1','S2'] as $e): ?>
+                                            <option value="<?= esc($e) ?>" <?= (($careerFilters['edu'] ?? '') === $e) ? 'selected' : '' ?>><?= esc($e) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Status</label>
+                                    <select name="status" class="form-select">
+                                        <?php $fStatus = $careerFilters['status'] ?? ''; ?>
+                                        <option value=""  <?= $fStatus === ''  ? 'selected' : '' ?>>Semua Status</option>
+                                        <option value="1" <?= $fStatus === '1' ? 'selected' : '' ?>>Aktif</option>
+                                        <option value="0" <?= $fStatus === '0' ? 'selected' : '' ?>>Nonaktif</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Tampil ke Siswa</label>
+                                    <select name="pub" class="form-select">
+                                        <?php $fPub = $careerFilters['pub'] ?? ''; ?>
+                                        <option value=""  <?= $fPub === ''  ? 'selected' : '' ?>>Semua</option>
+                                        <option value="1" <?= $fPub === '1' ? 'selected' : '' ?>>Ditampilkan</option>
+                                        <option value="0" <?= $fPub === '0' ? 'selected' : '' ?>>Disembunyikan</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Pencarian</label>
+                                    <input type="text" name="q" class="form-control" placeholder="Judul, sektor, deskripsi..." value="<?= esc($careerFilters['q'] ?? '') ?>">
+                                </div>
+                            </div>
+                            <div class="row mt-2 g-3">
+                                <div class="col-md-2">
+                                    <label class="form-label d-block">&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary w-100"><i class="mdi mdi-magnify me-1"></i> Filter/Saring</button>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label d-block">&nbsp;</label>
+                                    <a href="<?= site_url('homeroom/career-info?tab=careers') ?>" class="btn btn-secondary w-100"><i class="mdi mdi-refresh me-1"></i> Reset</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mb-0"><i class="mdi mdi-briefcase-outline me-2"></i>Daftar Pilihan Karier</h4>
+                        <div class="text-end d-flex gap-2 align-items-center flex-wrap">
+                            <a href="<?= route_to('homeroom.career.choices') ?>" class="btn btn-info">
+                                <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Siswa
+                            </a>
+                            <a href="<?= site_url('homeroom/career-info/careers/create') ?>" class="btn btn-success">
+                                <i class="mdi mdi-plus me-1"></i> Tambah Karier
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="careersTable" class="table table-hover table-bordered nowrap w-100">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:60px;" class="text-center">No</th>
+                                        <th>Judul Karier</th>
+                                        <th style="width:140px;">Sektor</th>
+                                        <th style="width:130px;">Pendidikan Min.</th>
+                                        <th style="width:150px;">Dibuat Oleh</th>
+                                        <th style="width:100px;">Status</th>
+                                        <th style="width:130px;">Tampil ke Siswa</th>
+                                        <th style="width:150px;" class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <?php if (!empty($careers)): ?>
+                                    <?php foreach ($careers as $c): ?>
+                                        <?php $creatorName = trim((string)($c['created_by_name'] ?? '')); ?>
+                                        <tr>
+                                            <td class="text-center"></td>
+                                            <td><?= esc($c['title']) ?></td>
+                                            <td><?= esc($c['sector'] ?? '—') ?></td>
+                                            <td><?= esc($c['min_education'] ?? '—') ?></td>
+                                            <td><?= $creatorName !== '' ? esc($creatorName) : '<span class="text-dark">—</span>' ?></td>
+                                            <td>
+                                                <?php if ((int)($c['is_active'] ?? 0) === 1): ?>
+                                                    <span class="badge bg-success">Aktif</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-secondary">Nonaktif</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php if ((int)($c['is_public'] ?? 0) === 1): ?>
+                                                    <span class="badge bg-primary">Ditampilkan</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-dark">Disembunyikan</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a href="<?= site_url('homeroom/career-info/careers/edit/' . (int)$c['id']) ?>" class="btn btn-sm btn-primary" title="Edit" data-bs-toggle="tooltip"><i class="mdi mdi-pencil"></i></a>
+                                                    <form method="post" action="<?= site_url('homeroom/career-info/careers/toggle/' . (int)$c['id']) ?>" onsubmit="return confirm('Ubah status aktif/nonaktif karier ini?')">
+                                                        <?= csrf_field() ?>
+                                                        <button class="btn btn-sm btn-warning" type="submit" title="Aktif/Nonaktif" data-bs-toggle="tooltip"><i class="mdi mdi-toggle-switch"></i></button>
+                                                    </form>
+                                                    <form method="post" action="<?= site_url('homeroom/career-info/careers/publish/' . (int)$c['id']) ?>" onsubmit="return confirm('Ubah tampil/sembunyikan karier ini ke siswa?')">
+                                                        <?= csrf_field() ?>
+                                                        <button class="btn btn-sm btn-info" type="submit" title="Tampilkan/Sembunyikan" data-bs-toggle="tooltip"><i class="mdi mdi-eye-outline"></i></button>
+                                                    </form>
+                                                    <form method="post" action="<?= site_url('homeroom/career-info/careers/delete/' . (int)$c['id']) ?>" onsubmit="return confirm('Hapus data karier ini?')">
+                                                        <?= csrf_field() ?>
+                                                        <button class="btn btn-sm btn-danger" type="submit" title="Hapus" data-bs-toggle="tooltip"><i class="mdi mdi-delete"></i></button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="8" class="text-center py-5">
+                                            <i class="mdi mdi-briefcase-off-outline text-dark" style="font-size: 48px;"></i>
+                                            <p class="text-dark mt-2 mb-0">Belum ada data karier</p>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: PERGURUAN TINGGI -->
+    <div class="tab-pane fade <?= ($activeTab === 'universities' ? 'show active' : '') ?>">
+        <div class="row">
+            <div class="col-12">
+                <div class="card filter-compact">
+                    <div class="card-header py-2">
+                        <h5 class="card-title mb-0 text-dark"><i class="mdi mdi-filter-variant me-2"></i>Filter/Saring Data</h5>
+                    </div>
+                    <div class="card-body py-3">
+                        <form action="<?= site_url('homeroom/career-info') ?>" method="get">
+                            <input type="hidden" name="tab" value="universities">
+                            <div class="row g-3">
+                                <div class="col-md-2">
+                                    <label class="form-label">Akreditasi</label>
+                                    <select name="uacc" class="form-select">
+                                        <?php $uAcc = $uniFilters['acc'] ?? ''; ?>
+                                        <option value="">Semua Akreditasi</option>
+                                        <?php foreach ($accs as $acc): ?>
+                                            <option value="<?= esc($acc) ?>" <?= $uAcc === $acc ? 'selected' : '' ?>><?= esc($acc) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Lokasi</label>
+                                    <select name="uloc" class="form-select">
+                                        <?php $uLoc = $uniFilters['loc'] ?? ''; ?>
+                                        <option value="">Semua Lokasi</option>
+                                        <?php foreach ($locs as $loc): ?>
+                                            <option value="<?= esc($loc) ?>" <?= $uLoc === $loc ? 'selected' : '' ?>><?= esc($loc) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Status</label>
+                                    <select name="ustatus" class="form-select">
+                                        <?php $uStatus = $uniFilters['status'] ?? ''; ?>
+                                        <option value=""  <?= $uStatus === ''  ? 'selected' : '' ?>>Semua Status</option>
+                                        <option value="1" <?= $uStatus === '1' ? 'selected' : '' ?>>Aktif</option>
+                                        <option value="0" <?= $uStatus === '0' ? 'selected' : '' ?>>Nonaktif</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label">Tampil ke Siswa</label>
+                                    <select name="upub" class="form-select">
+                                        <?php $uPub = $uniFilters['pub'] ?? ''; ?>
+                                        <option value=""  <?= $uPub === ''  ? 'selected' : '' ?>>Semua</option>
+                                        <option value="1" <?= $uPub === '1' ? 'selected' : '' ?>>Ditampilkan</option>
+                                        <option value="0" <?= $uPub === '0' ? 'selected' : '' ?>>Disembunyikan</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Pencarian</label>
+                                    <input type="text" name="uq" class="form-control" placeholder="Nama / alias / deskripsi..." value="<?= esc($uniFilters['q'] ?? '') ?>">
+                                </div>
+                            </div>
+                            <div class="row mt-2 g-3">
+                                <div class="col-md-2">
+                                    <label class="form-label d-block">&nbsp;</label>
+                                    <button type="submit" class="btn btn-primary w-100"><i class="mdi mdi-magnify me-1"></i> Filter/Saring</button>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label d-block">&nbsp;</label>
+                                    <a href="<?= site_url('homeroom/career-info?tab=universities') ?>" class="btn btn-secondary w-100"><i class="mdi mdi-refresh me-1"></i> Reset</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="card-title mb-0"><i class="mdi mdi-town-hall me-2"></i>Daftar Perguruan Tinggi</h4>
+                        <div class="text-end">
+                            <a href="<?= site_url('homeroom/career-info/universities/create') ?>" class="btn btn-success">
+                                <i class="mdi mdi-plus me-1"></i> Tambah Perguruan Tinggi
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table id="universitiesTable" class="table table-hover table-bordered nowrap w-100">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:60px;" class="text-center">No</th>
+                                        <th>Nama</th>
+                                        <th style="width:130px;">Alias</th>
+                                        <th style="width:120px;">Akreditasi</th>
+                                        <th style="width:160px;">Lokasi</th>
+                                        <th style="width:150px;">Dibuat Oleh</th>
+                                        <th style="width:100px;">Status</th>
+                                        <th style="width:130px;">Tampil ke Siswa</th>
+                                        <th style="width:150px;" class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <?php if (!empty($universities)): ?>
+                                    <?php foreach ($universities as $u): ?>
+                                        <?php $uCreatorName = trim((string)($u['created_by_name'] ?? '')); ?>
+                                        <tr>
+                                            <td class="text-center"></td>
+                                            <td><?= esc($u['university_name']) ?></td>
+                                            <td><?= esc($u['alias'] ?? '—') ?></td>
+                                            <td><?= esc($u['accreditation'] ?? '—') ?></td>
+                                            <td><?= esc($u['location'] ?? '—') ?></td>
+                                            <td><?= $uCreatorName !== '' ? esc($uCreatorName) : '<span class="text-dark">—</span>' ?></td>
+                                            <td>
+                                                <?php if ((int)($u['is_active'] ?? 0) === 1): ?>
+                                                    <span class="badge bg-success">Aktif</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-secondary">Nonaktif</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php if ((int)($u['is_public'] ?? 0) === 1): ?>
+                                                    <span class="badge bg-primary">Ditampilkan</span>
+                                                <?php else: ?>
+                                                    <span class="badge bg-dark">Disembunyikan</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td class="text-center">
+                                                <div class="btn-group" role="group">
+                                                    <a href="<?= site_url('homeroom/career-info/universities/edit/' . (int)$u['id']) ?>" class="btn btn-sm btn-primary" title="Edit" data-bs-toggle="tooltip"><i class="mdi mdi-pencil"></i></a>
+                                                    <form method="post" action="<?= site_url('homeroom/career-info/universities/toggle/' . (int)$u['id']) ?>" onsubmit="return confirm('Ubah status aktif/nonaktif perguruan tinggi ini?')">
+                                                        <?= csrf_field() ?>
+                                                        <button class="btn btn-sm btn-warning" type="submit" title="Aktif/Nonaktif" data-bs-toggle="tooltip"><i class="mdi mdi-toggle-switch"></i></button>
+                                                    </form>
+                                                    <form method="post" action="<?= site_url('homeroom/career-info/universities/publish/' . (int)$u['id']) ?>" onsubmit="return confirm('Ubah tampil/sembunyikan perguruan tinggi ini ke siswa?')">
+                                                        <?= csrf_field() ?>
+                                                        <button class="btn btn-sm btn-info" type="submit" title="Tampilkan/Sembunyikan" data-bs-toggle="tooltip"><i class="mdi mdi-eye-outline"></i></button>
+                                                    </form>
+                                                    <form method="post" action="<?= site_url('homeroom/career-info/universities/delete/' . (int)$u['id']) ?>" onsubmit="return confirm('Hapus perguruan tinggi ini?')">
+                                                        <?= csrf_field() ?>
+                                                        <button class="btn btn-sm btn-danger" type="submit" title="Hapus" data-bs-toggle="tooltip"><i class="mdi mdi-delete"></i></button>
+                                                    </form>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="9" class="text-center py-5">
+                                            <i class="mdi mdi-town-hall text-dark" style="font-size: 48px;"></i>
+                                            <p class="text-dark mt-2 mb-0">Belum ada data perguruan tinggi</p>
+                                        </td>
+                                    </tr>
+                                <?php endif; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
+
+        var dtLang = {
+            lengthMenu: "Tampilkan _MENU_ data",
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+            infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+            infoFiltered: "(disaring dari _MAX_ total data)",
+            zeroRecords: "Tidak ada data yang sesuai",
+            emptyTable: "Tidak ada data tersedia",
+            paginate: { first: "Pertama", last: "Terakhir", next: "Berikutnya", previous: "Sebelumnya" }
+        };
+
+        var dtDom = "rt" +
+            "<'row align-items-center mt-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-start'p>>" +
+            "<'row'<'col-12 mt-2'i>>";
+
+        function initTable(sel, actionCol) {
+            var t = $(sel).DataTable({
+                responsive: true,
+                pageLength: 10,
+                order: [[1, 'asc']],
+                columnDefs: [{ orderable: false, targets: [0, actionCol] }],
+                dom: dtDom,
+                language: dtLang
+            });
+            function renumber() {
+                var info = t.page.info();
+                t.column(0, { page: 'current' }).nodes().each(function (cell, i) {
+                    cell.innerHTML = info.start + i + 1;
+                });
+            }
+            t.on('order.dt draw.dt', renumber);
+            renumber();
+            return t;
+        }
+
+        if ($('#careersTable tbody tr td[colspan]').length === 0) initTable('#careersTable', 7);
+        if ($('#universitiesTable tbody tr td[colspan]').length === 0) initTable('#universitiesTable', 8);
+    });
+</script>
+<?= $this->endSection() ?>

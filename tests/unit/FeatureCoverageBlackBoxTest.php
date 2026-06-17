@@ -28,7 +28,7 @@ final class FeatureCoverageBlackBoxTest extends CIUnitTestCase
             'Notifikasi' => ['notifications', 'notificationcontroller', 'notifikasi internal'],
             'Pesan Internal' => ['messages', 'messagecontroller', 'pesan internal'],
             'Asesmen' => ['assessments', 'assessmentcontroller', 'assessmentapicontroller'],
-            'Info Karier dan Info Studi Lanjut' => ['career-info', 'careercontroller', 'fitur info karier dan info studi lanjut'],
+            'Info Karier dan Studi Lanjut' => ['career-info', 'careercontroller', 'info karier dan studi lanjut'],
         ];
 
         foreach ($features as $feature => $needles) {

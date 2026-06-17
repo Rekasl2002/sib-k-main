@@ -59,7 +59,7 @@ function filter_label_type(?string $type): string
         'students'           => 'Data Siswa (Binaan)',
         'sessions'           => 'Catatan Konseling',
         'assessments'        => 'Asesmen (Binaan)',
-        'career'             => 'Fitur Info Karier dan Info Studi Lanjut',
+        'career'             => 'Info Karier dan Studi Lanjut',
         'universities'       => 'Info Perguruan Tinggi',
         'career_choices'     => 'Pilihan Karier Siswa',
         'university_choices' => 'Pilihan PT Siswa',

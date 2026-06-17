@@ -6,18 +6,18 @@
 <div class="page-content">
   <div class="container-fluid">
 
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
       <div>
         <h4 class="mb-1">Pilihan Karier dan Studi Lanjut Siswa</h4>
-        <p class="text-muted mb-0">
+        <p class="text-dark mb-0">
           Rekap pilihan karier dan studi lanjut siswa di kelas perwalian Anda.
         </p>
       </div>
-
-      <div class="d-flex gap-2">
-        <a href="<?= route_to('homeroom.career.index') ?>" class="btn btn-light btn-sm">
-          &laquo; Kembali ke Fitur Info Karier dan Info Studi Lanjut
-        </a>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="<?= route_to('homeroom.career.index') ?>">Info Karier dan Studi Lanjut</a></li>
+          <li class="breadcrumb-item active">Pilihan Siswa</li>
+        </ol>
       </div>
     </div>
 

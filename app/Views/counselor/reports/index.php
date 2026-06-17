@@ -89,7 +89,7 @@ if (function_exists('has_permission')) {
               <option value="sessions" <?= $valType === 'sessions' ? 'selected' : '' ?>>Konseling</option>
               <option value="student_individual" <?= $valType === 'student_individual' ? 'selected' : '' ?>>Per Siswa</option>
               <!--<option value="assessments" <?= $valType==='assessments'?:'' ?>>Asesmen</option>
-              <option value="career" <?= $valType==='career'?:'' ?>>Fitur Info Karier dan Info Studi Lanjut</option>
+              <option value="career" <?= $valType==='career'?:'' ?>>Info Karier dan Studi Lanjut</option>
               <option value="universities" <?= $valType==='universities'?:'' ?>>Info Perguruan Tinggi</option>
               <option value="career_choices" <?= $valType==='career_choices'?:'' ?>>Pilihan Karier Siswa</option>
               <option value="university_choices" <?= $valType==='university_choices'?:'' ?>>Pilihan PT Siswa</option>-->

@@ -32,15 +32,28 @@ $activeChildId = $activeChildId ?? null;
 ?>
 
 <div class="container-fluid">
-  <div class="card shadow-sm mb-3">
+  <!-- Page Title -->
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-flex align-items-center justify-content-between">
+        <h4 class="mb-0">Item Tersimpan Anak</h4>
+        <div class="page-title-right">
+          <ol class="breadcrumb m-0">
+            <li class="breadcrumb-item"><a href="<?= base_url('parent/dashboard') ?>">Orang Tua</a></li>
+            <li class="breadcrumb-item"><a href="<?= site_url('parent/career') ?>">Info Karier dan Studi Lanjut</a></li>
+            <li class="breadcrumb-item active">Item Tersimpan</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-body pb-0">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <div>
-          <h4 class="mb-0">Pilihan Fitur Info Karier dan Info Studi Lanjut Anak</h4>
-          <div class="small text-muted">
-            Orang tua dapat melihat dan mengatur daftar karier serta perguruan tinggi yang disimpan untuk anak.
-          </div>
-        </div>
+        <p class="text-dark mb-0">
+          Orang tua dapat melihat dan mengatur daftar karier serta perguruan tinggi yang disimpan untuk anak.
+        </p>
 
         <div class="d-flex flex-wrap gap-2 align-items-center">
           <form method="get" action="<?= site_url('parent/career/saved') ?>" class="d-flex align-items-center gap-2">
@@ -95,7 +108,7 @@ $activeChildId = $activeChildId ?? null;
           <?php elseif (empty($careers)): ?>
             <div class="alert alert-info mb-0">
               Belum ada karier yang disimpan untuk anak ini.
-              Anda dapat menambah dari halaman <a href="<?= site_url('parent/career?child_id=' . (int)$activeChildId) ?>">Fitur Info Karier dan Info Studi Lanjut</a>.
+              Anda dapat menambah dari halaman <a href="<?= site_url('parent/career?child_id=' . (int)$activeChildId) ?>">Info Karier dan Studi Lanjut</a>.
             </div>
           <?php else: ?>
             <div class="row g-3">

@@ -6,13 +6,13 @@
 <div class="page-content">
   <div class="container-fluid">
 
-    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
       <h4 class="mb-0">Pilihan Karier dan Studi Lanjut Siswa</h4>
-
-      <div class="d-flex gap-2">
-        <a href="<?= route_to('koordinator.career.index') ?>" class="btn btn-light btn-sm">
-          &laquo; Kembali ke Fitur Info Karier dan Info Studi Lanjut
-        </a>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="<?= route_to('koordinator.career.index') ?>">Info Karier dan Studi Lanjut</a></li>
+          <li class="breadcrumb-item active">Pilihan Siswa</li>
+        </ol>
       </div>
     </div>
 

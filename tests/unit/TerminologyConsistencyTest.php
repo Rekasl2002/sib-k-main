@@ -37,7 +37,11 @@ final class TerminologyConsistencyTest extends CIUnitTestCase
             $this->fail("Masih ada istilah lama:\n" . implode("\n", $violations));
         }
 
-        $canonical = 'Fitur Info Karier dan Info Studi Lanjut';
+        // Istilah baku di APLIKASI (sidebar + halaman per peran): tanpa kata "Fitur".
+        // Catatan: diagram .drawio sengaja TIDAK diuji di sini karena masih memakai
+        // istilah era prototipe ("Fitur Info Karier dan Info Studi Lanjut") dan akan
+        // diselaraskan terpisah pada perbaikan dokumen skripsi (Bab 4).
+        $canonical = 'Info Karier dan Studi Lanjut';
         foreach ([
             APPPATH . 'Views/layouts/partials/sidebar.php',
             APPPATH . 'Views/student/career/explore.php',
@@ -45,10 +49,16 @@ final class TerminologyConsistencyTest extends CIUnitTestCase
             APPPATH . 'Views/counselor/career/index.php',
             APPPATH . 'Views/homeroom_teacher/career/index.php',
             APPPATH . 'Views/koordinator/career/index.php',
-            HOMEPATH . 'backupNInformasi/diagram/diagram_prototipe_skripsi.drawio',
         ] as $file) {
             $this->assertStringContainsString($canonical, file_get_contents($file) ?: '', basename($file) . ' belum memakai istilah baku.');
         }
+
+        // Pastikan kata "Fitur" sudah TIDAK lagi melekat pada nama menu/halaman aplikasi.
+        $this->assertStringNotContainsString(
+            'Fitur Info Karier',
+            file_get_contents(APPPATH . 'Views/layouts/partials/sidebar.php') ?: '',
+            'Sidebar masih memakai kata "Fitur" pada Info Karier dan Studi Lanjut.'
+        );
     }
 
     /**
@@ -70,6 +80,11 @@ final class TerminologyConsistencyTest extends CIUnitTestCase
 
             foreach ($iterator as $file) {
                 if ($file->isFile() && in_array($file->getExtension(), ['php', 'drawio'], true)) {
+                    // Abaikan varian diagram "buatan AI" sesuai CLAUDE.md (bukan sumber baku).
+                    $base = strtolower($file->getFilename());
+                    if (str_contains($base, 'hasil_ai') || str_contains($base, 'buatan_ai') || str_contains($base, 'buatanai')) {
+                        continue;
+                    }
                     $files[] = $file->getPathname();
                 }
             }

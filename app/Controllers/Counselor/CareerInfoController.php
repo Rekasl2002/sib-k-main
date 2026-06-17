@@ -75,30 +75,94 @@ class CareerInfoController extends BaseController
             $qb->orderBy('career_options.title', 'ASC');
         }
 
-        // Gunakan group 'careers' agar pager menghasilkan page_careers
-        $careers     = $qb->paginate(10, 'careers');
-        $careerPager = $this->careers->pager;
+        // Tampilan disamakan dengan Manajemen Siswa: paginasi di sisi tampilan
+        // (DataTables), jadi ambil seluruh baris hasil saringan.
+        $careers = $qb->findAll();
 
         // ------------------------------
-        // Listing Universitas (minimal agar tab tidak kosong)
+        // Listing & filter Universitas (satu halaman, satu jalur saring)
         // ------------------------------
-        $universities = $this->universities
-            ->select('university_info.*, creator.full_name AS created_by_name')
-            ->join('users AS creator', 'creator.id = university_info.created_by', 'left')
-            ->orderBy('university_info.university_name', 'ASC')
-            ->paginate(10, 'universities'); // pager siap bila tab dipindah
-        $uniPager = $this->universities->pager;
+        $uniFilters   = $this->buildUniFilters();
+        $universities = $this->buildUniversityQuery($uniFilters)->findAll();
 
         $data = [
             'careers'       => $careers,
-            'careerPager'   => $careerPager,
             'careerFilters' => $careerFilters,
             'universities'  => $universities,
-            'uniPager'      => $uniPager,
+            'uniFilters'    => $uniFilters,
+            'stats'         => $this->buildCareerStats(),
             'activeTab'     => $this->request->getGet('tab') ?: 'careers',
         ];
 
         return view('counselor/career/index', $data);
+    }
+
+    /** Filter universitas dari query string (dipakai bersama index & universities) */
+    protected function buildUniFilters(): array
+    {
+        return [
+            'q'      => $this->request->getGet('uq'),
+            'acc'    => $this->request->getGet('uacc'),
+            'loc'    => $this->request->getGet('uloc'),
+            'status' => $this->request->getGet('ustatus'),
+            'pub'    => $this->request->getGet('upub'),
+            'sort'   => $this->request->getGet('usort'),
+        ];
+    }
+
+    /** Query builder universitas + nama pembuat, sudah menerapkan filter & sort */
+    protected function buildUniversityQuery(array $filters)
+    {
+        $ub = $this->universities
+            ->select('university_info.*, creator.full_name AS created_by_name')
+            ->join('users AS creator', 'creator.id = university_info.created_by', 'left');
+
+        if (!empty($filters['q'])) {
+            $q = trim($filters['q']);
+            $ub = $ub->groupStart()
+                ->like('university_info.university_name', $q)
+                ->orLike('university_info.alias', $q)
+                ->orLike('university_info.description', $q)
+            ->groupEnd();
+        }
+        if (!empty($filters['acc'])) {
+            $ub->where('university_info.accreditation', $filters['acc']);
+        }
+        if (!empty($filters['loc'])) {
+            $ub->where('university_info.location', $filters['loc']);
+        }
+        if (($filters['status'] ?? '') !== null && ($filters['status'] ?? '') !== '') {
+            $ub->where('university_info.is_active', (int) $filters['status']);
+        }
+        if (($filters['pub'] ?? '') !== null && ($filters['pub'] ?? '') !== '') {
+            $ub->where('university_info.is_public', (int) $filters['pub']);
+        }
+
+        $sort = $filters['sort'] ?? '';
+        if ($sort === 'name_desc') {
+            $ub->orderBy('university_info.university_name', 'DESC');
+        } elseif ($sort === 'acc') {
+            $ub->orderBy('university_info.accreditation', 'ASC')
+               ->orderBy('university_info.university_name', 'ASC');
+        } elseif ($sort === 'loc') {
+            $ub->orderBy('university_info.location', 'ASC')
+               ->orderBy('university_info.university_name', 'ASC');
+        } else {
+            $ub->orderBy('university_info.university_name', 'ASC');
+        }
+
+        return $ub;
+    }
+
+    /** Ringkasan jumlah untuk kartu statistik (gaya Manajemen Siswa) */
+    protected function buildCareerStats(): array
+    {
+        return [
+            'careers_total'  => (new CareerOptionModel())->countAllResults(),
+            'careers_active' => (new CareerOptionModel())->where('is_active', 1)->countAllResults(),
+            'uni_total'      => (new UniversityInfoModel())->countAllResults(),
+            'uni_active'     => (new UniversityInfoModel())->where('is_active', 1)->countAllResults(),
+        ];
     }
 
     /**
@@ -481,72 +545,15 @@ class CareerInfoController extends BaseController
      *  University Info (university_info)
      * -----------------------------------------------------------------*/
 
-    /** Tab universitas dengan filter/sort yang sama seperti di view */
+    /** Kompatibilitas tautan lama: arahkan ke halaman utama pada tab universitas */
     public function universities()
     {
         require_permission('manage_career_info');
 
-        $filters = [
-            'q'      => $this->request->getGet('uq'),
-            'acc'    => $this->request->getGet('uacc'),
-            'loc'    => $this->request->getGet('uloc'),
-            'status' => $this->request->getGet('ustatus'),
-            'pub'    => $this->request->getGet('upub'),
-            'sort'   => $this->request->getGet('usort'),
-        ];
+        $qs = $this->request->getGet();
+        $qs['tab'] = 'universities';
 
-        $ub = $this->universities
-            ->select('university_info.*, creator.full_name AS created_by_name')
-            ->join('users AS creator', 'creator.id = university_info.created_by', 'left');
-
-        if (!empty($filters['q'])) {
-            $q = trim($filters['q']);
-            $ub = $ub->groupStart()
-                ->like('university_info.university_name', $q)
-                ->orLike('university_info.alias', $q)
-                ->orLike('university_info.description', $q)
-            ->groupEnd();
-        }
-        if (!empty($filters['acc'])) {
-            $ub->where('university_info.accreditation', $filters['acc']);
-        }
-        if (!empty($filters['loc'])) {
-            $ub->where('university_info.location', $filters['loc']);
-        }
-        if ($filters['status'] !== null && $filters['status'] !== '') {
-            $ub->where('university_info.is_active', (int) $filters['status']);
-        }
-        if ($filters['pub'] !== null && $filters['pub'] !== '') {
-            $ub->where('university_info.is_public', (int) $filters['pub']);
-        }
-
-        // Sort
-        $sort = $filters['sort'] ?? '';
-        if ($sort === 'name_desc') {
-            $ub->orderBy('university_info.university_name', 'DESC');
-        } elseif ($sort === 'acc') {
-            $ub->orderBy('university_info.accreditation', 'ASC')
-            ->orderBy('university_info.university_name', 'ASC');
-        } elseif ($sort === 'loc') {
-            $ub->orderBy('university_info.location', 'ASC')
-            ->orderBy('university_info.university_name', 'ASC');
-        } else {
-            $ub->orderBy('university_info.university_name', 'ASC');
-        }
-
-        $universities = $ub->paginate(10, 'universities');
-        $uniPager     = $this->universities->pager;
-
-        $data = [
-            'careers'       => [],       // supaya view index tetap bisa dipakai
-            'careerPager'   => null,
-            'careerFilters' => [],
-            'universities'  => $universities,
-            'uniPager'      => $uniPager,
-            'activeTab'     => 'universities',
-        ];
-
-        return view('counselor/career/index', $data);
+        return redirect()->to(site_url('counselor/career-info') . '?' . http_build_query($qs));
     }
 
     // FORM CREATE

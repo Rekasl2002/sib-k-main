@@ -31,15 +31,28 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
 ?>
 
 <div class="container-fluid">
-  <div class="card shadow-sm mb-3">
+  <!-- Page Title -->
+  <div class="row">
+    <div class="col-12">
+      <div class="page-title-box d-flex align-items-center justify-content-between">
+        <h4 class="mb-0">Item Tersimpan</h4>
+        <div class="page-title-right">
+          <ol class="breadcrumb m-0">
+            <li class="breadcrumb-item"><a href="<?= base_url('student/dashboard') ?>">Siswa</a></li>
+            <li class="breadcrumb-item"><a href="<?= site_url('student/career') ?>">Info Karier dan Studi Lanjut</a></li>
+            <li class="breadcrumb-item active">Item Tersimpan</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-body pb-0">
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
-        <div>
-          <h4 class="mb-0">Item Tersimpan</h4>
-          <div class="small text-muted">
-            Karier dan perguruan tinggi yang kamu tandai sebagai favorit akan muncul di sini.
-          </div>
-        </div>
+        <p class="text-dark mb-0">
+          Karier dan perguruan tinggi yang kamu tandai sebagai favorit akan muncul di sini.
+        </p>
         <div>
           <a href="<?= site_url('student/career') ?>" class="btn btn-light btn-sm">
             Kembali ke eksplorasi
@@ -72,7 +85,7 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
           <?php if (empty($careers)): ?>
             <div class="alert alert-info mb-0">
               Belum ada karier yang kamu simpan.
-              Coba eksplor di halaman <a href="<?= site_url('student/career') ?>">Fitur Info Karier dan Info Studi Lanjut</a>.
+              Coba eksplor di halaman <a href="<?= site_url('student/career') ?>">Info Karier dan Studi Lanjut</a>.
             </div>
           <?php else: ?>
             <div class="row g-3">

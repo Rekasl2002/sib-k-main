@@ -5,7 +5,7 @@
  *
  * Parent • Career & University Info
  * Orang tua dapat:
- * - Menjelajahi Fitur Info Karier dan Info Studi Lanjut (publik, sama seperti siswa)
+ * - Menjelajahi Info Karier dan Studi Lanjut (publik, sama seperti siswa)
  * - Melihat, menambahkan, dan menghapus item tersimpan milik anak-anaknya
  *   (dipilih via dropdown child_id)
  */

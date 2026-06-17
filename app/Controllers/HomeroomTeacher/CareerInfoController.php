@@ -3,7 +3,7 @@
 /**
  * File Path: app/Controllers/HomeroomTeacher/CareerInfoController.php
  *
- * Wali Kelas - Fitur Info Karier dan Info Studi Lanjut
+ * Wali Kelas - Info Karier dan Studi Lanjut
  * - Mengelola dan melihat daftar career_options & university_info
  * - Melihat rekap pilihan karier & universitas siswa per kelas perwalian
  */
@@ -60,7 +60,7 @@ class CareerInfoController extends BaseController
     }
 
     /**
-     * Halaman utama Fitur Info Karier dan Info Studi Lanjut (Wali Kelas)
+     * Halaman utama Info Karier dan Studi Lanjut (Wali Kelas)
      * Tampilan & filter meniru Counselor\CareerInfoController::index(),
      * tapi hanya READ dan view diarahkan ke homeroom_teacher.
      */
@@ -114,26 +114,71 @@ class CareerInfoController extends BaseController
             $qb->orderBy('career_options.title', 'ASC');
         }
 
-        // Gunakan group 'careers' agar pager menghasilkan page_careers
-        $careers     = $qb->paginate(10, 'careers');
-        $careerPager = $this->careers->pager;
+        // Tampilan disamakan dengan Manajemen Siswa: paginasi di sisi tampilan
+        // (DataTables), jadi ambil seluruh baris hasil saringan.
+        $careers = $qb->findAll();
 
         // ------------------------------
-        // Listing Universitas (minimal agar tab tidak kosong)
+        // Listing & filter Universitas (satu halaman, satu jalur saring)
         // ------------------------------
-        $universities = $this->universities
+        $uniFilters = [
+            'q'      => $this->request->getGet('uq'),
+            'acc'    => $this->request->getGet('uacc'),
+            'loc'    => $this->request->getGet('uloc'),
+            'status' => $this->request->getGet('ustatus'),
+            'pub'    => $this->request->getGet('upub'),
+            'sort'   => $this->request->getGet('usort'),
+        ];
+
+        $ub = $this->universities
             ->select('university_info.*, creator.full_name AS created_by_name')
-            ->join('users AS creator', 'creator.id = university_info.created_by', 'left')
-            ->orderBy('university_info.university_name', 'ASC')
-            ->paginate(10, 'universities'); // pager siap bila tab dipindah
-        $uniPager = $this->universities->pager;
+            ->join('users AS creator', 'creator.id = university_info.created_by', 'left');
+
+        if (!empty($uniFilters['q'])) {
+            $uq = trim($uniFilters['q']);
+            $ub = $ub->groupStart()
+                ->like('university_info.university_name', $uq)
+                ->orLike('university_info.alias', $uq)
+                ->orLike('university_info.description', $uq)
+            ->groupEnd();
+        }
+        if (!empty($uniFilters['acc'])) {
+            $ub->where('university_info.accreditation', $uniFilters['acc']);
+        }
+        if (!empty($uniFilters['loc'])) {
+            $ub->where('university_info.location', $uniFilters['loc']);
+        }
+        if (($uniFilters['status'] ?? '') !== null && ($uniFilters['status'] ?? '') !== '') {
+            $ub->where('university_info.is_active', (int) $uniFilters['status']);
+        }
+        if (($uniFilters['pub'] ?? '') !== null && ($uniFilters['pub'] ?? '') !== '') {
+            $ub->where('university_info.is_public', (int) $uniFilters['pub']);
+        }
+        $usort = $uniFilters['sort'] ?? '';
+        if ($usort === 'name_desc') {
+            $ub->orderBy('university_info.university_name', 'DESC');
+        } elseif ($usort === 'acc') {
+            $ub->orderBy('university_info.accreditation', 'ASC')->orderBy('university_info.university_name', 'ASC');
+        } elseif ($usort === 'loc') {
+            $ub->orderBy('university_info.location', 'ASC')->orderBy('university_info.university_name', 'ASC');
+        } else {
+            $ub->orderBy('university_info.university_name', 'ASC');
+        }
+        $universities = $ub->findAll();
+
+        $stats = [
+            'careers_total'  => (new CareerOptionModel())->countAllResults(),
+            'careers_active' => (new CareerOptionModel())->where('is_active', 1)->countAllResults(),
+            'uni_total'      => (new UniversityInfoModel())->countAllResults(),
+            'uni_active'     => (new UniversityInfoModel())->where('is_active', 1)->countAllResults(),
+        ];
 
         $data = [
             'careers'       => $careers,
-            'careerPager'   => $careerPager,
             'careerFilters' => $careerFilters,
             'universities'  => $universities,
-            'uniPager'      => $uniPager,
+            'uniFilters'    => $uniFilters,
+            'stats'         => $stats,
             'activeTab'     => $this->request->getGet('tab') ?: 'careers',
         ];
 
@@ -451,7 +496,10 @@ class CareerInfoController extends BaseController
     {
         require_permission(['manage_career_info', 'view_career_info']);
 
-        return redirect()->to(site_url('homeroom/career-info?tab=universities'));
+        $qs = $this->request->getGet();
+        $qs['tab'] = 'universities';
+
+        return redirect()->to(site_url('homeroom/career-info') . '?' . http_build_query($qs));
     }
 
     public function createUniversity()
