@@ -1,15 +1,16 @@
 <?php
 /**
  * File Path: app/Views/homeroom_teacher/career/index.php
- * Halaman utama Info Karier dan Studi Lanjut (Wali Kelas)
+ * Halaman utama Info Karier dan Studi Lanjut (Wali Kelas) — HANYA BACA (R*).
  *
- * Tampilan diseragamkan dengan Manajemen Siswa (koordinator/students):
- * page-title-box, kartu statistik, kartu Filter/Saring Data, kartu daftar + DataTables.
+ * Wali Kelas hanya MELIHAT daftar karier & perguruan tinggi sebagai bahan
+ * mendampingi siswa. Mengelola data = wewenang Koordinator BK & Guru BK,
+ * jadi TIDAK ada tombol tambah/edit/hapus di sini.
  *
- * Variabel dari Controller:
- * - $careers (array penuh), $careerFilters
- * - $universities (array penuh), $uniFilters
- * - $stats, $activeTab
+ * Tampilan diseragamkan dengan Manajemen Siswa (page-title-box, kartu statistik,
+ * kartu Filter/Saring Data, kartu daftar + DataTables).
+ *
+ * Variabel dari Controller: $careers, $careerFilters, $universities, $uniFilters, $stats, $activeTab
  */
 
 $this->extend('layouts/main');
@@ -65,6 +66,12 @@ ksort($accs); ksort($locs);
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 <?php endif; ?>
+
+<!-- Catatan peran: hanya melihat -->
+<div class="alert alert-info d-flex align-items-center" role="alert">
+    <i class="mdi mdi-information-outline me-2 font-size-18"></i>
+    <div>Halaman ini untuk <strong>melihat</strong> informasi karier &amp; perguruan tinggi sebagai bahan mendampingi siswa. Penambahan/perubahan data dikelola oleh Koordinator BK dan Guru BK.</div>
+</div>
 
 <!-- Statistics Cards -->
 <div class="row">
@@ -186,12 +193,9 @@ ksort($accs); ksort($locs);
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h4 class="card-title mb-0"><i class="mdi mdi-briefcase-outline me-2"></i>Daftar Pilihan Karier</h4>
-                        <div class="text-end d-flex gap-2 align-items-center flex-wrap">
+                        <div class="text-end">
                             <a href="<?= route_to('homeroom.career.choices') ?>" class="btn btn-info">
                                 <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Siswa
-                            </a>
-                            <a href="<?= site_url('homeroom/career-info/careers/create') ?>" class="btn btn-success">
-                                <i class="mdi mdi-plus me-1"></i> Tambah Karier
                             </a>
                         </div>
                     </div>
@@ -202,12 +206,11 @@ ksort($accs); ksort($locs);
                                     <tr>
                                         <th style="width:60px;" class="text-center">No</th>
                                         <th>Judul Karier</th>
-                                        <th style="width:140px;">Sektor</th>
-                                        <th style="width:130px;">Pendidikan Min.</th>
-                                        <th style="width:150px;">Dibuat Oleh</th>
-                                        <th style="width:100px;">Status</th>
-                                        <th style="width:130px;">Tampil ke Siswa</th>
-                                        <th style="width:150px;" class="text-center">Aksi</th>
+                                        <th style="width:150px;">Sektor</th>
+                                        <th style="width:140px;">Pendidikan Min.</th>
+                                        <th style="width:160px;">Dibuat Oleh</th>
+                                        <th style="width:110px;">Status</th>
+                                        <th style="width:140px;">Tampil ke Siswa</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -234,28 +237,11 @@ ksort($accs); ksort($locs);
                                                     <span class="badge bg-dark">Disembunyikan</span>
                                                 <?php endif; ?>
                                             </td>
-                                            <td class="text-center">
-                                                <div class="btn-group" role="group">
-                                                    <a href="<?= site_url('homeroom/career-info/careers/edit/' . (int)$c['id']) ?>" class="btn btn-sm btn-primary" title="Edit" data-bs-toggle="tooltip"><i class="mdi mdi-pencil"></i></a>
-                                                    <form method="post" action="<?= site_url('homeroom/career-info/careers/toggle/' . (int)$c['id']) ?>" onsubmit="return confirm('Ubah status aktif/nonaktif karier ini?')">
-                                                        <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-warning" type="submit" title="Aktif/Nonaktif" data-bs-toggle="tooltip"><i class="mdi mdi-toggle-switch"></i></button>
-                                                    </form>
-                                                    <form method="post" action="<?= site_url('homeroom/career-info/careers/publish/' . (int)$c['id']) ?>" onsubmit="return confirm('Ubah tampil/sembunyikan karier ini ke siswa?')">
-                                                        <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-info" type="submit" title="Tampilkan/Sembunyikan" data-bs-toggle="tooltip"><i class="mdi mdi-eye-outline"></i></button>
-                                                    </form>
-                                                    <form method="post" action="<?= site_url('homeroom/career-info/careers/delete/' . (int)$c['id']) ?>" onsubmit="return confirm('Hapus data karier ini?')">
-                                                        <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-danger" type="submit" title="Hapus" data-bs-toggle="tooltip"><i class="mdi mdi-delete"></i></button>
-                                                    </form>
-                                                </div>
-                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="8" class="text-center py-5">
+                                        <td colspan="7" class="text-center py-5">
                                             <i class="mdi mdi-briefcase-off-outline text-dark" style="font-size: 48px;"></i>
                                             <p class="text-dark mt-2 mb-0">Belum ada data karier</p>
                                         </td>
@@ -346,11 +332,6 @@ ksort($accs); ksort($locs);
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h4 class="card-title mb-0"><i class="mdi mdi-town-hall me-2"></i>Daftar Perguruan Tinggi</h4>
-                        <div class="text-end">
-                            <a href="<?= site_url('homeroom/career-info/universities/create') ?>" class="btn btn-success">
-                                <i class="mdi mdi-plus me-1"></i> Tambah Perguruan Tinggi
-                            </a>
-                        </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -359,13 +340,12 @@ ksort($accs); ksort($locs);
                                     <tr>
                                         <th style="width:60px;" class="text-center">No</th>
                                         <th>Nama</th>
-                                        <th style="width:130px;">Alias</th>
-                                        <th style="width:120px;">Akreditasi</th>
-                                        <th style="width:160px;">Lokasi</th>
-                                        <th style="width:150px;">Dibuat Oleh</th>
-                                        <th style="width:100px;">Status</th>
-                                        <th style="width:130px;">Tampil ke Siswa</th>
-                                        <th style="width:150px;" class="text-center">Aksi</th>
+                                        <th style="width:140px;">Alias</th>
+                                        <th style="width:130px;">Akreditasi</th>
+                                        <th style="width:170px;">Lokasi</th>
+                                        <th style="width:160px;">Dibuat Oleh</th>
+                                        <th style="width:110px;">Status</th>
+                                        <th style="width:140px;">Tampil ke Siswa</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -393,28 +373,11 @@ ksort($accs); ksort($locs);
                                                     <span class="badge bg-dark">Disembunyikan</span>
                                                 <?php endif; ?>
                                             </td>
-                                            <td class="text-center">
-                                                <div class="btn-group" role="group">
-                                                    <a href="<?= site_url('homeroom/career-info/universities/edit/' . (int)$u['id']) ?>" class="btn btn-sm btn-primary" title="Edit" data-bs-toggle="tooltip"><i class="mdi mdi-pencil"></i></a>
-                                                    <form method="post" action="<?= site_url('homeroom/career-info/universities/toggle/' . (int)$u['id']) ?>" onsubmit="return confirm('Ubah status aktif/nonaktif perguruan tinggi ini?')">
-                                                        <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-warning" type="submit" title="Aktif/Nonaktif" data-bs-toggle="tooltip"><i class="mdi mdi-toggle-switch"></i></button>
-                                                    </form>
-                                                    <form method="post" action="<?= site_url('homeroom/career-info/universities/publish/' . (int)$u['id']) ?>" onsubmit="return confirm('Ubah tampil/sembunyikan perguruan tinggi ini ke siswa?')">
-                                                        <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-info" type="submit" title="Tampilkan/Sembunyikan" data-bs-toggle="tooltip"><i class="mdi mdi-eye-outline"></i></button>
-                                                    </form>
-                                                    <form method="post" action="<?= site_url('homeroom/career-info/universities/delete/' . (int)$u['id']) ?>" onsubmit="return confirm('Hapus perguruan tinggi ini?')">
-                                                        <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-danger" type="submit" title="Hapus" data-bs-toggle="tooltip"><i class="mdi mdi-delete"></i></button>
-                                                    </form>
-                                                </div>
-                                            </td>
                                         </tr>
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="9" class="text-center py-5">
+                                        <td colspan="8" class="text-center py-5">
                                             <i class="mdi mdi-town-hall text-dark" style="font-size: 48px;"></i>
                                             <p class="text-dark mt-2 mb-0">Belum ada data perguruan tinggi</p>
                                         </td>
@@ -439,9 +402,6 @@ ksort($accs); ksort($locs);
 
 <script>
     $(document).ready(function () {
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-        tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
-
         var dtLang = {
             lengthMenu: "Tampilkan _MENU_ data",
             info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
@@ -456,12 +416,12 @@ ksort($accs); ksort($locs);
             "<'row align-items-center mt-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-start'p>>" +
             "<'row'<'col-12 mt-2'i>>";
 
-        function initTable(sel, actionCol) {
+        function initTable(sel) {
             var t = $(sel).DataTable({
                 responsive: true,
                 pageLength: 10,
                 order: [[1, 'asc']],
-                columnDefs: [{ orderable: false, targets: [0, actionCol] }],
+                columnDefs: [{ orderable: false, targets: [0] }],
                 dom: dtDom,
                 language: dtLang
             });
@@ -476,8 +436,8 @@ ksort($accs); ksort($locs);
             return t;
         }
 
-        if ($('#careersTable tbody tr td[colspan]').length === 0) initTable('#careersTable', 7);
-        if ($('#universitiesTable tbody tr td[colspan]').length === 0) initTable('#universitiesTable', 8);
+        if ($('#careersTable tbody tr td[colspan]').length === 0) initTable('#careersTable');
+        if ($('#universitiesTable tbody tr td[colspan]').length === 0) initTable('#universitiesTable');
     });
 </script>
 <?= $this->endSection() ?>

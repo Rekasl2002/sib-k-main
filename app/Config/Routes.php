@@ -986,73 +986,19 @@ $routes->group('homeroom', [
             'as'     => 'homeroom.students.sessions.detail'
         ]);
 
-        // Career info: sesuai tabel permissions, wali kelas masuk kategori "manage_career_info"
+        // Info Karier dan Studi Lanjut — Wali Kelas HANYA BACA (R*) sesuai Matriks CRUD.
+        // Mengelola data karier/perguruan tinggi = wewenang Koordinator BK & Guru BK,
+        // jadi TIDAK ada rute tambah/edit/hapus/aktif/publikasi di sini (penegakan sisi server).
         $routes->get('career-info', 'CareerInfoController::index', [
-            'filter' => 'permission:any,view_career_info,manage_career_info',
+            'filter' => 'permission:view_career_info',
             'as'     => 'homeroom.career.index'
         ]);
-        $routes->get('career-info/careers/create', 'CareerInfoController::createCareer', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.career.create'
-        ]);
-        $routes->post('career-info/careers/store', 'CareerInfoController::storeCareer', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.career.store'
-        ]);
-        $routes->get('career-info/careers/edit/(:num)', 'CareerInfoController::editCareer/$1', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.career.edit'
-        ]);
-        $routes->post('career-info/careers/update/(:num)', 'CareerInfoController::updateCareer/$1', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.career.update'
-        ]);
-        $routes->post('career-info/careers/delete/(:num)', 'CareerInfoController::deleteCareer/$1', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.career.delete'
-        ]);
-        $routes->post('career-info/careers/toggle/(:num)', 'CareerInfoController::toggleCareer/$1', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.career.toggle'
-        ]);
-        $routes->post('career-info/careers/publish/(:num)', 'CareerInfoController::toggleCareerPublic/$1', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.career.publish'
-        ]);
         $routes->get('career-info/universities', 'CareerInfoController::universities', [
-            'filter' => 'permission:any,view_career_info,manage_career_info',
+            'filter' => 'permission:view_career_info',
             'as'     => 'homeroom.university.index'
         ]);
-        $routes->get('career-info/universities/create', 'CareerInfoController::createUniversity', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.university.create'
-        ]);
-        $routes->post('career-info/universities/store', 'CareerInfoController::storeUniversity', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.university.store'
-        ]);
-        $routes->get('career-info/universities/edit/(:num)', 'CareerInfoController::editUniversity/$1', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.university.edit'
-        ]);
-        $routes->post('career-info/universities/update/(:num)', 'CareerInfoController::updateUniversity/$1', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.university.update'
-        ]);
-        $routes->post('career-info/universities/delete/(:num)', 'CareerInfoController::deleteUniversity/$1', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.university.delete'
-        ]);
-        $routes->post('career-info/universities/toggle/(:num)', 'CareerInfoController::toggleUniversity/$1', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.university.toggle'
-        ]);
-        $routes->post('career-info/universities/publish/(:num)', 'CareerInfoController::toggleUniversityPublic/$1', [
-            'filter' => 'permission:manage_career_info',
-            'as'     => 'homeroom.university.publish'
-        ]);
         $routes->get('career-info/student-choices', 'CareerInfoController::studentChoices', [
-            'filter' => 'permission:any,view_career_info,manage_career_info',
+            'filter' => 'permission:view_career_info',
             'as'     => 'homeroom.career.choices'
         ]);
     });
