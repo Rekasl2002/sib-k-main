@@ -2,9 +2,14 @@
 /**
  * View form layanan BK (seragam semua peran yang mengelola: Koordinator BK & Guru BK).
  * Fitur: Bimbingan/Konseling/Kolaborasi Orang Tua/Kunjungan Rumah/Konferensi Kasus.
- * Fase 4: istilah "Judul/Topik/Masalah" & "Tempat/Lokasi/Alamat", pemilihan
- * Siswa/Kelas/Orang Tua/Wali Kelas dari data + manual (Select2 + tombol "+"),
- * "Peserta Tambahan dan Catatan", serta izin "boleh dilihat Wali Kelas" (bawaan mati).
+ * Fase 4: istilah "Judul/Topik/Masalah" & "Tempat/Lokasi/Alamat".
+ * Perbaikan Kedua:
+ *  - Siswa/Kelas Sasaran dipilih sebagai DAFTAR lewat tombol "+ Tambah" + kotak chip
+ *    (bukan satu pilihan). Pilihan pertama jadi subjek/target representatif.
+ *  - Orang Tua & Wali Kelas digabung jadi satu "+ Tambah Peserta (dari data)".
+ *  - Penanggung Jawab: Guru BK terkunci ke dirinya sendiri; Koordinator BK bebas
+ *    memilih. Khusus Konferensi Kasus: label "Penanggung Jawab", hanya Koordinator
+ *    BK; Guru BK tidak memilih siapa pun (dikosongkan, ditetapkan Koordinator).
  * Field khusus ditampilkan berdasarkan $serviceType.
  */
 ?>
@@ -19,10 +24,21 @@ $options = is_array($options ?? null) ? $options : [];
 $action = (string) ($action ?? current_url());
 $routePrefix = (string) ($routePrefix ?? '');
 $serviceType = (string) ($serviceType ?? '');
+$roleKey = (string) ($roleKey ?? '');
 $isEdit = ! empty($row['id']);
 $value = static function (string $key, $default = '') use ($row, $detail) {
     return old($key, $row[$key] ?? $detail[$key] ?? $default);
 };
+
+$selfId = (int) (session('user_id') ?? 0);
+$selfName = trim((string) (session('full_name') ?? '')) ?: 'Saya (akun ini)';
+$isGuruBk = ($roleKey === 'guru-bk');
+$isKonferensi = ($serviceType === 'Konferensi Kasus');
+
+// Penanggung Jawab: label & daftar pilihan sesuai jenis layanan.
+$pjLabel = $isKonferensi ? 'Penanggung Jawab' : 'Guru BK/Penanggung Jawab';
+$pjList = $isKonferensi ? ($options['coordinators'] ?? []) : ($options['counselors'] ?? []);
+$pjValue = (string) $value('counselor_id', $isGuruBk && ! $isEdit && ! $isKonferensi ? (string) $selfId : '');
 
 // Peserta tambahan yang sudah ada (untuk dikelola/hapus pada halaman edit).
 $extraParticipants = [];
@@ -33,6 +49,21 @@ foreach ($participants as $p) {
 $participantName = static function (array $p): string {
     return (string) ($p['participant_student_name'] ?? $p['participant_user_name'] ?? $p['participant_parent_name'] ?? $p['participant_class_name'] ?? $p['manual_name'] ?? '-');
 };
+
+// Helper membuat satu "chip" (kotak pilihan) berisi hidden input + tombol hapus.
+$renderChip = static function (string $name, $val, string $text): string {
+    return '<span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;">'
+        . '<span>' . esc($text) . '</span>'
+        . '<input type="hidden" name="' . esc($name, 'attr') . '" value="' . esc((string) $val, 'attr') . '">'
+        . '<button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>'
+        . '</span>';
+};
+
+// Prefill subjek utama pada halaman edit (1 chip masing-masing).
+$preStudentId = $isEdit ? (int) ($row['target_student_id'] ?? 0) : 0;
+$preStudentText = trim((string) ($row['student_name'] ?? ''));
+$preClassId = $isEdit ? (int) ($row['target_class_id'] ?? 0) : 0;
+$preClassText = trim((string) ($row['class_name'] ?? ''));
 ?>
 
 <div class="row">
@@ -63,40 +94,86 @@ $participantName = static function (array $p): string {
             <label class="form-label text-dark">Judul/Topik/Masalah</label>
             <input type="text" name="title" class="form-control" required value="<?= esc($value('title')) ?>">
           </div>
-          <div class="row">
-            <div class="col-md-6 mb-3">
-              <label class="form-label text-dark">Siswa Sasaran (dari data)</label>
-              <select name="target_student_id" class="form-select select2-search">
-                <option value="">Tidak dipilih</option>
-                <?php foreach (($options['students'] ?? []) as $student): ?>
-                  <option value="<?= esc((string) $student['id']) ?>" <?= (string) $value('target_student_id') === (string) $student['id'] ? 'selected' : '' ?>>
-                    <?= esc(($student['full_name'] ?? '-') . ' - ' . ($student['class_name'] ?? '-')) ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
+
+          <!-- Siswa Sasaran: pilih satu per satu dengan tombol "+ Tambah" (boleh lebih dari satu). -->
+          <div class="mb-3 js-multi" data-name="participant_student_ids[]">
+            <label class="form-label text-dark">Siswa Sasaran <span class="text-dark fw-normal">(dari data &mdash; boleh lebih dari satu)</span></label>
+            <div class="js-chips border rounded p-2 mb-2 bg-light">
+              <?php if ($preStudentId > 0): ?>
+                <?= $renderChip('participant_student_ids[]', $preStudentId, $preStudentText !== '' ? $preStudentText : ('Siswa #' . $preStudentId)) ?>
+              <?php endif; ?>
+              <span class="text-dark js-chip-empty"<?= $preStudentId > 0 ? ' style="display:none;"' : '' ?>>Belum ada siswa dipilih.</span>
             </div>
-            <div class="col-md-6 mb-3">
-              <label class="form-label text-dark">Kelas Sasaran (dari data)</label>
-              <select name="target_class_id" class="form-select select2-search">
-                <option value="">Tidak dipilih</option>
-                <?php foreach (($options['classes'] ?? []) as $class): ?>
-                  <option value="<?= esc((string) $class['id']) ?>" <?= (string) $value('target_class_id') === (string) $class['id'] ? 'selected' : '' ?>>
-                    <?= esc($class['class_name'] ?? '-') ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
+            <div class="d-flex gap-2 align-items-start">
+              <div class="flex-grow-1">
+                <select class="form-select select2-search js-picker">
+                  <option value="">Ketik untuk mencari siswa&hellip;</option>
+                  <?php foreach (($options['students'] ?? []) as $student): ?>
+                    <option value="<?= esc((string) $student['id']) ?>">
+                      <?= esc(($student['full_name'] ?? '-') . ' - ' . ($student['class_name'] ?? '-')) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <button type="button" class="btn btn-primary flex-shrink-0 js-add"><i class="mdi mdi-plus me-1"></i> Tambah</button>
             </div>
+            <small class="text-dark d-block mt-1">Cari nama siswa lalu tekan tombol biru <strong>Tambah</strong>. Ulangi untuk menambah lebih dari satu siswa.</small>
           </div>
+
+          <!-- Kelas Sasaran: pola yang sama dengan Siswa Sasaran. -->
+          <div class="mb-3 js-multi" data-name="participant_class_ids[]">
+            <label class="form-label text-dark">Kelas Sasaran <span class="text-dark fw-normal">(dari data &mdash; boleh lebih dari satu)</span></label>
+            <div class="js-chips border rounded p-2 mb-2 bg-light">
+              <?php if ($preClassId > 0): ?>
+                <?= $renderChip('participant_class_ids[]', $preClassId, $preClassText !== '' ? $preClassText : ('Kelas #' . $preClassId)) ?>
+              <?php endif; ?>
+              <span class="text-dark js-chip-empty"<?= $preClassId > 0 ? ' style="display:none;"' : '' ?>>Belum ada kelas dipilih.</span>
+            </div>
+            <div class="d-flex gap-2 align-items-start">
+              <div class="flex-grow-1">
+                <select class="form-select select2-search js-picker">
+                  <option value="">Ketik untuk mencari kelas&hellip;</option>
+                  <?php foreach (($options['classes'] ?? []) as $class): ?>
+                    <option value="<?= esc((string) $class['id']) ?>"><?= esc($class['class_name'] ?? '-') ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <button type="button" class="btn btn-primary flex-shrink-0 js-add"><i class="mdi mdi-plus me-1"></i> Tambah</button>
+            </div>
+            <small class="text-dark d-block mt-1">Cari nama kelas lalu tekan tombol biru <strong>Tambah</strong>. Ulangi untuk menambah lebih dari satu kelas.</small>
+          </div>
+
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label text-dark">Guru BK/Penanggung Jawab</label>
-              <select name="counselor_id" class="form-select select2-search">
-                <?php foreach (($options['counselors'] ?? []) as $user): ?>
-                  <option value="<?= esc((string) $user['id']) ?>" <?= (string) $value('counselor_id', session('user_id')) === (string) $user['id'] ? 'selected' : '' ?>>
-                    <?= esc($user['full_name'] ?? '-') ?>
-                  </option>
-                <?php endforeach; ?>
-              </select>
+              <label class="form-label text-dark"><?= esc($pjLabel) ?></label>
+              <?php if ($isGuruBk && $isKonferensi): ?>
+                <?php // Guru BK tidak boleh memilih Penanggung Jawab Konferensi Kasus (hanya Koordinator BK). ?>
+                <?php if ($isEdit && (int) $pjValue > 0): ?>
+                  <input type="hidden" name="counselor_id" value="<?= esc($pjValue, 'attr') ?>">
+                  <input type="text" class="form-control bg-light" value="<?= esc($row['counselor_name'] ?? 'Sudah ditetapkan') ?>" readonly>
+                <?php else: ?>
+                  <input type="text" class="form-control bg-light" value="Hanya Koordinator BK (ditetapkan oleh Koordinator BK)" disabled>
+                <?php endif; ?>
+                <small class="text-dark d-block mt-1">Penanggung jawab Konferensi Kasus hanya Koordinator BK. Anda tetap dapat mengisi data lainnya.</small>
+              <?php elseif ($isGuruBk): ?>
+                <?php
+                  $lockVal = $isEdit ? $pjValue : (string) $selfId;
+                  $lockName = ((string) $lockVal === (string) $selfId) ? $selfName : (string) ($row['counselor_name'] ?? $selfName);
+                ?>
+                <input type="hidden" name="counselor_id" value="<?= esc($lockVal, 'attr') ?>">
+                <input type="text" class="form-control bg-light" value="<?= esc($lockName) ?>" readonly>
+                <small class="text-dark d-block mt-1">Guru BK menugaskan dirinya sendiri sebagai penanggung jawab.</small>
+              <?php else: ?>
+                <select name="counselor_id" class="form-select select2-search">
+                  <?php if ($isKonferensi): ?><option value="">Tidak dipilih</option><?php endif; ?>
+                  <?php foreach ($pjList as $user): ?>
+                    <option value="<?= esc((string) $user['id']) ?>" <?= $pjValue === (string) $user['id'] || ($pjValue === '' && (int) $user['id'] === $selfId) ? 'selected' : '' ?>>
+                      <?= esc($user['full_name'] ?? '-') ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+                <small class="text-dark d-block mt-1"><?= $isKonferensi ? 'Hanya akun Koordinator BK. Bawaan: akun Anda sendiri.' : 'Bawaan: akun Anda sendiri. Boleh memilih Koordinator BK/Guru BK lain.' ?></small>
+              <?php endif; ?>
             </div>
             <div class="col-md-6 mb-3">
               <label class="form-label text-dark">Status</label>
@@ -220,42 +297,31 @@ $participantName = static function (array $p): string {
         <div class="card-body">
           <h5 class="card-title mb-3 text-dark"><i class="mdi mdi-account-plus me-2"></i>Peserta Tambahan dan Catatan</h5>
 
-          <div class="mb-3">
-            <label class="form-label text-dark">Siswa (dari data) &mdash; boleh lebih dari satu</label>
-            <select name="participant_student_ids[]" class="form-select select2-search" multiple>
-              <?php foreach (($options['students'] ?? []) as $student): ?>
-                <option value="<?= esc((string) $student['id']) ?>">
-                  <?= esc(($student['full_name'] ?? '-') . ' - ' . ($student['class_name'] ?? '-')) ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label text-dark">Kelas (dari data) &mdash; boleh lebih dari satu</label>
-            <select name="participant_class_ids[]" class="form-select select2-search" multiple>
-              <?php foreach (($options['classes'] ?? []) as $class): ?>
-                <option value="<?= esc((string) $class['id']) ?>"><?= esc($class['class_name'] ?? '-') ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label text-dark">Orang Tua (dari data)</label>
-            <select name="participant_parent_ids[]" class="form-select select2-search" multiple>
-              <?php foreach (($options['parents'] ?? []) as $user): ?>
-                <option value="<?= esc((string) $user['id']) ?>"><?= esc($user['full_name'] ?? '-') ?></option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label text-dark">Wali Kelas (dari data)</label>
-            <select name="participant_user_ids[]" class="form-select select2-search" multiple>
-              <?php foreach (($options['homeroom_teachers'] ?? []) as $user): ?>
-                <option value="<?= esc((string) $user['id']) ?>"><?= esc($user['full_name'] ?? '-') ?></option>
-              <?php endforeach; ?>
-            </select>
+          <!-- Peserta dari data (Orang Tua / Wali Kelas) digabung: cari nama lalu "+ Tambah". -->
+          <div class="mb-3 js-multi" data-name="auto">
+            <label class="form-label text-dark">Tambah Peserta (dari data)</label>
+            <div class="js-chips border rounded p-2 mb-2 bg-light">
+              <span class="text-dark js-chip-empty">Belum ada peserta dipilih.</span>
+            </div>
+            <div class="d-flex gap-2 align-items-start">
+              <div class="flex-grow-1">
+                <select class="form-select select2-search js-picker">
+                  <option value="">Cari Orang Tua atau Wali Kelas&hellip;</option>
+                  <optgroup label="Orang Tua">
+                    <?php foreach (($options['parents'] ?? []) as $user): ?>
+                      <option value="parent:<?= esc((string) $user['id']) ?>"><?= esc($user['full_name'] ?? '-') ?></option>
+                    <?php endforeach; ?>
+                  </optgroup>
+                  <optgroup label="Wali Kelas">
+                    <?php foreach (($options['homeroom_teachers'] ?? []) as $user): ?>
+                      <option value="user:<?= esc((string) $user['id']) ?>"><?= esc($user['full_name'] ?? '-') ?></option>
+                    <?php endforeach; ?>
+                  </optgroup>
+                </select>
+              </div>
+              <button type="button" class="btn btn-primary flex-shrink-0 js-add"><i class="mdi mdi-plus me-1"></i> Tambah</button>
+            </div>
+            <small class="text-dark d-block mt-1">Cari nama Orang Tua atau Wali Kelas lalu tekan <strong>Tambah</strong>. Bisa lebih dari satu.</small>
           </div>
 
           <div class="mb-3">
@@ -266,7 +332,7 @@ $participantName = static function (array $p): string {
                 <button type="button" class="btn btn-outline-danger remove-manual" title="Hapus baris"><i class="mdi mdi-minus"></i></button>
               </div>
             </div>
-            <button type="button" id="addManualParticipant" class="btn btn-sm btn-outline-primary"><i class="mdi mdi-plus me-1"></i> Tambah peserta manual</button>
+            <button type="button" id="addManualParticipant" class="btn btn-sm btn-primary"><i class="mdi mdi-plus me-1"></i> Tambah peserta manual</button>
             <small class="text-dark d-block mt-1">Untuk pihak yang belum terdaftar di data. Format: Nama - Peran.</small>
           </div>
 
@@ -310,6 +376,52 @@ $participantName = static function (array $p): string {
       $('.select2-search').select2({ theme: 'bootstrap-5', width: '100%', allowClear: true, placeholder: 'Ketik untuk mencari...' });
     }
 
+    // ---- Pola "+ Tambah" untuk pemilihan banyak data (kotak chip) ----
+    function addChip($widget, val, text) {
+      if (!val) { return; }
+      var name = $widget.data('name');
+      var hiddenName, hiddenVal;
+      if (name === 'auto') {
+        var parts = String(val).split(':');
+        hiddenName = (parts[0] === 'parent') ? 'participant_parent_ids[]' : 'participant_user_ids[]';
+        hiddenVal = parts[1];
+      } else {
+        hiddenName = name;
+        hiddenVal = val;
+      }
+
+      var $chips = $widget.find('.js-chips');
+      var dup = false;
+      $chips.find('input[type=hidden]').each(function () {
+        if (this.name === hiddenName && this.value === String(hiddenVal)) { dup = true; }
+      });
+      if (dup) { return; }
+
+      var $chip = $('<span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;"></span>');
+      $('<span></span>').text(text).appendTo($chip);
+      $('<input type="hidden">').attr('name', hiddenName).val(hiddenVal).appendTo($chip);
+      $('<button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>').appendTo($chip);
+      $widget.find('.js-chip-empty').hide().before($chip);
+    }
+
+    $('.js-multi .js-add').on('click', function () {
+      var $widget = $(this).closest('.js-multi');
+      var $picker = $widget.find('.js-picker');
+      var val = $picker.val();
+      var text = $.trim($picker.find('option:selected').text());
+      addChip($widget, val, text);
+      $picker.val('').trigger('change');
+    });
+
+    $('.js-multi').on('click', '.js-chip-remove', function () {
+      var $widget = $(this).closest('.js-multi');
+      $(this).closest('.js-chip').remove();
+      if ($widget.find('.js-chip').length === 0) {
+        $widget.find('.js-chip-empty').show();
+      }
+    });
+
+    // ---- Peserta manual (baris dinamis) ----
     $('#addManualParticipant').on('click', function () {
       var row = $(
         '<div class="input-group mb-2 manual-participant-row">' +

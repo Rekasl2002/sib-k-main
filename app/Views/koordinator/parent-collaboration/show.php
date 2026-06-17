@@ -71,7 +71,7 @@ $participantName = static function (array $p): string {
         <div class="row g-3">
           <div class="col-md-6"><div class="text-dark fw-medium">Siswa</div><div class="text-dark"><?= esc($row['student_name'] ?? '-') ?></div></div>
           <div class="col-md-6"><div class="text-dark fw-medium">Kelas</div><div class="text-dark"><?= esc($row['class_name'] ?? '-') ?></div></div>
-          <div class="col-md-6"><div class="text-dark fw-medium">Guru BK</div><div class="text-dark"><?= esc($row['counselor_name'] ?? '-') ?></div></div>
+          <div class="col-md-6"><div class="text-dark fw-medium"><?= $serviceType === 'Konferensi Kasus' ? 'Penanggung Jawab' : 'Guru BK/Penanggung Jawab' ?></div><div class="text-dark"><?= esc($row['counselor_name'] ?? '') ?: ($serviceType === 'Konferensi Kasus' ? 'Belum ditetapkan' : '-') ?></div></div>
           <div class="col-md-6"><div class="text-dark fw-medium">Jadwal</div><div class="text-dark"><?= esc($row['scheduled_at'] ?? '-') ?></div></div>
           <div class="col-md-6"><div class="text-dark fw-medium">Tempat/Lokasi/Alamat</div><div class="text-dark"><?= nl2br(esc($row['location'] ?? '-')) ?></div></div>
           <div class="col-md-6"><div class="text-dark fw-medium">Status</div><span class="badge bg-light text-dark border"><?= esc($row['status'] ?? '-') ?></span></div>

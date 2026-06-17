@@ -286,6 +286,8 @@ class BkServiceService
             'students' => $this->studentsForRole($role, $userId),
             'classes' => $this->classesForRole($role, $userId),
             'counselors' => $this->usersByRoleIds([2, 3]),
+            // Penanggung Jawab khusus Konferensi Kasus: HANYA Koordinator BK (role 2).
+            'coordinators' => $this->usersByRoleIds([2]),
             'parents' => $this->usersByRoleIds([6]),
             'homeroom_teachers' => $this->usersByRoleIds([4]),
             'assignments' => $this->assignmentsForUser($role, $userId),
@@ -498,12 +500,28 @@ class BkServiceService
         $scheduledAt = $this->normalizeDateTime($post['scheduled_at'] ?? null, $post['scheduled_date'] ?? null, $post['scheduled_time'] ?? null);
         $heldAt = $this->normalizeDateTime($post['held_at'] ?? null, $post['held_date'] ?? null, $post['held_time'] ?? null);
 
+        // Subjek utama (target) diturunkan dari pilihan PERTAMA bila tidak dikirim
+        // eksplisit. Sejak Perbaikan Kedua, Siswa/Kelas Sasaran dipilih sebagai
+        // DAFTAR (tombol "+") dan dikirim lewat participant_student_ids[] /
+        // participant_class_ids[]; pilihan pertama menjadi target representatif.
+        $targetStudentId = $this->nullableInt($post['target_student_id'] ?? $post['student_id'] ?? null)
+            ?? $this->firstPositiveInt($post['participant_student_ids'] ?? []);
+        $targetClassId = $this->nullableInt($post['target_class_id'] ?? $post['class_id'] ?? null)
+            ?? $this->firstPositiveInt($post['participant_class_ids'] ?? []);
+
+        // Penanggung Jawab/Guru BK. Konferensi Kasus BOLEH kosong bila yang mengisi
+        // adalah Guru BK (penanggung jawab hanya Koordinator BK — ditetapkan kemudian).
+        $counselorId = $this->nullableInt($post['counselor_id'] ?? null);
+        if ($counselorId === null && $serviceType !== 'Konferensi Kasus') {
+            $counselorId = $userId;
+        }
+
         $payload = [
             'service_type' => $serviceType,
             'title' => trim((string) ($post['title'] ?? $post['topic'] ?? $serviceType)),
-            'target_student_id' => $this->nullableInt($post['target_student_id'] ?? $post['student_id'] ?? null),
-            'target_class_id' => $this->nullableInt($post['target_class_id'] ?? $post['class_id'] ?? null),
-            'counselor_id' => $this->nullableInt($post['counselor_id'] ?? null) ?: $userId,
+            'target_student_id' => $targetStudentId,
+            'target_class_id' => $targetClassId,
+            'counselor_id' => $counselorId,
             'assignment_id' => $this->nullableInt($post['assignment_id'] ?? null),
             'source_complaint_id' => $this->nullableInt($post['source_complaint_id'] ?? null),
             'scheduled_at' => $scheduledAt,
@@ -976,6 +994,21 @@ class BkServiceService
     {
         $value = (int) ($value ?? 0);
         return $value > 0 ? $value : null;
+    }
+
+    /**
+     * Kembalikan bilangan bulat positif PERTAMA dari sebuah daftar (mis. daftar
+     * id Siswa/Kelas Sasaran dari tombol "+"). null bila tak ada yang valid.
+     */
+    private function firstPositiveInt($list): ?int
+    {
+        foreach ((array) $list as $value) {
+            if ((int) $value > 0) {
+                return (int) $value;
+            }
+        }
+
+        return null;
     }
 
     private function insertFiltered(string $table, array $payload): bool
