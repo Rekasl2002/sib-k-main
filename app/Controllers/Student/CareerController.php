@@ -121,7 +121,6 @@ class CareerController extends BaseStudentController
             $uniLocations = $this->unis
                 ->select('location')
                 ->where('is_active', 1)
-                ->where('is_public', 1)
                 ->where('location IS NOT NULL', null, false)
                 ->groupBy('location')
                 ->orderBy('location', 'ASC')
@@ -131,7 +130,6 @@ class CareerController extends BaseStudentController
             $uniAccrs = $this->unis
                 ->select('accreditation')
                 ->where('is_active', 1)
-                ->where('is_public', 1)
                 ->where('accreditation IS NOT NULL', null, false)
                 ->groupBy('accreditation')
                 ->orderBy('accreditation', 'ASC')
@@ -139,8 +137,7 @@ class CareerController extends BaseStudentController
 
             // Query utama universitas
             $uniBuilder = $this->unis
-                ->where('is_active', 1)
-                ->where('is_public', 1);
+                ->where('is_active', 1);
 
             if ($uniFilters['q'] !== '') {
                 $uniBuilder = $uniBuilder->groupStart()
@@ -262,8 +259,8 @@ class CareerController extends BaseStudentController
                     : (json_decode((string) $career['external_links'], true) ?: []);
             }
 
-            // Ambil 6 universitas publik (fallback aman tanpa filter program)
-            $uniBuilder = $this->unis->where('is_active', 1)->where('is_public', 1);
+            // Ambil 6 universitas yang ditampilkan (fallback aman tanpa filter program)
+            $uniBuilder = $this->unis->where('is_active', 1);
             $universities = $uniBuilder->orderBy('university_name', 'ASC')->findAll(6);
 
             // Rekomendasi karier lain dalam sektor yang sama (jika ada)
@@ -381,7 +378,6 @@ class CareerController extends BaseStudentController
                 ->join('student_saved_universities ssu', 'ssu.university_id = university_info.id', 'inner')
                 ->join('users AS creator', 'creator.id = university_info.created_by', 'left')
                 ->where('university_info.is_active', 1)
-                ->where('university_info.is_public', 1)
                 ->where('ssu.student_id', $this->studentId)
                 ->orderBy('university_info.university_name', 'ASC')
                 ->findAll();
@@ -390,7 +386,6 @@ class CareerController extends BaseStudentController
             if ($ids) {
                 $uniList = $this->unis
                     ->where('is_active', 1)
-                    ->where('is_public', 1)
                     ->whereIn('id', $ids)
                     ->orderBy('university_name', 'ASC')
                     ->findAll();
@@ -456,8 +451,7 @@ class CareerController extends BaseStudentController
     {
         // Selalu gunakan prefix "career_options." agar tidak berbenturan dengan kolom is_active milik tabel lain (mis. users)
         return $builder
-            ->where('career_options.is_active', 1)
-            ->where('career_options.is_public', 1);
+            ->where('career_options.is_active', 1);
     }
 
     /**
@@ -471,7 +465,6 @@ class CareerController extends BaseStudentController
         $m = $m->select('career_options.*, creator.full_name AS created_by_name')
                ->join('users AS creator', 'creator.id = career_options.created_by', 'left')
                ->where('career_options.is_active', 1)
-               ->where('career_options.is_public', 1)
                ->where('career_options.id', $id);
 
         $row = $m->first();
@@ -488,7 +481,6 @@ class CareerController extends BaseStudentController
             ->select('university_info.*, creator.full_name AS created_by_name')
             ->join('users AS creator', 'creator.id = university_info.created_by', 'left')
             ->where('university_info.is_active', 1)
-            ->where('university_info.is_public', 1)
             ->where('university_info.id', $id)
             ->first();
 
@@ -523,10 +515,9 @@ class CareerController extends BaseStudentController
      */
     private function saveUniversityInternal(int $id)
     {
-        // validasi ID universitas publik & aktif
+        // validasi ID universitas yang ditampilkan & aktif
         $uni = $this->unis
             ->where('is_active', 1)
-            ->where('is_public', 1)
             ->find($id);
 
         if (!$uni) {

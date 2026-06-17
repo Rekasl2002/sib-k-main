@@ -410,7 +410,6 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
                   $loc        = $u['location'] ?? '';
                   $desc       = $u['description'] ?? '';
                   $logo       = $u['logo'] ?? null;
-                  $isPub      = (int) ($u['is_public'] ?? 0) === 1;
                   $isSavedUni = in_array($uid, $savedUniversityIds, true);
                   // Nama pembuat info (jika dikirim dari controller)
                   $creatorUni = $u['created_by_name'] ?? null;
@@ -451,9 +450,6 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
                             <?= esc($loc) ?>
                           </span>
                         <?php endif; ?>
-                        <span class="badge bg-info-subtle text-info-emphasis border">
-                          <?= $isPub ? 'Publik' : 'Non-publik' ?>
-                        </span>
                       </div>
 
                       <p class="card-text flex-grow-1"><?= clip($desc, 160) ?></p>

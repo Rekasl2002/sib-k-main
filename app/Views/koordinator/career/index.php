@@ -3,15 +3,15 @@
  * File Path: app/Views/koordinator/career/index.php
  * Halaman utama Info Karier dan Studi Lanjut (Koordinator BK)
  *
- * Tampilan diseragamkan dengan Manajemen Siswa (koordinator/students):
- * page-title-box, kartu statistik, kartu Filter/Saring Data, dan kartu daftar
- * berbasis DataTables (paginasi di sisi tampilan).
+ * Tampilan diseragamkan dengan Manajemen Pengguna/Siswa: page-title-box, kartu
+ * statistik, kartu Filter/Saring Data, dan kartu daftar berbasis DataTables.
  *
- * Variabel dari Controller:
- * - $careers (array penuh), $careerFilters
- * - $universities (array penuh), $uniFilters
- * - $stats (careers_total, careers_active, uni_total, uni_active)
- * - $activeTab ('careers'|'universities')
+ * Perbaikan Kedua:
+ * - "Publikasi" dihapus; status tampil/sembunyi cukup dari satu kolom Status (is_active)
+ *   dengan label "Ditampilkan / Disembunyikan".
+ * - Tombol aksi disusun vertikal (ikon) agar tak perlu scroll ke samping.
+ * - Tombol "Pilihan Siswa" tersedia di kedua tab (Karier & Perguruan Tinggi).
+ * - Tombol "Detail" untuk melihat halaman detail karier / perguruan tinggi.
  */
 
 $this->extend('layouts/main');
@@ -24,14 +24,12 @@ $uniFilters    = $uniFilters ?? [];
 $stats         = $stats ?? [];
 $activeTab     = $activeTab ?? 'careers';
 
-// Opsi sektor untuk filter (dikumpulkan dari data yang ada)
 $sectors = [];
 foreach (($careers ?? []) as $c) {
     if (!empty($c['sector'])) $sectors[$c['sector']] = $c['sector'];
 }
 ksort($sectors);
 
-// Opsi akreditasi & lokasi untuk filter universitas
 $accs = [];
 $locs = [];
 foreach (($universities ?? []) as $u) {
@@ -40,6 +38,9 @@ foreach (($universities ?? []) as $u) {
 }
 foreach (['Unggul','A','B','C','Baik','Baik Sekali'] as $std) { $accs[$std] = $accs[$std] ?? $std; }
 ksort($accs); ksort($locs);
+
+$choicesCareerUrl = route_to('koordinator.career.choices');
+$choicesUniUrl    = route_to('koordinator.career.choices') . '?tab=universities';
 ?>
 
 <!-- Page Title -->
@@ -76,9 +77,9 @@ ksort($accs); ksort($locs);
     <?php
     $miniCards = [
         ['label' => 'Total Pilihan Karier', 'value' => $stats['careers_total'] ?? 0,  'bg' => 'bg-primary', 'icon' => 'mdi-briefcase-outline'],
-        ['label' => 'Karier Aktif',         'value' => $stats['careers_active'] ?? 0, 'bg' => 'bg-success', 'icon' => 'mdi-briefcase-check-outline'],
+        ['label' => 'Karier Ditampilkan',   'value' => $stats['careers_active'] ?? 0, 'bg' => 'bg-success', 'icon' => 'mdi-briefcase-check-outline'],
         ['label' => 'Total Perguruan Tinggi','value' => $stats['uni_total'] ?? 0,      'bg' => 'bg-info',    'icon' => 'mdi-town-hall'],
-        ['label' => 'Perguruan Tinggi Aktif','value' => $stats['uni_active'] ?? 0,     'bg' => 'bg-secondary','icon' => 'mdi-school-outline'],
+        ['label' => 'PT Ditampilkan',        'value' => $stats['uni_active'] ?? 0,     'bg' => 'bg-secondary','icon' => 'mdi-school-outline'],
     ];
     ?>
     <?php foreach ($miniCards as $mc): ?>
@@ -142,7 +143,7 @@ ksort($accs); ksort($locs);
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label class="form-label">Pendidikan Minimal</label>
                                     <select name="edu" class="form-select">
                                         <option value="">Semua Tingkat</option>
@@ -151,22 +152,13 @@ ksort($accs); ksort($locs);
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label class="form-label">Status</label>
                                     <select name="status" class="form-select">
                                         <?php $fStatus = $careerFilters['status'] ?? ''; ?>
                                         <option value=""  <?= $fStatus === ''  ? 'selected' : '' ?>>Semua Status</option>
-                                        <option value="1" <?= $fStatus === '1' ? 'selected' : '' ?>>Aktif</option>
-                                        <option value="0" <?= $fStatus === '0' ? 'selected' : '' ?>>Nonaktif</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <label class="form-label">Tampil ke Siswa</label>
-                                    <select name="pub" class="form-select">
-                                        <?php $fPub = $careerFilters['pub'] ?? ''; ?>
-                                        <option value=""  <?= $fPub === ''  ? 'selected' : '' ?>>Semua</option>
-                                        <option value="1" <?= $fPub === '1' ? 'selected' : '' ?>>Ditampilkan</option>
-                                        <option value="0" <?= $fPub === '0' ? 'selected' : '' ?>>Disembunyikan</option>
+                                        <option value="1" <?= $fStatus === '1' ? 'selected' : '' ?>>Ditampilkan</option>
+                                        <option value="0" <?= $fStatus === '0' ? 'selected' : '' ?>>Disembunyikan</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
@@ -197,7 +189,7 @@ ksort($accs); ksort($locs);
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h4 class="card-title mb-0"><i class="mdi mdi-briefcase-outline me-2"></i>Daftar Pilihan Karier</h4>
                         <div class="text-end d-flex gap-2 align-items-center flex-wrap">
-                            <a href="<?= route_to('koordinator.career.choices') ?>" class="btn btn-info">
+                            <a href="<?= $choicesCareerUrl ?>" class="btn btn-info">
                                 <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Siswa
                             </a>
                             <a href="<?= route_to('koordinator.career.create') ?>" class="btn btn-success">
@@ -212,13 +204,12 @@ ksort($accs); ksort($locs);
                                     <tr>
                                         <th style="width:60px;" class="text-center">No</th>
                                         <th>Judul Karier</th>
-                                        <th style="width:140px;">Sektor</th>
-                                        <th style="width:130px;">Pendidikan Min.</th>
+                                        <th style="width:150px;">Sektor</th>
+                                        <th style="width:140px;">Pendidikan Min.</th>
                                         <th style="width:110px;">Permintaan</th>
-                                        <th style="width:150px;">Dibuat Oleh</th>
-                                        <th style="width:100px;">Status</th>
-                                        <th style="width:130px;">Tampil ke Siswa</th>
-                                        <th style="width:150px;" class="text-center">Aksi</th>
+                                        <th style="width:160px;">Dibuat Oleh</th>
+                                        <th style="width:140px;">Status</th>
+                                        <th style="width:90px;" class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -234,32 +225,22 @@ ksort($accs); ksort($locs);
                                             <td><?= $creatorName !== '' ? esc($creatorName) : '<span class="text-dark">—</span>' ?></td>
                                             <td>
                                                 <?php if ((int)($c['is_active'] ?? 0) === 1): ?>
-                                                    <span class="badge bg-success">Aktif</span>
-                                                <?php else: ?>
-                                                    <span class="badge bg-secondary">Nonaktif</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <?php if ((int)($c['is_public'] ?? 0) === 1): ?>
-                                                    <span class="badge bg-primary">Ditampilkan</span>
+                                                    <span class="badge bg-success">Ditampilkan</span>
                                                 <?php else: ?>
                                                     <span class="badge bg-dark">Disembunyikan</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td class="text-center">
-                                                <div class="btn-group" role="group">
+                                                <div class="d-flex flex-column gap-1 align-items-stretch">
+                                                    <a href="<?= route_to('koordinator.career.show', $c['id']) ?>" class="btn btn-sm btn-info" title="Detail" data-bs-toggle="tooltip"><i class="mdi mdi-eye"></i></a>
                                                     <a href="<?= route_to('koordinator.career.edit', $c['id']) ?>" class="btn btn-sm btn-primary" title="Edit" data-bs-toggle="tooltip"><i class="mdi mdi-pencil"></i></a>
-                                                    <form action="<?= route_to('koordinator.career.toggle', $c['id']) ?>" method="post" onsubmit="return confirm('Ubah status aktif/nonaktif karier ini?')">
+                                                    <form action="<?= route_to('koordinator.career.toggle', $c['id']) ?>" method="post" onsubmit="return confirm('Ubah status Ditampilkan/Disembunyikan karier ini?')">
                                                         <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-warning" type="submit" title="Aktif/Nonaktif" data-bs-toggle="tooltip"><i class="mdi mdi-toggle-switch"></i></button>
-                                                    </form>
-                                                    <form action="<?= route_to('koordinator.career.publish', $c['id']) ?>" method="post" onsubmit="return confirm('Ubah tampil/sembunyikan karier ini ke siswa?')">
-                                                        <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-info" type="submit" title="Tampilkan/Sembunyikan" data-bs-toggle="tooltip"><i class="mdi mdi-eye-outline"></i></button>
+                                                        <button class="btn btn-sm btn-warning w-100" type="submit" title="Tampilkan/Sembunyikan" data-bs-toggle="tooltip"><i class="mdi mdi-eye-off-outline"></i></button>
                                                     </form>
                                                     <form action="<?= route_to('koordinator.career.delete', $c['id']) ?>" method="post" onsubmit="return confirm('Hapus data karier ini?')">
                                                         <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-danger" type="submit" title="Hapus" data-bs-toggle="tooltip"><i class="mdi mdi-delete"></i></button>
+                                                        <button class="btn btn-sm btn-danger w-100" type="submit" title="Hapus" data-bs-toggle="tooltip"><i class="mdi mdi-delete"></i></button>
                                                     </form>
                                                 </div>
                                             </td>
@@ -267,7 +248,7 @@ ksort($accs); ksort($locs);
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="9" class="text-center py-5">
+                                        <td colspan="8" class="text-center py-5">
                                             <i class="mdi mdi-briefcase-off-outline text-dark" style="font-size: 48px;"></i>
                                             <p class="text-dark mt-2 mb-0">Belum ada data karier</p>
                                         </td>
@@ -296,7 +277,7 @@ ksort($accs); ksort($locs);
                         <form action="<?= site_url('koordinator/career-info') ?>" method="get">
                             <input type="hidden" name="tab" value="universities">
                             <div class="row g-3">
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label class="form-label">Akreditasi</label>
                                     <select name="uacc" class="form-select">
                                         <?php $uAcc = $uniFilters['acc'] ?? ''; ?>
@@ -316,22 +297,13 @@ ksort($accs); ksort($locs);
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label class="form-label">Status</label>
                                     <select name="ustatus" class="form-select">
                                         <?php $uStatus = $uniFilters['status'] ?? ''; ?>
                                         <option value=""  <?= $uStatus === ''  ? 'selected' : '' ?>>Semua Status</option>
-                                        <option value="1" <?= $uStatus === '1' ? 'selected' : '' ?>>Aktif</option>
-                                        <option value="0" <?= $uStatus === '0' ? 'selected' : '' ?>>Nonaktif</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <label class="form-label">Tampil ke Siswa</label>
-                                    <select name="upub" class="form-select">
-                                        <?php $uPub = $uniFilters['pub'] ?? ''; ?>
-                                        <option value=""  <?= $uPub === ''  ? 'selected' : '' ?>>Semua</option>
-                                        <option value="1" <?= $uPub === '1' ? 'selected' : '' ?>>Ditampilkan</option>
-                                        <option value="0" <?= $uPub === '0' ? 'selected' : '' ?>>Disembunyikan</option>
+                                        <option value="1" <?= $uStatus === '1' ? 'selected' : '' ?>>Ditampilkan</option>
+                                        <option value="0" <?= $uStatus === '0' ? 'selected' : '' ?>>Disembunyikan</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
@@ -361,7 +333,10 @@ ksort($accs); ksort($locs);
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h4 class="card-title mb-0"><i class="mdi mdi-town-hall me-2"></i>Daftar Perguruan Tinggi</h4>
-                        <div class="text-end">
+                        <div class="text-end d-flex gap-2 align-items-center flex-wrap">
+                            <a href="<?= $choicesUniUrl ?>" class="btn btn-info">
+                                <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Siswa
+                            </a>
                             <a href="<?= route_to('koordinator.university.create') ?>" class="btn btn-success">
                                 <i class="mdi mdi-plus me-1"></i> Tambah Perguruan Tinggi
                             </a>
@@ -377,10 +352,9 @@ ksort($accs); ksort($locs);
                                         <th style="width:130px;">Alias</th>
                                         <th style="width:120px;">Akreditasi</th>
                                         <th style="width:160px;">Lokasi</th>
-                                        <th style="width:150px;">Dibuat Oleh</th>
-                                        <th style="width:100px;">Status</th>
-                                        <th style="width:130px;">Tampil ke Siswa</th>
-                                        <th style="width:150px;" class="text-center">Aksi</th>
+                                        <th style="width:160px;">Dibuat Oleh</th>
+                                        <th style="width:140px;">Status</th>
+                                        <th style="width:90px;" class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -396,32 +370,22 @@ ksort($accs); ksort($locs);
                                             <td><?= $uCreatorName !== '' ? esc($uCreatorName) : '<span class="text-dark">—</span>' ?></td>
                                             <td>
                                                 <?php if ((int)($u['is_active'] ?? 0) === 1): ?>
-                                                    <span class="badge bg-success">Aktif</span>
-                                                <?php else: ?>
-                                                    <span class="badge bg-secondary">Nonaktif</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <?php if ((int)($u['is_public'] ?? 0) === 1): ?>
-                                                    <span class="badge bg-primary">Ditampilkan</span>
+                                                    <span class="badge bg-success">Ditampilkan</span>
                                                 <?php else: ?>
                                                     <span class="badge bg-dark">Disembunyikan</span>
                                                 <?php endif; ?>
                                             </td>
                                             <td class="text-center">
-                                                <div class="btn-group" role="group">
+                                                <div class="d-flex flex-column gap-1 align-items-stretch">
+                                                    <a href="<?= route_to('koordinator.university.show', $u['id']) ?>" class="btn btn-sm btn-info" title="Detail" data-bs-toggle="tooltip"><i class="mdi mdi-eye"></i></a>
                                                     <a href="<?= route_to('koordinator.university.edit', $u['id']) ?>" class="btn btn-sm btn-primary" title="Edit" data-bs-toggle="tooltip"><i class="mdi mdi-pencil"></i></a>
-                                                    <form action="<?= route_to('koordinator.university.toggle', $u['id']) ?>" method="post" onsubmit="return confirm('Ubah status aktif/nonaktif perguruan tinggi ini?')">
+                                                    <form action="<?= route_to('koordinator.university.toggle', $u['id']) ?>" method="post" onsubmit="return confirm('Ubah status Ditampilkan/Disembunyikan perguruan tinggi ini?')">
                                                         <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-warning" type="submit" title="Aktif/Nonaktif" data-bs-toggle="tooltip"><i class="mdi mdi-toggle-switch"></i></button>
-                                                    </form>
-                                                    <form action="<?= route_to('koordinator.university.publish', $u['id']) ?>" method="post" onsubmit="return confirm('Ubah tampil/sembunyikan perguruan tinggi ini ke siswa?')">
-                                                        <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-info" type="submit" title="Tampilkan/Sembunyikan" data-bs-toggle="tooltip"><i class="mdi mdi-eye-outline"></i></button>
+                                                        <button class="btn btn-sm btn-warning w-100" type="submit" title="Tampilkan/Sembunyikan" data-bs-toggle="tooltip"><i class="mdi mdi-eye-off-outline"></i></button>
                                                     </form>
                                                     <form action="<?= route_to('koordinator.university.delete', $u['id']) ?>" method="post" onsubmit="return confirm('Hapus perguruan tinggi ini?')">
                                                         <?= csrf_field() ?>
-                                                        <button class="btn btn-sm btn-danger" type="submit" title="Hapus" data-bs-toggle="tooltip"><i class="mdi mdi-delete"></i></button>
+                                                        <button class="btn btn-sm btn-danger w-100" type="submit" title="Hapus" data-bs-toggle="tooltip"><i class="mdi mdi-delete"></i></button>
                                                     </form>
                                                 </div>
                                             </td>
@@ -429,7 +393,7 @@ ksort($accs); ksort($locs);
                                     <?php endforeach; ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="9" class="text-center py-5">
+                                        <td colspan="8" class="text-center py-5">
                                             <i class="mdi mdi-town-hall text-dark" style="font-size: 48px;"></i>
                                             <p class="text-dark mt-2 mb-0">Belum ada data perguruan tinggi</p>
                                         </td>
@@ -476,7 +440,7 @@ ksort($accs); ksort($locs);
                 responsive: true,
                 pageLength: 10,
                 order: [[1, 'asc']],
-                columnDefs: [{ orderable: false, targets: [0, 8] }],
+                columnDefs: [{ orderable: false, targets: [0, 7] }],
                 dom: dtDom,
                 language: dtLang
             });
@@ -491,11 +455,9 @@ ksort($accs); ksort($locs);
             return t;
         }
 
-        var tables = {};
-        if ($('#careersTable tbody tr td[colspan]').length === 0) tables.careers = initTable('#careersTable');
-        if ($('#universitiesTable tbody tr td[colspan]').length === 0) tables.unis = initTable('#universitiesTable');
+        if ($('#careersTable tbody tr td[colspan]').length === 0) initTable('#careersTable');
+        if ($('#universitiesTable tbody tr td[colspan]').length === 0) initTable('#universitiesTable');
 
-        // Recalculate columns saat tab ditampilkan agar lebar kolom benar
         $('a[data-bs-toggle], .nav-link').on('shown.bs.tab', function () {
             $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
         });

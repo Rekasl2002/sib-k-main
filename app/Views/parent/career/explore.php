@@ -426,7 +426,6 @@ $activeChildId = $activeChildId ?? null;
                   $loc        = $u['location'] ?? '';
                   $desc       = $u['description'] ?? '';
                   $logo       = $u['logo'] ?? null;
-                  $isPub      = (int) ($u['is_public'] ?? 0) === 1;
                   $creatorUni = $u['created_by_name'] ?? null;
                   $isSavedUni = in_array($uid, $savedUniversityIds, true);
                 ?>
@@ -466,9 +465,6 @@ $activeChildId = $activeChildId ?? null;
                             <?= esc($loc) ?>
                           </span>
                         <?php endif; ?>
-                        <span class="badge bg-info-subtle text-info-emphasis border">
-                          <?= $isPub ? 'Publik' : 'Non-publik' ?>
-                        </span>
                       </div>
 
                       <p class="card-text flex-grow-1"><?= clip($desc, 160) ?></p>

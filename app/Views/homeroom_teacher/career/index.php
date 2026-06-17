@@ -4,11 +4,10 @@
  * Halaman utama Info Karier dan Studi Lanjut (Wali Kelas) — HANYA BACA (R*).
  *
  * Wali Kelas hanya MELIHAT daftar karier & perguruan tinggi sebagai bahan
- * mendampingi siswa. Mengelola data = wewenang Koordinator BK & Guru BK,
- * jadi TIDAK ada tombol tambah/edit/hapus di sini.
+ * mendampingi siswa. Mengelola data = wewenang Koordinator BK & Guru BK.
  *
- * Tampilan diseragamkan dengan Manajemen Siswa (page-title-box, kartu statistik,
- * kartu Filter/Saring Data, kartu daftar + DataTables).
+ * Perbaikan Kedua: "Publikasi" dihapus (cukup Status: Ditampilkan/Disembunyikan),
+ * ditambah tombol "Detail" dan "Pilihan Siswa" di kedua tab.
  *
  * Variabel dari Controller: $careers, $careerFilters, $universities, $uniFilters, $stats, $activeTab
  */
@@ -37,6 +36,9 @@ foreach (($universities ?? []) as $u) {
 }
 foreach (['Unggul','A','B','C','Baik','Baik Sekali'] as $std) { $accs[$std] = $accs[$std] ?? $std; }
 ksort($accs); ksort($locs);
+
+$choicesCareerUrl = route_to('homeroom.career.choices');
+$choicesUniUrl    = route_to('homeroom.career.choices') . '?tab=universities';
 ?>
 
 <!-- Page Title -->
@@ -78,9 +80,9 @@ ksort($accs); ksort($locs);
     <?php
     $miniCards = [
         ['label' => 'Total Pilihan Karier', 'value' => $stats['careers_total'] ?? 0,  'bg' => 'bg-primary', 'icon' => 'mdi-briefcase-outline'],
-        ['label' => 'Karier Aktif',         'value' => $stats['careers_active'] ?? 0, 'bg' => 'bg-success', 'icon' => 'mdi-briefcase-check-outline'],
+        ['label' => 'Karier Ditampilkan',   'value' => $stats['careers_active'] ?? 0, 'bg' => 'bg-success', 'icon' => 'mdi-briefcase-check-outline'],
         ['label' => 'Total Perguruan Tinggi','value' => $stats['uni_total'] ?? 0,      'bg' => 'bg-info',    'icon' => 'mdi-town-hall'],
-        ['label' => 'Perguruan Tinggi Aktif','value' => $stats['uni_active'] ?? 0,     'bg' => 'bg-secondary','icon' => 'mdi-school-outline'],
+        ['label' => 'PT Ditampilkan',        'value' => $stats['uni_active'] ?? 0,     'bg' => 'bg-secondary','icon' => 'mdi-school-outline'],
     ];
     ?>
     <?php foreach ($miniCards as $mc): ?>
@@ -140,7 +142,7 @@ ksort($accs); ksort($locs);
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label class="form-label">Pendidikan Minimal</label>
                                     <select name="edu" class="form-select">
                                         <option value="">Semua Tingkat</option>
@@ -149,22 +151,13 @@ ksort($accs); ksort($locs);
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label class="form-label">Status</label>
                                     <select name="status" class="form-select">
                                         <?php $fStatus = $careerFilters['status'] ?? ''; ?>
                                         <option value=""  <?= $fStatus === ''  ? 'selected' : '' ?>>Semua Status</option>
-                                        <option value="1" <?= $fStatus === '1' ? 'selected' : '' ?>>Aktif</option>
-                                        <option value="0" <?= $fStatus === '0' ? 'selected' : '' ?>>Nonaktif</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <label class="form-label">Tampil ke Siswa</label>
-                                    <select name="pub" class="form-select">
-                                        <?php $fPub = $careerFilters['pub'] ?? ''; ?>
-                                        <option value=""  <?= $fPub === ''  ? 'selected' : '' ?>>Semua</option>
-                                        <option value="1" <?= $fPub === '1' ? 'selected' : '' ?>>Ditampilkan</option>
-                                        <option value="0" <?= $fPub === '0' ? 'selected' : '' ?>>Disembunyikan</option>
+                                        <option value="1" <?= $fStatus === '1' ? 'selected' : '' ?>>Ditampilkan</option>
+                                        <option value="0" <?= $fStatus === '0' ? 'selected' : '' ?>>Disembunyikan</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
@@ -194,7 +187,7 @@ ksort($accs); ksort($locs);
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h4 class="card-title mb-0"><i class="mdi mdi-briefcase-outline me-2"></i>Daftar Pilihan Karier</h4>
                         <div class="text-end">
-                            <a href="<?= route_to('homeroom.career.choices') ?>" class="btn btn-info">
+                            <a href="<?= $choicesCareerUrl ?>" class="btn btn-info">
                                 <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Siswa
                             </a>
                         </div>
@@ -209,8 +202,8 @@ ksort($accs); ksort($locs);
                                         <th style="width:150px;">Sektor</th>
                                         <th style="width:140px;">Pendidikan Min.</th>
                                         <th style="width:160px;">Dibuat Oleh</th>
-                                        <th style="width:110px;">Status</th>
-                                        <th style="width:140px;">Tampil ke Siswa</th>
+                                        <th style="width:140px;">Status</th>
+                                        <th style="width:90px;" class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -225,17 +218,13 @@ ksort($accs); ksort($locs);
                                             <td><?= $creatorName !== '' ? esc($creatorName) : '<span class="text-dark">—</span>' ?></td>
                                             <td>
                                                 <?php if ((int)($c['is_active'] ?? 0) === 1): ?>
-                                                    <span class="badge bg-success">Aktif</span>
-                                                <?php else: ?>
-                                                    <span class="badge bg-secondary">Nonaktif</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <?php if ((int)($c['is_public'] ?? 0) === 1): ?>
-                                                    <span class="badge bg-primary">Ditampilkan</span>
+                                                    <span class="badge bg-success">Ditampilkan</span>
                                                 <?php else: ?>
                                                     <span class="badge bg-dark">Disembunyikan</span>
                                                 <?php endif; ?>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="<?= route_to('homeroom.career.show', $c['id']) ?>" class="btn btn-sm btn-info" title="Detail" data-bs-toggle="tooltip"><i class="mdi mdi-eye"></i></a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -268,7 +257,7 @@ ksort($accs); ksort($locs);
                         <form action="<?= site_url('homeroom/career-info') ?>" method="get">
                             <input type="hidden" name="tab" value="universities">
                             <div class="row g-3">
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label class="form-label">Akreditasi</label>
                                     <select name="uacc" class="form-select">
                                         <?php $uAcc = $uniFilters['acc'] ?? ''; ?>
@@ -288,22 +277,13 @@ ksort($accs); ksort($locs);
                                         <?php endforeach; ?>
                                     </select>
                                 </div>
-                                <div class="col-md-2">
+                                <div class="col-md-3">
                                     <label class="form-label">Status</label>
                                     <select name="ustatus" class="form-select">
                                         <?php $uStatus = $uniFilters['status'] ?? ''; ?>
                                         <option value=""  <?= $uStatus === ''  ? 'selected' : '' ?>>Semua Status</option>
-                                        <option value="1" <?= $uStatus === '1' ? 'selected' : '' ?>>Aktif</option>
-                                        <option value="0" <?= $uStatus === '0' ? 'selected' : '' ?>>Nonaktif</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <label class="form-label">Tampil ke Siswa</label>
-                                    <select name="upub" class="form-select">
-                                        <?php $uPub = $uniFilters['pub'] ?? ''; ?>
-                                        <option value=""  <?= $uPub === ''  ? 'selected' : '' ?>>Semua</option>
-                                        <option value="1" <?= $uPub === '1' ? 'selected' : '' ?>>Ditampilkan</option>
-                                        <option value="0" <?= $uPub === '0' ? 'selected' : '' ?>>Disembunyikan</option>
+                                        <option value="1" <?= $uStatus === '1' ? 'selected' : '' ?>>Ditampilkan</option>
+                                        <option value="0" <?= $uStatus === '0' ? 'selected' : '' ?>>Disembunyikan</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
@@ -332,6 +312,11 @@ ksort($accs); ksort($locs);
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <h4 class="card-title mb-0"><i class="mdi mdi-town-hall me-2"></i>Daftar Perguruan Tinggi</h4>
+                        <div class="text-end">
+                            <a href="<?= $choicesUniUrl ?>" class="btn btn-info">
+                                <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Siswa
+                            </a>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -344,8 +329,8 @@ ksort($accs); ksort($locs);
                                         <th style="width:130px;">Akreditasi</th>
                                         <th style="width:170px;">Lokasi</th>
                                         <th style="width:160px;">Dibuat Oleh</th>
-                                        <th style="width:110px;">Status</th>
-                                        <th style="width:140px;">Tampil ke Siswa</th>
+                                        <th style="width:140px;">Status</th>
+                                        <th style="width:90px;" class="text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -361,17 +346,13 @@ ksort($accs); ksort($locs);
                                             <td><?= $uCreatorName !== '' ? esc($uCreatorName) : '<span class="text-dark">—</span>' ?></td>
                                             <td>
                                                 <?php if ((int)($u['is_active'] ?? 0) === 1): ?>
-                                                    <span class="badge bg-success">Aktif</span>
-                                                <?php else: ?>
-                                                    <span class="badge bg-secondary">Nonaktif</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <?php if ((int)($u['is_public'] ?? 0) === 1): ?>
-                                                    <span class="badge bg-primary">Ditampilkan</span>
+                                                    <span class="badge bg-success">Ditampilkan</span>
                                                 <?php else: ?>
                                                     <span class="badge bg-dark">Disembunyikan</span>
                                                 <?php endif; ?>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="<?= route_to('homeroom.university.show', $u['id']) ?>" class="btn btn-sm btn-info" title="Detail" data-bs-toggle="tooltip"><i class="mdi mdi-eye"></i></a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
@@ -402,6 +383,9 @@ ksort($accs); ksort($locs);
 
 <script>
     $(document).ready(function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
+
         var dtLang = {
             lengthMenu: "Tampilkan _MENU_ data",
             info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
@@ -421,7 +405,7 @@ ksort($accs); ksort($locs);
                 responsive: true,
                 pageLength: 10,
                 order: [[1, 'asc']],
-                columnDefs: [{ orderable: false, targets: [0] }],
+                columnDefs: [{ orderable: false, targets: [0, -1] }],
                 dom: dtDom,
                 language: dtLang
             });
@@ -438,6 +422,10 @@ ksort($accs); ksort($locs);
 
         if ($('#careersTable tbody tr td[colspan]').length === 0) initTable('#careersTable');
         if ($('#universitiesTable tbody tr td[colspan]').length === 0) initTable('#universitiesTable');
+
+        $('a[data-bs-toggle], .nav-link').on('shown.bs.tab', function () {
+            $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+        });
     });
 </script>
 <?= $this->endSection() ?>

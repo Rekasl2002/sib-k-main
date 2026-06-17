@@ -1,244 +1,265 @@
-<!-- app/Views/counselor/career/student_choices.php -->
-<?= $this->extend('layouts/main') ?>
+<?php
+/**
+ * File Path: app/Views/counselor/career/student_choices.php
+ * Pilihan Karier dan Studi Lanjut Siswa (Guru BK)
+ *
+ * Tampilan diseragamkan dengan Manajemen Pengguna/Siswa + DataTables.
+ * Setiap baris punya tombol "Detail" untuk melihat detail karier / perguruan tinggi.
+ */
 
-<?= $this->section('content') ?>
+$this->extend('layouts/main');
+$this->section('content');
 
-<div class="page-content">
-  <div class="container-fluid">
+helper('url');
 
-    <div class="page-title-box d-flex align-items-center justify-content-between">
-      <h4 class="mb-0">Pilihan Karier dan Studi Lanjut Siswa</h4>
-      <div class="page-title-right">
-        <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item"><a href="<?= route_to('counselor.career.index') ?>">Info Karier dan Studi Lanjut</a></li>
-          <li class="breadcrumb-item active">Pilihan Siswa</li>
-        </ol>
-      </div>
+$activeTab = $activeTab ?? 'careers';
+$filters   = $filters ?? [];
+$classes   = $classes ?? [];
+
+$baseUrl = site_url('counselor/career-info/student-choices');
+$tabUrl  = static function (string $tab) use ($baseUrl, $filters) {
+    return $baseUrl . '?' . http_build_query([
+        'tab'      => $tab,
+        'q'        => $filters['q'] ?? '',
+        'class_id' => $filters['class_id'] ?? '',
+        'sort'     => $filters['sort'] ?? '',
+    ]);
+};
+?>
+
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0">Pilihan Karier dan Studi Lanjut Siswa</h4>
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="<?= route_to('counselor.career.index') ?>">Info Karier dan Studi Lanjut</a></li>
+                    <li class="breadcrumb-item active">Pilihan Siswa</li>
+                </ol>
+            </div>
+        </div>
     </div>
-
-    <?php if (session()->getFlashdata('success')): ?>
-      <div class="alert alert-success">
-        <?= esc(session()->getFlashdata('success')) ?>
-      </div>
-    <?php elseif (session()->getFlashdata('error')): ?>
-      <div class="alert alert-danger">
-        <?= esc(session()->getFlashdata('error')) ?>
-      </div>
-    <?php endif; ?>
-
-    <!-- Sub-tab Karier vs Perguruan Tinggi -->
-    <ul class="nav nav-tabs mb-3">
-      <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'careers' ? 'active' : '' ?>"
-           href="<?= site_url('counselor/career-info/student-choices?tab=careers'
-             . '&q=' . urlencode((string)($filters['q'] ?? ''))
-             . '&class_id=' . urlencode((string)($filters['class_id'] ?? ''))
-             . '&sort=' . urlencode((string)($filters['sort'] ?? ''))
-             . '&per_page=' . urlencode((string)($filters['per_page'] ?? 10))
-           ) ?>">
-          Karier
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link <?= $activeTab === 'universities' ? 'active' : '' ?>"
-           href="<?= site_url('counselor/career-info/student-choices?tab=universities'
-             . '&q=' . urlencode((string)($filters['q'] ?? ''))
-             . '&class_id=' . urlencode((string)($filters['class_id'] ?? ''))
-             . '&sort=' . urlencode((string)($filters['sort'] ?? ''))
-             . '&per_page=' . urlencode((string)($filters['per_page'] ?? 10))
-           ) ?>">
-          Perguruan Tinggi
-        </a>
-      </li>
-    </ul>
-
-    <div class="card">
-      <div class="card-body">
-
-        <!-- Filter & Sort -->
-        <form method="get" action="<?= site_url('counselor/career-info/student-choices') ?>" class="row g-2 mb-3">
-          <input type="hidden" name="tab" value="<?= esc($activeTab) ?>">
-
-          <div class="col-md-4 col-sm-6">
-            <label class="form-label">
-              Cari Siswa / NISN / <?= $activeTab === 'careers' ? 'Karier' : 'Perguruan Tinggi' ?>
-            </label>
-            <input type="text"
-                   name="q"
-                   value="<?= esc($filters['q'] ?? '') ?>"
-                   class="form-control"
-                   placeholder="Ketik kata kunci...">
-          </div>
-
-          <div class="col-md-3 col-sm-6">
-            <label class="form-label">Kelas</label>
-            <select name="class_id" class="form-select">
-              <option value="">Semua kelas</option>
-              <?php foreach ($classes as $cls): ?>
-                <option value="<?= (int) $cls['id'] ?>"
-                  <?= (string)($filters['class_id'] ?? '') === (string)$cls['id'] ? 'selected' : '' ?>>
-                  <?= esc($cls['class_name'] ?? ('Kelas ' . ($cls['grade_level'] ?? ''))) ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="col-md-2 col-sm-6">
-            <label class="form-label">Urutkan</label>
-            <select name="sort" class="form-select">
-              <option value="">Nama siswa (A–Z)</option>
-              <option value="student_desc" <?= ($filters['sort'] ?? '') === 'student_desc' ? 'selected' : '' ?>>
-                Nama siswa (Z–A)
-              </option>
-              <option value="class" <?= ($filters['sort'] ?? '') === 'class' ? 'selected' : '' ?>>
-                Kelas
-              </option>
-
-              <?php if ($activeTab === 'careers'): ?>
-                <option value="career" <?= ($filters['sort'] ?? '') === 'career' ? 'selected' : '' ?>>
-                  Nama karier
-                </option>
-              <?php else: ?>
-                <option value="name" <?= ($filters['sort'] ?? '') === 'name' ? 'selected' : '' ?>>
-                  Nama perguruan tinggi
-                </option>
-              <?php endif; ?>
-
-              <option value="latest" <?= ($filters['sort'] ?? '') === 'latest' ? 'selected' : '' ?>>
-                Terbaru disimpan
-              </option>
-            </select>
-          </div>
-
-          <div class="col-md-2 col-sm-6">
-            <label class="form-label">Per halaman</label>
-            <select name="per_page" class="form-select">
-              <?php foreach ([10, 25, 50, 100] as $pp): ?>
-                <option value="<?= $pp ?>" <?= (int)($filters['per_page'] ?? 10) === $pp ? 'selected' : '' ?>>
-                  <?= $pp ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-          </div>
-
-          <div class="col-md-1 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary w-100">
-              <i class="bx bx-search"></i>
-              <span class="d-none d-md-inline">Filter</span>
-            </button>
-          </div>
-        </form>
-
-        <!-- Tabel Karier -->
-        <?php if ($activeTab === 'careers'): ?>
-
-          <?php if (! $hasCareerTable): ?>
-            <div class="alert alert-info mb-0">
-              Tabel <code>student_saved_careers</code> belum tersedia di database.
-              Halaman ini akan menampilkan data setelah tabel tersebut dibuat
-              dan siswa mulai menyimpan pilihan karier.
-            </div>
-
-          <?php elseif (empty($careerChoices)): ?>
-            <div class="alert alert-warning mb-0">
-              Belum ada siswa yang menyimpan pilihan karier sesuai filter.
-            </div>
-
-          <?php else: ?>
-            <div class="table-responsive">
-              <table class="table table-striped table-hover align-middle">
-                <thead>
-                  <tr>
-                    <th>Siswa</th>
-                    <th>NISN</th>
-                    <th>Kelas</th>
-                    <th>Karier</th>
-                    <th>Sektor</th>
-                    <th>Min. Pendidikan</th>
-                    <th>Disimpan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php foreach ($careerChoices as $row): ?>
-                    <tr>
-                      <td><?= esc($row['student_name'] ?? '-') ?></td>
-                      <td><?= esc($row['nisn'] ?? '-') ?></td>
-                      <td><?= esc($row['class_name'] ?? '-') ?></td>
-                      <td><?= esc($row['career_title'] ?? '-') ?></td>
-                      <td><?= esc($row['sector'] ?? '-') ?></td>
-                      <td><?= esc($row['min_education'] ?? '-') ?></td>
-                      <td><?= esc($row['saved_at'] ?? '-') ?></td>
-                    </tr>
-                  <?php endforeach; ?>
-                </tbody>
-              </table>
-            </div>
-
-            <?php if ($careerPager): ?>
-              <div class="mt-2">
-                <?= $careerPager->links('student_careers', 'default_full') ?>
-              </div>
-            <?php endif; ?>
-          <?php endif; ?>
-
-        <!-- Tabel Perguruan Tinggi -->
-        <?php else: ?>
-
-          <?php if (! $hasUnivTable): ?>
-            <div class="alert alert-info mb-0">
-              Tabel <code>student_saved_universities</code> belum tersedia di database.
-              Halaman ini akan menampilkan data setelah tabel tersebut dibuat
-              dan siswa mulai menyimpan perguruan tinggi.
-            </div>
-
-          <?php elseif (empty($universityChoices)): ?>
-            <div class="alert alert-warning mb-0">
-              Belum ada siswa yang menyimpan perguruan tinggi sesuai filter.
-            </div>
-
-          <?php else: ?>
-            <div class="table-responsive">
-              <table class="table table-striped table-hover align-middle">
-                <thead>
-                  <tr>
-                    <th>Siswa</th>
-                    <th>NISN</th>
-                    <th>Kelas</th>
-                    <th>Perguruan Tinggi</th>
-                    <th>Lokasi</th>
-                    <th>Akreditasi</th>
-                    <th>Disimpan</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <?php foreach ($universityChoices as $row): ?>
-                    <tr>
-                      <td><?= esc($row['student_name'] ?? '-') ?></td>
-                      <td><?= esc($row['nisn'] ?? '-') ?></td>
-                      <td><?= esc($row['class_name'] ?? '-') ?></td>
-                      <td><?= esc($row['university_name'] ?? '-') ?></td>
-                      <td><?= esc($row['location'] ?? '-') ?></td>
-                      <td><?= esc($row['accreditation'] ?? '-') ?></td>
-                      <td><?= esc($row['saved_at'] ?? '-') ?></td>
-                    </tr>
-                  <?php endforeach; ?>
-                </tbody>
-              </table>
-            </div>
-
-            <?php if ($universityPager): ?>
-              <div class="mt-2">
-                <?= $universityPager->links('student_universities', 'default_full') ?>
-              </div>
-            <?php endif; ?>
-          <?php endif; ?>
-
-        <?php endif; ?>
-
-      </div>
-    </div>
-
-  </div>
 </div>
 
+<?php if (session()->getFlashdata('success')): ?>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="mdi mdi-check-circle me-2"></i><?= esc(session()->getFlashdata('success')) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+<?php if (session()->getFlashdata('error')): ?>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="mdi mdi-alert-circle me-2"></i><?= esc(session()->getFlashdata('error')) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+<?php endif; ?>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs nav-tabs-custom mb-3" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link <?= $activeTab === 'careers' ? 'active' : '' ?>" href="<?= $tabUrl('careers') ?>">
+            <i class="mdi mdi-briefcase-outline me-1"></i>Pilihan Karier
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link <?= $activeTab === 'universities' ? 'active' : '' ?>" href="<?= $tabUrl('universities') ?>">
+            <i class="mdi mdi-town-hall me-1"></i>Pilihan Perguruan Tinggi
+        </a>
+    </li>
+</ul>
+
+<!-- Filter Card -->
+<div class="row">
+    <div class="col-12">
+        <div class="card filter-compact">
+            <div class="card-header py-2">
+                <h5 class="card-title mb-0 text-dark"><i class="mdi mdi-filter-variant me-2"></i>Filter/Saring Data</h5>
+            </div>
+            <div class="card-body py-3">
+                <form method="get" action="<?= $baseUrl ?>">
+                    <input type="hidden" name="tab" value="<?= esc($activeTab, 'attr') ?>">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Pencarian</label>
+                            <input type="text" name="q" class="form-control" value="<?= esc($filters['q'] ?? '') ?>"
+                                   placeholder="Nama siswa / NISN / <?= $activeTab === 'careers' ? 'karier' : 'perguruan tinggi' ?>...">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Kelas</label>
+                            <select name="class_id" class="form-select">
+                                <option value="">Semua Kelas</option>
+                                <?php foreach ($classes as $cls): ?>
+                                    <option value="<?= (int) $cls['id'] ?>" <?= (string)($filters['class_id'] ?? '') === (string)$cls['id'] ? 'selected' : '' ?>>
+                                        <?= esc($cls['class_name'] ?? ('Kelas ' . ($cls['grade_level'] ?? ''))) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Urutkan</label>
+                            <select name="sort" class="form-select">
+                                <option value="">Nama Siswa (A–Z)</option>
+                                <option value="student_desc" <?= ($filters['sort'] ?? '') === 'student_desc' ? 'selected' : '' ?>>Nama Siswa (Z–A)</option>
+                                <option value="class" <?= ($filters['sort'] ?? '') === 'class' ? 'selected' : '' ?>>Kelas</option>
+                                <?php if ($activeTab === 'careers'): ?>
+                                    <option value="career" <?= ($filters['sort'] ?? '') === 'career' ? 'selected' : '' ?>>Nama Karier</option>
+                                <?php else: ?>
+                                    <option value="name" <?= ($filters['sort'] ?? '') === 'name' ? 'selected' : '' ?>>Nama Perguruan Tinggi</option>
+                                <?php endif; ?>
+                                <option value="latest" <?= ($filters['sort'] ?? '') === 'latest' ? 'selected' : '' ?>>Terbaru Disimpan</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-2 g-3">
+                        <div class="col-md-2">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100"><i class="mdi mdi-magnify me-1"></i> Filter/Saring</button>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label d-block">&nbsp;</label>
+                            <a href="<?= $tabUrl($activeTab) ?>" class="btn btn-secondary w-100"><i class="mdi mdi-refresh me-1"></i> Reset</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title mb-0">
+                    <i class="mdi mdi-account-multiple-outline me-2"></i>
+                    <?= $activeTab === 'careers' ? 'Pilihan Karier Siswa' : 'Pilihan Perguruan Tinggi Siswa' ?>
+                </h4>
+            </div>
+            <div class="card-body">
+                <?php if ($activeTab === 'careers'): ?>
+                    <?php if (! $hasCareerTable): ?>
+                        <div class="alert alert-info mb-0">Tabel <code>student_saved_careers</code> belum tersedia di database.</div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table id="choicesTable" class="table table-hover table-bordered nowrap w-100">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:60px;" class="text-center">No</th>
+                                        <th>Siswa</th>
+                                        <th style="width:130px;">NISN</th>
+                                        <th style="width:140px;">Kelas</th>
+                                        <th>Karier</th>
+                                        <th style="width:150px;">Sektor</th>
+                                        <th style="width:140px;">Min. Pendidikan</th>
+                                        <th style="width:160px;">Disimpan</th>
+                                        <th style="width:90px;" class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <?php foreach (($careerChoices ?? []) as $row): ?>
+                                    <tr>
+                                        <td class="text-center"></td>
+                                        <td><?= esc($row['student_name'] ?? '-') ?></td>
+                                        <td><?= esc($row['nisn'] ?? '-') ?></td>
+                                        <td><?= esc($row['class_name'] ?? '-') ?></td>
+                                        <td><?= esc($row['career_title'] ?? '-') ?></td>
+                                        <td><?= esc($row['sector'] ?? '-') ?></td>
+                                        <td><?= esc($row['min_education'] ?? '-') ?></td>
+                                        <td><?= esc($row['saved_at'] ?? '-') ?></td>
+                                        <td class="text-center">
+                                            <a href="<?= route_to('counselor.career.show', (int)($row['career_id'] ?? 0)) ?>" class="btn btn-sm btn-info" title="Detail Karier" data-bs-toggle="tooltip"><i class="mdi mdi-eye"></i></a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                <?php else: ?>
+                    <?php if (! $hasUnivTable): ?>
+                        <div class="alert alert-info mb-0">Tabel <code>student_saved_universities</code> belum tersedia di database.</div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table id="choicesTable" class="table table-hover table-bordered nowrap w-100">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:60px;" class="text-center">No</th>
+                                        <th>Siswa</th>
+                                        <th style="width:130px;">NISN</th>
+                                        <th style="width:140px;">Kelas</th>
+                                        <th>Perguruan Tinggi</th>
+                                        <th style="width:160px;">Lokasi</th>
+                                        <th style="width:120px;">Akreditasi</th>
+                                        <th style="width:160px;">Disimpan</th>
+                                        <th style="width:90px;" class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                <?php foreach (($universityChoices ?? []) as $row): ?>
+                                    <tr>
+                                        <td class="text-center"></td>
+                                        <td><?= esc($row['student_name'] ?? '-') ?></td>
+                                        <td><?= esc($row['nisn'] ?? '-') ?></td>
+                                        <td><?= esc($row['class_name'] ?? '-') ?></td>
+                                        <td><?= esc($row['university_name'] ?? '-') ?></td>
+                                        <td><?= esc($row['location'] ?? '-') ?></td>
+                                        <td><?= esc($row['accreditation'] ?? '-') ?></td>
+                                        <td><?= esc($row['saved_at'] ?? '-') ?></td>
+                                        <td class="text-center">
+                                            <a href="<?= route_to('counselor.university.show', (int)($row['university_id'] ?? 0)) ?>" class="btn btn-sm btn-info" title="Detail Perguruan Tinggi" data-bs-toggle="tooltip"><i class="mdi mdi-eye"></i></a>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script>
+    $(document).ready(function () {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (el) { return new bootstrap.Tooltip(el); });
+
+        var dtLang = {
+            lengthMenu: "Tampilkan _MENU_ data",
+            info: "Menampilkan _START_ sampai _END_ dari _TOTAL_ data",
+            infoEmpty: "Menampilkan 0 sampai 0 dari 0 data",
+            infoFiltered: "(disaring dari _MAX_ total data)",
+            zeroRecords: "Tidak ada data yang sesuai",
+            emptyTable: "Belum ada siswa yang menyimpan pilihan",
+            paginate: { first: "Pertama", last: "Terakhir", next: "Berikutnya", previous: "Sebelumnya" }
+        };
+        var dtDom = "rt" +
+            "<'row align-items-center mt-3'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6 d-flex justify-content-md-end justify-content-start'p>>" +
+            "<'row'<'col-12 mt-2'i>>";
+
+        if ($('#choicesTable').length) {
+            var t = $('#choicesTable').DataTable({
+                responsive: true,
+                pageLength: 10,
+                order: [[1, 'asc']],
+                columnDefs: [{ orderable: false, targets: [0, -1] }],
+                dom: dtDom,
+                language: dtLang
+            });
+            var renumber = function () {
+                var info = t.page.info();
+                t.column(0, { page: 'current' }).nodes().each(function (cell, i) { cell.innerHTML = info.start + i + 1; });
+            };
+            t.on('order.dt draw.dt', renumber); renumber();
+        }
+    });
+</script>
 <?= $this->endSection() ?>

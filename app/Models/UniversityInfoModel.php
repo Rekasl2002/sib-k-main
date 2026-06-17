@@ -19,22 +19,20 @@ class UniversityInfoModel extends Model
     protected $allowedFields    = [
         'university_name', 'alias', 'accreditation', 'location', 'website', 'logo', 'description',
         'faculties', 'programs', 'admission_info', 'tuition_range', 'scholarships', 'contacts',
-        'is_public', 'is_active', 'created_by', // created_by ditambahkan
+        'is_active', 'created_by', // created_by ditambahkan
     ];
 
     protected array $casts = [
-        'is_public'  => 'integer',
         'is_active'  => 'integer',
         'created_by' => 'integer',
     ];
 
     // ---------------------------------------------------------------------
-    // Scope publik (portal siswa/orang tua): Hanya aktif + published
+    // Scope publik (portal siswa/orang tua): hanya yang ditampilkan (is_active = 1)
     // ---------------------------------------------------------------------
     public function publicOnly(): self
     {
-        return $this->where('is_active', 1)
-                    ->where('is_public', 1);
+        return $this->where('is_active', 1);
     }
 
     // ---------------------------------------------------------------------
@@ -83,8 +81,8 @@ class UniversityInfoModel extends Model
 
     // ---------------------------------------------------------------------
     // Listing manajemen (Guru BK/Koordinator)
-    // Mendukung filter: q, acc, loc, status (is_active), pub (is_public), sort
-    // Tidak memaksa is_active/is_public (kecuali jika filter diisi)
+    // Mendukung filter: q, acc, loc, status (is_active), sort
+    // Tidak memaksa is_active (kecuali jika filter diisi)
     // ---------------------------------------------------------------------
     public function managementPaginated(array $filters = [], int $perPage = 10, ?string $group = 'universities')
     {
@@ -111,10 +109,6 @@ class UniversityInfoModel extends Model
             $b->where('is_active', (int) $filters['status']);
         }
 
-        if (isset($filters['pub']) && $filters['pub'] !== '' && $filters['pub'] !== null) {
-            $b->where('is_public', (int) $filters['pub']);
-        }
-
         $sort = $filters['sort'] ?? '';
         if ($sort === 'name_desc') {
             $b->orderBy('university_name', 'DESC');
@@ -139,7 +133,6 @@ class UniversityInfoModel extends Model
     public function quickList(int $limit = 6, ?string $containsProgram = null)
     {
         $b = $this->where('is_active', 1)
-            ->where('is_public', 1)
             ->orderBy('university_name', 'ASC');
 
         if ($containsProgram) {

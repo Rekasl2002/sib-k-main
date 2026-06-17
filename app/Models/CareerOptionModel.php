@@ -13,7 +13,7 @@ class CareerOptionModel extends Model
     protected $allowedFields    = [
         'title','sector','min_education','description',
         'required_skills','pathways','avg_salary_idr','demand_level',
-        'external_links','is_public','is_active','created_by'
+        'external_links','is_active','created_by'
     ];
 
     protected $useTimestamps = true;
@@ -21,7 +21,6 @@ class CareerOptionModel extends Model
 
     // Tambahkan ini persis dengan type agar aman di CI4 baru
     protected array $casts = [
-        'is_public'      => 'integer',
         'is_active'      => 'integer',
         // Kolom ini nullable di DB & opsional di form -> pakai cast nullable
         // agar nilai kosong (null) tidak ditolak DataCaster CI4.
@@ -32,11 +31,11 @@ class CareerOptionModel extends Model
 
     /**
      * PUBLIC listing (Student/Parent portal).
-     * Hanya menampilkan konten aktif & published.
+     * Hanya menampilkan konten yang ditampilkan ke siswa (is_active = 1).
      */
     public function searchPaginated(array $filters = [], int $perPage = 12)
     {
-        $builder = $this->where('is_active', 1)->where('is_public', 1);
+        $builder = $this->where('is_active', 1);
 
         if (!empty($filters['q'])) {
             $q = trim($filters['q']);
@@ -69,13 +68,13 @@ class CareerOptionModel extends Model
      */
     public function publicOnly(): self
     {
-        return $this->where('is_active', 1)->where('is_public', 1);
+        return $this->where('is_active', 1);
     }
 
     /**
      * MANAGEMENT listing (Counselor/Koordinator).
-     * Mendukung filter: q, sector, edu, status (is_active), pub (is_public), sort.
-     * Tidak memaksa is_active/is_public jika filter tidak diisi.
+     * Mendukung filter: q, sector, edu, status (is_active), sort.
+     * Tidak memaksa is_active jika filter tidak diisi.
      */
     public function managementPaginated(array $filters = [], int $perPage = 12)
     {
@@ -103,11 +102,6 @@ class CareerOptionModel extends Model
             $builder->where('is_active', (int) $filters['status']);
         }
 
-        // Tambahan: filter publikasi (0|1)
-        if (isset($filters['pub']) && $filters['pub'] !== '' && $filters['pub'] !== null) {
-            $builder->where('is_public', (int) $filters['pub']);
-        }
-
         if (!empty($filters['sort']) && $filters['sort'] === 'demand') {
             $builder->orderBy('demand_level', 'DESC')->orderBy('title', 'ASC');
         } else {
@@ -124,7 +118,6 @@ class CareerOptionModel extends Model
     public function quickList(int $limit = 6, ?string $containsSkill = null)
     {
         $builder = $this->where('is_active', 1)
-            ->where('is_public', 1)
             ->orderBy('title', 'ASC');
 
         if ($containsSkill) {

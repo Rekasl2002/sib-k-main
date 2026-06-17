@@ -982,7 +982,6 @@ class StudentService
         return $this->db->table('career_options')
             ->select('id, title, sector, min_education, avg_salary_idr')
             ->where('is_active', 1)
-            ->where('is_public', 1)
             ->where('deleted_at', null)
             ->orderBy('demand_level', 'desc')
             ->limit($limit)

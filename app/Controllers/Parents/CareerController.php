@@ -74,7 +74,6 @@ class CareerController extends BaseParentController
             $sectorItems = (clone $this->careers)
                 ->select('sector')
                 ->where('is_active', 1)
-                ->where('is_public', 1)
                 ->where('sector IS NOT NULL', null, false)
                 ->groupBy('sector')
                 ->orderBy('sector', 'ASC')
@@ -117,7 +116,6 @@ class CareerController extends BaseParentController
             $sectorItems = (clone $this->careers)
                 ->select('sector')
                 ->where('is_active', 1)
-                ->where('is_public', 1)
                 ->where('sector IS NOT NULL', null, false)
                 ->groupBy('sector')
                 ->orderBy('sector', 'ASC')
@@ -146,7 +144,6 @@ class CareerController extends BaseParentController
             $uniLocations = (clone $this->unis)
                 ->select('location')
                 ->where('is_active', 1)
-                ->where('is_public', 1)
                 ->where('location IS NOT NULL', null, false)
                 ->groupBy('location')
                 ->orderBy('location', 'ASC')
@@ -156,7 +153,6 @@ class CareerController extends BaseParentController
             $uniAccrs = (clone $this->unis)
                 ->select('accreditation')
                 ->where('is_active', 1)
-                ->where('is_public', 1)
                 ->where('accreditation IS NOT NULL', null, false)
                 ->groupBy('accreditation')
                 ->orderBy('accreditation', 'ASC')
@@ -164,8 +160,7 @@ class CareerController extends BaseParentController
 
             // Query utama universitas
             $uniBuilder = (clone $this->unis)
-                ->where('is_active', 1)
-                ->where('is_public', 1);
+                ->where('is_active', 1);
 
             if ($uniFilters['q'] !== '') {
                 $uniBuilder = $uniBuilder->groupStart()
@@ -271,7 +266,6 @@ class CareerController extends BaseParentController
             // Ambil beberapa universitas publik (optional)
             $universities = (clone $this->unis)
                 ->where('is_active', 1)
-                ->where('is_public', 1)
                 ->orderBy('university_name', 'ASC')
                 ->findAll(6);
 
@@ -342,7 +336,6 @@ class CareerController extends BaseParentController
                 ->join('student_saved_universities ssu', 'ssu.university_id = university_info.id', 'inner')
                 ->join('users AS creator', 'creator.id = university_info.created_by', 'left')
                 ->where('university_info.is_active', 1)
-                ->where('university_info.is_public', 1)
                 ->where('ssu.student_id', $activeChildId)
                 ->orderBy('university_info.university_name', 'ASC')
                 ->findAll();
@@ -543,8 +536,7 @@ class CareerController extends BaseParentController
     private function applyPublicScope(CareerOptionModel $builder): CareerOptionModel
     {
         return $builder
-            ->where('career_options.is_active', 1)
-            ->where('career_options.is_public', 1);
+            ->where('career_options.is_active', 1);
     }
 
     private function getPublicCareer(int $id): ?array
@@ -554,7 +546,6 @@ class CareerController extends BaseParentController
         $m = $m->select('career_options.*, creator.full_name AS created_by_name')
             ->join('users AS creator', 'creator.id = career_options.created_by', 'left')
             ->where('career_options.is_active', 1)
-            ->where('career_options.is_public', 1)
             ->where('career_options.id', $id);
 
         $row = $m->first();
@@ -567,7 +558,6 @@ class CareerController extends BaseParentController
             ->select('university_info.*, creator.full_name AS created_by_name')
             ->join('users AS creator', 'creator.id = university_info.created_by', 'left')
             ->where('university_info.is_active', 1)
-            ->where('university_info.is_public', 1)
             ->where('university_info.id', $id)
             ->first();
 
@@ -601,7 +591,6 @@ class CareerController extends BaseParentController
     {
         $uni = (clone $this->unis)
             ->where('is_active', 1)
-            ->where('is_public', 1)
             ->find($id);
 
         if (!$uni) {

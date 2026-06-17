@@ -185,23 +185,12 @@ function oldv($key, $default = '')
                 <label class="form-label">Status</label>
                 <select name="is_active" class="form-select">
                     <?php $val = (int) oldv('is_active', $career['is_active'] ?? 1); ?>
-                    <option value="1" <?= $val === 1 ? 'selected' : '' ?>>Aktif (ditampilkan ke siswa)</option>
-                    <option value="0" <?= $val === 0 ? 'selected' : '' ?>>Nonaktif</option>
+                    <option value="1" <?= $val === 1 ? 'selected' : '' ?>>Ditampilkan (terlihat oleh siswa &amp; orang tua)</option>
+                    <option value="0" <?= $val === 0 ? 'selected' : '' ?>>Disembunyikan (tidak terlihat)</option>
                 </select>
+                <div class="form-text">Pilih "Ditampilkan" agar karier ini muncul di portal siswa &amp; orang tua.</div>
                 <?php if (!empty($errors['is_active'])): ?>
                     <div class="text-danger small"><?= esc($errors['is_active']) ?></div>
-                <?php endif; ?>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label">Publikasi</label>
-                <?php $pub = (int) oldv('is_public', $career['is_public'] ?? 0); ?>
-                <select name="is_public" class="form-select">
-                    <option value="0" <?= $pub === 0 ? 'selected' : '' ?>>Private (belum tayang)</option>
-                    <option value="1" <?= $pub === 1 ? 'selected' : '' ?>>Published (tampil di portal)</option>
-                </select>
-                <?php if (!empty($errors['is_public'])): ?>
-                    <div class="text-danger small"><?= esc($errors['is_public']) ?></div>
                 <?php endif; ?>
             </div>
 

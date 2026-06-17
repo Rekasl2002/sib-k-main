@@ -563,7 +563,7 @@ $routes->group('koordinator', [
             $routes->post('careers/update/(:num)', 'CareerInfoController::updateCareer/$1', ['as' => 'koordinator.career.update']);
             $routes->post('careers/delete/(:num)', 'CareerInfoController::deleteCareer/$1', ['as' => 'koordinator.career.delete']);
             $routes->post('careers/toggle/(:num)', 'CareerInfoController::toggleCareer/$1', ['as' => 'koordinator.career.toggle']);
-            $routes->post('careers/publish/(:num)', 'CareerInfoController::toggleCareerPublic/$1', ['as' => 'koordinator.career.publish']);
+            $routes->get('careers/detail/(:num)', 'CareerInfoController::showCareer/$1', ['as' => 'koordinator.career.show']);
 
             $routes->get('student-choices', 'CareerInfoController::studentChoices', ['as' => 'koordinator.career.choices']);
 
@@ -574,7 +574,7 @@ $routes->group('koordinator', [
             $routes->post('universities/update/(:num)', 'CareerInfoController::updateUniversity/$1', ['as' => 'koordinator.university.update']);
             $routes->post('universities/delete/(:num)', 'CareerInfoController::deleteUniversity/$1', ['as' => 'koordinator.university.delete']);
             $routes->post('universities/toggle/(:num)', 'CareerInfoController::toggleUniversity/$1', ['as' => 'koordinator.university.toggle']);
-            $routes->post('universities/publish/(:num)', 'CareerInfoController::toggleUniversityPublic/$1', ['as' => 'koordinator.university.publish']);
+            $routes->get('universities/detail/(:num)', 'CareerInfoController::showUniversity/$1', ['as' => 'koordinator.university.show']);
         });
 
         // Reports:
@@ -775,7 +775,7 @@ $routes->group('counselor', [
             $routes->post('careers/update/(:num)', 'CareerInfoController::updateCareer/$1', ['as' => 'counselor.career.update']);
             $routes->post('careers/delete/(:num)', 'CareerInfoController::deleteCareer/$1', ['as' => 'counselor.career.delete']);
             $routes->post('careers/toggle/(:num)', 'CareerInfoController::toggleCareer/$1', ['as' => 'counselor.career.toggle']);
-            $routes->post('careers/publish/(:num)', 'CareerInfoController::toggleCareerPublic/$1', ['as' => 'counselor.career.publish']);
+            $routes->get('careers/detail/(:num)', 'CareerInfoController::showCareer/$1', ['as' => 'counselor.career.show']);
 
             $routes->get('student-choices', 'CareerInfoController::studentChoices', ['as' => 'counselor.career.choices']);
 
@@ -786,7 +786,7 @@ $routes->group('counselor', [
             $routes->post('universities/update/(:num)', 'CareerInfoController::updateUniversity/$1', ['as' => 'counselor.university.update']);
             $routes->post('universities/delete/(:num)', 'CareerInfoController::deleteUniversity/$1', ['as' => 'counselor.university.delete']);
             $routes->post('universities/toggle/(:num)', 'CareerInfoController::toggleUniversity/$1', ['as' => 'counselor.university.toggle']);
-            $routes->post('universities/publish/(:num)', 'CareerInfoController::toggleUniversityPublic/$1', ['as' => 'counselor.university.publish']);
+            $routes->get('universities/detail/(:num)', 'CareerInfoController::showUniversity/$1', ['as' => 'counselor.university.show']);
         });
     });
 });
@@ -1000,6 +1000,14 @@ $routes->group('homeroom', [
         $routes->get('career-info/student-choices', 'CareerInfoController::studentChoices', [
             'filter' => 'permission:view_career_info',
             'as'     => 'homeroom.career.choices'
+        ]);
+        $routes->get('career-info/careers/detail/(:num)', 'CareerInfoController::showCareer/$1', [
+            'filter' => 'permission:view_career_info',
+            'as'     => 'homeroom.career.show'
+        ]);
+        $routes->get('career-info/universities/detail/(:num)', 'CareerInfoController::showUniversity/$1', [
+            'filter' => 'permission:view_career_info',
+            'as'     => 'homeroom.university.show'
         ]);
     });
 });

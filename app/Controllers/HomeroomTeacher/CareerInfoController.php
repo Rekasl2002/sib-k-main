@@ -76,7 +76,6 @@ class CareerInfoController extends BaseController
             'sector' => $this->request->getGet('sector'),
             'edu'    => $this->request->getGet('edu'),
             'status' => $this->request->getGet('status'),
-            'pub'    => $this->request->getGet('pub'),
             'sort'   => $this->request->getGet('sort'),
         ];
 
@@ -99,13 +98,9 @@ class CareerInfoController extends BaseController
         if (!empty($careerFilters['edu'])) {
             $qb->where('career_options.min_education', $careerFilters['edu']);
         }
-        // Filter status
+        // Filter status (Ditampilkan/Disembunyikan ke siswa)
         if ($careerFilters['status'] !== null && $careerFilters['status'] !== '') {
             $qb->where('career_options.is_active', (int) $careerFilters['status']);
-        }
-        // Filter publikasi
-        if ($careerFilters['pub'] !== null && $careerFilters['pub'] !== '') {
-            $qb->where('career_options.is_public', (int) $careerFilters['pub']);
         }
         // Sort
         if (!empty($careerFilters['sort']) && $careerFilters['sort'] === 'demand') {
@@ -126,7 +121,6 @@ class CareerInfoController extends BaseController
             'acc'    => $this->request->getGet('uacc'),
             'loc'    => $this->request->getGet('uloc'),
             'status' => $this->request->getGet('ustatus'),
-            'pub'    => $this->request->getGet('upub'),
             'sort'   => $this->request->getGet('usort'),
         ];
 
@@ -150,9 +144,6 @@ class CareerInfoController extends BaseController
         }
         if (($uniFilters['status'] ?? '') !== null && ($uniFilters['status'] ?? '') !== '') {
             $ub->where('university_info.is_active', (int) $uniFilters['status']);
-        }
-        if (($uniFilters['pub'] ?? '') !== null && ($uniFilters['pub'] ?? '') !== '') {
-            $ub->where('university_info.is_public', (int) $uniFilters['pub']);
         }
         $usort = $uniFilters['sort'] ?? '';
         if ($usort === 'name_desc') {
@@ -275,8 +266,7 @@ class CareerInfoController extends BaseController
                        ->orderBy('career_options.title', 'ASC');
             }
 
-            $careerChoices = $cb->paginate($perPage, 'student_careers');
-            $careerPager   = $this->careers->pager;
+            $careerChoices = $cb->findAll();
         }
 
         // -------------------------------------------------------------
@@ -336,8 +326,7 @@ class CareerInfoController extends BaseController
                        ->orderBy('university_info.university_name', 'ASC');
             }
 
-            $uniChoices = $ub->paginate($perPage, 'student_universities');
-            $uniPager   = $this->universities->pager;
+            $uniChoices = $ub->findAll();
         }
 
         // -------------------------------------------------------------
@@ -377,6 +366,50 @@ class CareerInfoController extends BaseController
         $qs['tab'] = 'universities';
 
         return redirect()->to(site_url('homeroom/career-info') . '?' . http_build_query($qs));
+    }
+
+    /** Halaman detail satu karier (read-only) */
+    public function showCareer(int $id)
+    {
+        require_permission('view_career_info');
+
+        $career = $this->careers
+            ->select('career_options.*, creator.full_name AS created_by_name')
+            ->join('users AS creator', 'creator.id = career_options.created_by', 'left')
+            ->where('career_options.id', $id)
+            ->first();
+
+        if (! $career) {
+            return redirect()->to(route_to('homeroom.career.index') . '?tab=careers')
+                ->with('error', 'Data karier tidak ditemukan.');
+        }
+
+        return view('homeroom_teacher/career/detail_career', [
+            'career'  => $career,
+            'backUrl' => route_to('homeroom.career.index') . '?tab=careers',
+        ]);
+    }
+
+    /** Halaman detail satu perguruan tinggi (read-only) */
+    public function showUniversity(int $id)
+    {
+        require_permission('view_career_info');
+
+        $uni = $this->universities
+            ->select('university_info.*, creator.full_name AS created_by_name')
+            ->join('users AS creator', 'creator.id = university_info.created_by', 'left')
+            ->where('university_info.id', $id)
+            ->first();
+
+        if (! $uni) {
+            return redirect()->to(route_to('homeroom.university.index') . '?tab=universities')
+                ->with('error', 'Data perguruan tinggi tidak ditemukan.');
+        }
+
+        return view('homeroom_teacher/career/detail_university', [
+            'university' => $uni,
+            'backUrl'    => route_to('homeroom.university.index') . '?tab=universities',
+        ]);
     }
 
 }

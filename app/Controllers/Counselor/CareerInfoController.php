@@ -37,7 +37,6 @@ class CareerInfoController extends BaseController
             'sector' => $this->request->getGet('sector'),
             'edu'    => $this->request->getGet('edu'),
             'status' => $this->request->getGet('status'),
-            'pub'    => $this->request->getGet('pub'),
             'sort'   => $this->request->getGet('sort'),
         ];
 
@@ -60,13 +59,9 @@ class CareerInfoController extends BaseController
         if (!empty($careerFilters['edu'])) {
             $qb->where('career_options.min_education', $careerFilters['edu']);
         }
-        // Filter status
+        // Filter status (Ditampilkan/Disembunyikan ke siswa)
         if ($careerFilters['status'] !== null && $careerFilters['status'] !== '') {
             $qb->where('career_options.is_active', (int) $careerFilters['status']);
-        }
-        // Filter publikasi
-        if ($careerFilters['pub'] !== null && $careerFilters['pub'] !== '') {
-            $qb->where('career_options.is_public', (int) $careerFilters['pub']);
         }
         // Sort
         if (!empty($careerFilters['sort']) && $careerFilters['sort'] === 'demand') {
@@ -105,7 +100,6 @@ class CareerInfoController extends BaseController
             'acc'    => $this->request->getGet('uacc'),
             'loc'    => $this->request->getGet('uloc'),
             'status' => $this->request->getGet('ustatus'),
-            'pub'    => $this->request->getGet('upub'),
             'sort'   => $this->request->getGet('usort'),
         ];
     }
@@ -133,9 +127,6 @@ class CareerInfoController extends BaseController
         }
         if (($filters['status'] ?? '') !== null && ($filters['status'] ?? '') !== '') {
             $ub->where('university_info.is_active', (int) $filters['status']);
-        }
-        if (($filters['pub'] ?? '') !== null && ($filters['pub'] ?? '') !== '') {
-            $ub->where('university_info.is_public', (int) $filters['pub']);
         }
 
         $sort = $filters['sort'] ?? '';
@@ -249,8 +240,7 @@ class CareerInfoController extends BaseController
                     break;
             }
 
-            $careerChoices = $cb->paginate($perPage, 'student_careers');
-            $careerPager   = $this->careers->pager;
+            $careerChoices = $cb->findAll();
         }
 
         // -------------------------------------------------------------
@@ -310,8 +300,7 @@ class CareerInfoController extends BaseController
                     break;
             }
 
-            $uniChoices = $ub->paginate($perPage, 'student_universities');
-            $uniPager   = $this->universities->pager;
+            $uniChoices = $ub->findAll();
         }
 
         // -------------------------------------------------------------
@@ -373,7 +362,6 @@ class CareerInfoController extends BaseController
             'avg_salary_idr'=> 'permit_empty|integer',
             'demand_level'  => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[10]',
             'is_active'     => 'required|in_list[0,1]',
-            'is_public'     => 'permit_empty|in_list[0,1]',
         ];
 
         if (! $this->validate($rules)) {
@@ -443,7 +431,6 @@ class CareerInfoController extends BaseController
             'avg_salary_idr'=> 'permit_empty|integer',
             'demand_level'  => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[10]',
             'is_active'     => 'required|in_list[0,1]',
-            'is_public'     => 'permit_empty|in_list[0,1]',
         ];
 
         if (! $this->validate($rules)) {
@@ -488,22 +475,26 @@ class CareerInfoController extends BaseController
             ->with('success', 'Status karier berhasil diubah.');
     }
 
-    public function toggleCareerPublic(int $id)
+    /** Halaman detail satu karier (read-only) */
+    public function showCareer(int $id)
     {
         require_permission('manage_career_info');
 
-        $career = $this->careers->find($id);
+        $career = $this->careers
+            ->select('career_options.*, creator.full_name AS created_by_name')
+            ->join('users AS creator', 'creator.id = career_options.created_by', 'left')
+            ->where('career_options.id', $id)
+            ->first();
+
         if (! $career) {
             return redirect()->to(route_to('counselor.career.index') . '?tab=careers')
                 ->with('error', 'Data karier tidak ditemukan.');
         }
 
-        $new = (int) ($career['is_public'] ?? 0) === 1 ? 0 : 1;
-        $this->careers->update($id, ['is_public' => $new]);
-
-        $msg = $new ? 'Karier dipublikasikan.' : 'Karier di-set private.';
-        return redirect()->to(route_to('counselor.career.index') . '?tab=careers')
-            ->with('success', $msg);
+        return view('counselor/career/detail_career', [
+            'career'  => $career,
+            'backUrl' => route_to('counselor.career.index') . '?tab=careers',
+        ]);
     }
 
     /** Bangun payload career_options + JSON */
@@ -537,7 +528,6 @@ class CareerInfoController extends BaseController
             'demand_level'   => (int) ($this->request->getPost('demand_level') ?: 0),
             'external_links' => $links ? json_encode($links) : null,
             'is_active'      => (int) $this->request->getPost('is_active'),
-            'is_public'      => (int) ($this->request->getPost('is_public', FILTER_VALIDATE_INT) ?? 0),
         ];
     }
 
@@ -571,7 +561,6 @@ class CareerInfoController extends BaseController
                 'logo'            => null,
                 'description'     => '',
                 'is_active'       => 1,
-                'is_public'       => 0,
             ],
             'mode' => 'create',
         ];
@@ -589,7 +578,6 @@ class CareerInfoController extends BaseController
             'accreditation'   => 'permit_empty|string|max_length[20]',
             'location'        => 'permit_empty|string|max_length[255]',
             'website'         => 'permit_empty|valid_url',
-            'is_public'       => 'permit_empty|in_list[0,1]',
             'is_active'       => 'required|in_list[0,1]',
             'logo_source'     => 'permit_empty|in_list[url,upload]',
         ];
@@ -680,7 +668,6 @@ class CareerInfoController extends BaseController
             'accreditation'   => 'permit_empty|string|max_length[20]',
             'location'        => 'permit_empty|string|max_length[255]',
             'website'         => 'permit_empty|valid_url',
-            'is_public'       => 'permit_empty|in_list[0,1]',
             'is_active'       => 'required|in_list[0,1]',
             'logo_source'     => 'permit_empty|in_list[url,upload]',
             'remove_logo'     => 'permit_empty|in_list[0,1]',
@@ -742,22 +729,26 @@ class CareerInfoController extends BaseController
             ->with('success', 'Status universitas berhasil diubah.');
     }
 
-    public function toggleUniversityPublic(int $id)
+    /** Halaman detail satu perguruan tinggi (read-only) */
+    public function showUniversity(int $id)
     {
         require_permission('manage_career_info');
 
-        $university = $this->universities->find($id);
-        if (! $university) {
+        $uni = $this->universities
+            ->select('university_info.*, creator.full_name AS created_by_name')
+            ->join('users AS creator', 'creator.id = university_info.created_by', 'left')
+            ->where('university_info.id', $id)
+            ->first();
+
+        if (! $uni) {
             return redirect()->to(route_to('counselor.university.index') . '?tab=universities')
-                ->with('error', 'Data universitas tidak ditemukan.');
+                ->with('error', 'Data perguruan tinggi tidak ditemukan.');
         }
 
-        $new = (int) ($university['is_public'] ?? 0) === 1 ? 0 : 1;
-        $this->universities->update($id, ['is_public' => $new]);
-
-        $msg = $new ? 'Universitas dipublikasikan.' : 'Universitas di-set private.';
-        return redirect()->to(route_to('counselor.university.index') . '?tab=universities')
-            ->with('success', $msg);
+        return view('counselor/career/detail_university', [
+            'university' => $uni,
+            'backUrl'    => route_to('counselor.university.index') . '?tab=universities',
+        ]);
     }
 
     /** Bangun payload university_info + dukung URL/Upload logo */
@@ -785,7 +776,6 @@ class CareerInfoController extends BaseController
 
         // Flag dan field dasar
         $isActive = (int) ($this->request->getPost('is_active') ?? 0) === 1 ? 1 : 0;
-        $isPublic = (int) ($this->request->getPost('is_public') ?? 0) === 1 ? 1 : 0;
 
         $payload = [
             'university_name' => $this->request->getPost('university_name'),
@@ -800,7 +790,6 @@ class CareerInfoController extends BaseController
             'tuition_range'   => $this->request->getPost('tuition_range')  ?: null,
             'scholarships'    => $scholarships ? json_encode($scholarships) : null,
             'contacts'        => $contacts ? json_encode($contacts)         : null,
-            'is_public'       => $isPublic,
             'is_active'       => $isActive,
         ];
 

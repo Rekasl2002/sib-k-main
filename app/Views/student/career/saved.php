@@ -174,7 +174,6 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
                   $loc    = $u['location'] ?? '';
                   $desc   = $u['description'] ?? '';
                   $logo   = $u['logo'] ?? null;
-                  $isPub  = (int) ($u['is_public'] ?? 0) === 1;
                 ?>
                 <div class="col-12 col-md-6 col-xl-4">
                   <div class="card h-100 shadow-sm">
@@ -206,9 +205,6 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
                             <?= esc($loc) ?>
                           </span>
                         <?php endif; ?>
-                        <span class="badge bg-info-subtle text-info-emphasis border">
-                          <?= $isPub ? 'Negeri' : 'Swasta' ?>
-                        </span>
                       </div>
 
                       <p class="card-text flex-grow-1"><?= clip($desc, 140) ?></p>
