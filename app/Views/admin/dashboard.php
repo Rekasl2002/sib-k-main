@@ -72,7 +72,7 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
                                 <i class="mdi mdi-account-multiple-outline me-1"></i> Kelola Pengguna
                             </a>
                             <a href="<?= base_url('admin/roles') ?>" class="btn btn-light">
-                                <i class="mdi mdi-shield-account-outline me-1"></i> Kelola Role & Permission
+                                <i class="mdi mdi-shield-account-outline me-1"></i> Kelola Peran & Hak Akses
                             </a>
                             <a href="<?= base_url('admin/academic-years') ?>" class="btn btn-light">
                                 <i class="mdi mdi-calendar-range-outline me-1"></i> Tahun Ajaran
@@ -211,7 +211,7 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
         <div class="card">
             <div class="card-body">
                 <h4 class="card-title mb-4">
-                    <i class="mdi mdi-account-group me-2"></i>Pengguna Berdasarkan Role
+                    <i class="mdi mdi-account-group me-2"></i>Pengguna Berdasarkan Peran
                 </h4>
                 <div>
                     <canvas id="usersByRoleChart" height="200"></canvas>
@@ -255,7 +255,7 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
                                             <h5 class="font-size-14 mb-0">
                                                 <?= esc($student['full_name']) ?>
                                             </h5>
-                                            <p class="text-muted mb-0 font-size-12">
+                                            <p class="text-dark mb-0 font-size-12">
                                                 <?= esc($student['email']) ?>
                                             </p>
                                         </td>
@@ -274,7 +274,7 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">Belum ada siswa terbaru</td>
+                                    <td colspan="4" class="text-center text-dark">Belum ada siswa terbaru</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -303,8 +303,8 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
                         <thead class="table-light">
                             <tr>
                                 <th>Nama</th>
-                                <th>Username</th>
-                                <th>Role</th>
+                                <th>Nama Pengguna</th>
+                                <th>Peran</th>
                                 <th>Tanggal Daftar</th>
                             </tr>
                         </thead>
@@ -316,7 +316,7 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
                                             <h5 class="font-size-14 mb-0">
                                                 <?= esc($user_item['full_name']) ?>
                                             </h5>
-                                            <p class="text-muted mb-0 font-size-12">
+                                            <p class="text-dark mb-0 font-size-12">
                                                 <?= esc($user_item['email']) ?>
                                             </p>
                                         </td>
@@ -331,7 +331,7 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">Belum ada pengguna terbaru</td>
+                                    <td colspan="4" class="text-center text-dark">Belum ada pengguna terbaru</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -358,7 +358,7 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
                                 <th>Tingkat</th>
                                 <th>Jumlah Siswa</th>
                                 <th>Persentase</th>
-                                <th>Progress</th>
+                                <th>Grafik</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -394,7 +394,7 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">Belum ada data siswa</td>
+                                    <td colspan="4" class="text-center text-dark">Belum ada data siswa</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
@@ -418,7 +418,7 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
                                 <th>Status</th>
                                 <th>Jumlah Siswa</th>
                                 <th>Persentase</th>
-                                <th>Progress</th>
+                                <th>Grafik</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -460,7 +460,7 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted">Belum ada data siswa</td>
+                                    <td colspan="4" class="text-center text-dark">Belum ada data siswa</td>
                                 </tr>
                             <?php endif; ?>
                         </tbody>
