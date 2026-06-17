@@ -96,13 +96,13 @@ $renderReportContent = static function () use (
 
             <!-- Header laporan -->
             <div class="text-center mb-4 report-header">
-                <h1 class="h4 mb-1">Laporan Individual Siswa</h1>
+                <h1 class="h4 mb-1">Laporan Anak</h1>
                 <p class="mb-1">Untuk Orang Tua / Wali</p>
-                <small class="text-muted">Dicetak: <?= $todayText ?></small>
+                <small class="text-dark">Dicetak: <?= $todayText ?></small>
 
                 <?php if (!empty($parentName)): ?>
                     <div class="mt-1">
-                        <small class="text-muted">Akun Orang Tua: <?= esc($parentName) ?></small>
+                        <small class="text-dark">Akun Orang Tua: <?= esc($parentName) ?></small>
                     </div>
                 <?php endif; ?>
             </div>
@@ -155,10 +155,10 @@ $renderReportContent = static function () use (
 
             <!-- B. Ringkasan Sesi Konseling -->
             <div class="report-section mb-4">
-                <div class="report-section-title">B. Ringkasan Sesi Konseling</div>
+                <div class="report-section-title">B. Ringkasan Jadwal Konseling</div>
 
                 <?php if (!$hasSessions): ?>
-                    <p class="text-muted mb-0">Belum ada sesi konseling yang tercatat untuk anak ini.</p>
+                    <p class="text-dark mb-0">Belum ada jadwal konseling yang tercatat untuk anak ini.</p>
                 <?php else: ?>
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm align-middle">
@@ -167,7 +167,6 @@ $renderReportContent = static function () use (
                                 <th style="width: 90px;">Tanggal</th>
                                 <th style="width: 70px;">Waktu</th>
                                 <th style="width: 95px;">Jenis</th>
-                                <th>Topik / Fokus</th>
                                 <th style="width: 130px;">Lokasi</th>
                                 <th style="width: 110px;">Status</th>
                                 <th style="width: 160px;">Guru BK</th>
@@ -179,7 +178,6 @@ $renderReportContent = static function () use (
                                     <td><?= esc(fmt_date_id_short($s['session_date'] ?? null)) ?></td>
                                     <td><?= esc(fmt_time_hm($s['session_time'] ?? null)) ?></td>
                                     <td><?= esc($s['session_type'] ?? '-') ?></td>
-                                    <td><?= esc($s['topic'] ?? '-') ?></td>
                                     <td><?= esc($s['location'] ?? '-') ?></td>
                                     <td><?= esc($s['status'] ?? '-') ?></td>
                                     <td><?= esc($s['counselor_name'] ?? '-') ?></td>

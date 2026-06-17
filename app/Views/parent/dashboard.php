@@ -148,7 +148,7 @@ function avatar_url($row): string {
 <div class="col-md-6">
   <div class="card shadow-sm h-100">
     <div class="card-body">
-      <div class="text-muted small">Total Anak Terdaftar</div>
+      <div class="text-dark small">Total Anak Terdaftar</div>
       <div class="display-6"><?= (int)($stats['children'] ?? count($children)) ?></div>
     </div>
   </div>
@@ -156,7 +156,7 @@ function avatar_url($row): string {
 <div class="col-md-6">
   <div class="card shadow-sm h-100">
     <div class="card-body">
-      <div class="text-muted small">Sesi Konseling Mendatang</div>
+      <div class="text-dark small">Jadwal Konseling Mendatang</div>
       <div class="display-6"><?= (int)($stats['upcoming_sessions'] ?? count($upcoming)) ?></div>
     </div>
   </div>
@@ -186,16 +186,15 @@ echo $this->include('role_features/_quick_actions');
     <div class="card-body">
       <h6 class="mb-3">Jadwal Konseling Mendatang</h6>
       <?php if (empty($upcoming)): ?>
-        <div class="text-muted">Belum ada jadwal.</div>
+        <div class="text-dark">Belum ada jadwal.</div>
       <?php else: ?>
         <div class="table-responsive">
           <table class="table table-sm table-hover mb-0">
-            <thead><tr><th>Tanggal</th><th>Topik</th><th>Anak</th><th>Status</th><th>Lokasi</th></tr></thead>
+            <thead><tr><th>Tanggal</th><th>Anak</th><th>Status</th><th>Lokasi</th></tr></thead>
             <tbody>
             <?php foreach ($upcoming as $u): ?>
               <tr>
                 <td><?= dt($u['session_date'] ?? null, $u['session_time'] ?? null) ?></td>
-                <td><?= h($u['topic'] ?? '-') ?></td>
                 <td>
                   <?php
                     // Prefer data langsung dari controller; fallback ke peta anak

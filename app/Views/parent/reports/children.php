@@ -35,7 +35,7 @@
           <tr>
             <th>Anak</th>
             <th>Kelas</th>
-            <th>JK</th>
+            <th>Jenis Kelamin</th>
             <th>Aksi</th>
           </tr>
           </thead>
@@ -44,7 +44,7 @@
             <tr>
               <td>
                 <strong><?= esc($c['full_name']) ?></strong><br>
-                <small class="text-muted">
+                <small class="text-dark">
                   NISN: <?= esc($c['nisn'] ?? '-') ?>
                 </small>
               </td>
@@ -52,7 +52,7 @@
                 <?= esc($c['class_name'] ?? '-') ?>
                 <?php if (!empty($c['grade_level'])): ?>
                   <br>
-                  <small class="text-muted">
+                  <small class="text-dark">
                     Tingkat: <?= esc($c['grade_level']) ?>
                   </small>
                 <?php endif; ?>

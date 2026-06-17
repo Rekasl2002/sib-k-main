@@ -62,7 +62,7 @@ if (!function_exists('pdf_fmt_time')) {
 <body>
 
   <div class="report-header">
-    <h4>Laporan Individual Siswa (Orang Tua/Wali)</h4>
+    <h4>Laporan Anak (Orang Tua/Wali)</h4>
     <div class="report-meta">
       Dicetak: <?= esc(pdf_fmt_date_id($today)) ?><br>
       <?php if (!empty($parentName)): ?>
@@ -101,21 +101,20 @@ if (!function_exists('pdf_fmt_time')) {
   </div>
 
   <div class="section">
-    <div class="section-title">B. Ringkasan Sesi Konseling</div>
+    <div class="section-title">B. Ringkasan Jadwal Konseling</div>
 
     <?php if (empty($sessions)): ?>
-      <div class="muted">Belum ada sesi konseling yang tercatat untuk anak ini.</div>
+      <div class="muted">Belum ada jadwal konseling yang tercatat untuk anak ini.</div>
     <?php else: ?>
       <table>
         <thead>
           <tr>
-            <th style="width:78px;">Tanggal</th>
-            <th style="width:52px;">Waktu</th>
-            <th style="width:78px;">Jenis</th>
-            <th>Topik / Fokus</th>
-            <th style="width:95px;">Lokasi</th>
-            <th style="width:78px;">Status</th>
-            <th style="width:120px;">Guru BK</th>
+            <th style="width:90px;">Tanggal</th>
+            <th style="width:60px;">Waktu</th>
+            <th style="width:90px;">Jenis</th>
+            <th>Lokasi</th>
+            <th style="width:90px;">Status</th>
+            <th style="width:130px;">Guru BK</th>
           </tr>
         </thead>
         <tbody>
@@ -124,7 +123,6 @@ if (!function_exists('pdf_fmt_time')) {
               <td><?= esc(pdf_fmt_date_id($s['session_date'] ?? null)) ?></td>
               <td><?= esc(pdf_fmt_time($s['session_time'] ?? null)) ?></td>
               <td><?= esc($s['session_type'] ?? '-') ?></td>
-              <td><?= esc($s['topic'] ?? '-') ?></td>
               <td><?= esc($s['location'] ?? '-') ?></td>
               <td><?= esc($s['status'] ?? '-') ?></td>
               <td><?= esc($s['counselor_name'] ?? '-') ?></td>
