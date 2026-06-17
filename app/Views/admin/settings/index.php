@@ -113,6 +113,9 @@ $checked = static function($value): bool {
         <li class="nav-item" role="presentation">
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-consultation" type="button" role="tab">Konsultasi &amp; Pengaduan</button>
         </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-notif-matrix" type="button" role="tab">Notifikasi</button>
+        </li>
       </ul>
 
       <div class="tab-content">
@@ -602,6 +605,71 @@ $checked = static function($value): bool {
                 </div>
                 <div class="small text-dark mt-2">Orang Tua dapat membuat laporan tentang anaknya.</div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================== TAB: NOTIFIKASI (MATRIKS PERAN x KATEGORI) ===================== -->
+        <div class="tab-pane fade" id="tab-notif-matrix" role="tabpanel" tabindex="0">
+          <div class="mb-3">
+            <div class="fw-semibold text-dark">Notifikasi untuk Tiap Peran</div>
+            <div class="form-text text-dark">
+              Tentukan jenis pemberitahuan apa saja yang DITERIMA oleh tiap peran. Pengaturan ini berlaku
+              untuk semua pengguna pada peran tersebut (tidak diatur per orang). Centang = peran itu menerima
+              pemberitahuan jenis tersebut; lepas centang = tidak menerima. Bawaan: semua menyala.
+            </div>
+          </div>
+
+          <?php
+            helper('notification');
+            $nmCategories = function_exists('notification_categories') ? notification_categories() : [];
+            $nmRoles = [
+              1 => 'Admin',
+              2 => 'Koordinator BK',
+              3 => 'Guru BK',
+              4 => 'Wali Kelas',
+              5 => 'Siswa',
+              6 => 'Orang Tua',
+            ];
+          ?>
+
+          <div class="table-responsive">
+            <table class="table table-bordered align-middle mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th style="min-width:150px;" class="text-dark">Peran</th>
+                  <?php foreach ($nmCategories as $catKey => $catLabel): ?>
+                    <th class="text-center text-dark"><?= esc($catLabel) ?></th>
+                  <?php endforeach; ?>
+                </tr>
+              </thead>
+              <tbody>
+                <?php foreach ($nmRoles as $rid => $roleName): ?>
+                  <?php $cur = setting('notification_matrix.role_' . $rid, [], 'general'); if (!is_array($cur)) $cur = []; ?>
+                  <tr>
+                    <td class="fw-semibold text-dark"><?= esc($roleName) ?></td>
+                    <?php foreach ($nmCategories as $catKey => $catLabel): ?>
+                      <?php $on = !array_key_exists($catKey, $cur) || !empty($cur[$catKey]); ?>
+                      <td class="text-center">
+                        <div class="form-check form-switch d-inline-block">
+                          <input class="form-check-input" type="checkbox"
+                                 name="notif_matrix[role_<?= (int)$rid ?>][<?= esc($catKey, 'attr') ?>]"
+                                 value="1" <?= $on ? 'checked' : '' ?>
+                                 aria-label="<?= esc($roleName . ' - ' . $catLabel, 'attr') ?>">
+                        </div>
+                      </td>
+                    <?php endforeach; ?>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="alert alert-info mt-3 mb-0">
+            <div class="fw-semibold mb-1">Catatan</div>
+            <div class="small text-dark">
+              Untuk Siswa dan Orang Tua, pemberitahuan tentang layanan BK tetap hanya berupa garis besar/jadwal
+              (tanpa isi rahasia), sesuai aturan kerahasiaan — meski kategorinya dinyalakan.
             </div>
           </div>
         </div>

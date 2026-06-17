@@ -191,8 +191,6 @@ $routes->group('admin', [
         $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
             $routes->get('/', 'NotificationController::index', ['as' => 'admin.notifications']);
             $routes->get('unread', 'NotificationController::unread', ['as' => 'admin.notifications.unread']);
-            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'admin.notifications.preferences']);
-            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'admin.notifications.preferences.update']);
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'admin.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'admin.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'admin.notifications.delete']);
@@ -337,8 +335,6 @@ $routes->group('koordinator', [
         $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
             $routes->get('/', 'NotificationController::index', ['as' => 'koordinator.notifications']);
             $routes->get('unread', 'NotificationController::unread', ['as' => 'koordinator.notifications.unread']);
-            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'koordinator.notifications.preferences']);
-            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'koordinator.notifications.preferences.update']);
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'koordinator.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'koordinator.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'koordinator.notifications.delete']);
@@ -616,8 +612,6 @@ $routes->group('counselor', [
         $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
             $routes->get('/', 'NotificationController::index', ['as' => 'counselor.notifications']);
             $routes->get('unread', 'NotificationController::unread', ['as' => 'counselor.notifications.unread']);
-            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'counselor.notifications.preferences']);
-            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'counselor.notifications.preferences.update']);
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'counselor.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'counselor.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'counselor.notifications.delete']);
@@ -813,8 +807,6 @@ $routes->group('homeroom', [
         $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
             $routes->get('/', 'NotificationController::index', ['as' => 'homeroom.notifications']);
             $routes->get('unread', 'NotificationController::unread', ['as' => 'homeroom.notifications.unread']);
-            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'homeroom.notifications.preferences']);
-            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'homeroom.notifications.preferences.update']);
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'homeroom.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'homeroom.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'homeroom.notifications.delete']);
@@ -1034,8 +1026,6 @@ $routes->group('student', [
         $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
             $routes->get('/', 'NotificationController::index', ['as' => 'student.notifications']);
             $routes->get('unread', 'NotificationController::unread', ['as' => 'student.notifications.unread']);
-            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'student.notifications.preferences']);
-            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'student.notifications.preferences.update']);
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'student.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'student.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'student.notifications.delete']);
@@ -1160,8 +1150,6 @@ $routes->group('parent', [
         $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
             $routes->get('/', 'NotificationController::index', ['as' => 'parent.notifications']);
             $routes->get('unread', 'NotificationController::unread', ['as' => 'parent.notifications.unread']);
-            $routes->get('preferences', 'NotificationController::preferences', ['as' => 'parent.notifications.preferences']);
-            $routes->post('preferences', 'NotificationController::updatePreferences', ['as' => 'parent.notifications.preferences.update']);
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'parent.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'parent.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'parent.notifications.delete']);

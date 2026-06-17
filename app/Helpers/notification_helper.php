@@ -63,7 +63,117 @@ if (!function_exists('send_notification')) {
     }
 }
 
+if (!function_exists('notification_categories')) {
+    /**
+     * Kategori notifikasi FUNGSIONAL (dipahami Guru Pesantren). Dipakai untuk
+     * kontrol Admin (matriks peran x kategori di Pengaturan Aplikasi) dan untuk
+     * label/saring di halaman Pusat Notifikasi.
+     *
+     * @return array<string,string> [kunci_kategori => label]
+     */
+    function notification_categories(): array
+    {
+        return [
+            'message'      => 'Pesan',
+            'consultation' => 'Konsultasi & Pengaduan',
+            'assignment'   => 'Penugasan',
+            'schedule'     => 'Jadwal Layanan BK',
+            'assessment'   => 'Asesmen',
+            'followup'     => 'Tindak Lanjut/Catatan',
+            'general'      => 'Umum',
+        ];
+    }
+}
+
+if (!function_exists('notification_type_category')) {
+    /**
+     * Petakan TIPE teknis notifikasi (kolom notifications.type) menjadi salah satu
+     * KATEGORI fungsional. Tipe yang tidak dikenali masuk ke 'general' (Umum).
+     */
+    function notification_type_category(string $type): string
+    {
+        $type = strtolower(trim($type));
+
+        $map = [
+            // Pesan
+            'message'      => 'message',
+            // Konsultasi & Pengaduan
+            'consultation' => 'consultation',
+            'complaint'    => 'consultation',
+            'violation'    => 'consultation',
+            // Penugasan
+            'assignment'   => 'assignment',
+            'task'         => 'assignment',
+            // Jadwal Layanan BK
+            'session'      => 'schedule',
+            'schedule'     => 'schedule',
+            'guidance'     => 'schedule',
+            'counseling'   => 'schedule',
+            'home_visit'   => 'schedule',
+            'case_conference' => 'schedule',
+            'parent_collaboration' => 'schedule',
+            // Asesmen
+            'assessment'   => 'assessment',
+            // Tindak Lanjut/Catatan
+            'followup'     => 'followup',
+            'follow_up'    => 'followup',
+            'note'         => 'followup',
+        ];
+
+        return $map[$type] ?? 'general';
+    }
+}
+
+if (!function_exists('notification_bk_detail_categories')) {
+    /**
+     * Kategori notifikasi yang BERISI/menyiratkan detail layanan BK. Untuk Siswa
+     * & Orang Tua, notifikasi kategori ini WAJIB dimask jadi garis besar aman
+     * (mereka hanya boleh melihat jadwal, bukan detail Bimbingan/Konseling/
+     * Kolaborasi Orang Tua/Kunjungan Rumah/Konferensi Kasus dll).
+     *
+     * @return list<string>
+     */
+    function notification_bk_detail_categories(): array
+    {
+        return ['schedule', 'followup'];
+    }
+}
+
+if (!function_exists('notification_is_bk_detail')) {
+    /**
+     * Apakah tipe notifikasi termasuk detail/jadwal layanan BK yang harus
+     * disembunyikan detailnya dari Siswa & Orang Tua?
+     */
+    function notification_is_bk_detail(string $type): bool
+    {
+        return in_array(notification_type_category($type), notification_bk_detail_categories(), true);
+    }
+}
+
+if (!function_exists('notification_role_id')) {
+    /**
+     * Ambil role_id pemilik notifikasi (untuk penegakan matriks Admin).
+     */
+    function notification_role_id(int $user_id): int
+    {
+        try {
+            $db  = \Config\Database::connect();
+            $row = $db->table('users')->select('role_id')->where('id', $user_id)->get()->getRowArray();
+            return (int) ($row['role_id'] ?? 0);
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+}
+
 if (!function_exists('notification_allowed')) {
+    /**
+     * Boleh-tidaknya sebuah notifikasi diterbitkan ke pengguna ditentukan oleh
+     * ADMIN (Pengaturan Aplikasi), BUKAN per individu. Aturan:
+     * 1) Sakelar utama notifikasi internal (group `notifications.enable_internal`).
+     * 2) Matriks Admin per PERAN x KATEGORI (group `notification_matrix`,
+     *    key `role_<roleId>` berisi JSON {kategori => 0/1}). Bawaan: menyala.
+     */
     function notification_allowed(int $user_id, string $type): bool
     {
         if ($user_id <= 0) {
@@ -72,6 +182,8 @@ if (!function_exists('notification_allowed')) {
 
         try {
             $db = \Config\Database::connect();
+
+            // 1) Sakelar utama notifikasi internal
             $global = $db->table('settings')
                 ->select('value')
                 ->where('group', 'notifications')
@@ -84,26 +196,33 @@ if (!function_exists('notification_allowed')) {
                 return false;
             }
 
+            // 2) Matriks Admin: peran x kategori
+            $roleId   = notification_role_id($user_id);
+            $category = notification_type_category($type);
+            if ($roleId <= 0) {
+                return true;
+            }
+
             $row = $db->table('settings')
                 ->select('value')
-                ->where('group', 'notification_preferences')
-                ->where('key', 'user_' . $user_id)
+                ->where('group', 'notification_matrix')
+                ->where('key', 'role_' . $roleId)
                 ->where('deleted_at', null)
                 ->get()
                 ->getRowArray();
 
             if (!$row || empty($row['value'])) {
+                return true; // belum diatur = semua menyala (bawaan)
+            }
+
+            $matrix = json_decode((string)$row['value'], true);
+            if (!is_array($matrix) || !array_key_exists($category, $matrix)) {
                 return true;
             }
 
-            $prefs = json_decode((string)$row['value'], true);
-            if (!is_array($prefs) || !array_key_exists($type, $prefs)) {
-                return true;
-            }
-
-            return (bool)$prefs[$type];
+            return (bool)$matrix[$category];
         } catch (\Throwable $e) {
-            log_message('error', '[NOTIFICATION] Failed to read preferences: ' . $e->getMessage());
+            log_message('error', '[NOTIFICATION] Failed to read notification matrix: ' . $e->getMessage());
             return true;
         }
     }

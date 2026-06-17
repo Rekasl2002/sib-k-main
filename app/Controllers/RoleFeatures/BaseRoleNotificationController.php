@@ -4,7 +4,6 @@ namespace App\Controllers\RoleFeatures;
 
 use App\Controllers\BaseController;
 use App\Models\NotificationModel;
-use App\Models\SettingModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 abstract class BaseRoleNotificationController extends BaseController
@@ -21,12 +20,10 @@ abstract class BaseRoleNotificationController extends BaseController
     protected bool $restrictBkDetail = false;
 
     protected NotificationModel $notif;
-    protected SettingModel $settings;
 
     public function __construct()
     {
         $this->notif = new NotificationModel();
-        $this->settings = new SettingModel();
         helper(['notification', 'url', 'form']);
     }
 
@@ -37,17 +34,30 @@ abstract class BaseRoleNotificationController extends BaseController
             return $this->denyUnauthenticated();
         }
 
+        // Muat seluruh notifikasi milik pengguna; paginasi ditangani DataTables di view.
         $items = $this->notif
             ->where('user_id', $uid)
             ->orderBy('created_at', 'DESC')
-            ->paginate(20);
+            ->findAll();
+
+        $items = $this->maskBkDetail($items);
+
+        $stats = ['total' => count($items), 'unread' => 0, 'read' => 0];
+        foreach ($items as $it) {
+            if (empty($it['is_read'])) {
+                $stats['unread']++;
+            } else {
+                $stats['read']++;
+            }
+        }
 
         return view($this->viewPrefix . '/index', [
-            'title'     => 'Notifikasi Internal',
-            'items'     => $this->maskBkDetail($items),
-            'pager'     => $this->notif->pager,
-            'basePath'  => trim($this->routePrefix, '/'),
-            'roleLabel' => $this->roleLabel,
+            'title'      => 'Notifikasi Internal',
+            'items'      => $items,
+            'stats'      => $stats,
+            'categories' => notification_categories(),
+            'basePath'   => trim($this->routePrefix, '/'),
+            'roleLabel'  => $this->roleLabel,
         ]);
     }
 
@@ -153,64 +163,13 @@ abstract class BaseRoleNotificationController extends BaseController
         return $this->noCache()->response->setJSON(['count' => (int)$count]);
     }
 
-    public function preferences()
-    {
-        $uid = $this->currentUserId();
-        if ($uid <= 0) {
-            return $this->denyUnauthenticated();
-        }
-
-        return view($this->viewPrefix . '/preferences', [
-            'title'       => 'Preferensi Notifikasi Internal',
-            'basePath'    => trim($this->routePrefix, '/'),
-            'roleLabel'   => $this->roleLabel,
-            'types'       => $this->notificationTypes(),
-            'preferences' => $this->readPreferences($uid),
-        ]);
-    }
-
-    public function updatePreferences()
-    {
-        $uid = $this->currentUserId();
-        if ($uid <= 0) {
-            return $this->denyUnauthenticated();
-        }
-
-        $enabled = (array)$this->request->getPost('enabled');
-        $payload = [];
-        foreach (array_keys($this->notificationTypes()) as $type) {
-            $payload[$type] = array_key_exists($type, $enabled) ? 1 : 0;
-        }
-
-        $key = 'user_' . $uid;
-        $existing = $this->settings
-            ->where('group', 'notification_preferences')
-            ->where('key', $key)
-            ->first();
-
-        $data = [
-            'group'    => 'notification_preferences',
-            'key'      => $key,
-            'value'    => json_encode($payload, JSON_UNESCAPED_SLASHES),
-            'type'     => 'json',
-            'autoload' => 0,
-        ];
-
-        if ($existing) {
-            $this->settings->update((int)$existing['id'], $data);
-        } else {
-            $this->settings->insert($data);
-        }
-
-        return redirect()->to(site_url($this->routePrefix . '/notifications/preferences'))
-            ->with('success', 'Preferensi notifikasi berhasil disimpan.');
-    }
-
     /**
      * Sembunyikan rincian notifikasi layanan BK untuk Siswa & Orang Tua.
-     * Hanya notifikasi bertipe 'session' (jadwal/undangan layanan BK) yang
-     * dipaksa menjadi garis besar aman; tipe lain (pesan, asesmen, konsultasi
-     * milik sendiri) tetap apa adanya.
+     * Semua notifikasi yang berkategori detail layanan BK (jadwal & tindak
+     * lanjut/catatan) dipaksa menjadi garis besar aman, sebab kedua peran ini
+     * hanya boleh melihat JADWAL — bukan detail Bimbingan/Konseling/Kolaborasi
+     * Orang Tua/Kunjungan Rumah/Konferensi Kasus. Tipe lain (pesan, asesmen,
+     * konsultasi milik sendiri) tetap apa adanya.
      */
     protected function maskBkDetail(array $items): array
     {
@@ -219,7 +178,7 @@ abstract class BaseRoleNotificationController extends BaseController
         }
 
         foreach ($items as &$item) {
-            if (($item['type'] ?? '') === 'session') {
+            if (notification_is_bk_detail((string)($item['type'] ?? ''))) {
                 $item['title']   = 'Jadwal Kegiatan/Acara BK';
                 $item['message'] = 'Ada jadwal kegiatan/acara BK untuk Anda. Silakan cek halaman Jadwal Kegiatan/Acara BK.';
             }
@@ -248,35 +207,5 @@ abstract class BaseRoleNotificationController extends BaseController
         $this->response->setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         $this->response->setHeader('Pragma', 'no-cache');
         return $this;
-    }
-
-    protected function notificationTypes(): array
-    {
-        return [
-            'message'              => 'Pesan internal',
-            'assessment'           => 'Asesmen',
-            'career'               => 'Fitur info karier dan info studi lanjut',
-            'session'              => 'Sesi konseling',
-            'info'                 => 'Informasi umum',
-            'success'              => 'Pemberitahuan berhasil',
-            'warning'              => 'Peringatan',
-            'danger'               => 'Penting/darurat',
-        ];
-    }
-
-    protected function readPreferences(int $uid): array
-    {
-        $defaults = array_fill_keys(array_keys($this->notificationTypes()), 1);
-        $value = $this->settings->getValue('user_' . $uid, 'notification_preferences', []);
-
-        if (!is_array($value)) {
-            return $defaults;
-        }
-
-        foreach ($defaults as $type => $default) {
-            $defaults[$type] = array_key_exists($type, $value) ? (int)(bool)$value[$type] : $default;
-        }
-
-        return $defaults;
     }
 }

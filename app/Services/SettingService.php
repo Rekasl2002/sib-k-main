@@ -242,6 +242,33 @@ class SettingService
     }
 
     /**
+     * Simpan MATRIKS preferensi notifikasi per PERAN x KATEGORI.
+     * Pengganti preferensi per-pengguna: hanya Admin yang menentukan, untuk
+     * semua peran. Disimpan sebagai JSON per peran di group `notification_matrix`
+     * (key `role_<id>` → {kategori => 0/1}).
+     *
+     * Form mengirim `notif_matrix[role_<id>][<kategori>]=1` untuk yang dicentang;
+     * kategori yang tidak dicentang dianggap 0 (mati).
+     */
+    public function saveNotificationMatrix(array $data): void
+    {
+        helper('notification');
+
+        $roleIds    = [1, 2, 3, 4, 5, 6]; // Admin, Koord BK, Guru BK, Wali Kelas, Siswa, Orang Tua
+        $categories = array_keys(notification_categories());
+        $matrix     = (array) ($data['notif_matrix'] ?? []);
+
+        foreach ($roleIds as $rid) {
+            $row     = (array) ($matrix['role_' . $rid] ?? []);
+            $payload = [];
+            foreach ($categories as $cat) {
+                $payload[$cat] = empty($row[$cat]) ? 0 : 1;
+            }
+            set_setting('notification_matrix', 'role_' . $rid, json_encode($payload, JSON_UNESCAPED_SLASHES), 'json');
+        }
+    }
+
+    /**
      * Simpan sakelar fitur Konsultasi & Pengaduan.
      * Memakai pola hidden input (value=0) + checkbox (value=1) di form,
      * sehingga sakelar yang dimatikan tetap tersimpan sebagai 0.

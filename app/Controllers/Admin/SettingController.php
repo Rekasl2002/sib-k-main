@@ -129,6 +129,7 @@ class SettingController extends BaseController
             $this->service->saveMail($post);
             $this->service->saveSecurity($post);
             $this->service->saveConsultation($post);
+            $this->service->saveNotificationMatrix($post);
 
         } catch (Throwable $e) {
             // Jangan tampilkan stack trace di UI user biasa, cukup pesan ringkas

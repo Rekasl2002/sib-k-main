@@ -86,14 +86,24 @@ $__urlMarkAll      = site_url($__rolePrefix . '/notifications/mark-all-read');
 $__urlCount        = site_url($__rolePrefix . '/notifications/count');
 
 if ($__uid && class_exists(\App\Models\NotificationModel::class)) {
+    try { helper('notification'); } catch (\Throwable $e) { /* ignore */ }
+
     $__model  = new \App\Models\NotificationModel();
     $__unread = (int) $__model->where('user_id', $__uid)->where('is_read', 0)->countAllResults();
+    // Dropdown lonceng dibatasi 10 notifikasi terbaru agar ringkas & tidak
+    // menutup tampilan lain; seluruh notifikasi dilihat di halaman utama Notifikasi.
     $__items  = $__model->where('user_id', $__uid)->orderBy('created_at', 'DESC')->findAll(10);
 
-    // Kerahasiaan: Siswa & Orang Tua hanya melihat garis besar aman untuk notifikasi layanan BK.
+    // Kerahasiaan: Siswa & Orang Tua hanya melihat garis besar aman untuk
+    // notifikasi DETAIL layanan BK (jadwal & tindak lanjut). Mereka tidak boleh
+    // melihat detail Bimbingan/Konseling/Kolaborasi Ortu/Kunjungan Rumah/
+    // Konferensi Kasus — hanya jadwal.
     if (in_array($__rolePrefix, ['student', 'parent'], true)) {
         foreach ($__items as &$__it) {
-            if (($__it['type'] ?? '') === 'session') {
+            $__isBk = function_exists('notification_is_bk_detail')
+                ? notification_is_bk_detail((string)($__it['type'] ?? ''))
+                : (($__it['type'] ?? '') === 'session');
+            if ($__isBk) {
                 $__it['title']   = 'Jadwal Kegiatan/Acara BK';
                 $__it['message'] = 'Ada jadwal kegiatan/acara BK untuk Anda. Silakan cek halaman Jadwal Kegiatan/Acara BK.';
             }
@@ -151,22 +161,22 @@ try {
 
           <!-- Pesan -->
           <div class="dropdown d-inline-block">
-            <a href="<?= esc($__urlMessages) ?>" class="btn header-item noti-icon position-relative" aria-label="Pesan" title="Pesan">
+            <a href="<?= esc($__urlMessages) ?>" class="btn header-item noti-icon position-relative d-inline-flex align-items-center justify-content-center" aria-label="Pesan" title="Pesan">
               <i class="mdi mdi-message-text-outline"></i>
-              <span class="badge rounded-pill bg-danger" id="message-badge"
+              <span class="badge rounded-pill bg-danger notification-badge" id="message-badge"
                     style="<?= $__msgUnread <= 0 ? 'display:none;' : '' ?>"><?= (int) $__msgUnread ?></span>
             </a>
           </div>
 
-          <!-- Notifications 
+          <!-- Notifications -->
           <div class="dropdown d-inline-block">
-            <button type="button" class="btn header-item noti-icon"
+            <button type="button" class="btn header-item noti-icon position-relative d-inline-flex align-items-center justify-content-center"
                     id="page-header-notifications-dropdown"
                     data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
-                    aria-label="Notifikasi">
+                    aria-label="Notifikasi" title="Notifikasi">
               <i class="mdi mdi-bell-outline"></i>
 
-              <span class="badge rounded-pill bg-danger"
+              <span class="badge rounded-pill bg-danger notification-badge"
                     id="notification-badge"
                     data-zero="<?= esc($__badgeZero) ?>"><?= esc((string)$__unread) ?></span>
             </button>
@@ -207,7 +217,7 @@ try {
                 <a class="btn btn-sm btn-light w-100" href="<?= $__urlIndex ?>">Lihat semua notifikasi</a>
               </div>
             </div>
-          </div>-->
+          </div>
 
           <!-- User -->
           <div class="dropdown d-inline-block">
