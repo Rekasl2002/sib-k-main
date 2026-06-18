@@ -67,6 +67,10 @@ abstract class BaseBkAssignmentController extends BaseController
             return $this->deny();
         }
 
+        if ($err = $this->validateRequired($this->request->getPost() ?? [])) {
+            return redirect()->back()->withInput()->with('error', $err);
+        }
+
         $id = $this->service->create($this->request->getPost() ?? [], $this->currentUserId());
 
         $this->notifyAssignment((int) $id, true);
@@ -111,6 +115,10 @@ abstract class BaseBkAssignmentController extends BaseController
     {
         if (! $this->canManage) {
             return $this->deny();
+        }
+
+        if ($err = $this->validateRequired($this->request->getPost() ?? [])) {
+            return redirect()->back()->withInput()->with('error', $err);
         }
 
         $this->service->update((int) $id, $this->request->getPost() ?? [], $this->currentUserId());
@@ -176,6 +184,39 @@ abstract class BaseBkAssignmentController extends BaseController
     }
 
     /**
+     * Penegakan field wajib di sisi server (HTML required tidak berlaku untuk
+     * input chip tersembunyi Guru BK). Mengembalikan pesan error atau null.
+     */
+    protected function validateRequired(array $post): ?string
+    {
+        $counselorIds = $post['assigned_to_user_ids'] ?? ($post['assigned_to_user_id'] ?? null);
+        $hasCounselor = is_array($counselorIds)
+            ? count(array_filter($counselorIds, static fn ($v) => (int) $v > 0)) > 0
+            : ((int) $counselorIds > 0);
+
+        if (! $hasCounselor) {
+            return 'Guru BK yang ditugaskan wajib dipilih (minimal satu).';
+        }
+        if (trim((string) ($post['title'] ?? '')) === '') {
+            return 'Judul/Topik/Masalah wajib diisi.';
+        }
+        if (trim((string) ($post['instruction'] ?? '')) === '') {
+            return 'Instruksi wajib diisi.';
+        }
+        if (trim((string) ($post['due_at'] ?? '')) === '') {
+            return 'Batas Waktu wajib diisi.';
+        }
+        if (trim((string) ($post['priority'] ?? '')) === '') {
+            return 'Prioritas wajib dipilih.';
+        }
+        if (($post['assignment_type'] ?? '') === 'Lainnya' && trim((string) ($post['assignment_type_other'] ?? '')) === '') {
+            return 'Karena Jenis Tugas "Lainnya", isi keterangan jenis tugasnya.';
+        }
+
+        return null;
+    }
+
+    /**
      * Beritahu pihak terkait penugasan.
      * - Tugas baru: beritahu penerima tugas (Guru BK).
      * - Perubahan status: beritahu pihak lain (pembuat & penerima selain pelaku).
@@ -197,15 +238,21 @@ abstract class BaseBkAssignmentController extends BaseController
 
         $title  = trim((string) ($row['title'] ?? '')) !== '' ? $row['title'] : 'Tanpa judul';
         $me     = $this->currentUserId();
-        $assignee = (int) ($row['assigned_to_user_id'] ?? 0);
         $assigner = (int) ($row['assigned_by'] ?? 0);
 
+        // Semua Guru BK petugas (pivot) + target utama, agar tiap petugas diberi tahu.
+        $assignees = $this->service->assigneeIds($id);
+        if ((int) ($row['assigned_to_user_id'] ?? 0) > 0) {
+            $assignees[] = (int) $row['assigned_to_user_id'];
+        }
+        $assignees = array_values(array_unique(array_filter($assignees)));
+
         if ($isNew) {
-            $targets = [$assignee];
+            $targets = $assignees;
             $heading = 'Penugasan Baru';
             $message = 'Anda menerima tugas baru: ' . $title;
         } else {
-            $targets = [$assignee, $assigner];
+            $targets = array_merge($assignees, [$assigner]);
             $heading = 'Status Penugasan Diperbarui';
             $message = 'Status tugas "' . $title . '" kini: ' . ($row['status'] ?? '-');
         }

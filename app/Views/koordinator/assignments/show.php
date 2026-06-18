@@ -11,6 +11,14 @@
 $row = is_array($row ?? null) ? $row : [];
 $histories = is_array($row['histories'] ?? null) ? $row['histories'] : [];
 $routePrefix = (string) ($routePrefix ?? '');
+
+$assignees = is_array($row['assignees'] ?? null) ? $row['assignees'] : [];
+$targetClasses = is_array($row['target_classes'] ?? null) ? $row['target_classes'] : [];
+$targetStudents = is_array($row['target_students'] ?? null) ? $row['target_students'] : [];
+$assigneeText = implode(', ', array_filter(array_map(static fn($a) => $a['name'] ?? null, $assignees))) ?: ($row['assigned_to_name'] ?? '-');
+$classText = implode(', ', array_filter(array_map(static fn($c) => $c['name'] ?? null, $targetClasses)));
+$studentText = implode(', ', array_filter(array_map(static fn($s) => $s['name'] ?? null, $targetStudents)));
+$typeText = (string) ($row['assignment_type'] ?? '-') . (! empty($row['assignment_type_other']) ? ': ' . $row['assignment_type_other'] : '');
 ?>
 <div class="row"><div class="col-12"><div class="page-title-box d-sm-flex align-items-center justify-content-between"><div><h4 class="mb-sm-0"><?= esc($row['title'] ?? 'Penugasan') ?></h4><p class="text-muted mb-0"><?= esc($row['assignment_type'] ?? '-') ?> - <?= esc($row['status'] ?? '-') ?></p></div><div class="d-flex gap-2"><a href="<?= site_url($routePrefix) ?>" class="btn btn-outline-secondary">Kembali</a><?php if (! empty($canManage)): ?><a href="<?= site_url($routePrefix . '/edit/' . (int) $row['id']) ?>" class="btn btn-primary">Edit</a><?php endif; ?></div></div></div></div>
 <div class="row">
@@ -19,11 +27,13 @@ $routePrefix = (string) ($routePrefix ?? '');
       <h5 class="card-title mb-3">Instruksi</h5>
       <p><?= nl2br(esc($row['instruction'] ?? '-')) ?></p>
       <dl class="row mb-0">
+        <dt class="col-md-4">Jenis Tugas</dt><dd class="col-md-8"><?= esc($typeText) ?></dd>
         <dt class="col-md-4">Pemberi Tugas</dt><dd class="col-md-8"><?= esc($row['assigned_by_name'] ?? '-') ?></dd>
-        <dt class="col-md-4">Guru BK</dt><dd class="col-md-8"><?= esc($row['assigned_to_name'] ?? '-') ?></dd>
-        <dt class="col-md-4">Kelas/Siswa</dt><dd class="col-md-8"><?= esc($row['class_name'] ?? $row['student_name'] ?? '-') ?></dd>
+        <dt class="col-md-4">Guru BK Ditugaskan</dt><dd class="col-md-8"><?= esc($assigneeText) ?></dd>
+        <dt class="col-md-4">Kelas</dt><dd class="col-md-8"><?= $classText !== '' ? esc($classText) : '-' ?></dd>
+        <dt class="col-md-4">Siswa</dt><dd class="col-md-8"><?= $studentText !== '' ? esc($studentText) : '-' ?></dd>
         <dt class="col-md-4">Prioritas</dt><dd class="col-md-8"><?= esc($row['priority'] ?? '-') ?></dd>
-        <dt class="col-md-4">Batas Waktu</dt><dd class="col-md-8"><?= esc($row['due_at'] ?? '-') ?></dd>
+        <dt class="col-md-4">Batas Waktu</dt><dd class="col-md-8"><?= ! empty($row['due_at']) ? esc(date('d/m/Y H:i', strtotime((string) $row['due_at']))) : '-' ?></dd>
       </dl>
     </div></div>
     <div class="card"><div class="card-body">

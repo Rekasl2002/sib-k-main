@@ -6,7 +6,12 @@
  * Peran/izin: Koordinator BK mengelola tugas dan kelas binaan; Guru BK melihat
  * serta memperbarui status tugas yang diterima.
  * Berhubungan dengan: BkAssignmentModel, BkAssignmentStatusHistoryModel,
- * classes, students, users.
+ * BkAssignmentTargetModel, classes, students, users.
+ *
+ * Perbaikan Kedua (Item #10): satu tugas dapat ditujukan ke BANYAK Guru BK,
+ * BANYAK kelas, dan BANYAK siswa melalui tabel pivot bk_assignment_targets.
+ * Kolom lama assigned_to_user_id/class_id/student_id tetap diisi pilihan PERTAMA
+ * sebagai target utama (kompatibilitas data & notifikasi).
  */
 
 namespace App\Services;
@@ -28,6 +33,34 @@ class BkAssignmentService
         $this->historyModel = new BkAssignmentStatusHistoryModel();
     }
 
+    /** Daftar jenis tugas (dipakai form & filter). */
+    public static function assignmentTypes(): array
+    {
+        return [
+            'Kelas Binaan',
+            'Tugas Layanan',
+            'Tindak Lanjut',
+            'Koordinasi',
+            'Pelaksanaan Asesmen',
+            'Pelaksanaan Layanan',
+            'Administrasi & Laporan',
+            'Pendampingan Siswa',
+            'Lainnya',
+        ];
+    }
+
+    /** Status yang boleh dipilih saat MEMBUAT tugas. */
+    public static function createStatuses(): array
+    {
+        return ['Ditugaskan', 'Draft'];
+    }
+
+    /** Seluruh status (dipakai filter & form Edit). */
+    public static function statuses(): array
+    {
+        return ['Draft', 'Ditugaskan', 'Dibaca', 'Berjalan', 'Selesai', 'Dibatalkan'];
+    }
+
     /**
      * @return list<array<string,mixed>>
      */
@@ -46,7 +79,18 @@ class BkAssignmentService
             ->where('ba.deleted_at', null);
 
         if ($role === 'guru-bk') {
-            $builder->where('ba.assigned_to_user_id', $userId);
+            // Guru BK melihat tugas yang ditujukan kepadanya: target utama ATAU
+            // tercatat sebagai salah satu petugas di pivot.
+            $sub = $this->db->table('bk_assignment_targets')
+                ->select('assignment_id')
+                ->where('target_type', 'counselor')
+                ->where('user_id', $userId)
+                ->where('deleted_at', null)
+                ->getCompiledSelect();
+            $builder->groupStart()
+                ->where('ba.assigned_to_user_id', $userId)
+                ->orWhere("ba.id IN ($sub)", null, false)
+                ->groupEnd();
         } elseif (! in_array($role, ['admin', 'koordinator-bk'], true)) {
             $builder->where('1 = 0', null, false);
         }
@@ -65,7 +109,9 @@ class BkAssignmentService
                 ->groupEnd();
         }
 
-        return $builder->orderBy('ba.assigned_at', 'DESC')->get()->getResultArray();
+        $rows = $builder->orderBy('ba.assigned_at', 'DESC')->get()->getResultArray();
+
+        return $this->attachTargetSummaries($rows);
     }
 
     public function find(int $id, string $role, int $userId): ?array
@@ -82,6 +128,11 @@ class BkAssignmentService
         if (! $row) {
             return null;
         }
+
+        // Rincian target (untuk prefill form & tampilan detail).
+        $row['assignees'] = $this->targetRows($id, 'counselor');
+        $row['target_classes'] = $this->targetRows($id, 'class');
+        $row['target_students'] = $this->targetRows($id, 'student');
 
         $row['histories'] = $this->db->table('bk_assignment_status_histories h')
             ->select('h.*, u.full_name AS changed_by_name')
@@ -102,6 +153,7 @@ class BkAssignmentService
         $payload['assigned_at'] = $payload['assigned_at'] ?? date('Y-m-d H:i:s');
 
         $id = (int) $this->model->insert($payload, true);
+        $this->syncTargets($id, $post);
         $this->recordHistory($id, (string) ($payload['status'] ?? 'Ditugaskan'), 'Tugas dibuat.', $userId);
 
         return $id;
@@ -111,6 +163,7 @@ class BkAssignmentService
     {
         $payload = $this->payload($post);
         $ok = (bool) $this->model->update($id, $payload);
+        $this->syncTargets($id, $post);
         if ($ok && isset($payload['status'])) {
             $this->recordHistory($id, (string) $payload['status'], (string) ($post['history_note'] ?? 'Status diperbarui.'), $userId);
         }
@@ -136,6 +189,24 @@ class BkAssignmentService
     public function delete(int $id): bool
     {
         return (bool) $this->model->delete($id);
+    }
+
+    /**
+     * Seluruh ID Guru BK petugas pada satu tugas (untuk notifikasi).
+     *
+     * @return list<int>
+     */
+    public function assigneeIds(int $id): array
+    {
+        $ids = [];
+        foreach ($this->targetRows($id, 'counselor') as $row) {
+            $uid = (int) ($row['user_id'] ?? 0);
+            if ($uid > 0) {
+                $ids[] = $uid;
+            }
+        }
+
+        return array_values(array_unique($ids));
     }
 
     /**
@@ -177,13 +248,24 @@ class BkAssignmentService
      */
     private function payload(array $post): array
     {
+        $counselorIds = $this->idList($post['assigned_to_user_ids'] ?? null, $post['assigned_to_user_id'] ?? null);
+        $classIds     = $this->idList($post['target_class_ids'] ?? null, $post['class_id'] ?? null);
+        $studentIds   = $this->idList($post['target_student_ids'] ?? null, $post['student_id'] ?? null);
+
+        $type = $post['assignment_type'] ?? 'Tugas Layanan';
+        if (! in_array($type, self::assignmentTypes(), true)) {
+            $type = 'Tugas Layanan';
+        }
+
         return [
-            'assignment_type' => $post['assignment_type'] ?? 'Tugas Layanan',
+            'assignment_type' => $type,
+            'assignment_type_other' => $type === 'Lainnya' ? (trim((string) ($post['assignment_type_other'] ?? '')) ?: null) : null,
             'title' => trim((string) ($post['title'] ?? 'Tugas BK')),
             'instruction' => trim((string) ($post['instruction'] ?? '')),
-            'assigned_to_user_id' => $this->nullableInt($post['assigned_to_user_id'] ?? null),
-            'class_id' => $this->nullableInt($post['class_id'] ?? null),
-            'student_id' => $this->nullableInt($post['student_id'] ?? null),
+            // Target utama = pilihan pertama (kompatibilitas data lama & notifikasi).
+            'assigned_to_user_id' => $counselorIds[0] ?? null,
+            'class_id' => $classIds[0] ?? null,
+            'student_id' => $studentIds[0] ?? null,
             'source_type' => trim((string) ($post['source_type'] ?? '')) ?: null,
             'source_id' => $this->nullableInt($post['source_id'] ?? null),
             'priority' => $post['priority'] ?? 'Sedang',
@@ -191,6 +273,127 @@ class BkAssignmentService
             'due_at' => $this->normalizeDateTime($post['due_at'] ?? null, $post['due_date'] ?? null, $post['due_time'] ?? null),
             'assigned_at' => $this->normalizeDateTime($post['assigned_at'] ?? null, null, null),
         ];
+    }
+
+    /**
+     * Sinkronkan pivot target (petugas/kelas/siswa). Pivot bukan data audit isi
+     * layanan, jadi disinkronkan dengan menghapus baris lama lalu menulis ulang.
+     */
+    private function syncTargets(int $assignmentId, array $post): void
+    {
+        if ($assignmentId <= 0) {
+            return;
+        }
+
+        $counselorIds = $this->idList($post['assigned_to_user_ids'] ?? null, $post['assigned_to_user_id'] ?? null);
+        $classIds     = $this->idList($post['target_class_ids'] ?? null, $post['class_id'] ?? null);
+        $studentIds   = $this->idList($post['target_student_ids'] ?? null, $post['student_id'] ?? null);
+
+        // Hapus permanen baris pivot lama untuk tugas ini, lalu tulis ulang.
+        $this->db->table('bk_assignment_targets')->where('assignment_id', $assignmentId)->delete();
+
+        $now = date('Y-m-d H:i:s');
+        $batch = [];
+        foreach ($counselorIds as $uid) {
+            $batch[] = ['assignment_id' => $assignmentId, 'target_type' => 'counselor', 'user_id' => $uid, 'class_id' => null, 'student_id' => null, 'created_at' => $now, 'updated_at' => $now];
+        }
+        foreach ($classIds as $cid) {
+            $batch[] = ['assignment_id' => $assignmentId, 'target_type' => 'class', 'user_id' => null, 'class_id' => $cid, 'student_id' => null, 'created_at' => $now, 'updated_at' => $now];
+        }
+        foreach ($studentIds as $sid) {
+            $batch[] = ['assignment_id' => $assignmentId, 'target_type' => 'student', 'user_id' => null, 'class_id' => null, 'student_id' => $sid, 'created_at' => $now, 'updated_at' => $now];
+        }
+
+        if ($batch) {
+            $this->db->table('bk_assignment_targets')->insertBatch($batch);
+        }
+    }
+
+    /**
+     * Ambil baris target satu tugas beserta nama tampilan.
+     *
+     * @return list<array<string,mixed>>
+     */
+    private function targetRows(int $assignmentId, string $type): array
+    {
+        $builder = $this->db->table('bk_assignment_targets t')->where('t.assignment_id', $assignmentId)
+            ->where('t.target_type', $type)->where('t.deleted_at', null);
+
+        if ($type === 'counselor') {
+            $builder->select('t.*, u.full_name AS name')->join('users u', 'u.id = t.user_id', 'left');
+        } elseif ($type === 'class') {
+            $builder->select('t.*, c.class_name AS name')->join('classes c', 'c.id = t.class_id', 'left');
+        } else {
+            $builder->select('t.*, su.full_name AS name, c.class_name AS class_name')
+                ->join('students s', 's.id = t.student_id', 'left')
+                ->join('users su', 'su.id = s.user_id', 'left')
+                ->join('classes c', 'c.id = s.class_id', 'left');
+        }
+
+        return $builder->orderBy('t.id', 'ASC')->get()->getResultArray();
+    }
+
+    /**
+     * Lampirkan ringkasan nama petugas & sasaran (kelas/siswa) untuk daftar.
+     *
+     * @param  list<array<string,mixed>> $rows
+     * @return list<array<string,mixed>>
+     */
+    private function attachTargetSummaries(array $rows): array
+    {
+        if (! $rows) {
+            return $rows;
+        }
+
+        $ids = array_values(array_unique(array_map(static fn ($r) => (int) ($r['id'] ?? 0), $rows)));
+
+        $targets = $this->db->table('bk_assignment_targets t')
+            ->select('t.assignment_id, t.target_type, u.full_name AS counselor_name, c.class_name, su.full_name AS student_name')
+            ->join('users u', 'u.id = t.user_id', 'left')
+            ->join('classes c', 'c.id = t.class_id', 'left')
+            ->join('students s', 's.id = t.student_id', 'left')
+            ->join('users su', 'su.id = s.user_id', 'left')
+            ->whereIn('t.assignment_id', $ids)
+            ->where('t.deleted_at', null)
+            ->orderBy('t.id', 'ASC')
+            ->get()->getResultArray();
+
+        $byId = [];
+        foreach ($targets as $t) {
+            $aid = (int) $t['assignment_id'];
+            if ($t['target_type'] === 'counselor') {
+                $byId[$aid]['counselor'][] = $t['counselor_name'] ?? null;
+            } elseif ($t['target_type'] === 'class') {
+                $byId[$aid]['target'][] = $t['class_name'] ?? null;
+            } elseif ($t['target_type'] === 'student') {
+                $byId[$aid]['target'][] = $t['student_name'] ?? null;
+            }
+        }
+
+        foreach ($rows as &$row) {
+            $aid = (int) ($row['id'] ?? 0);
+            $counselors = array_values(array_filter($byId[$aid]['counselor'] ?? []));
+            $targetsList = array_values(array_filter($byId[$aid]['target'] ?? []));
+
+            // Fallback ke kolom utama bila pivot kosong (data lama).
+            if (! $counselors && ! empty($row['assigned_to_name'])) {
+                $counselors = [$row['assigned_to_name']];
+            }
+            if (! $targetsList) {
+                $primary = $row['class_name'] ?? $row['student_name'] ?? null;
+                if ($primary) {
+                    $targetsList = [$primary];
+                }
+            }
+
+            $row['assignee_names'] = implode(', ', $counselors);
+            $row['target_names'] = implode(', ', $targetsList);
+            $row['assignee_count'] = count($counselors);
+            $row['target_count'] = count($targetsList);
+        }
+        unset($row);
+
+        return $rows;
     }
 
     private function recordHistory(int $assignmentId, string $status, string $note, int $userId): void
@@ -202,6 +405,29 @@ class BkAssignmentService
             'changed_by' => $userId,
             'changed_at' => date('Y-m-d H:i:s'),
         ]);
+    }
+
+    /**
+     * Normalisasi daftar ID dari input array (mis. target_class_ids[]) atau dari
+     * field tunggal lama. Mengembalikan list integer unik (>0), urut sesuai input.
+     *
+     * @return list<int>
+     */
+    private function idList($arrayValue, $singleValue): array
+    {
+        $ids = [];
+        if (is_array($arrayValue)) {
+            foreach ($arrayValue as $v) {
+                $ids[] = (int) $v;
+            }
+        } elseif ($arrayValue !== null && $arrayValue !== '') {
+            $ids[] = (int) $arrayValue;
+        }
+        if (! $ids && $singleValue !== null && $singleValue !== '') {
+            $ids[] = (int) $singleValue;
+        }
+
+        return array_values(array_unique(array_filter($ids, static fn ($v) => $v > 0)));
     }
 
     private function normalizeDateTime($direct, $date, $time): ?string

@@ -23,6 +23,7 @@ class BkAssignmentModel extends Model
 
     protected $allowedFields = [
         'assignment_type',
+        'assignment_type_other',
         'title',
         'instruction',
         'assigned_by',

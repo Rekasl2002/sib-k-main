@@ -197,38 +197,57 @@ if (!function_exists('class_label')) {
                                     </small>
                                 </div>
 
+                                <?php
+                                    $counselorLabelMap = [];
+                                    foreach ($classesCounselor as $c) { $counselorLabelMap[(int)($c['id'] ?? 0)] = class_label($c); }
+                                    $homeroomLabelMap = [];
+                                    foreach ($classesHomeroom as $c) { $homeroomLabelMap[(int)($c['id'] ?? 0)] = class_label($c); }
+                                ?>
+                                <!-- Guru BK: banyak kelas binaan (chip) -->
                                 <div id="assign_guru_bk" style="display:none;">
-                                    <small class="text-muted d-block mb-2">Pilih satu atau beberapa kelas binaan.</small>
-                                    <select class="form-select" name="counselor_class_ids[]" id="counselor_class_ids" multiple>
-                                        <?php if (empty($classesCounselor)): ?>
-                                            <option value="" disabled>(Tidak ada kelas tersedia untuk ditugaskan)</option>
-                                        <?php else: ?>
-                                            <?php foreach ($classesCounselor as $c): ?>
-                                                <option value="<?= (int)($c['id'] ?? 0) ?>"
-                                                    <?= in_array((int)($c['id'] ?? 0), $oldCounselorIds, true) ? 'selected' : '' ?>>
-                                                    <?= esc(class_label($c)) ?>
-                                                </option>
+                                    <div class="js-multi" data-name="counselor_class_ids[]">
+                                        <small class="text-muted d-block mb-2">Pilih satu atau beberapa kelas binaan. Klik nama kelas pada daftar &mdash; otomatis masuk ke kotak di bawah.</small>
+                                        <div class="js-chips border rounded p-2 mb-2 bg-light">
+                                            <?php foreach ($oldCounselorIds as $cid): $cid = (int)$cid; if ($cid <= 0) continue; ?>
+                                                <span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;">
+                                                    <span><?= esc($counselorLabelMap[$cid] ?? ('Kelas #' . $cid)) ?></span>
+                                                    <input type="hidden" name="counselor_class_ids[]" value="<?= $cid ?>">
+                                                    <button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>
+                                                </span>
                                             <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </select>
-                                    <small class="form-text text-muted">Tips: gunakan Ctrl/Command untuk memilih banyak kelas, serta menghapus penugasan.</small>
+                                            <span class="text-muted js-chip-empty"<?= ! empty($oldCounselorIds) ? ' style="display:none;"' : '' ?>>Belum ada kelas dipilih.</span>
+                                        </div>
+                                        <select class="form-select select2-search js-picker">
+                                            <option value="">Ketik untuk mencari kelas&hellip;</option>
+                                            <?php foreach ($classesCounselor as $c): ?>
+                                                <option value="<?= (int)($c['id'] ?? 0) ?>"><?= esc(class_label($c)) ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                        <small class="form-text text-muted">Bisa lebih dari satu; kelas yang sudah dipilih tidak muncul lagi. Tekan × pada chip untuk menghapus.</small>
+                                    </div>
                                 </div>
 
+                                <!-- Wali Kelas: satu kelas perwalian (chip tunggal) -->
                                 <div id="assign_wali_kelas" style="display:none;">
-                                    <small class="text-muted d-block mb-2">Pilih 1 kelas perwalian.</small>
-                                    <select class="form-select" name="homeroom_class_id" id="homeroom_class_id">
-                                        <option value="">(Tidak ditugaskan)</option>
-                                        <?php if (empty($classesHomeroom)): ?>
-                                            <option value="" disabled>(Tidak ada kelas tersedia untuk ditugaskan)</option>
-                                        <?php else: ?>
+                                    <div class="js-single" data-name="homeroom_class_id">
+                                        <small class="text-muted d-block mb-2">Pilih 1 kelas perwalian.</small>
+                                        <input type="hidden" name="homeroom_class_id" value="<?= ($oldHomeroomId !== '' && (int)$oldHomeroomId > 0) ? (int)$oldHomeroomId : '' ?>">
+                                        <div class="js-chips border rounded p-2 mb-2 bg-light">
+                                            <?php if ($oldHomeroomId !== '' && (int)$oldHomeroomId > 0): ?>
+                                                <span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;">
+                                                    <span><?= esc($homeroomLabelMap[(int)$oldHomeroomId] ?? ('Kelas #' . (int)$oldHomeroomId)) ?></span>
+                                                    <button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>
+                                                </span>
+                                            <?php endif; ?>
+                                            <span class="text-muted js-chip-empty"<?= ($oldHomeroomId !== '' && (int)$oldHomeroomId > 0) ? ' style="display:none;"' : '' ?>>Belum ada kelas dipilih.</span>
+                                        </div>
+                                        <select class="form-select select2-search js-picker-single">
+                                            <option value="">Ketik untuk mencari kelas&hellip;</option>
                                             <?php foreach ($classesHomeroom as $c): ?>
-                                                <option value="<?= (int)($c['id'] ?? 0) ?>"
-                                                    <?= ((int)($c['id'] ?? 0) === (int)$oldHomeroomId) ? 'selected' : '' ?>>
-                                                    <?= esc(class_label($c)) ?>
-                                                </option>
+                                                <option value="<?= (int)($c['id'] ?? 0) ?>"><?= esc(class_label($c)) ?></option>
                                             <?php endforeach; ?>
-                                        <?php endif; ?>
-                                    </select>
+                                        </select>
+                                    </div>
                                 </div>
 
                             </div>
@@ -447,15 +466,20 @@ document.addEventListener('DOMContentLoaded', function () {
     const assignBK   = document.getElementById('assign_guru_bk');
     const assignWali = document.getElementById('assign_wali_kelas');
 
-    const bkSelect   = document.getElementById('counselor_class_ids');
-    const waliSelect = document.getElementById('homeroom_class_id');
-
     const GURU_BK_ID = <?= (int)$guruBkRoleId ?>;
     const WALI_ID    = <?= (int)$waliKelasRoleId ?>;
 
-    function clearMultiSelect(sel) {
-        if (!sel) return;
-        Array.from(sel.options).forEach(o => o.selected = false);
+    function clearChips(containerId) {
+        const box = document.getElementById(containerId);
+        if (!box) return;
+        box.querySelectorAll('.js-chip').forEach(ch => ch.remove());
+        const single = box.querySelector('.js-single input[type=hidden][name="homeroom_class_id"]');
+        if (single) single.value = '';
+        const empty = box.querySelector('.js-chip-empty');
+        if (empty) empty.style.display = '';
+        if (window.jQuery && typeof window.__restoreAllOptions === 'function') {
+            $(box).find('.js-picker, .js-picker-single').each(function () { window.__restoreAllOptions($(this)); });
+        }
     }
 
     function refreshAssignmentVisibility() {
@@ -464,14 +488,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (assignBK)   assignBK.style.display   = (v === GURU_BK_ID) ? '' : 'none';
         if (assignWali) assignWali.style.display = (v === WALI_ID) ? '' : 'none';
 
-        // cegah nilai "nyangkut" saat user ganti role
         if (v === GURU_BK_ID) {
-            if (waliSelect) waliSelect.value = '';
+            clearChips('assign_wali_kelas');
         } else if (v === WALI_ID) {
-            clearMultiSelect(bkSelect);
+            clearChips('assign_guru_bk');
         } else {
-            clearMultiSelect(bkSelect);
-            if (waliSelect) waliSelect.value = '';
+            clearChips('assign_guru_bk');
+            clearChips('assign_wali_kelas');
         }
     }
 
@@ -496,5 +519,83 @@ document.addEventListener('DOMContentLoaded', function () {
         }, false);
     });
 });
+</script>
+
+<!-- Penugasan Kelas: pola chip (select2 + kotak chip) ala form Bimbingan -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  $(function () {
+    if (window.jQuery && $.fn.select2) {
+      $('.select2-search').select2({ theme: 'bootstrap-5', width: '100%', allowClear: true, placeholder: 'Ketik untuk mencari...' });
+    }
+
+    function pickerOptionByValue($picker, val) {
+      return $picker.find('option').filter(function () { return this.value === String(val); });
+    }
+    function detachOption($chip, $picker, val) {
+      var $opt = pickerOptionByValue($picker, val);
+      if ($opt.length) { $chip.data('opt', $opt); $chip.data('optParent', $opt.parent()); $opt.detach(); }
+    }
+    function restoreOption($chip) {
+      var $opt = $chip.data('opt'); var $parent = $chip.data('optParent');
+      if ($opt && $parent && $parent.length) { $parent.append($opt); }
+    }
+    window.__restoreAllOptions = function ($picker) {
+      var $widget = $picker.closest('.js-multi, .js-single');
+      $widget.find('.js-chip').each(function () { restoreOption($(this)); });
+    };
+
+    function addChip($widget, name, val, text) {
+      if (!val) { return null; }
+      var $chips = $widget.find('.js-chips'); var dup = false;
+      $chips.find('input[type=hidden]').each(function () { if (this.name === name && this.value === String(val)) { dup = true; } });
+      if (dup) { return null; }
+      var $chip = $('<span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;"></span>');
+      $('<span></span>').text(text).appendTo($chip);
+      if (name !== '__single') { $('<input type="hidden">').attr('name', name).val(val).appendTo($chip); }
+      $('<button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>').appendTo($chip);
+      $widget.find('.js-chip-empty').hide().before($chip);
+      return $chip;
+    }
+
+    $('.js-multi, .js-single').each(function () {
+      var $widget = $(this); var $picker = $widget.find('.js-picker, .js-picker-single');
+      $widget.find('.js-chip').each(function () { detachOption($(this), $picker, $(this).find('input[type=hidden]').val()); });
+    });
+
+    $('.js-multi .js-picker').on('select2:select', function () {
+      var $widget = $(this).closest('.js-multi'); var $picker = $(this);
+      var val = $picker.val(); var text = $.trim($picker.find('option:selected').text());
+      var $chip = addChip($widget, $widget.data('name'), val, text);
+      $picker.val('').trigger('change');
+      if ($chip) { detachOption($chip, $picker, val); }
+    });
+    $('.js-multi').on('click', '.js-chip-remove', function () {
+      var $widget = $(this).closest('.js-multi'); var $chip = $(this).closest('.js-chip');
+      restoreOption($chip); $chip.remove();
+      if ($widget.find('.js-chip').length === 0) { $widget.find('.js-chip-empty').show(); }
+    });
+
+    $('.js-single .js-picker-single').on('select2:select', function () {
+      var $widget = $(this).closest('.js-single'); var $picker = $(this);
+      var val = $picker.val(); var text = $.trim($picker.find('option:selected').text());
+      if (val) {
+        $widget.find('.js-chip').each(function () { restoreOption($(this)); }).remove();
+        $widget.find('input[type=hidden][name="' + $widget.data('name') + '"]').val(val);
+        var $chip = addChip($widget, '__single', val, text);
+        if ($chip) { detachOption($chip, $picker, val); }
+      }
+      $picker.val('').trigger('change');
+    });
+    $('.js-single').on('click', '.js-chip-remove', function () {
+      var $widget = $(this).closest('.js-single'); var $chip = $(this).closest('.js-chip');
+      restoreOption($chip);
+      $widget.find('input[type=hidden][name="' + $widget.data('name') + '"]').val('');
+      $chip.remove();
+      $widget.find('.js-chip-empty').show();
+    });
+  });
 </script>
 <?= $this->endSection() ?>
