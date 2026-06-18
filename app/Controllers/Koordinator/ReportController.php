@@ -1,5 +1,14 @@
 <?php
 
+/**
+ * File Path: app/Controllers/Koordinator/ReportController.php
+ *
+ * Koordinator BK • Laporan (Perbaikan Kedua — Item #11)
+ * - Jenis Laporan = banyak fitur (checkbox), termasuk "Rekap Sekolah/Kelas (Agregat)".
+ * - Lingkup SELURUH sekolah (semua kelas/siswa/Guru BK); filter kelas/Guru BK opsional.
+ * - Output SATU dokumen bersections. Unduh PDF (opsi kertas/arah) & Excel (1 sheet/fitur).
+ */
+
 namespace App\Controllers\Koordinator;
 
 use App\Controllers\Koordinator\BaseKoordinatorController;
@@ -11,21 +20,16 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
 
-/**
- * File Path: app/Controllers/Koordinator/ReportController.php
- * Fitur: laporan agregat dan laporan individu siswa untuk Koordinator BK.
- * Relasi: ReportService, fitur BK final, asesmen, karier/studi lanjut, dan tabel laporan PDF/XLSX.
- */
 class ReportController extends BaseKoordinatorController
 {
     protected ReportService $report;
     protected ?PDFGenerator $pdf = null;
+    protected string $role = 'koordinator';
 
     public function __construct()
     {
         $this->report = new ReportService();
-
-        helper(['url', 'form', 'text', 'number', 'date']);
+        helper(['url', 'form', 'text', 'number', 'date', 'settings']);
     }
 
     public function index()
@@ -34,54 +38,31 @@ class ReportController extends BaseKoordinatorController
             return $redir;
         }
 
-        $req = service('request');
-        $db  = db_connect();
+        $db = db_connect();
 
         $classes = $db->table('classes')
-            ->select('id, class_name')
-            ->where('deleted_at', null)
-            ->where('is_active', 1)
-            ->orderBy('class_name', 'ASC')
-            ->get()->getResultArray();
+            ->select('id, class_name')->where('deleted_at', null)->where('is_active', 1)
+            ->orderBy('class_name', 'ASC')->get()->getResultArray();
 
         $counselors = $db->table('users u')
             ->select('u.id, u.full_name, r.role_name')
             ->join('roles r', 'r.id = u.role_id', 'left')
             ->where('u.deleted_at', null)
             ->whereIn('r.role_name', ['Guru BK', 'Koordinator BK'])
-            ->orderBy('u.full_name', 'ASC')
-            ->get()->getResultArray();
+            ->orderBy('u.full_name', 'ASC')->get()->getResultArray();
 
         $students = $this->report->studentOptionsAll();
-        $bkCategories = $this->report->individualCategoryOptions();
-
-        // default: bulan ini
-        $valFrom = (string) ($req->getGet('date_from') ?: date('Y-m-01'));
-        $valTo   = (string) ($req->getGet('date_to')   ?: date('Y-m-d'));
-
-        // tampilan export
-        $valPaper  = $this->normalizePaper((string)($req->getGet('paper') ?: 'A4'));
-        $valOrient = $this->normalizeOrientation((string)($req->getGet('orientation') ?: 'portrait'));
 
         return view('koordinator/reports/index', [
             'pageTitle'   => 'Laporan',
-
+            'features'    => ReportService::featureCatalog($this->role),
             'classes'     => $classes,
             'counselors'  => $counselors,
             'students'    => $students,
-            'bkCategories'=> $bkCategories,
-
-            'valFrom'     => $valFrom,
-            'valTo'       => $valTo,
-
-            'valClass'     => (string) ($req->getGet('class_id') ?? ''),
-            'valCounselor' => (string) ($req->getGet('counselor_id') ?? ''),
-            'valMode'      => (string) ($req->getGet('mode') ?? 'aggregate'),
-            'valStudent'   => (string) ($req->getGet('student_id') ?? ''),
-            'valBkCategory'=> (string) ($req->getGet('bk_category') ?? 'all'),
-
-            'valPaper'    => $valPaper,
-            'valOrient'   => $valOrient,
+            'valFrom'     => (string) ($this->request->getGet('date_from') ?: date('Y-m-01')),
+            'valTo'       => (string) ($this->request->getGet('date_to') ?: date('Y-m-d')),
+            'valPaper'    => $this->normalizePaper((string) ($this->request->getGet('paper') ?: 'A4')),
+            'valOrient'   => $this->normalizeOrientation((string) ($this->request->getGet('orientation') ?: 'portrait')),
         ]);
     }
 
@@ -91,47 +72,17 @@ class ReportController extends BaseKoordinatorController
             return $redir;
         }
 
-        $f = $this->filters();
-
         try {
-            if (($f['mode'] ?? 'aggregate') === 'student_individual') {
-                $out = $this->buildIndividualPayload($f);
-
-                return view('koordinator/reports/partials/table', [
-                    'title'   => $out['title'],
-                    'columns' => $out['columns'],
-                    'rows'    => $out['rows'],
-                ]);
-            }
-
-            $data = $this->report->schoolAggregate(
-                $f['date_from'],
-                $f['date_to'],
-                $f['class_id'],
-                $f['counselor_id'],
-                null
-            );
-
-            // opsional: rapikan status asesmen (0/1/2 -> label)
-            $data = $this->humanizeAggregate($data);
-
-            return view('koordinator/reports/partials/aggregate_preview', [
-                'data' => $data,
+            [$sections, $f] = $this->buildSections();
+            return view('koordinator/reports/partials/sections_preview', [
+                'sections'    => $sections,
+                'periodLabel' => $this->periodLabel($f),
             ]);
         } catch (\Throwable $e) {
-            // Untuk AJAX preview: jangan blank putih, tampilkan alert agar user paham.
-            if ($this->request->isAJAX()) {
-                $msg = esc($e->getMessage());
-                return $this->response->setStatusCode(200)->setBody(
-                    '<div class="alert alert-danger mb-0">
-                        <b>Gagal memuat pratinjau.</b><br>
-                        <small class="text-muted">Detail: ' . $msg . '</small>
-                     </div>'
-                );
-            }
-
-            // Non-AJAX: lempar agar CI error page tampil (dev)
-            throw $e;
+            log_message('error', '[KOORDINATOR REPORT PREVIEW] ' . $e->getMessage());
+            return $this->response->setStatusCode(200)->setBody(
+                '<div class="alert alert-danger mb-0"><b>Gagal memuat pratinjau.</b><br><small class="text-muted">' . esc($e->getMessage()) . '</small></div>'
+            );
         }
     }
 
@@ -141,206 +92,214 @@ class ReportController extends BaseKoordinatorController
             return $redir;
         }
 
-        $f = $this->filters();
-
         $format      = strtolower((string) ($this->request->getGet('format') ?: 'pdf'));
         $paper       = $this->normalizePaper((string) ($this->request->getGet('paper') ?: 'A4'));
         $orientation = $this->normalizeOrientation((string) ($this->request->getGet('orientation') ?: 'portrait'));
-
         if (!in_array($format, ['pdf', 'xlsx'], true)) {
             $format = 'pdf';
         }
 
         try {
-            $data = $this->report->schoolAggregate(
-                $f['date_from'],
-                $f['date_to'],
-                $f['class_id'],
-                $f['counselor_id'],
-                null
-            );
-
-            $data = $this->humanizeAggregate($data);
-
-            if (($f['mode'] ?? 'aggregate') === 'student_individual') {
-                $out = $this->buildIndividualPayload($f);
-                $filename = $this->safeFilename('laporan_individu_' . ($f['student_id'] ?: 'siswa') . '_' . ($f['date_from'] ?: 'all') . '_' . ($f['date_to'] ?: 'all'));
-
-                if ($format === 'xlsx') {
-                    $tmpPath = $this->buildTableXlsx($out['title'], $out['columns'], $out['rows'], $filename);
-                    register_shutdown_function(static function () use ($tmpPath) {
-                        @unlink($tmpPath);
-                    });
-
-                    return $this->response->download($tmpPath, null)->setFileName($filename . '.xlsx');
-                }
-
-                if (! PDFGenerator::isAvailable()) {
-                    return redirect()->to('/koordinator/reports')
-                        ->with('error', 'Fitur unduh PDF belum tersedia karena paket Dompdf belum terpasang di server. Unduh Excel tetap dapat digunakan.');
-                }
-
-                $html = view('counselor/reports/partials/table_pdf', [
-                    'title'   => $out['title'],
-                    'columns' => $out['columns'],
-                    'rows'    => $out['rows'],
-                    'filters' => $f,
-                ]);
-
-                $bin = $this->pdf()->render($html, $paper, $orientation);
-
-                return $this->response
-                    ->setHeader('Content-Type', 'application/pdf')
-                    ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '.pdf"')
-                    ->setBody($bin);
-            }
-
-            $filename = $this->safeFilename(
-                'laporan_agregat_' .
-                ($data['period']['from'] ?: 'all') . '_' .
-                ($data['period']['to'] ?: 'all')
-            );
-
-            if ($format === 'xlsx') {
-                $tmpPath = $this->buildAggregateXlsx($data, $filename);
-
-                // auto-clean setelah response selesai
-                register_shutdown_function(static function () use ($tmpPath) {
-                    @unlink($tmpPath);
-                });
-
-                return $this->response
-                    ->download($tmpPath, null)
-                    ->setFileName($filename . '.xlsx');
-            }
-
-            if (! PDFGenerator::isAvailable()) {
-                return redirect()->to('/koordinator/reports')
-                    ->with(
-                        'error',
-                        'Fitur unduh PDF belum tersedia karena paket Dompdf belum terpasang di server. Unduh Excel tetap dapat digunakan.'
-                    );
-            }
-
-            // PDF default
-            $html = view('koordinator/reports/partials/aggregate_pdf', [
-                'data' => $data,
-            ]);
-
-            $bin = $this->pdf()->render($html, $paper, $orientation);
-
-            return $this->response
-                ->setHeader('Content-Type', 'application/pdf')
-                ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '.pdf"')
-                ->setBody($bin);
+            [$sections, $f] = $this->buildSections();
         } catch (\Throwable $e) {
-            // UX: balik ke halaman report dengan flash error
-            return redirect()->to('/koordinator/reports')
-                ->with('error', 'Gagal membuat laporan: ' . $e->getMessage());
+            log_message('error', '[KOORDINATOR REPORT PAYLOAD] ' . $e->getMessage());
+            return redirect()->to('/koordinator/reports')->with('error', 'Gagal menyiapkan data laporan: ' . $e->getMessage());
         }
+
+        $filename = $this->safeFilename('laporan_koordinator_' . ($f['date_from'] ?: 'all') . '_' . ($f['date_to'] ?: 'all'));
+
+        if ($format === 'xlsx') {
+            try {
+                $tmpPath = $this->buildSectionsXlsx($sections, $f, $filename);
+            } catch (\Throwable $e) {
+                log_message('error', '[KOORDINATOR REPORT XLSX] ' . $e->getMessage());
+                return redirect()->to('/koordinator/reports')->with('error', 'Gagal membuat Excel: ' . $e->getMessage());
+            }
+            register_shutdown_function(static fn () => @unlink($tmpPath));
+            return $this->response->download($tmpPath, null)->setFileName($filename . '.xlsx');
+        }
+
+        if (! PDFGenerator::isAvailable()) {
+            return redirect()->to('/koordinator/reports')->with('error', 'Fitur unduh PDF belum tersedia karena paket Dompdf belum terpasang. Unduh Excel tetap dapat digunakan.');
+        }
+
+        $html = view('koordinator/reports/partials/sections_pdf', [
+            'sections'    => $sections,
+            'reportTitle' => 'Laporan BK (Koordinator BK)',
+            'schoolName'  => (string) setting('school_name', env('school.name', ''), 'general'),
+            'periodLabel' => $this->periodLabel($f),
+            'generatedAt' => date('Y-m-d H:i:s'),
+        ]);
+
+        try {
+            $bin = $this->pdf()->render($html, $paper, $orientation);
+        } catch (\Throwable $e) {
+            log_message('error', '[KOORDINATOR REPORT PDF] ' . $e->getMessage());
+            return redirect()->to('/koordinator/reports')->with('error', 'Gagal membuat PDF: ' . $e->getMessage());
+        }
+
+        return $this->response
+            ->setHeader('Content-Type', 'application/pdf')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '.pdf"')
+            ->setBody($bin);
     }
 
-    // =========================
-    // Helpers
-    // =========================
+    // =========================================================
+    // Core
+    // =========================================================
+
+    /** @return array{0:array,1:array} */
+    protected function buildSections(): array
+    {
+        $f = $this->filters();
+        $scope = [
+            'role'                => $this->role,
+            'user_id'             => (int) $this->session->get('user_id'),
+            'allowed_class_ids'   => null, // seluruh sekolah
+            'allowed_student_ids' => null,
+            'mask_confidential'   => false,
+            'single'              => ($f['student_mode'] === 'single'),
+            'counselor_id'        => $f['counselor_id'],
+        ];
+        return [$this->report->buildSections($f['features'], $f, $scope), $f];
+    }
+
     protected function filters(): array
     {
         $dateFrom = $this->normalizeDate($this->request->getGet('date_from'));
         $dateTo   = $this->normalizeDate($this->request->getGet('date_to'));
-
-        // kalau kebalik, tukar (biar UX gak “ngambek”)
         if ($dateFrom && $dateTo && $dateFrom > $dateTo) {
             [$dateFrom, $dateTo] = [$dateTo, $dateFrom];
         }
 
+        $allowed = array_keys(ReportService::featureCatalog($this->role));
+        $req = (array) ($this->request->getGet('features') ?? []);
+        $features = array_values(array_intersect($allowed, array_map('strval', $req))) ?: ['aggregate'];
+
         return [
+            'features'     => $features,
+            'student_mode' => ($this->request->getGet('student_mode') === 'single') ? 'single' : 'all',
             'date_from'    => $dateFrom,
             'date_to'      => $dateTo,
             'class_id'     => $this->request->getGet('class_id') ? (int) $this->request->getGet('class_id') : null,
-            'counselor_id' => $this->request->getGet('counselor_id') ? (int) $this->request->getGet('counselor_id') : null,
-            'mode'         => (string)($this->request->getGet('mode') ?: 'aggregate'),
             'student_id'   => $this->request->getGet('student_id') ? (int) $this->request->getGet('student_id') : null,
-            'bk_category'  => (string)($this->request->getGet('bk_category') ?: 'all'),
+            'counselor_id' => $this->request->getGet('counselor_id') ? (int) $this->request->getGet('counselor_id') : null,
         ];
     }
 
-    private function buildIndividualPayload(array $f): array
+    protected function periodLabel(array $f): string
     {
-        $studentId = (int)($f['student_id'] ?? 0);
-        if ($studentId <= 0) {
-            return [
-                'title' => 'Laporan Individu Siswa',
-                'columns' => ['Tanggal', 'Kategori', 'Kegiatan', 'Status', 'Catatan'],
-                'rows' => [],
-            ];
+        return ($f['date_from'] ?: '-') . ' s/d ' . ($f['date_to'] ?: '-');
+    }
+
+    // =========================================================
+    // XLSX (1 sheet per section)
+    // =========================================================
+
+    protected function buildSectionsXlsx(array $sections, array $filters, string $filename): string
+    {
+        $spreadsheet = new Spreadsheet();
+        $used = [];
+        $first = true;
+
+        if (empty($sections)) {
+            $sections = [['title' => 'Laporan', 'columns' => ['Data'], 'rows' => []]];
         }
 
-        $out = $this->report->studentIndividualTable(
-            $studentId,
-            $f['date_from'] ?? null,
-            $f['date_to'] ?? null,
-            (string) ($f['bk_category'] ?? 'all')
-        );
-        $student = $out['student'] ?? [];
+        foreach ($sections as $idx => $sec) {
+            $sheet = $first ? $spreadsheet->getActiveSheet() : $spreadsheet->createSheet();
+            $first = false;
+            $sheet->setTitle($this->safeSheetTitle((string) ($sec['title'] ?? 'Laporan'), $used, $idx));
 
-        return [
-            'title' => 'Laporan Individu Siswa - ' . (string)($student['full_name'] ?? 'Siswa'),
-            'columns' => $out['columns'] ?? [],
-            'rows' => $out['rows'] ?? [],
-        ];
+            $columns = $sec['columns'] ?? ['Data'];
+            $rows    = $sec['rows'] ?? [];
+
+            $r = 1;
+            $sheet->setCellValueExplicit("A{$r}", (string) ($sec['title'] ?? 'Laporan'), DataType::TYPE_STRING);
+            $r += 2;
+
+            foreach ($columns as $i => $h) {
+                $sheet->setCellValueExplicit(Coordinate::stringFromColumnIndex($i + 1) . $r, (string) $h, DataType::TYPE_STRING);
+            }
+            $sheet->getStyle("A{$r}:" . Coordinate::stringFromColumnIndex(max(1, count($columns))) . "{$r}")->getFont()->setBold(true);
+            $r++;
+
+            if (empty($rows)) {
+                $sheet->setCellValueExplicit("A{$r}", '(tidak ada data)', DataType::TYPE_STRING);
+            } else {
+                foreach ($rows as $row) {
+                    $vals = is_array($row) ? array_values($row) : [(string) $row];
+                    foreach ($vals as $i => $val) {
+                        $sheet->setCellValueExplicit(
+                            Coordinate::stringFromColumnIndex($i + 1) . $r,
+                            is_scalar($val) ? (string) $val : json_encode($val, JSON_UNESCAPED_UNICODE),
+                            DataType::TYPE_STRING
+                        );
+                    }
+                    $r++;
+                }
+            }
+
+            for ($i = 1; $i <= max(1, count($columns)); $i++) {
+                $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($i))->setAutoSize(true);
+            }
+        }
+
+        $tmpPath = WRITEPATH . 'uploads/' . $filename . '.xlsx';
+        @mkdir(dirname($tmpPath), 0775, true);
+        (new Xlsx($spreadsheet))->save($tmpPath);
+        return $tmpPath;
     }
+
+    private function safeSheetTitle(string $title, array &$used, int $idx): string
+    {
+        $t = preg_replace('/[\\\\\/\?\*\[\]\:]/', ' ', $title) ?? 'Sheet';
+        $t = trim(mb_substr($t, 0, 28));
+        if ($t === '') {
+            $t = 'Sheet ' . ($idx + 1);
+        }
+        $base = $t;
+        $n = 1;
+        while (in_array(strtolower($t), $used, true)) {
+            $t = mb_substr($base, 0, 25) . ' ' . (++$n);
+        }
+        $used[] = strtolower($t);
+        return $t;
+    }
+
+    // =========================================================
+    // Helpers umum
+    // =========================================================
 
     private function pdf(): PDFGenerator
     {
-        if ($this->pdf === null) {
-            $this->pdf = new PDFGenerator();
-        }
-
-        return $this->pdf;
+        return $this->pdf ??= new PDFGenerator();
     }
 
     private function safeFilename(string $name): string
     {
-        $name = strtolower($name);
-        $name = preg_replace('/[^a-z0-9_\-]+/i', '_', $name) ?? 'report';
+        $name = strtolower(preg_replace('/[^a-z0-9_\-]+/i', '_', $name) ?? 'report');
         $name = trim($name, '_');
-
-        // batasi panjang (hindari error OS tertentu)
         if (strlen($name) > 120) {
             $name = substr($name, 0, 120);
         }
-
         return $name ?: 'report';
     }
 
     private function normalizeDate($value): ?string
     {
         $value = is_string($value) ? trim($value) : '';
-        if ($value === '') return null;
-
-        // format yang kita izinkan: YYYY-MM-DD
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) return null;
-
+        if ($value === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return null;
+        }
         [$y, $m, $d] = array_map('intval', explode('-', $value));
-        if (!checkdate($m, $d, $y)) return null;
-
-        return $value;
+        return checkdate($m, $d, $y) ? $value : null;
     }
 
-    /**
-     * PDF libs biasanya menerima: A4/A3 atau letter/legal.
-     * Kita kembalikan bentuk yang konsisten dengan opsi di view.
-     */
     private function normalizePaper(string $paper): string
     {
         $p = strtolower(trim($paper));
-        $map = [
-            'a4'     => 'A4',
-            'a3'     => 'A3',
-            'letter' => 'letter',
-            'legal'  => 'legal',
-        ];
-        return $map[$p] ?? 'A4';
+        return ['a4' => 'A4', 'letter' => 'letter', 'legal' => 'legal'][$p] ?? 'A4';
     }
 
     private function normalizeOrientation(string $orientation): string
@@ -349,263 +308,11 @@ class ReportController extends BaseKoordinatorController
         return in_array($o, ['portrait', 'landscape'], true) ? $o : 'portrait';
     }
 
-    /**
-     * Guard permission opsional.
-     * Kalau helper has_permission() tidak ada, jangan blok (role guard BaseKoordinatorController tetap berjalan).
-     */
     private function ensurePerm(string $perm, string $redirectTo, string $message): ?RedirectResponse
     {
-        if (function_exists('has_permission')) {
-            if (!has_permission($perm)) {
-                return redirect()->to($redirectTo)->with('error', $message);
-            }
+        if (function_exists('has_permission') && !has_permission($perm)) {
+            return redirect()->to($redirectTo)->with('error', $message);
         }
         return null;
-    }
-
-    /**
-     * Opsional: rapikan output agregat tanpa mengubah ReportService,
-     * terutama untuk status asesmen yang kadang berupa numeric code (0/1/2/3).
-     */
-    private function humanizeAggregate(array $data): array
-    {
-        // Humanize assessment status breakdown (kalau view/PDF menampilkan byStatus)
-        if (isset($data['assessments']['byStatus']) && is_array($data['assessments']['byStatus'])) {
-            $out = [];
-            foreach ($data['assessments']['byStatus'] as $statusKey => $count) {
-                $label = $this->assessmentStatusLabel($statusKey);
-                $out[$label] = ($out[$label] ?? 0) + (int)$count;
-            }
-            $data['assessments']['byStatus'] = $out;
-        }
-
-        // (Opsional lain bisa ditambah di sini bila perlu)
-        return $data;
-    }
-
-    private function buildAggregateXlsx(array $data, string $filename): string
-    {
-        $spreadsheet = new Spreadsheet();
-
-        // Sheet 1: Overview
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Overview');
-
-        $school = $data['school'] ?? [];
-        $period = $data['period']['label'] ?? '-';
-
-        $meta = [
-            ['Judul', 'Laporan Agregat BK'],
-            ['Sekolah', (string) ($school['name'] ?? '-')],
-            ['Periode', (string) $period],
-            ['Scope', (string) ($data['scope']['label'] ?? 'Semua Data')],
-            ['Dibuat', (string) ($data['generated_at'] ?? date('Y-m-d H:i:s'))],
-        ];
-
-        $row = 1;
-        foreach ($meta as $pair) {
-            $sheet->setCellValueExplicit("A{$row}", (string) $pair[0], DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit("B{$row}", (string) $pair[1], DataType::TYPE_STRING);
-            $row++;
-        }
-
-        $row += 1;
-        $sheet->setCellValueExplicit("A{$row}", 'Ringkasan KPI', DataType::TYPE_STRING);
-        $sheet->getStyle("A{$row}")->getFont()->setBold(true);
-        $row++;
-
-        $kpi = $data['kpi'] ?? [];
-        $kpiPairs = [
-            ['Total Siswa', (string) ($kpi['students_total'] ?? 0)],
-            ['Total Sesi', (string) ($kpi['sessions_total'] ?? 0)],
-            ['Total Durasi (menit)', (string) ($kpi['sessions_duration_total'] ?? 0)],
-            ['Asesmen Assigned', (string) ($kpi['assessments_assigned'] ?? 0)],
-            ['Asesmen Completed', (string) ($kpi['assessments_completed'] ?? 0)],
-            ['Avg Score (%)', (string) ($kpi['assessments_avg_percentage'] ?? 0)],
-        ];
-
-        foreach ($kpiPairs as $pair) {
-            $sheet->setCellValueExplicit("A{$row}", (string) $pair[0], DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit("B{$row}", (string) $pair[1], DataType::TYPE_STRING);
-            $row++;
-        }
-
-        foreach (range('A', 'B') as $col) {
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-
-        // Sheet 2: Sessions
-        $sessionsSheet = $spreadsheet->createSheet();
-        $sessionsSheet->setTitle('Sessions');
-
-        $this->writeTable(
-            $sessionsSheet,
-            1,
-            ['Jenis', 'Jumlah', 'Durasi (menit)'],
-            array_map(static function ($r) {
-                return [
-                    (string) ($r['label'] ?? ''),
-                    (string) ($r['count'] ?? 0),
-                    (string) ($r['duration'] ?? 0),
-                ];
-            }, $data['sessions']['byType'] ?? [])
-        );
-
-        $start = 1 + 2 + max(1, count($data['sessions']['byType'] ?? [])) + 2;
-
-        $this->writeTable(
-            $sessionsSheet,
-            $start,
-            ['Konselor', 'Jumlah', 'Durasi (menit)'],
-            array_map(static function ($r) {
-                return [
-                    (string) ($r['label'] ?? ''),
-                    (string) ($r['count'] ?? 0),
-                    (string) ($r['duration'] ?? 0),
-                ];
-            }, $data['sessions']['byCounselor'] ?? [])
-        );
-
-        // Sheet 3: Assessments
-        $assSheet = $spreadsheet->createSheet();
-        $assSheet->setTitle('Assessments');
-
-        $this->writeTable(
-            $assSheet,
-            1,
-            ['Asesmen', 'Assigned', 'Completed', 'Avg (%)'],
-            array_map(static function ($r) {
-                return [
-                    (string) ($r['label'] ?? ''),
-                    (string) ($r['assigned'] ?? 0),
-                    (string) ($r['completed'] ?? 0),
-                    (string) ($r['avg_percentage'] ?? 0),
-                ];
-            }, $data['assessments']['byAssessment'] ?? [])
-        );
-
-        // (Opsional) Sheet 6: Assessment Status
-        if (!empty($data['assessments']['byStatus']) && is_array($data['assessments']['byStatus'])) {
-            $stSheet = $spreadsheet->createSheet();
-            $stSheet->setTitle('Assessment Status');
-
-            $rows = [];
-            foreach ($data['assessments']['byStatus'] as $label => $count) {
-                $rows[] = [(string)$label, (string)(int)$count];
-            }
-
-            $this->writeTable($stSheet, 1, ['Status', 'Jumlah'], $rows);
-        }
-
-        $tmpPath = WRITEPATH . 'uploads/' . $filename . '.xlsx';
-        @mkdir(dirname($tmpPath), 0775, true);
-
-        (new Xlsx($spreadsheet))->save($tmpPath);
-
-        return $tmpPath;
-    }
-
-    private function buildTableXlsx(string $title, array $columns, array $rows, string $filename): string
-    {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Report');
-
-        $sheet->setCellValueExplicit('A1', 'Judul', DataType::TYPE_STRING);
-        $sheet->setCellValueExplicit('B1', $title, DataType::TYPE_STRING);
-        $sheet->setCellValueExplicit('A2', 'Dibuat', DataType::TYPE_STRING);
-        $sheet->setCellValueExplicit('B2', date('Y-m-d H:i:s'), DataType::TYPE_STRING);
-
-        $this->writeTable($sheet, 4, $columns ?: ['Data'], array_map(static function ($row) {
-            return is_array($row)
-                ? array_map(static fn ($value) => is_scalar($value) ? (string)$value : json_encode($value, JSON_UNESCAPED_UNICODE), array_values($row))
-                : [(string)$row];
-        }, $rows));
-
-        $tmpPath = WRITEPATH . 'uploads/' . $filename . '.xlsx';
-        @mkdir(dirname($tmpPath), 0775, true);
-
-        (new Xlsx($spreadsheet))->save($tmpPath);
-
-        return $tmpPath;
-    }
-
-    private function writeTable($sheet, int $startRow, array $headers, array $rows): void
-    {
-        foreach ($headers as $i => $h) {
-            $col = Coordinate::stringFromColumnIndex($i + 1);
-            $sheet->setCellValueExplicit($col . $startRow, (string) $h, DataType::TYPE_STRING);
-        }
-
-        $lastCol = Coordinate::stringFromColumnIndex(count($headers));
-        $sheet->getStyle("A{$startRow}:{$lastCol}{$startRow}")->getFont()->setBold(true);
-        $sheet->freezePane('A' . ($startRow + 1));
-
-        $r = $startRow + 1;
-
-        if (!$rows) {
-            $sheet->setCellValueExplicit('A' . $r, '(tidak ada data)', DataType::TYPE_STRING);
-            return;
-        }
-
-        foreach ($rows as $row) {
-            $c = 1;
-            foreach ($row as $val) {
-                $col = Coordinate::stringFromColumnIndex($c);
-                $sheet->setCellValueExplicit(
-                    $col . $r,
-                    is_scalar($val) ? (string) $val : json_encode($val, JSON_UNESCAPED_UNICODE),
-                    DataType::TYPE_STRING
-                );
-                $c++;
-            }
-            $r++;
-        }
-
-        for ($i = 1; $i <= count($headers); $i++) {
-            $col = Coordinate::stringFromColumnIndex($i);
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-    }
-
-    /**
-     * Map status asesmen ke label manusia.
-     * Menangani kemungkinan status numeric (0/1/2/3) atau string (Assigned/Completed/Graded).
-     */
-    protected function assessmentStatusLabel($status): string
-    {
-        if ($status === null || $status === '') {
-            return 'Unknown';
-        }
-
-        if (is_numeric($status)) {
-            $i = (int) $status;
-            return match ($i) {
-                0 => 'Belum Mulai',
-                1 => 'Sedang Dikerjakan',
-                2 => 'Selesai',
-                3 => 'Dinilai',
-                default => 'Unknown (' . $i . ')',
-            };
-        }
-
-        $s = trim((string) $status);
-        $key = strtolower($s);
-
-        $map = [
-            'assigned'     => 'Belum Mulai',
-            'not_started'  => 'Belum Mulai',
-
-            'in progress'  => 'Sedang Dikerjakan',
-            'in_progress'  => 'Sedang Dikerjakan',
-            'started'      => 'Sedang Dikerjakan',
-
-            'completed'    => 'Selesai',
-            'done'         => 'Selesai',
-
-            'graded'       => 'Dinilai',
-        ];
-
-        return $map[$key] ?? $s;
     }
 }

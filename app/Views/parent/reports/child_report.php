@@ -11,7 +11,8 @@ $title            = (string) ($title ?? 'Laporan Anak');
 
 $student          = $student ?? [];
 $parentName       = (string) ($parentName ?? '');
-$sessions         = $sessions ?? [];
+$careers          = $careers ?? [];
+$universities     = $universities ?? [];
 
 // ----------------------
 // Formatter Indonesia (tanpa Time::setLocale)
@@ -87,9 +88,9 @@ $renderReportContent = static function () use (
     $genderLabel,
     $todayText,
     $parentName,
-    $sessions
+    $careers,
+    $universities
 ) {
-    $hasSessions = !empty($sessions);
     ?>
     <div id="parent-child-report" class="my-3">
         <div class="report-card">
@@ -153,34 +154,62 @@ $renderReportContent = static function () use (
                 </table>
             </div>
 
-            <!-- B. Ringkasan Sesi Konseling -->
+            <!-- B. Pilihan Karier Tersimpan -->
             <div class="report-section mb-4">
-                <div class="report-section-title">B. Ringkasan Jadwal Konseling</div>
+                <div class="report-section-title">B. Pilihan Karier yang Disimpan Anak</div>
 
-                <?php if (!$hasSessions): ?>
-                    <p class="text-dark mb-0">Belum ada jadwal konseling yang tercatat untuk anak ini.</p>
+                <?php if (empty($careers)): ?>
+                    <p class="text-dark mb-0">Belum ada pilihan karier yang disimpan oleh anak ini.</p>
                 <?php else: ?>
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm align-middle">
                             <thead>
                             <tr>
-                                <th style="width: 90px;">Tanggal</th>
-                                <th style="width: 70px;">Waktu</th>
-                                <th style="width: 95px;">Jenis</th>
-                                <th style="width: 130px;">Lokasi</th>
-                                <th style="width: 110px;">Status</th>
-                                <th style="width: 160px;">Guru BK</th>
+                                <th>Karier</th>
+                                <th style="width: 160px;">Sektor</th>
+                                <th style="width: 150px;">Min. Pendidikan</th>
+                                <th style="width: 110px;">Disimpan</th>
                             </tr>
                             </thead>
                             <tbody>
-                            <?php foreach ($sessions as $s): ?>
+                            <?php foreach ($careers as $c): ?>
                                 <tr>
-                                    <td><?= esc(fmt_date_id_short($s['session_date'] ?? null)) ?></td>
-                                    <td><?= esc(fmt_time_hm($s['session_time'] ?? null)) ?></td>
-                                    <td><?= esc($s['session_type'] ?? '-') ?></td>
-                                    <td><?= esc($s['location'] ?? '-') ?></td>
-                                    <td><?= esc($s['status'] ?? '-') ?></td>
-                                    <td><?= esc($s['counselor_name'] ?? '-') ?></td>
+                                    <td><?= esc($c['title'] ?? '-') ?></td>
+                                    <td><?= esc($c['sector'] ?? '-') ?></td>
+                                    <td><?= esc($c['min_education'] ?? '-') ?></td>
+                                    <td><?= esc(fmt_date_id_short($c['saved_at'] ?? null)) ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+            </div>
+
+            <!-- C. Pilihan Studi Lanjut Tersimpan -->
+            <div class="report-section mb-4">
+                <div class="report-section-title">C. Pilihan Studi Lanjut yang Disimpan Anak</div>
+
+                <?php if (empty($universities)): ?>
+                    <p class="text-dark mb-0">Belum ada pilihan studi lanjut yang disimpan oleh anak ini.</p>
+                <?php else: ?>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-sm align-middle">
+                            <thead>
+                            <tr>
+                                <th>Perguruan Tinggi</th>
+                                <th style="width: 110px;">Akreditasi</th>
+                                <th style="width: 160px;">Lokasi</th>
+                                <th style="width: 110px;">Disimpan</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <?php foreach ($universities as $u): ?>
+                                <tr>
+                                    <td><?= esc($u['university_name'] ?? '-') ?><?= !empty($u['alias']) ? ' (' . esc($u['alias']) . ')' : '' ?></td>
+                                    <td><?= esc($u['accreditation'] ?? '-') ?></td>
+                                    <td><?= esc($u['location'] ?? '-') ?></td>
+                                    <td><?= esc(fmt_date_id_short($u['saved_at'] ?? null)) ?></td>
                                 </tr>
                             <?php endforeach; ?>
                             </tbody>

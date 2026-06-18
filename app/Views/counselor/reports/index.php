@@ -4,40 +4,17 @@
 <?php
 /**
  * File Path: app/Views/counselor/reports/index.php
- *
- * Counselor • Reports Index
- * - Filter + AJAX preview + Download PDF/XLSX
- * - Konsisten dengan Koordinator Reports UI, namun scope sesuai Counselor.
+ * Guru BK • Laporan multi-fitur (Perbaikan Kedua — Item #11)
  */
-
-$classes     = $classes ?? [];
-$assessments = $assessments ?? [];
-$students    = $students ?? [];
-$bkCategories = is_array($bkCategories ?? null) ? $bkCategories : ['all' => 'Semua Catatan BK'];
-
-$valType   = $valType ?? 'sessions';
-$valFrom   = $valFrom ?? date('Y-m-01');
-$valTo     = $valTo ?? date('Y-m-d');
-
-$valClass  = $valClass ?? '';
-$valStatus = $valStatus ?? '';
-$valSearch = $valSearch ?? '';
-$valStudent = $valStudent ?? '';
-$valBkCategory = $valBkCategory ?? 'all';
-
-$valSortBy  = $valSortBy ?? '';
-$valSortDir = $valSortDir ?? 'desc';
-
-// Kompatibel: ada controller yang kirim valAssessmentId, ada juga yang masih valAssess
-$valAssessmentId = $valAssessmentId ?? ($valAssess ?? '');
-
-$valPaper  = $valPaper ?? 'A4';
+$features = $features ?? [];
+$classes  = $classes ?? [];
+$students = $students ?? [];
+$valFrom  = $valFrom ?? date('Y-m-01');
+$valTo    = $valTo ?? date('Y-m-d');
+$valPaper = $valPaper ?? 'A4';
 $valOrient = $valOrient ?? 'portrait';
 
-$canDownload = true;
-if (function_exists('has_permission')) {
-    $canDownload = has_permission('generate_reports_individual');
-}
+$canDownload = !function_exists('has_permission') || has_permission('generate_reports_individual');
 ?>
 
 <div class="row">
@@ -55,15 +32,7 @@ if (function_exists('has_permission')) {
 </div>
 
 <?php if (session()->getFlashdata('error')): ?>
-  <div class="alert alert-danger">
-    <?= esc(session()->getFlashdata('error')) ?>
-  </div>
-<?php endif; ?>
-
-<?php if (session()->getFlashdata('success')): ?>
-  <div class="alert alert-success">
-    <?= esc(session()->getFlashdata('success')) ?>
-  </div>
+  <div class="alert alert-danger"><?= esc(session()->getFlashdata('error')) ?></div>
 <?php endif; ?>
 
 <div class="row">
@@ -71,128 +40,65 @@ if (function_exists('has_permission')) {
     <div class="card filter-compact">
       <div class="card-header py-2">
         <h5 class="mb-0">Filter/Saring Laporan</h5>
-        <small class="text-dark">Data dibatasi ke siswa/aktivitas binaan Guru BK.</small>
+        <small class="text-dark">Data dibatasi ke siswa &amp; kelas binaan Guru BK.</small>
       </div>
-
       <div class="card-body">
-        <form
-          id="filterForm"
-          method="get"
-          action="<?= route_to('counselor.reports.preview') ?>"
-          class="row g-3"
-        >
+        <form id="filterForm" method="get" action="<?= route_to('counselor.reports.preview') ?>" class="row g-3">
 
           <div class="col-12">
-            <label class="form-label">Jenis Laporan</label>
-            <select name="type" class="form-select" id="typeSelect">
-              <option value="students" <?= $valType === 'students' ? 'selected' : '' ?>>Data Siswa (Binaan)</option>
-              <option value="sessions" <?= $valType === 'sessions' ? 'selected' : '' ?>>Konseling</option>
-              <option value="student_individual" <?= $valType === 'student_individual' ? 'selected' : '' ?>>Per Siswa</option>
-              <!--<option value="assessments" <?= $valType==='assessments'?:'' ?>>Asesmen</option>
-              <option value="career" <?= $valType==='career'?:'' ?>>Info Karier dan Studi Lanjut</option>
-              <option value="universities" <?= $valType==='universities'?:'' ?>>Info Perguruan Tinggi</option>
-              <option value="career_choices" <?= $valType==='career_choices'?:'' ?>>Pilihan Karier Siswa</option>
-              <option value="university_choices" <?= $valType==='university_choices'?:'' ?>>Pilihan PT Siswa</option>-->
-            </select>
-          </div>
-
-          <div class="col-12" id="periodWrap">
-            <label class="form-label">Periode</label>
-            <div class="row g-2">
-              <div class="col-6">
-                <input type="date" name="date_from" class="form-control" value="<?= esc($valFrom) ?>">
-                <div class="form-text text-dark">Dari</div>
-              </div>
-              <div class="col-6">
-                <input type="date" name="date_to" class="form-control" value="<?= esc($valTo) ?>">
-                <div class="form-text text-dark">Sampai</div>
-              </div>
+            <label class="form-label fw-semibold">Jenis Laporan <span class="text-danger">*</span></label>
+            <div class="border rounded p-2" style="max-height:240px; overflow:auto;">
+              <?php foreach ($features as $key => $label): ?>
+                <div class="form-check">
+                  <input class="form-check-input feat-check" type="checkbox" name="features[]" value="<?= esc($key) ?>" id="feat_<?= esc($key) ?>" <?= $key === 'counseling' ? 'checked' : '' ?>>
+                  <label class="form-check-label" for="feat_<?= esc($key) ?>"><?= esc($label) ?></label>
+                </div>
+              <?php endforeach; ?>
+            </div>
+            <div class="d-flex gap-2 mt-1">
+              <button type="button" class="btn btn-sm btn-link p-0" id="checkAll">Pilih semua</button>
+              <span class="text-muted">·</span>
+              <button type="button" class="btn btn-sm btn-link p-0" id="checkNone">Kosongkan</button>
             </div>
           </div>
 
-          <div class="col-12" id="classWrap">
-            <label class="form-label">Kelas (opsional)</label>
+          <div class="col-12">
+            <label class="form-label fw-semibold">Ringkasan</label>
+            <div class="btn-group w-100" role="group">
+              <input type="radio" class="btn-check" name="student_mode" id="modeAll" value="all" checked>
+              <label class="btn btn-outline-primary btn-sm" for="modeAll">Semua siswa</label>
+              <input type="radio" class="btn-check" name="student_mode" id="modeSingle" value="single">
+              <label class="btn btn-outline-primary btn-sm" for="modeSingle">Satu siswa</label>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Periode</label>
+            <div class="row g-2">
+              <div class="col-6"><input type="date" name="date_from" class="form-control" value="<?= esc($valFrom) ?>"><div class="form-text text-dark">Dari</div></div>
+              <div class="col-6"><input type="date" name="date_to" class="form-control" value="<?= esc($valTo) ?>"><div class="form-text text-dark">Sampai</div></div>
+            </div>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Kelas</label>
             <select name="class_id" class="form-select">
               <option value="">Semua Kelas Binaan</option>
               <?php foreach ($classes as $c): ?>
-                <option value="<?= esc($c['id']) ?>" <?= (string)$c['id']===(string)$valClass ? 'selected' : '' ?>>
-                  <?= esc($c['class_name'] ?? ('Kelas #'.$c['id'])) ?>
-                </option>
+                <option value="<?= esc($c['id']) ?>"><?= esc($c['class_name'] ?? ('Kelas #' . $c['id'])) ?></option>
               <?php endforeach; ?>
             </select>
           </div>
 
-          <div class="col-12" id="assessmentWrap">
-            <label class="form-label">Asesmen (opsional)</label>
-            <select name="assessment_id" class="form-select">
-              <option value="">Semua Asesmen</option>
-              <?php foreach ($assessments as $a): ?>
-                <option value="<?= esc($a['id']) ?>" <?= (string)$a['id']===(string)$valAssessmentId ? 'selected' : '' ?>>
-                  <?= esc($a['title'] ?? ('Asesmen #'.$a['id'])) ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-            <div class="form-text text-dark">Hanya untuk laporan Asesmen.</div>
-          </div>
-
-          <div class="col-12" id="studentWrap">
+          <div class="col-12 d-none" id="studentWrap">
             <label class="form-label">Siswa</label>
             <select name="student_id" class="form-select">
               <option value="">Pilih Siswa</option>
               <?php foreach ($students as $s): ?>
-                <option value="<?= esc($s['id']) ?>" <?= (string)$s['id'] === (string)$valStudent ? 'selected' : '' ?>>
-                  <?= esc(($s['full_name'] ?? '-') . ' - ' . ($s['class_name'] ?? '-') . ' - NISN ' . ($s['nisn'] ?? '-')) ?>
-                </option>
+                <option value="<?= esc($s['id']) ?>"><?= esc(($s['full_name'] ?? '-') . ' - ' . ($s['class_name'] ?? '-') . ' - NISN ' . ($s['nisn'] ?? '-')) ?></option>
               <?php endforeach; ?>
             </select>
-            <div class="form-text text-dark">Digunakan untuk laporan individu siswa.</div>
-          </div>
-
-          <div class="col-12" id="bkTypeWrap">
-            <label class="form-label">Jenis Catatan BK</label>
-            <select name="bk_category" class="form-select">
-              <?php foreach ($bkCategories as $key => $label): ?>
-                <option value="<?= esc($key) ?>" <?= (string)$key === (string)$valBkCategory ? 'selected' : '' ?>>
-                  <?= esc($label) ?>
-                </option>
-              <?php endforeach; ?>
-            </select>
-            <div class="form-text text-dark">Digunakan untuk laporan individu siswa.</div>
-          </div>
-
-          <div class="col-12" id="statusWrap">
-            <label class="form-label">Status (opsional)</label>
-            <select name="status" class="form-select" id="statusSelect">
-              <option value="">Semua Status</option>
-            </select>
-          </div>
-
-          <div class="col-12" id="searchWrap">
-            <label class="form-label">Pencarian (opsional)</label>
-            <input
-              type="text"
-              name="search"
-              class="form-control"
-              value="<?= esc($valSearch) ?>"
-              placeholder="Nama siswa / judul / kata kunci..."
-            >
-          </div>
-
-          <div class="col-12" id="sortWrap">
-            <label class="form-label">Urutkan (opsional)</label>
-            <div class="row g-2">
-              <div class="col-7">
-                <select name="sort_by" class="form-select" id="sortBy">
-                  <option value="">Default</option>
-                </select>
-              </div>
-              <div class="col-5">
-                <select name="sort_dir" class="form-select" id="sortDir">
-                  <option value="asc" <?= $valSortDir==='asc'?'selected':'' ?>>Naik</option>
-                  <option value="desc" <?= $valSortDir==='desc'?'selected':'' ?>>Turun</option>
-                </select>
-              </div>
-            </div>
+            <div class="form-text text-dark">Wajib dipilih bila mode "Satu siswa".</div>
           </div>
 
           <div class="col-12">
@@ -200,34 +106,26 @@ if (function_exists('has_permission')) {
             <div class="row g-2">
               <div class="col-6">
                 <select name="paper" class="form-select">
-                  <option value="A4" <?= strtoupper($valPaper)==='A4'?'selected':'' ?>>A4</option>
-                  <option value="letter" <?= strtolower($valPaper)==='letter'?'selected':'' ?>>Letter</option>
-                  <option value="legal" <?= strtolower($valPaper)==='legal'?'selected':'' ?>>Legal</option>
+                  <option value="A4" <?= strtoupper($valPaper) === 'A4' ? 'selected' : '' ?>>A4</option>
+                  <option value="letter" <?= strtolower($valPaper) === 'letter' ? 'selected' : '' ?>>Letter</option>
+                  <option value="legal" <?= strtolower($valPaper) === 'legal' ? 'selected' : '' ?>>Legal</option>
                 </select>
                 <div class="form-text text-dark">Ukuran kertas (PDF)</div>
               </div>
               <div class="col-6">
                 <select name="orientation" class="form-select">
-                  <option value="portrait" <?= $valOrient==='portrait'?'selected':'' ?>>Tegak</option>
-                  <option value="landscape" <?= $valOrient==='landscape'?'selected':'' ?>>Mendatar</option>
+                  <option value="portrait" <?= $valOrient === 'portrait' ? 'selected' : '' ?>>Tegak</option>
+                  <option value="landscape" <?= $valOrient === 'landscape' ? 'selected' : '' ?>>Mendatar</option>
                 </select>
                 <div class="form-text text-dark">Arah kertas (PDF)</div>
               </div>
             </div>
           </div>
 
-          <div class="col-12 d-flex gap-2">
-            <button type="submit" class="btn btn-primary">
-              <i class="fas fa-eye me-1"></i> Pratinjau
-            </button>
-
-            <a id="dlPdf" class="btn btn-outline-secondary" href="#" <?= $canDownload ? '' : 'aria-disabled="true"' ?>>
-              <i class="fas fa-file-pdf me-1"></i> PDF
-            </a>
-
-            <a id="dlXlsx" class="btn btn-outline-success" href="#" <?= $canDownload ? '' : 'aria-disabled="true"' ?>>
-              <i class="fas fa-file-excel me-1"></i> Excel
-            </a>
+          <div class="col-12 d-flex gap-2 flex-wrap">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-eye me-1"></i> Pratinjau</button>
+            <a id="dlPdf" class="btn btn-outline-secondary <?= $canDownload ? '' : 'disabled' ?>" href="#"><i class="fas fa-file-pdf me-1"></i> PDF</a>
+            <a id="dlXlsx" class="btn btn-outline-success <?= $canDownload ? '' : 'disabled' ?>" href="#"><i class="fas fa-file-excel me-1"></i> Excel</a>
           </div>
         </form>
       </div>
@@ -238,279 +136,57 @@ if (function_exists('has_permission')) {
     <div class="card">
       <div class="card-header d-flex align-items-center justify-content-between">
         <h5 class="mb-0">Pratinjau</h5>
-        <small class="text-dark">Klik “Pratinjau” untuk memuat data.</small>
+        <small class="text-dark">Centang jenis laporan, lalu klik "Pratinjau".</small>
       </div>
       <div class="card-body" id="previewArea">
-        <div class="text-dark">
-          Pilih saringan di kiri, lalu klik <b>Pratinjau</b>. 📊
-        </div>
+        <div class="text-dark">Pilih saringan di kiri, lalu klik <b>Pratinjau</b>. 📊</div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-(function(){
+(function () {
   const form = document.getElementById('filterForm');
   const preview = document.getElementById('previewArea');
   const dlPdf = document.getElementById('dlPdf');
   const dlXlsx = document.getElementById('dlXlsx');
-
-  const typeSelect = document.getElementById('typeSelect');
-  const statusSelect = document.getElementById('statusSelect');
-  const sortBy = document.getElementById('sortBy');
-  const sortDir = document.getElementById('sortDir');
-
-  const wrapPeriod = document.getElementById('periodWrap');
-  const wrapClass = document.getElementById('classWrap');
-  const wrapAssess = document.getElementById('assessmentWrap');
-  const wrapStudent = document.getElementById('studentWrap');
-  const wrapBkType = document.getElementById('bkTypeWrap');
-  const wrapStatus = document.getElementById('statusWrap');
-  const wrapSearch = document.getElementById('searchWrap');
-  const wrapSort = document.getElementById('sortWrap');
-
-  const INIT_STATUS = "<?= esc($valStatus) ?>";
-  const INIT_SORTBY = "<?= esc($valSortBy) ?>";
+  const studentWrap = document.getElementById('studentWrap');
   const canDownload = <?= $canDownload ? 'true' : 'false' ?>;
-
   const downloadBase = "<?= route_to('counselor.reports.download') ?>";
 
-  let hydrated = false;
-
-  function qs() {
-    return new URLSearchParams(new FormData(form)).toString();
-  }
+  function qs() { return new URLSearchParams(new FormData(form)).toString(); }
 
   function syncDownloadLinks() {
+    if (!canDownload) { dlPdf.href = '#'; dlXlsx.href = '#'; return; }
     const q = qs();
-    if (!canDownload) {
-      dlPdf.href = '#';
-      dlXlsx.href = '#';
-      dlPdf.classList.add('disabled');
-      dlXlsx.classList.add('disabled');
-      dlPdf.setAttribute('tabindex', '-1');
-      dlXlsx.setAttribute('tabindex', '-1');
-      return;
-    }
-
-    dlPdf.classList.remove('disabled');
-    dlXlsx.classList.remove('disabled');
-    dlPdf.removeAttribute('tabindex');
-    dlXlsx.removeAttribute('tabindex');
-
-    dlPdf.href  = downloadBase + "?" + q + "&format=pdf";
+    dlPdf.href = downloadBase + "?" + q + "&format=pdf";
     dlXlsx.href = downloadBase + "?" + q + "&format=xlsx";
   }
 
-  function setOptions(el, options, selectedValue) {
-    const prev = selectedValue ?? el.value ?? '';
-    el.innerHTML = '';
-
-    options.forEach(opt => {
-      const o = document.createElement('option');
-      o.value = opt.value;
-      o.textContent = opt.label;
-      if (String(opt.value) === String(prev)) o.selected = true;
-      el.appendChild(o);
-    });
-
-    // kalau prev tidak ada di options, default ke pertama
-    if (!el.value && options.length) {
-      el.value = options[0].value;
-    }
+  function syncMode() {
+    const single = document.getElementById('modeSingle').checked;
+    studentWrap.classList.toggle('d-none', !single);
   }
 
-  function updateVisibility(){
-    const type = typeSelect.value;
-
-    // default show
-    wrapPeriod.style.display = '';
-    wrapClass.style.display = '';
-    wrapAssess.style.display = 'none';
-    wrapStudent.style.display = 'none';
-    wrapBkType.style.display = 'none';
-    wrapStatus.style.display = '';
-    wrapSearch.style.display = '';
-    wrapSort.style.display = '';
-
-    let statusOptions = [{value:'', label:'Semua Status'}];
-    let sortOptions   = [{value:'', label:'Default'}];
-
-    if (type === 'students') {
-      wrapPeriod.style.display = 'none';
-      wrapAssess.style.display = 'none';
-
-      statusOptions = [
-        {value:'', label:'Semua Status'},
-        {value:'active', label:'Aktif'},
-        {value:'alumni', label:'Alumni'},
-        {value:'moved', label:'Pindah'},
-        {value:'dropped', label:'Keluar'}
-      ];
-
-      sortOptions = [
-        {value:'', label:'Default'},
-        {value:'u.full_name', label:'Nama'},
-        {value:'s.nisn', label:'NISN'},
-        {value:'s.nisn', label:'NISN'},
-        {value:'c.class_name', label:'Kelas'},
-        {value:'s.status', label:'Status'}
-      ];
-    }
-
-    if (type === 'sessions') {
-      statusOptions = [
-        {value:'', label:'Semua Status'},
-        {value:'Dijadwalkan', label:'Dijadwalkan'},
-        {value:'Selesai', label:'Selesai'},
-        {value:'Dibatalkan', label:'Dibatalkan'}
-      ];
-
-      sortOptions = [
-        {value:'', label:'Default'},
-        {value:'cs.session_date', label:'Tanggal'},
-        {value:'cs.session_type', label:'Jenis'},
-        {value:'cs.status', label:'Status'},
-        {value:'su.full_name', label:'Siswa'}
-      ];
-    }
-
-    if (type === 'student_individual') {
-      wrapStudent.style.display = '';
-      wrapBkType.style.display = '';
-      wrapStatus.style.display = 'none';
-      wrapSearch.style.display = 'none';
-      wrapSort.style.display = 'none';
-    }
-
-    if (type === 'assessments') {
-      wrapAssess.style.display = '';
-
-      // paling aman: status numeric (0/1/2/3) karena banyak DB menyimpan integer
-      statusOptions = [
-        {value:'', label:'Semua Status'},
-        {value:'0', label:'Belum Mulai'},
-        {value:'1', label:'Sedang Dikerjakan'},
-        {value:'2', label:'Selesai'},
-        {value:'3', label:'Dinilai'}
-      ];
-
-      sortOptions = [
-        {value:'', label:'Default'},
-        {value:'a.title', label:'Asesmen'},
-        {value:'su.full_name', label:'Siswa'},
-        {value:'ar.status', label:'Status'},
-        {value:'ar.percentage', label:'Nilai (%)'},
-        {value:'ar.started_at', label:'Mulai'}
-      ];
-    }
-
-    if (type === 'career') {
-      wrapPeriod.style.display = 'none';
-      wrapClass.style.display  = 'none';
-      // ReportService career() belum pakai filter status, jadi jangan bikin user berharap
-      wrapStatus.style.display = 'none';
-
-      sortOptions = [
-        {value:'', label:'Default'},
-        {value:'title', label:'Judul'},
-        {value:'sector', label:'Sektor'},
-        {value:'avg_salary_idr', label:'Gaji'},
-        {value:'demand_level', label:'Permintaan'}
-      ];
-    }
-
-    if (type === 'universities') {
-      wrapPeriod.style.display = 'none';
-      wrapClass.style.display  = 'none';
-
-      // (opsional) kalau nanti kamu tambahkan filter is_active di service, bisa dipakai.
-      statusOptions = [
-        {value:'', label:'Semua'},
-        {value:'1', label:'Aktif'},
-        {value:'0', label:'Tidak Aktif'}
-      ];
-
-      sortOptions = [
-        {value:'', label:'Default'},
-        {value:'university_name', label:'Nama'},
-        {value:'accreditation', label:'Akreditasi'},
-        {value:'location', label:'Lokasi'},
-        {value:'is_active', label:'Status'}
-      ];
-    }
-
-    if (type === 'career_choices') {
-      sortOptions = [
-        {value:'', label:'Default'},
-        {value:'co.title', label:'Karier'},
-        {value:'students_count', label:'Jumlah Siswa'},
-        {value:'saved_count', label:'Jumlah Pilihan'}
-      ];
-    }
-
-    if (type === 'university_choices') {
-      sortOptions = [
-        {value:'', label:'Default'},
-        {value:'u.university_name', label:'PT'},
-        {value:'students_count', label:'Jumlah Siswa'},
-        {value:'saved_count', label:'Jumlah Pilihan'}
-      ];
-    }
-
-    const selectedStatus = hydrated ? (statusSelect.value ?? '') : INIT_STATUS;
-    const selectedSortBy = hydrated ? (sortBy.value ?? '') : INIT_SORTBY;
-
-    setOptions(statusSelect, statusOptions, selectedStatus);
-    setOptions(sortBy, sortOptions, selectedSortBy);
-
-    hydrated = true;
-  }
-
-  async function loadPreview(e){
+  async function loadPreview(e) {
     if (e) e.preventDefault();
-
-    updateVisibility();
-    syncDownloadLinks();
-
-    preview.innerHTML =
-      '<div class="text-center text-dark py-4">' +
-        '<div class="spinner-border spinner-border-sm me-2"></div>' +
-        'Memuat pratinjau...' +
-      '</div>';
-
+    syncMode(); syncDownloadLinks();
+    preview.innerHTML = '<div class="text-center text-dark py-4"><div class="spinner-border spinner-border-sm me-2"></div>Memuat pratinjau...</div>';
     try {
-      const res = await fetch(form.action + "?" + qs(), {
-        headers: { "X-Requested-With": "XMLHttpRequest" }
-      });
-
+      const res = await fetch(form.action + "?" + qs(), { headers: { "X-Requested-With": "XMLHttpRequest" } });
       const html = await res.text();
-
-      if (!res.ok) {
-        preview.innerHTML = '<div class="alert alert-danger mb-0">' +
-          '<b>Gagal memuat pratinjau.</b> (' + res.status + ')<br>' +
-          '<div class="small text-muted mt-2">Cek error log / halaman error_exception untuk detail.</div>' +
-        '</div>';
-        return;
-      }
-
-      preview.innerHTML = html;
+      preview.innerHTML = res.ok ? html : '<div class="alert alert-danger mb-0">Gagal memuat pratinjau. (' + res.status + ')</div>';
     } catch (err) {
       preview.innerHTML = '<div class="alert alert-danger mb-0">Gagal memuat pratinjau. Coba ulang.</div>';
     }
   }
 
-  typeSelect.addEventListener('change', function(){
-    updateVisibility();
-    syncDownloadLinks();
-  });
-
-  form.addEventListener('change', syncDownloadLinks);
+  document.getElementById('checkAll').addEventListener('click', () => { document.querySelectorAll('.feat-check').forEach(c => c.checked = true); syncDownloadLinks(); });
+  document.getElementById('checkNone').addEventListener('click', () => { document.querySelectorAll('.feat-check').forEach(c => c.checked = false); syncDownloadLinks(); });
+  form.addEventListener('change', () => { syncMode(); syncDownloadLinks(); });
   form.addEventListener('submit', loadPreview);
-
-  updateVisibility();
-  syncDownloadLinks();
+  syncMode(); syncDownloadLinks();
 })();
 </script>
 

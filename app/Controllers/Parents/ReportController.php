@@ -12,7 +12,6 @@
 namespace App\Controllers\Parents;
 
 use App\Libraries\PDFGenerator;
-use CodeIgniter\Database\RawSql;
 use CodeIgniter\Exceptions\PageNotFoundException;
 use CodeIgniter\I18n\Time;
 
@@ -122,7 +121,10 @@ class ReportController extends BaseParentController
             $parentName = (string) session('full_name');
         }
 
-        $sessions = $this->getSessionSummaryForReport($studentId);
+        // Perbaikan Kedua — Item #11: laporan Orang Tua HANYA data lengkap anak
+        // (biodata + pilihan Karier/Studi Lanjut anak). TANPA jadwal/aktivitas/asesmen.
+        $careers      = $this->getChildSavedCareers($studentId);
+        $universities = $this->getChildSavedUniversities($studentId);
 
         $docTitle = 'Laporan Anak - ' . ($student['full_name'] ?? 'Tanpa Nama');
         if (!empty($parentName) && $parentName !== 'Orang Tua') {
@@ -133,11 +135,50 @@ class ReportController extends BaseParentController
             'title'            => $docTitle,
             'pageTitle'        => $isPdf ? 'Laporan Anak' : 'Lihat/Cetak Laporan Anak',
             'student'          => $student,
-            'sessions'         => $sessions,
+            'careers'          => $careers,
+            'universities'     => $universities,
             'today'            => Time::today('Asia/Jakarta')->toDateString(),
             'parentName'       => $parentName,
             'isPdf'            => $isPdf,
         ];
+    }
+
+    /**
+     * Pilihan karier yang DISIMPAN oleh anak (data milik anak, bukan jadwal/kegiatan BK).
+     */
+    protected function getChildSavedCareers(int $studentId): array
+    {
+        if (!$this->findChildForCurrentParent($studentId)) {
+            return [];
+        }
+
+        return $this->db->table('student_saved_careers ssc')
+            ->select('co.title, co.sector, co.min_education, ssc.created_at AS saved_at')
+            ->join('career_options co', 'co.id = ssc.career_id', 'left')
+            ->where('ssc.student_id', $studentId)
+            ->where('ssc.deleted_at', null)
+            ->where('co.deleted_at', null)
+            ->orderBy('ssc.created_at', 'DESC')
+            ->get()->getResultArray() ?: [];
+    }
+
+    /**
+     * Pilihan perguruan tinggi / studi lanjut yang DISIMPAN oleh anak.
+     */
+    protected function getChildSavedUniversities(int $studentId): array
+    {
+        if (!$this->findChildForCurrentParent($studentId)) {
+            return [];
+        }
+
+        return $this->db->table('student_saved_universities ssu')
+            ->select('ui.university_name, ui.alias, ui.accreditation, ui.location, ssu.created_at AS saved_at')
+            ->join('university_info ui', 'ui.id = ssu.university_id', 'left')
+            ->where('ssu.student_id', $studentId)
+            ->where('ssu.deleted_at', null)
+            ->where('ui.deleted_at', null)
+            ->orderBy('ssu.created_at', 'DESC')
+            ->get()->getResultArray() ?: [];
     }
 
     protected function resolveChildReportPdfView(): string
@@ -188,87 +229,5 @@ class ReportController extends BaseParentController
             ->getRowArray();
 
         return $row ?: null;
-    }
-
-    protected function getSessionSummaryForReport(int $studentId): array
-    {
-        $student = $this->findChildForCurrentParent($studentId);
-        if (!$student) {
-            return [];
-        }
-        $classId = (int) ($student['class_id'] ?? 0);
-
-        $fieldNames = [];
-        try {
-            $fields = $this->db->getFieldData('counseling_sessions');
-            $fieldNames = array_map(static fn($f) => $f->name, $fields);
-        } catch (\Throwable $e) {
-            $fieldNames = [];
-        }
-
-        $hasConfidential = in_array('is_confidential', $fieldNames, true);
-        $hasTopic        = in_array('topic', $fieldNames, true);
-        $hasLocation     = in_array('location', $fieldNames, true);
-
-        $b = $this->db->table('counseling_sessions cs');
-
-        $b->select([
-            'cs.id',
-            'cs.session_date',
-            'cs.session_time',
-            'cs.session_type',
-            'cs.status',
-            'u.full_name AS counselor_name',
-        ]);
-
-        if ($hasTopic && $hasConfidential) {
-            $b->select(new RawSql(
-                "CASE WHEN cs.is_confidential = 1 THEN 'Sesi Konseling (Terbatas)' ELSE cs.topic END AS topic"
-            ));
-        } elseif ($hasTopic) {
-            $b->select('cs.topic AS topic');
-        } else {
-            $b->select(new RawSql("'-' AS topic"));
-        }
-
-        if ($hasLocation && $hasConfidential) {
-            $b->select(new RawSql(
-                "CASE WHEN cs.is_confidential = 1 THEN NULL ELSE cs.location END AS location"
-            ));
-        } elseif ($hasLocation) {
-            $b->select('cs.location AS location');
-        } else {
-            $b->select(new RawSql("NULL AS location"));
-        }
-
-        $b->join('users u', 'u.id = cs.counselor_id', 'left');
-
-        if ($this->db->tableExists('session_participants')) {
-            $b->join('session_participants sp', 'sp.session_id = cs.id AND sp.deleted_at IS NULL', 'left');
-        }
-
-        $b->where('cs.deleted_at', null);
-
-        $b->groupStart()
-            ->where('cs.student_id', $studentId);
-
-        if ($this->db->tableExists('session_participants')) {
-            $b->orWhere('sp.student_id', $studentId);
-        }
-
-        if ($classId > 0) {
-            $b->orGroupStart()
-                ->where('cs.session_type', 'Klasikal')
-                ->where('cs.class_id', $classId)
-            ->groupEnd();
-        }
-
-        $b->groupEnd();
-        $b->distinct();
-
-        $b->orderBy('cs.session_date', 'DESC')
-          ->orderBy('cs.session_time', 'DESC');
-
-        return $b->get()->getResultArray() ?: [];
     }
 }

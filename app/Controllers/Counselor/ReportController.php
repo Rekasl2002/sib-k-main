@@ -3,14 +3,11 @@
 /**
  * File Path: app/Controllers/Counselor/ReportController.php
  *
- * Counselor • Report Controller
- * - Preview laporan (AJAX) + Download PDF/XLSX
- * - Scope dibatasi untuk data binaan counselor (melalui ReportService)
- *
- * Catatan:
- * - Tidak memakai BaseCounselorController (karena tidak ada).
- * - Extend App\Controllers\BaseController agar $request/$response tersedia.
- * - Terhubung dengan fitur final BK melalui ReportService::studentIndividualTable().
+ * Guru BK • Laporan (Perbaikan Kedua — Item #11)
+ * - Jenis Laporan = banyak fitur (checkbox), output SATU dokumen bersections.
+ * - Mode: ringkasan semua siswa binaan / satu siswa.
+ * - Scope dibatasi ke siswa & kelas binaan Guru BK (classes.counselor_id = uid).
+ * - Unduh PDF (opsi kertas/arah) & Excel (1 sheet per fitur).
  */
 
 namespace App\Controllers\Counselor;
@@ -28,188 +25,118 @@ class ReportController extends BaseController
 {
     protected ReportService $report;
     protected ?PDFGenerator $pdf = null;
+    protected string $role = 'counselor';
 
     public function __construct()
     {
         $this->report = new ReportService();
-
-        // aman walau sudah di-autoload di BaseController
         if (function_exists('helper')) {
             try {
                 helper(['url', 'form', 'text', 'number', 'date', 'permission', 'settings', 'auth']);
             } catch (\Throwable $e) {
-                // ignore
             }
         }
     }
 
-    /**
-     * Halaman laporan counselor.
-     * View: counselor/reports/index
-     */
     public function index()
     {
         if ($redir = $this->ensurePerm('view_reports_individual', '/counselor/dashboard', 'Akses laporan ditolak.')) {
             return $redir;
         }
 
-        $db = db_connect();
-        $counselorId = $this->currentUserId();
+        $db  = db_connect();
+        $uid = $this->currentUserId();
 
-        // hanya kelas binaan counselor (biar filter tidak menampilkan kelas lain)
         $classes = $db->table('classes')
             ->select('id, class_name')
-            ->where('deleted_at', null)
-            ->where('is_active', 1)
-            ->where('counselor_id', $counselorId)
-            ->orderBy('class_name', 'ASC')
-            ->get()->getResultArray();
+            ->where('deleted_at', null)->where('is_active', 1)
+            ->where('counselor_id', $uid)
+            ->orderBy('class_name', 'ASC')->get()->getResultArray();
 
-        // daftar asesmen (opsional) untuk filter report asesmen
-        $assessments = $db->table('assessments')
-            ->select('id, title')
-            ->where('deleted_at', null)
-            ->where('created_by', $counselorId)
-            ->orderBy('title', 'ASC')
-            ->get()->getResultArray();
-
-        // default periode: bulan ini
-        $valFrom = (string)($this->request->getGet('date_from') ?: date('Y-m-01'));
-        $valTo   = (string)($this->request->getGet('date_to')   ?: date('Y-m-d'));
-
-        $valPaper  = $this->normalizePaper((string)($this->request->getGet('paper') ?: 'A4'));
-        $valOrient = $this->normalizeOrientation((string)($this->request->getGet('orientation') ?: 'portrait'));
-
-        // jenis laporan default
-        $valType = (string)($this->request->getGet('type') ?: 'sessions');
-        $students = $this->report->studentOptionsForCounselor($counselorId);
-        $bkCategories = $this->report->individualCategoryOptions();
+        $students = $this->report->studentOptionsForCounselor($uid);
 
         return view('counselor/reports/index', [
             'pageTitle'   => 'Laporan',
-
+            'features'    => ReportService::featureCatalog($this->role),
             'classes'     => $classes,
-            'assessments' => $assessments,
             'students'    => $students,
-            'bkCategories'=> $bkCategories,
-
-            'valFrom'     => $valFrom,
-            'valTo'       => $valTo,
-            'valClass'    => (string)($this->request->getGet('class_id') ?? ''),
-            'valStatus'   => (string)($this->request->getGet('status') ?? ''),
-            'valSearch'   => (string)($this->request->getGet('search') ?? ''),
-            'valSortBy'   => (string)($this->request->getGet('sort_by') ?? ''),
-            'valSortDir'  => (string)($this->request->getGet('sort_dir') ?? 'desc'),
-
-            'valType'     => $valType,
-            'valPaper'    => $valPaper,
-            'valOrient'   => $valOrient,
-            'valStudent'  => (string)($this->request->getGet('student_id') ?? ''),
-            'valBkCategory' => (string)($this->request->getGet('bk_category') ?? 'all'),
-
-            // untuk report asesmen
-            'valAssessmentId' => (string)($this->request->getGet('assessment_id') ?? ''),
+            'valFrom'     => (string) ($this->request->getGet('date_from') ?: date('Y-m-01')),
+            'valTo'       => (string) ($this->request->getGet('date_to') ?: date('Y-m-d')),
+            'valPaper'    => $this->normalizePaper((string) ($this->request->getGet('paper') ?: 'A4')),
+            'valOrient'   => $this->normalizeOrientation((string) ($this->request->getGet('orientation') ?: 'portrait')),
         ]);
     }
 
-    /**
-     * AJAX preview (HTML)
-     * View partial: counselor/reports/partials/table
-     */
     public function preview()
     {
         if ($redir = $this->ensurePerm('view_reports_individual', '/counselor/dashboard', 'Akses laporan ditolak.')) {
             return $redir;
         }
 
-        $counselorId = $this->currentUserId();
-        $f = $this->filters();
-
-        [$title, $columns, $rows] = $this->buildPayload($f, $counselorId);
-
-        return view('counselor/reports/partials/table', [
-            'title'   => $title,
-            'columns' => $columns,
-            'rows'    => $rows,
-        ]);
+        try {
+            [$sections, $f] = $this->buildSections();
+            return view('counselor/reports/partials/sections_preview', [
+                'sections'    => $sections,
+                'periodLabel' => $this->periodLabel($f),
+            ]);
+        } catch (\Throwable $e) {
+            log_message('error', '[COUNSELOR REPORT PREVIEW] ' . $e->getMessage());
+            return $this->response->setStatusCode(200)->setBody(
+                '<div class="alert alert-danger mb-0"><b>Gagal memuat pratinjau.</b><br><small class="text-muted">' . esc($e->getMessage()) . '</small></div>'
+            );
+        }
     }
 
-    /**
-     * Download PDF/XLSX
-     */
     public function download()
     {
         if ($redir = $this->ensurePerm('generate_reports_individual', '/counselor/reports', 'Anda tidak punya izin untuk mengunduh laporan.')) {
             return $redir;
         }
 
-        $counselorId = $this->currentUserId();
-        $f = $this->filters();
-
-        $format      = strtolower((string)($this->request->getGet('format') ?: 'pdf'));
-        $paper       = $this->normalizePaper((string)($this->request->getGet('paper') ?: 'A4'));
-        $orientation = $this->normalizeOrientation((string)($this->request->getGet('orientation') ?: 'portrait'));
-
+        $format      = strtolower((string) ($this->request->getGet('format') ?: 'pdf'));
+        $paper       = $this->normalizePaper((string) ($this->request->getGet('paper') ?: 'A4'));
+        $orientation = $this->normalizeOrientation((string) ($this->request->getGet('orientation') ?: 'portrait'));
         if (!in_array($format, ['pdf', 'xlsx'], true)) {
             $format = 'pdf';
         }
 
         try {
-            [$title, $columns, $rows] = $this->buildPayload($f, $counselorId);
+            [$sections, $f] = $this->buildSections();
         } catch (\Throwable $e) {
             log_message('error', '[COUNSELOR REPORT PAYLOAD] ' . $e->getMessage());
-
-            return redirect()->to('/counselor/reports')
-                ->with('error', 'Gagal menyiapkan data laporan: ' . $e->getMessage());
+            return redirect()->to('/counselor/reports')->with('error', 'Gagal menyiapkan data laporan: ' . $e->getMessage());
         }
 
-        $filename = $this->safeFilename(
-            'laporan_' . ($f['type'] ?: 'report') . '_' .
-            ($f['date_from'] ?: 'all') . '_' . ($f['date_to'] ?: 'all')
-        );
+        $filename = $this->safeFilename('laporan_gurubk_' . ($f['date_from'] ?: 'all') . '_' . ($f['date_to'] ?: 'all'));
 
         if ($format === 'xlsx') {
             try {
-                $tmpPath = $this->buildTableXlsx($title, $columns, $rows, $filename, $f);
+                $tmpPath = $this->buildSectionsXlsx($sections, $f, $filename);
             } catch (\Throwable $e) {
                 log_message('error', '[COUNSELOR REPORT XLSX] ' . $e->getMessage());
-
-                return redirect()->to('/counselor/reports')
-                    ->with('error', 'Gagal membuat Excel: ' . $e->getMessage());
+                return redirect()->to('/counselor/reports')->with('error', 'Gagal membuat Excel: ' . $e->getMessage());
             }
-
-            register_shutdown_function(static function () use ($tmpPath) {
-                @unlink($tmpPath);
-            });
-
-            return $this->response
-                ->download($tmpPath, null)
-                ->setFileName($filename . '.xlsx');
+            register_shutdown_function(static fn () => @unlink($tmpPath));
+            return $this->response->download($tmpPath, null)->setFileName($filename . '.xlsx');
         }
 
         if (! PDFGenerator::isAvailable()) {
-            return redirect()->to('/counselor/reports')
-                ->with(
-                    'error',
-                    'Fitur unduh PDF belum tersedia karena paket Dompdf belum terpasang di server. Unduh Excel tetap dapat digunakan.'
-                );
+            return redirect()->to('/counselor/reports')->with('error', 'Fitur unduh PDF belum tersedia karena paket Dompdf belum terpasang. Unduh Excel tetap dapat digunakan.');
         }
 
-        // PDF
-        $html = view('counselor/reports/partials/table_pdf', [
-            'title'   => $title,
-            'columns' => $columns,
-            'rows'    => $rows,
-            'filters' => $f,
+        $html = view('counselor/reports/partials/sections_pdf', [
+            'sections'    => $sections,
+            'reportTitle' => 'Laporan BK (Guru BK)',
+            'schoolName'  => (string) setting('school_name', env('school.name', ''), 'general'),
+            'periodLabel' => $this->periodLabel($f),
+            'generatedAt' => date('Y-m-d H:i:s'),
         ]);
 
         try {
             $bin = $this->pdf()->render($html, $paper, $orientation);
         } catch (\Throwable $e) {
             log_message('error', '[COUNSELOR REPORT PDF] ' . $e->getMessage());
-
-            return redirect()->to('/counselor/reports')
-                ->with('error', 'Gagal membuat PDF: ' . $e->getMessage());
+            return redirect()->to('/counselor/reports')->with('error', 'Gagal membuat PDF: ' . $e->getMessage());
         }
 
         return $this->response
@@ -219,391 +146,217 @@ class ReportController extends BaseController
     }
 
     // =========================================================
-    // Payload builder (ambil data dari ReportService)
+    // Core: bangun sections sesuai scope Guru BK
     // =========================================================
 
-    private function buildPayload(array $f, int $counselorId): array
+    /** @return array{0:array,1:array} [sections, filter] */
+    protected function buildSections(): array
     {
-        $type = $this->normalizeType((string)($f['type'] ?? 'sessions'));
+        $uid = $this->currentUserId();
+        $f   = $this->filters();
+        $scope = $this->buildScope($uid, $f);
+        $sections = $this->report->buildSections($f['features'], $f, $scope);
+        return [$sections, $f];
+    }
 
-        $title = 'LAPORAN';
-        $columns = [];
-        $rows = [];
+    protected function buildScope(int $uid, array $f): array
+    {
+        $db = db_connect();
+        $classIds = array_map('intval', array_column(
+            $db->table('classes')->select('id')->where('deleted_at', null)->where('counselor_id', $uid)->get()->getResultArray(),
+            'id'
+        ));
+        $studentIds = $this->report->counselorStudentIds($uid);
 
-        // filter yang dikirim ke ReportService
-        $filter = [
-            'date_from'     => $f['date_from'],
-            'date_to'       => $f['date_to'],
-            'class_id'      => $f['class_id'],
-            'status'        => $f['status'],
-            'search'        => $f['search'],
-            'sort_by'       => $f['sort_by'],
-            'sort_dir'      => $f['sort_dir'],
-            'assessment_id' => $f['assessment_id'],
-            'student_id'    => $f['student_id'],
-            'bk_category'   => $f['bk_category'],
+        return [
+            'role'                => $this->role,
+            'user_id'             => $uid,
+            'allowed_class_ids'   => $classIds,
+            'allowed_student_ids' => $studentIds,
+            'mask_confidential'   => false,
+            'single'              => ($f['student_mode'] === 'single'),
+            'counselor_id'        => null,
         ];
-
-        switch ($type) {
-            case 'students':
-                $title = 'Laporan Data Siswa (Binaan)';
-                $out = $this->report->students($filter, $counselorId);
-                $columns = $out['columns'] ?? [];
-                $rows    = $out['rows'] ?? [];
-                break;
-
-            case 'sessions':
-                $title = 'Laporan Catatan Konseling';
-                $out = $this->report->sessions($filter, $counselorId);
-                $columns = $out['columns'] ?? [];
-                $rows    = $out['rows'] ?? [];
-                break;
-
-            case 'student_individual':
-                $studentId = (int)($filter['student_id'] ?? 0);
-                $allowedIds = $this->report->counselorStudentIds($counselorId, $filter['class_id'] ?? null);
-
-                if ($studentId <= 0 || !in_array($studentId, $allowedIds, true)) {
-                    $title = 'Laporan Individu Siswa';
-                    $columns = ['Tanggal', 'Kategori', 'Kegiatan', 'Status', 'Catatan'];
-                    $rows = [];
-                    break;
-                }
-
-                $out = $this->report->studentIndividualTable(
-                    $studentId,
-                    $filter['date_from'] ?? null,
-                    $filter['date_to'] ?? null,
-                    (string) ($filter['bk_category'] ?? 'all')
-                );
-                $student = $out['student'] ?? [];
-                $name = (string)($student['full_name'] ?? 'Siswa');
-                $title = 'Laporan Individu Siswa - ' . $name;
-                $columns = $out['columns'] ?? [];
-                $rows    = $out['rows'] ?? [];
-                break;
-
-            case 'assessments':
-                $title = 'Laporan Asesmen (Binaan)';
-                $out = $this->report->assessments($filter, $counselorId);
-                $columns = $out['columns'] ?? [];
-                $rows    = $out['rows'] ?? [];
-
-                // rapikan status agar tidak tampil 0/1/2 mentah
-                $rows = $this->mapAssessmentStatusRows($rows);
-                break;
-
-            case 'career_choices':
-                $title = 'Laporan Pilihan Karier Siswa';
-                $out = $this->report->careerChoices($filter, $counselorId);
-                $columns = $out['columns'] ?? [];
-                $rows    = $out['rows'] ?? [];
-                break;
-
-            case 'university_choices':
-                $title = 'Laporan Pilihan Universitas Siswa';
-                $out = $this->report->universityChoices($filter, $counselorId);
-                $columns = $out['columns'] ?? [];
-                $rows    = $out['rows'] ?? [];
-                break;
-
-            default:
-                $title = 'Laporan Catatan Konseling';
-                $out = $this->report->sessions($filter, $counselorId);
-                $columns = $out['columns'] ?? [];
-                $rows    = $out['rows'] ?? [];
-                break;
-        }
-
-        return [$title, $columns, $rows];
     }
-
-    private function mapAssessmentStatusRows(array $rows): array
-    {
-        foreach ($rows as &$r) {
-            if (is_array($r) && array_key_exists('status', $r)) {
-                $r['status'] = $this->assessmentStatusLabel($r['status']);
-            }
-        }
-        unset($r);
-
-        return $rows;
-    }
-
-    // =========================================================
-    // Helpers (filter, sanitasi, permission)
-    // =========================================================
 
     protected function filters(): array
     {
         $dateFrom = $this->normalizeDate($this->request->getGet('date_from'));
         $dateTo   = $this->normalizeDate($this->request->getGet('date_to'));
-
         if ($dateFrom && $dateTo && $dateFrom > $dateTo) {
             [$dateFrom, $dateTo] = [$dateTo, $dateFrom];
         }
 
         return [
-            'type'          => (string)($this->request->getGet('type') ?: 'sessions'),
-
-            'date_from'     => $dateFrom,
-            'date_to'       => $dateTo,
-
-            'class_id'      => $this->request->getGet('class_id') ? (int)$this->request->getGet('class_id') : null,
-            'status'        => (string)($this->request->getGet('status') ?? ''),
-            'search'        => (string)($this->request->getGet('search') ?? ''),
-
-            'sort_by'       => (string)($this->request->getGet('sort_by') ?? ''),
-            'sort_dir'      => (string)($this->request->getGet('sort_dir') ?? 'desc'),
-
-            // khusus asesmen
-            'assessment_id' => $this->request->getGet('assessment_id') ? (int)$this->request->getGet('assessment_id') : null,
-            'student_id'    => $this->request->getGet('student_id') ? (int)$this->request->getGet('student_id') : null,
-            'bk_category'   => (string)($this->request->getGet('bk_category') ?: 'all'),
+            'features'     => $this->validFeatures(),
+            'student_mode' => ($this->request->getGet('student_mode') === 'single') ? 'single' : 'all',
+            'date_from'    => $dateFrom,
+            'date_to'      => $dateTo,
+            'class_id'     => $this->request->getGet('class_id') ? (int) $this->request->getGet('class_id') : null,
+            'student_id'   => $this->request->getGet('student_id') ? (int) $this->request->getGet('student_id') : null,
         ];
     }
 
-    private function normalizeType(string $type): string
+    protected function validFeatures(): array
     {
-        $type = strtolower(trim($type));
-        $allowed = [
-            'students',
-            'sessions',
-            'student_individual',
-            'assessments',
-            'career_choices',
-            'university_choices',
-        ];
-        return in_array($type, $allowed, true) ? $type : 'sessions';
+        $allowed = array_keys(ReportService::featureCatalog($this->role));
+        $req = (array) ($this->request->getGet('features') ?? []);
+        $out = array_values(array_intersect($allowed, array_map('strval', $req)));
+        return $out ?: ['counseling']; // default minimal
     }
+
+    protected function periodLabel(array $f): string
+    {
+        return ($f['date_from'] ?: '-') . ' s/d ' . ($f['date_to'] ?: '-');
+    }
+
+    // =========================================================
+    // XLSX (1 sheet per section)
+    // =========================================================
+
+    protected function buildSectionsXlsx(array $sections, array $filters, string $filename): string
+    {
+        $spreadsheet = new Spreadsheet();
+        $used = [];
+        $first = true;
+
+        if (empty($sections)) {
+            $sections = [['title' => 'Laporan', 'columns' => ['Data'], 'rows' => []]];
+        }
+
+        foreach ($sections as $idx => $sec) {
+            $sheet = $first ? $spreadsheet->getActiveSheet() : $spreadsheet->createSheet();
+            $first = false;
+            $sheet->setTitle($this->safeSheetTitle((string) ($sec['title'] ?? 'Laporan'), $used, $idx));
+
+            $columns = $sec['columns'] ?? ['Data'];
+            $rows    = $sec['rows'] ?? [];
+
+            $r = 1;
+            $sheet->setCellValueExplicit("A{$r}", (string) ($sec['title'] ?? 'Laporan'), DataType::TYPE_STRING);
+            $r += 2;
+
+            foreach ($columns as $i => $h) {
+                $sheet->setCellValueExplicit(Coordinate::stringFromColumnIndex($i + 1) . $r, (string) $h, DataType::TYPE_STRING);
+            }
+            $sheet->getStyle("A{$r}:" . Coordinate::stringFromColumnIndex(max(1, count($columns))) . "{$r}")->getFont()->setBold(true);
+            $r++;
+
+            if (empty($rows)) {
+                $sheet->setCellValueExplicit("A{$r}", '(tidak ada data)', DataType::TYPE_STRING);
+            } else {
+                foreach ($rows as $row) {
+                    $vals = is_array($row) ? array_values($row) : [(string) $row];
+                    foreach ($vals as $i => $val) {
+                        $sheet->setCellValueExplicit(
+                            Coordinate::stringFromColumnIndex($i + 1) . $r,
+                            is_scalar($val) ? (string) $val : json_encode($val, JSON_UNESCAPED_UNICODE),
+                            DataType::TYPE_STRING
+                        );
+                    }
+                    $r++;
+                }
+            }
+
+            for ($i = 1; $i <= max(1, count($columns)); $i++) {
+                $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($i))->setAutoSize(true);
+            }
+        }
+
+        $tmpPath = WRITEPATH . 'uploads/' . $filename . '.xlsx';
+        @mkdir(dirname($tmpPath), 0775, true);
+        (new Xlsx($spreadsheet))->save($tmpPath);
+        return $tmpPath;
+    }
+
+    private function safeSheetTitle(string $title, array &$used, int $idx): string
+    {
+        $t = preg_replace('/[\\\\\/\?\*\[\]\:]/', ' ', $title) ?? 'Sheet';
+        $t = trim(mb_substr($t, 0, 28));
+        if ($t === '') {
+            $t = 'Sheet ' . ($idx + 1);
+        }
+        $base = $t;
+        $n = 1;
+        while (in_array(strtolower($t), $used, true)) {
+            $t = mb_substr($base, 0, 25) . ' ' . (++$n);
+        }
+        $used[] = strtolower($t);
+        return $t;
+    }
+
+    // =========================================================
+    // Helpers umum
+    // =========================================================
 
     private function pdf(): PDFGenerator
     {
-        if ($this->pdf === null) {
-            $this->pdf = new PDFGenerator();
-        }
-
-        return $this->pdf;
+        return $this->pdf ??= new PDFGenerator();
     }
 
     private function safeFilename(string $name): string
     {
-        $name = strtolower($name);
-        $name = preg_replace('/[^a-z0-9_\-]+/i', '_', $name) ?? 'report';
+        $name = strtolower(preg_replace('/[^a-z0-9_\-]+/i', '_', $name) ?? 'report');
         $name = trim($name, '_');
-        if (strlen($name) > 120) $name = substr($name, 0, 120);
+        if (strlen($name) > 120) {
+            $name = substr($name, 0, 120);
+        }
         return $name ?: 'report';
     }
 
     private function normalizeDate($value): ?string
     {
         $value = is_string($value) ? trim($value) : '';
-        if ($value === '') return null;
-
-        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) return null;
-
+        if ($value === '' || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return null;
+        }
         [$y, $m, $d] = array_map('intval', explode('-', $value));
-        if (!checkdate($m, $d, $y)) return null;
-
-        return $value;
+        return checkdate($m, $d, $y) ? $value : null;
     }
 
     private function normalizePaper(string $paper): string
     {
-        $paper = strtoupper(trim($paper));
-        $allowed = ['A4', 'A3', 'LETTER', 'LEGAL'];
-        return in_array($paper, $allowed, true) ? $paper : 'A4';
+        $p = strtolower(trim($paper));
+        return ['a4' => 'A4', 'letter' => 'letter', 'legal' => 'legal'][$p] ?? 'A4';
     }
 
     private function normalizeOrientation(string $orientation): string
     {
-        $orientation = strtolower(trim($orientation));
-        return in_array($orientation, ['portrait', 'landscape'], true) ? $orientation : 'portrait';
+        $o = strtolower(trim($orientation));
+        return in_array($o, ['portrait', 'landscape'], true) ? $o : 'portrait';
     }
 
-    /**
-     * Guard permission opsional.
-     * Kalau helper has_permission() tidak ada, jangan blok (guard role di routes tetap berjalan).
-     */
     private function ensurePerm(string $perm, string $redirectTo, string $message): ?RedirectResponse
     {
-        if (function_exists('has_permission')) {
-            if (!has_permission($perm)) {
-                return redirect()->to($redirectTo)->with('error', $message);
-            }
+        if (function_exists('has_permission') && !has_permission($perm)) {
+            return redirect()->to($redirectTo)->with('error', $message);
         }
         return null;
     }
 
-    /**
-     * Ambil user id login dengan fallback aman.
-     * Dibuat tanpa memanggil current_user_id() secara langsung (biar Intelephense tidak error).
-     */
     private function currentUserId(): int
     {
-        // 1) Jika project punya helper current_user_id()
         try {
             if (function_exists('current_user_id')) {
-                $id = (int) call_user_func('current_user_id'); // <- aman untuk Intelephense
-                if ($id > 0) return $id;
-            }
-        } catch (\Throwable $e) {
-            // ignore
-        }
-
-        // 2) CI Shield (jika ada): service('authentication')->user()
-        try {
-            $auth = service('authentication');
-            if (is_object($auth) && method_exists($auth, 'user')) {
-                $u = $auth->user();
-                if ($u && isset($u->id)) {
-                    $id = (int) $u->id;
-                    if ($id > 0) return $id;
+                $id = (int) call_user_func('current_user_id');
+                if ($id > 0) {
+                    return $id;
                 }
             }
         } catch (\Throwable $e) {
-            // ignore
         }
 
-        // 3) Fallback: session
         $session = session();
-
-        $candidates = [
-            $session->get('user_id'),
-            $session->get('id'),
-            $session->get('uid'),
-            $session->get('logged_in_user_id'),
-        ];
-
-        foreach ($candidates as $cand) {
-            $id = (int)($cand ?? 0);
-            if ($id > 0) return $id;
+        foreach ([$session->get('user_id'), $session->get('id'), $session->get('uid')] as $cand) {
+            $id = (int) ($cand ?? 0);
+            if ($id > 0) {
+                return $id;
+            }
         }
-
-        // 4) Fallback terakhir: data user di session (array)
         $user = $session->get('user');
         if (is_array($user)) {
-            $id = (int)($user['id'] ?? $user['user_id'] ?? 0);
-            if ($id > 0) return $id;
+            return (int) ($user['id'] ?? $user['user_id'] ?? 0);
         }
-
         return 0;
-    }
-
-    /**
-     * Mapping status asesmen agar manusiawi.
-     * Mengatasi kasus status numeric 0/1/2 yang muncul di laporan.
-     */
-    protected function assessmentStatusLabel($status): string
-    {
-        if ($status === null || $status === '') {
-            return 'Unknown';
-        }
-
-        if (is_numeric($status)) {
-            $i = (int) $status;
-            return match ($i) {
-                0 => 'Belum Mulai',
-                1 => 'Sedang Dikerjakan',
-                2 => 'Selesai',
-                3 => 'Dinilai',
-                default => 'Unknown (' . $i . ')',
-            };
-        }
-
-        $s = trim((string)$status);
-        $key = strtolower($s);
-
-        $map = [
-            'assigned'     => 'Belum Mulai',
-            'not_started'  => 'Belum Mulai',
-            'in progress'  => 'Sedang Dikerjakan',
-            'in_progress'  => 'Sedang Dikerjakan',
-            'started'      => 'Sedang Dikerjakan',
-            'completed'    => 'Selesai',
-            'done'         => 'Selesai',
-            'graded'       => 'Dinilai',
-        ];
-
-        return $map[$key] ?? $s;
-    }
-
-    // =========================================================
-    // XLSX Builder (tabel sederhana)
-    // =========================================================
-
-    private function buildTableXlsx(string $title, array $columns, array $rows, string $filename, array $filters): string
-    {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Report');
-
-        $r = 1;
-
-        // Meta
-        $sheet->setCellValueExplicit("A{$r}", 'Judul', DataType::TYPE_STRING);
-        $sheet->setCellValueExplicit("B{$r}", $title, DataType::TYPE_STRING);
-        $r++;
-
-        if (!empty($filters['date_from']) || !empty($filters['date_to'])) {
-            $sheet->setCellValueExplicit("A{$r}", 'Periode', DataType::TYPE_STRING);
-            $sheet->setCellValueExplicit(
-                "B{$r}",
-                (string)($filters['date_from'] ?? '-') . ' s/d ' . (string)($filters['date_to'] ?? '-'),
-                DataType::TYPE_STRING
-            );
-            $r++;
-        }
-
-        $sheet->setCellValueExplicit("A{$r}", 'Dibuat', DataType::TYPE_STRING);
-        $sheet->setCellValueExplicit("B{$r}", date('Y-m-d H:i:s'), DataType::TYPE_STRING);
-        $r += 2;
-
-        // Header
-        if (empty($columns)) {
-            $columns = ['Data'];
-        }
-
-        foreach ($columns as $i => $h) {
-            $col = Coordinate::stringFromColumnIndex($i + 1);
-            $sheet->setCellValueExplicit($col . $r, (string)$h, DataType::TYPE_STRING);
-        }
-
-        $sheet->getStyle("A{$r}:" . Coordinate::stringFromColumnIndex(count($columns)) . "{$r}")
-            ->getFont()->setBold(true);
-
-        $sheet->freezePane('A' . ($r + 1));
-        $r++;
-
-        // Rows
-        if (empty($rows)) {
-            $sheet->setCellValueExplicit("A{$r}", '(tidak ada data)', DataType::TYPE_STRING);
-        } else {
-            foreach ($rows as $row) {
-                $vals = is_array($row) ? array_values($row) : [(string)$row];
-
-                foreach ($vals as $i => $val) {
-                    $col = Coordinate::stringFromColumnIndex($i + 1);
-                    $sheet->setCellValueExplicit(
-                        $col . $r,
-                        is_scalar($val) ? (string)$val : json_encode($val, JSON_UNESCAPED_UNICODE),
-                        DataType::TYPE_STRING
-                    );
-                }
-                $r++;
-            }
-        }
-
-        // Auto size kolom
-        for ($i = 1; $i <= count($columns); $i++) {
-            $col = Coordinate::stringFromColumnIndex($i);
-            $sheet->getColumnDimension($col)->setAutoSize(true);
-        }
-
-        $tmpPath = WRITEPATH . 'uploads/' . $filename . '.xlsx';
-        @mkdir(dirname($tmpPath), 0775, true);
-        (new Xlsx($spreadsheet))->save($tmpPath);
-
-        return $tmpPath;
     }
 }

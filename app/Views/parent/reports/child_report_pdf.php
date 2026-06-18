@@ -5,7 +5,8 @@
  */
 
 $student          = $student          ?? [];
-$sessions         = $sessions         ?? [];
+$careers          = $careers          ?? [];
+$universities     = $universities     ?? [];
 $today            = $today            ?? date('Y-m-d');
 $title            = $title            ?? 'Laporan Anak';
 $parentName       = $parentName       ?? '';
@@ -101,31 +102,56 @@ if (!function_exists('pdf_fmt_time')) {
   </div>
 
   <div class="section">
-    <div class="section-title">B. Ringkasan Jadwal Konseling</div>
+    <div class="section-title">B. Pilihan Karier yang Disimpan Anak</div>
 
-    <?php if (empty($sessions)): ?>
-      <div class="muted">Belum ada jadwal konseling yang tercatat untuk anak ini.</div>
+    <?php if (empty($careers)): ?>
+      <div class="muted">Belum ada pilihan karier yang disimpan oleh anak ini.</div>
     <?php else: ?>
       <table>
         <thead>
           <tr>
-            <th style="width:90px;">Tanggal</th>
-            <th style="width:60px;">Waktu</th>
-            <th style="width:90px;">Jenis</th>
-            <th>Lokasi</th>
-            <th style="width:90px;">Status</th>
-            <th style="width:130px;">Guru BK</th>
+            <th>Karier</th>
+            <th style="width:140px;">Sektor</th>
+            <th style="width:130px;">Min. Pendidikan</th>
+            <th style="width:85px;">Disimpan</th>
           </tr>
         </thead>
         <tbody>
-          <?php foreach ($sessions as $s): ?>
+          <?php foreach ($careers as $c): ?>
             <tr>
-              <td><?= esc(pdf_fmt_date_id($s['session_date'] ?? null)) ?></td>
-              <td><?= esc(pdf_fmt_time($s['session_time'] ?? null)) ?></td>
-              <td><?= esc($s['session_type'] ?? '-') ?></td>
-              <td><?= esc($s['location'] ?? '-') ?></td>
-              <td><?= esc($s['status'] ?? '-') ?></td>
-              <td><?= esc($s['counselor_name'] ?? '-') ?></td>
+              <td><?= esc($c['title'] ?? '-') ?></td>
+              <td><?= esc($c['sector'] ?? '-') ?></td>
+              <td><?= esc($c['min_education'] ?? '-') ?></td>
+              <td><?= esc(pdf_fmt_date_id($c['saved_at'] ?? null)) ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    <?php endif; ?>
+  </div>
+
+  <div class="section">
+    <div class="section-title">C. Pilihan Studi Lanjut yang Disimpan Anak</div>
+
+    <?php if (empty($universities)): ?>
+      <div class="muted">Belum ada pilihan studi lanjut yang disimpan oleh anak ini.</div>
+    <?php else: ?>
+      <table>
+        <thead>
+          <tr>
+            <th>Perguruan Tinggi</th>
+            <th style="width:90px;">Akreditasi</th>
+            <th style="width:140px;">Lokasi</th>
+            <th style="width:85px;">Disimpan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($universities as $u): ?>
+            <tr>
+              <td><?= esc($u['university_name'] ?? '-') ?><?= !empty($u['alias']) ? ' (' . esc($u['alias']) . ')' : '' ?></td>
+              <td><?= esc($u['accreditation'] ?? '-') ?></td>
+              <td><?= esc($u['location'] ?? '-') ?></td>
+              <td><?= esc(pdf_fmt_date_id($u['saved_at'] ?? null)) ?></td>
             </tr>
           <?php endforeach; ?>
         </tbody>
