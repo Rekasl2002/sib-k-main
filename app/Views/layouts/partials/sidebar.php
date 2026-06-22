@@ -286,7 +286,7 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
           <?php endif; ?>
 
           <?php if ($__canAny(['manage_users','manage_roles'])): ?>
-          <li class="<?= $__mm(['admin/users*','admin/roles*']) ?>">
+          <li class="<?= $__mm(['admin/users*','admin/roles*','admin/password-reset-requests*']) ?>">
             <a href="javascript:void(0);" class="has-arrow waves-effect">
               <i class="mdi mdi-account-group"></i>
               <span>Pengguna</span>
@@ -294,6 +294,7 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permManageUsers): ?>
                 <li><a href="<?= base_url('admin/users') ?>" class="<?= $__active('admin/users*') ? 'active' : '' ?>">Manajemen Pengguna</a></li>
+                <li><a href="<?= base_url('admin/password-reset-requests') ?>" class="<?= $__active('admin/password-reset-requests*') ? 'active' : '' ?>">Permintaan Reset Password</a></li>
               <?php endif; ?>
               <?php if ($__permManageRoles): ?>
                 <li><a href="<?= base_url('admin/roles') ?>" class="<?= $__active('admin/roles*') ? 'active' : '' ?>">Manajemen Peran</a></li>

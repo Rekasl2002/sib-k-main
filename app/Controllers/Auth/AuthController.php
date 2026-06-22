@@ -221,10 +221,11 @@ class AuthController extends BaseController
      */
     public function sendResetLink()
     {
-        if ($this->passwordResetMode() === 'smtp_link') {
-            return $this->sendEmailResetLink();
-        }
-
+        // Jalur reset berbasis token email (SMTP/Gmail) sengaja DINONAKTIFKAN.
+        // Verifikasi via email belum menjadi bagian pengembangan; method
+        // sendEmailResetLink() & passwordResetMode() dipertahankan sebagai
+        // cadangan bila kelak SMTP diaktifkan. Untuk saat ini semua permintaan
+        // lupa password diteruskan ke Admin (email + nomor telepon).
         return $this->sendAdminResetRequest();
     }
 

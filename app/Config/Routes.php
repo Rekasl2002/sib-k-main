@@ -230,6 +230,12 @@ $routes->group('admin', [
             $routes->get('search', 'UserController::search', ['as' => 'admin.users.search']);
         });
 
+        // PERMINTAAN RESET PASSWORD (izin: manage_users)
+        $routes->group('password-reset-requests', ['filter' => 'permission:manage_users'], function ($routes) {
+            $routes->get('/', 'PasswordResetRequestController::index', ['as' => 'admin.password_resets']);
+            $routes->post('resolve/(:num)', 'PasswordResetRequestController::resolve/$1', ['as' => 'admin.password_resets.resolve']);
+        });
+
         // AKSES PROTOTIPE/SIMULASI (khusus Admin)
         $routes->group('simulation-access', function ($routes) {
             $routes->get('/', 'SimulationAccessController::index', ['as' => 'admin.simulation_access']);
