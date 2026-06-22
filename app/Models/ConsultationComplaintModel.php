@@ -32,7 +32,6 @@ class ConsultationComplaintModel extends Model
         'description',
         'occurred_at',
         'location',
-        'witness',
         'priority',
         'status',
         'privacy_level',

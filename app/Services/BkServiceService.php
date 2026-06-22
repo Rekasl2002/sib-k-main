@@ -216,7 +216,6 @@ class BkServiceService
             ->update($this->filterFields('session_participants', [
                 'attendance_status' => $post['attendance_status'] ?? 'Hadir',
                 'invitation_status' => $post['invitation_status'] ?? 'Konfirmasi',
-                'participant_note' => $post['participant_note'] ?? null,
                 'participation_note' => $post['participant_note'] ?? null,
                 'updated_at' => date('Y-m-d H:i:s'),
             ]));

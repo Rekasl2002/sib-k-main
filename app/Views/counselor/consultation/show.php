@@ -58,7 +58,6 @@ $statusVal = $row['status'] ?? '-';
           <dt class="col-md-4">Pelapor</dt><dd class="col-md-8"><?= esc($row['reporter_name'] ?? '-') ?></dd>
           <dt class="col-md-4">Waktu</dt><dd class="col-md-8"><?= esc($row['occurred_at'] ?? '-') ?></dd>
           <dt class="col-md-4">Tempat/Lokasi/Alamat</dt><dd class="col-md-8"><?= nl2br(esc($row['location'] ?? '-')) ?></dd>
-          <dt class="col-md-4">Saksi / Pihak Terkait</dt><dd class="col-md-8"><?= nl2br(esc($row['witness'] ?? '-')) ?></dd>
           <dt class="col-md-4">Prioritas</dt><dd class="col-md-8"><?= esc($row['priority'] ?? '-') ?></dd>
           <dt class="col-md-4">Penanggung Jawab</dt><dd class="col-md-8"><?= esc($row['assigned_to_name'] ?? '-') ?></dd>
         </dl>

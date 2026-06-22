@@ -40,7 +40,6 @@ class SessionParticipantModel extends Model
         'participant_class_id',
         'manual_name',
         'role_in_session',
-        'participant_note',
         'invitation_status',
         'attendance_status',
         'participation_note',

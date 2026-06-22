@@ -319,7 +319,6 @@ class ConsultationComplaintService
             'description' => trim((string) ($post['description'] ?? '')),
             'occurred_at' => $this->normalizeDateTime($post['occurred_at'] ?? null, $post['occurred_date'] ?? null, $post['occurred_time'] ?? null),
             'location' => trim((string) ($post['location'] ?? '')) ?: null,
-            'witness' => trim((string) ($post['witness'] ?? '')) ?: null,
             'priority' => $post['priority'] ?? 'Sedang',
             'status' => $post['status'] ?? 'Diajukan',
             'privacy_level' => $post['privacy_level'] ?? 'Rahasia BK',

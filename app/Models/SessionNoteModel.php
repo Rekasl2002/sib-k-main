@@ -34,7 +34,6 @@ class SessionNoteModel extends Model
         'is_confidential',   // 0/1
         'is_important',      // 0/1
         'attachments',       // JSON text (opsional)
-        'related_participant_id',
         'visibility_level',
         'follow_up_status',
         'assigned_to_user_id',
