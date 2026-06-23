@@ -3,6 +3,8 @@
 
 namespace App\Controllers\Student;
 
+use App\Services\DashboardService;
+use App\Services\BkServiceService;
 use CodeIgniter\I18n\Time;
 
 class DashboardController extends BaseStudentController
@@ -73,68 +75,13 @@ class DashboardController extends BaseStudentController
             ->getRow();
 
         /**
-         * 3) Jadwal konseling mendatang:
-         * - Individu:   cs.student_id = siswa
-         * - Kelompok:   ada sp.student_id = siswa
-         * - Klasikal:   cs.class_id = kelas siswa
-         *
-         * NOTE privasi:
-         * - jika is_confidential=1, topik disamarkan dan lokasi disembunyikan.
+         * 3) Jadwal/Kegiatan BK mendatang (semua jenis layanan BK, bukan hanya
+         * konseling). Diambil dari agregator jadwal read-only BkServiceService
+         * sesuai cakupan siswa. Hanya garis besar aman: jenis, tanggal-waktu,
+         * lokasi, status (tanpa topik/detail rahasia).
          */
-        $b = $this->db->table('counseling_sessions cs')
-            ->select('
-                cs.id,
-                cs.session_type,
-                cs.session_date,
-                cs.session_time,
-                cs.location,
-                cs.topic,
-                cs.status,
-                cs.is_confidential
-            ')
-            ->join(
-                'session_participants sp',
-                'sp.session_id = cs.id AND sp.student_id = ' . (int) $this->studentId . ' AND sp.deleted_at IS NULL',
-                'left'
-            )
-            ->where('cs.deleted_at', null)
-            ->where('DATE(cs.session_date) >=', $today)
-            ->where('cs.status !=', 'Dibatalkan')
-            ->groupStart()
-                // Individu
-                ->groupStart()
-                    ->where('cs.session_type', 'Individu')
-                    ->where('cs.student_id', (int) $this->studentId)
-                ->groupEnd()
-                // Kelompok (berdasarkan participant)
-                ->orGroupStart()
-                    ->where('cs.session_type', 'Kelompok')
-                    ->where('sp.student_id IS NOT NULL', null, false)
-                ->groupEnd();
-
-        // Klasikal hanya kalau classId valid (>0)
-        if ($classId > 0) {
-            $b->orGroupStart()
-                ->where('cs.session_type', 'Klasikal')
-                ->where('cs.class_id', $classId)
-            ->groupEnd();
-        }
-
-        $upcomingSessions = $b->groupEnd()
-            ->distinct()
-            ->orderBy('cs.session_date', 'ASC')
-            ->orderBy('cs.session_time', 'ASC')
-            ->limit(5)
-            ->get()
-            ->getResult();
-
-        // Samarkan konten confidential di list dashboard
-        foreach ($upcomingSessions as $s) {
-            if ((int) ($s->is_confidential ?? 0) === 1) {
-                $s->topic    = 'Sesi Konseling (Terbatas)';
-                $s->location = null;
-            }
-        }
+        $bk = new BkServiceService();
+        $upcomingSessions = $this->flattenSchedule($bk->scheduleByType('siswa', (int) $this->userId, 'upcoming'), 6);
 
         // 4) Meta kelas/tingkat untuk filter asesmen (dukung roman/angka)
         $gradeRoman = null;
@@ -223,6 +170,51 @@ class DashboardController extends BaseStudentController
             ->get()
             ->getResult();
 
+        // Kartu kecil
+        $dash = new DashboardService();
+        $availableAssessments = 0;
+        foreach ($assessments as $a) {
+            if (empty($a->has_done)) {
+                $availableAssessments++;
+            }
+        }
+
+        $cards = [
+            [
+                'label' => 'Jadwal/Kegiatan BK', 'value' => count($upcomingSessions),
+                'icon' => 'mdi mdi-calendar-clock', 'color' => 'primary',
+                'url' => base_url('student/jadwal-bk'), 'link_text' => 'Mendatang',
+            ],
+            [
+                'label' => 'Asesmen Tersedia', 'value' => $availableAssessments,
+                'icon' => 'mdi mdi-clipboard-list-outline', 'color' => 'success',
+                'url' => base_url('student/assessments'), 'link_text' => 'Kerjakan Asesmen',
+            ],
+            [
+                'label' => 'Hasil Asesmen', 'value' => count($recentResults),
+                'icon' => 'mdi mdi-clipboard-check-outline', 'color' => 'warning',
+                'url' => base_url('student/assessments'), 'link_text' => 'Lihat Hasil',
+            ],
+            [
+                'label' => 'Pesan Masuk', 'value' => $dash->unreadMessages((int) $this->userId),
+                'icon' => 'mdi mdi-email-outline', 'color' => 'info',
+                'url' => base_url('student/messages'), 'link_text' => 'Buka Pesan',
+            ],
+        ];
+
+        $welcome = [
+            'name' => $currentUser['full_name'] ?? 'Siswa',
+            'role_label' => 'Siswa',
+            'ay' => $activeAcademic['year'] ?? '',
+            'sem' => $activeAcademic['semester'] ?? '',
+            'desc' => 'Lihat data pribadi, jadwal kegiatan/acara BK, asesmen, serta info karier dan studi lanjut.',
+            'shortcuts' => [
+                ['label' => 'Profil Saya', 'url' => base_url('student/profile'), 'icon' => 'mdi-account-circle-outline'],
+                ['label' => 'Jadwal Kegiatan BK', 'url' => base_url('student/jadwal-bk'), 'icon' => 'mdi-calendar-heart'],
+                ['label' => 'Asesmen', 'url' => base_url('student/assessments'), 'icon' => 'mdi-clipboard-list-outline'],
+            ],
+        ];
+
         return view('student/dashboard', [
             'title'            => 'Dashboard Siswa',
             'student'          => $student,
@@ -232,7 +224,26 @@ class DashboardController extends BaseStudentController
             'recentResults'    => $recentResults,
             'currentUser'      => $currentUser,
             'activeAcademic'   => $activeAcademic,
+            'cards'            => $cards,
+            'welcome'          => $welcome,
         ]);
+    }
+
+    /** Ratakan hasil scheduleByType [type=>rows] menjadi satu daftar terurut. */
+    private function flattenSchedule(array $byType, int $limit = 6): array
+    {
+        $flat = [];
+        foreach ($byType as $rows) {
+            foreach ($rows as $r) {
+                $flat[] = $r;
+            }
+        }
+        usort($flat, static function ($a, $b) {
+            $da = $a['scheduled_at'] ?? $a['held_at'] ?? $a['created_at'] ?? '';
+            $db = $b['scheduled_at'] ?? $b['held_at'] ?? $b['created_at'] ?? '';
+            return strcmp((string) $da, (string) $db);
+        });
+        return array_slice($flat, 0, $limit);
     }
 
     protected function getActiveAcademicYearInfo(): array

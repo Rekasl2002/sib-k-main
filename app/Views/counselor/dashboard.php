@@ -1,37 +1,38 @@
 <?php
 // app/Views/counselor/dashboard.php
-// Fitur Dashboard Guru BK: ringkasan siswa binaan, jadwal, dan layanan BK final.
+// Dashboard Guru BK — tata letak patokan Admin + NNG.
 ?>
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
 <?php
-if (!function_exists('counselor_dash_num')) {
-    function counselor_dash_num($value): string
+$featureCounts    = is_array($featureCounts ?? null) ? $featureCounts : [];
+$monthlyTrend     = is_array($monthlyTrend ?? null) ? $monthlyTrend : ['labels' => [], 'data' => []];
+$upcoming         = $upcoming ?? [];
+$recentActivities = $recentActivities ?? [];
+
+if (! function_exists('dash_time')) {
+    function dash_time($v): string
     {
-        return number_format((int) ($value ?? 0), 0, ',', '.');
+        if (empty($v)) return '-';
+        $ts = strtotime((string) $v);
+        return $ts ? date('d M Y H:i', $ts) : (string) $v;
     }
 }
-
-$stats = is_array($stats ?? null) ? $stats : [];
-$todaySessions = is_array($todaySessions ?? null) ? $todaySessions : [];
-$upcomingSessions = is_array($upcomingSessions ?? null) ? $upcomingSessions : [];
-$assignedStudents = is_array($assignedStudents ?? null) ? $assignedStudents : [];
-$recentActivities = is_array($recentActivities ?? null) ? $recentActivities : [];
-$pendingSessions = is_array($pendingSessions ?? null) ? $pendingSessions : [];
-$assignedClasses = is_array($assignedClasses ?? null) ? $assignedClasses : [];
-$currentUser = is_array($currentUser ?? null) ? $currentUser : [];
-$activeAcademic = is_array($activeAcademic ?? null) ? $activeAcademic : [];
-$bkSummary = is_array($bkSummary ?? null) ? $bkSummary : [];
+if (! function_exists('dash_date')) {
+    function dash_date($v): string
+    {
+        if (empty($v)) return '-';
+        $ts = strtotime((string) $v);
+        return $ts ? date('d M Y H:i', $ts) : (string) $v;
+    }
+}
 ?>
 
-<div class="row mb-3">
+<div class="row">
   <div class="col-12">
     <div class="page-title-box d-flex align-items-center justify-content-between">
-      <div>
-        <h4 class="mb-1">Dashboard Guru BK</h4>
-        <p class="text-dark mb-0">Ringkasan layanan konseling dan siswa binaan.</p>
-      </div>
+      <h4 class="mb-0">Dashboard Guru BK</h4>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
           <li class="breadcrumb-item"><a href="<?= base_url() ?>">Halaman Utama Web</a></li>
@@ -42,209 +43,84 @@ $bkSummary = is_array($bkSummary ?? null) ? $bkSummary : [];
   </div>
 </div>
 
-<div class="row mb-3">
-  <div class="col-12">
-    <div class="card welcome-card">
+<?= $this->include('partials/dashboard/welcome') ?>
+<?= $this->include('partials/dashboard/stat_cards', ['cards' => $cards, 'col' => 'col-xl col-md-6']) ?>
+
+<!-- Zona tengah: chart -->
+<div class="row">
+  <div class="col-xl-7">
+    <div class="card">
       <div class="card-body">
-        <div class="row align-items-center">
-          <div class="col-md-8">
-            <h4 class="text-white mb-2">Selamat Datang, <?= esc($currentUser['full_name'] ?? 'Guru BK') ?>!</h4>
-            <p class="text-white-50 mb-0">
-              Tahun Ajaran <?= esc($activeAcademic['year_name'] ?? $activeAcademic['year'] ?? '-') ?>
-              <?php if (!empty($activeAcademic['semester'])): ?>
-                - Semester <?= esc($activeAcademic['semester']) ?>
-              <?php endif; ?>
-              <br>
-              Kelola layanan BK, tindak lanjut siswa, dan laporan layanan BK.
-            </p>
-          </div>
-          <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <a href="<?= base_url('counselor/reports') ?>" class="btn btn-light">
-              <i class="mdi mdi-file-chart me-1"></i> Lihat Laporan
-            </a>
-          </div>
-        </div>
+        <h4 class="card-title mb-4"><i class="mdi mdi-chart-bar me-2"></i>Jumlah Data per Fitur BK (Lingkup Saya)</h4>
+        <canvas id="featureBarChart" height="220"></canvas>
+      </div>
+    </div>
+  </div>
+  <div class="col-xl-5">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title mb-4"><i class="mdi mdi-chart-line me-2"></i>Catatan BK Dibuat (6 Bulan)</h4>
+        <canvas id="trendLineChart" height="220"></canvas>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Zona bawah: tabel detail -->
 <div class="row">
-  <?php
-    $cards = [
-        ['label' => 'Jadwal Hari Ini', 'value' => count($todaySessions), 'icon' => 'mdi mdi-calendar-today', 'color' => 'primary'],
-        ['label' => 'Jadwal Mendatang', 'value' => count($upcomingSessions), 'icon' => 'mdi mdi-calendar-clock', 'color' => 'success'],
-        ['label' => 'Siswa Binaan', 'value' => count($assignedStudents), 'icon' => 'mdi mdi-account-group', 'color' => 'info'],
-        ['label' => 'Perlu Tindak Lanjut', 'value' => count($pendingSessions), 'icon' => 'mdi mdi-clipboard-clock-outline', 'color' => 'warning'],
-    ];
-  ?>
-  <?php foreach ($cards as $card): ?>
-    <div class="col-xl-3 col-md-6 mb-3">
-      <div class="card mini-stats-wid h-100">
-        <div class="card-body">
-          <div class="d-flex">
-            <div class="flex-grow-1">
-              <p class="text-dark fw-medium mb-1"><?= esc($card['label']) ?></p>
-              <h4 class="mb-0"><?= counselor_dash_num($card['value']) ?></h4>
-            </div>
-            <div class="avatar-sm rounded-circle bg-soft-<?= esc($card['color']) ?> d-flex align-items-center justify-content-center">
-              <i class="<?= esc($card['icon']) ?> text-<?= esc($card['color']) ?> font-size-22"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  <?php endforeach; ?>
-</div>
-
-<div class="row">
-  <?php
-    $bkCards = [
-        ['label' => 'Total Layanan BK', 'value' => $bkSummary['total_services'] ?? 0, 'icon' => 'mdi mdi-clipboard-text-outline', 'color' => 'primary'],
-        ['label' => 'Jadwal Layanan', 'value' => $bkSummary['scheduled'] ?? 0, 'icon' => 'mdi mdi-calendar-clock', 'color' => 'info'],
-        ['label' => 'Perlu Tindak Lanjut', 'value' => $bkSummary['need_follow_up'] ?? 0, 'icon' => 'mdi mdi-clipboard-clock-outline', 'color' => 'warning'],
-        ['label' => 'Konsultasi & Pengaduan Aktif', 'value' => $bkSummary['complaints_open'] ?? 0, 'icon' => 'mdi mdi-message-alert-outline', 'color' => 'danger'],
-        ['label' => 'Penugasan Berjalan', 'value' => $bkSummary['assignments_open'] ?? 0, 'icon' => 'mdi mdi-account-arrow-right-outline', 'color' => 'success'],
-    ];
-  ?>
-  <?php foreach ($bkCards as $card): ?>
-    <div class="col-xl col-md-4 col-sm-6 mb-3">
-      <div class="card mini-stats-wid h-100">
-        <div class="card-body">
-          <div class="d-flex">
-            <div class="flex-grow-1">
-              <p class="text-dark fw-medium mb-1"><?= esc($card['label']) ?></p>
-              <h4 class="mb-0"><?= counselor_dash_num($card['value']) ?></h4>
-            </div>
-            <div class="avatar-sm rounded-circle bg-soft-<?= esc($card['color']) ?> d-flex align-items-center justify-content-center">
-              <i class="<?= esc($card['icon']) ?> text-<?= esc($card['color']) ?> font-size-22"></i>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  <?php endforeach; ?>
-</div>
-
-<?php if (!empty($bkSummary['by_type']) && is_array($bkSummary['by_type'])): ?>
-  <div class="row">
-    <div class="col-12 mb-3">
-      <div class="card">
-        <div class="card-body">
-          <h5 class="card-title mb-3">
-            <i class="mdi mdi-chart-box-outline text-primary me-1"></i>Jumlah Layanan per Jenis
-          </h5>
-          <div class="d-flex flex-wrap gap-2">
-            <?php foreach ($bkSummary['by_type'] as $type => $count): ?>
-              <span class="badge bg-light text-dark border px-3 py-2"><?= esc($type) ?>: <?= counselor_dash_num($count) ?></span>
-            <?php endforeach; ?>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-<?php endif; ?>
-
-<div class="row">
-  <div class="col-xl-7 mb-3">
-    <div class="card h-100">
+  <div class="col-xl-7">
+    <div class="card">
       <div class="card-body">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-          <h5 class="card-title mb-0">
-            <i class="mdi mdi-calendar-check-outline text-primary me-1"></i>Jadwal Hari Ini
-          </h5>
-          <a href="<?= base_url('counselor/counseling') ?>" class="btn btn-sm btn-soft-primary">Lihat Konseling</a>
+        <div class="d-flex align-items-center mb-3">
+          <h4 class="card-title mb-0 flex-grow-1"><i class="mdi mdi-calendar-check-outline me-2"></i>Jadwal/Kegiatan BK Mendatang</h4>
+          <a href="<?= base_url('counselor/counseling') ?>" class="btn btn-sm btn-primary">Lihat Semua <i class="mdi mdi-arrow-right ms-1"></i></a>
         </div>
-        <?php if (!empty($todaySessions)): ?>
+        <?php if (! empty($upcoming)): ?>
           <div class="table-responsive">
-            <table class="table table-sm table-hover align-middle mb-0">
+            <table class="table table-centered table-nowrap mb-0">
               <thead class="table-light">
-                <tr><th>Waktu</th><th>Siswa</th><th>Topik</th><th>Status</th></tr>
+                <tr><th>Jenis</th><th>Judul</th><th>Sasaran</th><th>Waktu</th><th>Status</th></tr>
               </thead>
               <tbody>
-                <?php foreach (array_slice($todaySessions, 0, 5) as $session): ?>
+                <?php foreach ($upcoming as $u): ?>
                   <tr>
-                    <td><?= esc($session['session_time'] ?? '-') ?></td>
-                    <td><?= esc($session['student_name'] ?? $session['full_name'] ?? '-') ?></td>
-                    <td><?= esc($session['topic'] ?? '-') ?></td>
-                    <td><span class="badge bg-light text-dark border"><?= esc($session['status'] ?? '-') ?></span></td>
+                    <td><span class="badge bg-soft-primary text-primary"><?= esc($u['service_type'] ?? '-') ?></span></td>
+                    <td><?= esc($u['title'] ?? '-') ?></td>
+                    <td><?= esc($u['student_name'] ?? $u['class_name'] ?? '-') ?></td>
+                    <td><?= dash_date($u['scheduled_at'] ?? $u['held_at'] ?? null) ?></td>
+                    <td><span class="badge bg-light text-dark border"><?= esc($u['status'] ?? '-') ?></span></td>
                   </tr>
                 <?php endforeach; ?>
               </tbody>
             </table>
           </div>
         <?php else: ?>
-          <p class="text-dark mb-0">Tidak ada jadwal konseling hari ini.</p>
+          <p class="text-dark mb-0">Tidak ada jadwal/kegiatan BK mendatang.</p>
         <?php endif; ?>
       </div>
     </div>
   </div>
 
-  <div class="col-xl-5 mb-3">
-    <div class="card h-100">
+  <div class="col-xl-5">
+    <div class="card">
       <div class="card-body">
-        <h5 class="card-title mb-3">
-          <i class="mdi mdi-google-classroom text-success me-1"></i>Kelas Binaan
-        </h5>
-        <?php if (!empty($assignedClasses)): ?>
-          <div class="d-flex flex-wrap gap-2">
-            <?php foreach ($assignedClasses as $class): ?>
-              <span class="badge bg-light text-dark border px-3 py-2">
-                <?= esc($class['class_name'] ?? '-') ?>
-              </span>
-            <?php endforeach; ?>
-          </div>
-        <?php else: ?>
-          <p class="text-dark mb-0">Belum ada kelas binaan aktif.</p>
-        <?php endif; ?>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row">
-  <div class="col-xl-6 mb-3">
-    <div class="card h-100">
-      <div class="card-body">
-        <h5 class="card-title mb-3">
-          <i class="mdi mdi-account-school-outline text-info me-1"></i>Siswa Binaan
-        </h5>
-        <?php if (!empty($assignedStudents)): ?>
-          <div class="table-responsive">
-            <table class="table table-sm table-hover align-middle mb-0">
-              <thead class="table-light">
-                <tr><th>Nama</th><th>Kelas</th><th>NISN</th></tr>
-              </thead>
-              <tbody>
-                <?php foreach (array_slice($assignedStudents, 0, 6) as $student): ?>
-                  <tr>
-                    <td><?= esc($student['full_name'] ?? $student['student_name'] ?? '-') ?></td>
-                    <td><?= esc($student['class_name'] ?? '-') ?></td>
-                    <td><?= esc($student['nisn'] ?? '-') ?></td>
-                  </tr>
-                <?php endforeach; ?>
-              </tbody>
-            </table>
-          </div>
-        <?php else: ?>
-          <p class="text-dark mb-0">Belum ada siswa binaan.</p>
-        <?php endif; ?>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-xl-6 mb-3">
-    <div class="card h-100">
-      <div class="card-body">
-        <h5 class="card-title mb-3">
-          <i class="mdi mdi-history text-secondary me-1"></i>Aktivitas Terbaru
-        </h5>
-        <?php if (!empty($recentActivities)): ?>
+        <h4 class="card-title mb-3"><i class="mdi mdi-history me-2"></i>Aktivitas Terbaru</h4>
+        <?php if (! empty($recentActivities)): ?>
           <div class="list-group list-group-flush">
-            <?php foreach (array_slice($recentActivities, 0, 6) as $activity): ?>
-              <div class="list-group-item px-0">
-                <div class="fw-semibold"><?= esc($activity['title'] ?? $activity['message'] ?? '-') ?></div>
-                <small class="text-dark"><?= esc($activity['created_at'] ?? $activity['time'] ?? '-') ?></small>
+            <?php foreach ($recentActivities as $act): ?>
+              <div class="list-group-item px-0 d-flex align-items-start">
+                <div class="avatar-xs me-3 mt-1">
+                  <span class="avatar-title rounded-circle bg-soft-<?= esc($act['color'] ?? 'primary') ?> text-<?= esc($act['color'] ?? 'primary') ?>">
+                    <i class="mdi <?= esc($act['icon'] ?? 'mdi-circle-medium') ?>"></i>
+                  </span>
+                </div>
+                <div class="flex-grow-1">
+                  <h6 class="mb-1 font-size-14"><?= esc($act['title'] ?? '-') ?></h6>
+                  <small class="text-dark">
+                    <span class="badge bg-light text-dark border me-1"><?= esc($act['type'] ?? '-') ?></span>
+                    <?= dash_time($act['time'] ?? null) ?>
+                  </small>
+                </div>
               </div>
             <?php endforeach; ?>
           </div>
@@ -256,4 +132,37 @@ $bkSummary = is_array($bkSummary ?? null) ? $bkSummary : [];
   </div>
 </div>
 
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  (function () {
+    const palette = ['#556ee6', '#34c38f', '#f1b44c', '#f46a6a', '#50a5f1', '#7b6cb6', '#02a499', '#ec4561', '#564ab1'];
+
+    const barCtx = document.getElementById('featureBarChart');
+    if (barCtx) {
+      new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: <?= json_encode(array_keys($featureCounts)) ?>,
+          datasets: [{ label: 'Jumlah Data', data: <?= json_encode(array_values($featureCounts)) ?>, backgroundColor: palette, borderRadius: 4 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+      });
+    }
+
+    const lineCtx = document.getElementById('trendLineChart');
+    if (lineCtx) {
+      new Chart(lineCtx, {
+        type: 'line',
+        data: {
+          labels: <?= json_encode($monthlyTrend['labels'] ?? []) ?>,
+          datasets: [{ label: 'Catatan BK', data: <?= json_encode($monthlyTrend['data'] ?? []) ?>, borderColor: '#556ee6', backgroundColor: 'rgba(85,110,230,0.1)', borderWidth: 2, fill: true, tension: 0.4 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+      });
+    }
+  })();
+</script>
 <?= $this->endSection() ?>

@@ -46,103 +46,15 @@ class DashboardController extends BaseController
             'upcoming_sessions' => 0,
         ];
 
-        // ID anak & kelas
-        $childIds = array_column($children, 'id');
-        $classIds = array_values(array_unique(array_filter(array_column($children, 'class_id'))));
-
-        // Jadwal konseling mendatang (Individu, Kelompok, Klasikal) — hanya yang relevan untuk parent
-        $upcoming = [];
-        if (!empty($childIds) || !empty($classIds)) {
-            $today = date('Y-m-d');
-
-            $qb = $this->db->table('counseling_sessions cs')
-                ->select("
-                    cs.id,
-                    cs.session_date,
-                    cs.session_time,
-
-                    /* Samarkan topik jika confidential dan bukan status Dijadwalkan */
-                    CASE
-                        WHEN cs.is_confidential = 1 AND cs.status <> 'Dijadwalkan'
-                            THEN 'Sesi Konseling (Terbatas)'
-                        ELSE cs.topic
-                    END AS topic,
-
-                    cs.status,
-                    cs.location,
-
-                    /* Siapa yang ditampilkan di kolom 'Anak' */
-                    CASE
-                        WHEN cs.session_type = 'Klasikal'
-                            THEN NULL
-                        ELSE COALESCE(s_ind.id, s_sp.id)
-                    END AS student_id,
-
-                    CASE
-                        WHEN cs.session_type = 'Klasikal'
-                            THEN CONCAT('Kelas ', COALESCE(c.class_name, ''))
-                        ELSE COALESCE(u_ind.full_name, u_sp.full_name)
-                    END AS full_name
-                ")
-                // Individu: murid yang dituju
-                ->join('students s_ind', 's_ind.id = cs.student_id AND s_ind.deleted_at IS NULL', 'left')
-                ->join('users u_ind', 'u_ind.id = s_ind.user_id AND u_ind.deleted_at IS NULL', 'left')
-
-                // Kelompok: peserta (join student + user), tapi hanya yang parent-nya adalah parent login
-                ->join('session_participants sp', 'sp.session_id = cs.id AND sp.deleted_at IS NULL', 'left')
-                ->join('students s_sp', 's_sp.id = sp.student_id AND s_sp.deleted_at IS NULL AND s_sp.parent_id = ' . (int) $parentId, 'left')
-                ->join('users u_sp', 'u_sp.id = s_sp.user_id AND u_sp.deleted_at IS NULL', 'left')
-
-                // Klasikal: ambil nama kelas untuk label
-                ->join('classes c', 'c.id = cs.class_id', 'left')
-
-                ->where('cs.deleted_at', null)
-                ->where('cs.session_date >=', $today)
-                ->where('cs.status', 'Dijadwalkan')
-                ->groupStart();
-
-            // Agar OR-group aman ketika salah satu list kosong
-            $added = false;
-
-            // Individu: sesi untuk anak parent
-            if (!empty($childIds)) {
-                $qb->whereIn('cs.student_id', $childIds);
-                $added = true;
-            }
-
-            // Kelompok: sesi yang punya peserta anak parent (pakai indikator s_sp.id tidak null)
-            if ($added) {
-                $qb->orWhere('s_sp.id IS NOT NULL', null, false);
-            } else {
-                $qb->where('s_sp.id IS NOT NULL', null, false);
-                $added = true;
-            }
-
-            // Klasikal: sesi untuk kelas anak parent
-            if (!empty($classIds)) {
-                if ($added) {
-                    $qb->orGroupStart();
-                } else {
-                    $qb->groupStart();
-                }
-
-                $qb->where('cs.session_type', 'Klasikal')
-                   ->whereIn('cs.class_id', $classIds)
-                   ->groupEnd();
-
-                $added = true;
-            }
-
-            $upcoming = $qb->groupEnd()
-                ->distinct()
-                ->orderBy('cs.session_date', 'ASC')
-                ->orderBy('cs.session_time', 'ASC')
-                ->limit(5)
-                ->get()
-                ->getResultArray();
-
-            $stats['upcoming_sessions'] = count($upcoming);
-        }
+        /**
+         * Jadwal/Kegiatan BK mendatang (semua jenis layanan BK, bukan hanya
+         * konseling) — diambil dari agregator jadwal read-only BkServiceService
+         * sesuai cakupan Orang Tua. Hanya garis besar aman: jenis, tanggal-waktu,
+         * lokasi, status.
+         */
+        $bk = new \App\Services\BkServiceService();
+        $upcoming = $this->flattenSchedule($bk->scheduleByType('orang-tua', $parentId, 'upcoming'), 8);
+        $stats['upcoming_sessions'] = count($upcoming);
 
         helper('auth');
 
@@ -153,15 +65,65 @@ class DashboardController extends BaseController
         // Tahun ajaran aktif + semester (pakai helper yang sama seperti Admin)
         $activeAcademic = $this->getActiveAcademicYearInfo();
 
+        $dash = new \App\Services\DashboardService();
+        $cards = [
+            [
+                'label' => 'Anak Terdaftar', 'value' => $stats['children'] ?? count($children),
+                'icon' => 'mdi mdi-account-child-circle', 'color' => 'primary',
+                'url' => base_url('parent/children'), 'link_text' => 'Daftar Anak',
+            ],
+            [
+                'label' => 'Jadwal/Kegiatan BK', 'value' => $stats['upcoming_sessions'] ?? 0,
+                'icon' => 'mdi mdi-calendar-clock', 'color' => 'success',
+                'url' => base_url('parent/jadwal-bk'), 'link_text' => 'Mendatang',
+            ],
+            [
+                'label' => 'Pesan Masuk', 'value' => $dash->unreadMessages($parentId),
+                'icon' => 'mdi mdi-email-outline', 'color' => 'info',
+                'url' => base_url('parent/messages'), 'link_text' => 'Buka Pesan',
+            ],
+        ];
+
+        $welcome = [
+            'name' => $currentUser['full_name'] ?? 'Orang Tua',
+            'role_label' => 'Orang Tua/Wali',
+            'ay' => $activeAcademic['year'] ?? '',
+            'sem' => $activeAcademic['semester'] ?? '',
+            'desc' => 'Pantau perkembangan anak, jadwal kegiatan/acara BK, dan info karier & studi lanjut.',
+            'shortcuts' => [
+                ['label' => 'Daftar Anak', 'url' => base_url('parent/children'), 'icon' => 'mdi-account-child-circle'],
+                ['label' => 'Laporan Anak', 'url' => base_url('parent/reports/children'), 'icon' => 'mdi-file-chart'],
+                ['label' => 'Konsultasi & Pengaduan', 'url' => base_url('parent/consultations'), 'icon' => 'mdi-message-alert-outline'],
+            ],
+        ];
 
         return view('parent/dashboard', [
             'title'            => 'Dashboard Orang Tua',
             'children'         => $children,
             'stats'            => $stats,
             'upcoming'         => $upcoming,
-            'currentUser'    => $currentUser,
-            'activeAcademic' => $activeAcademic,
+            'currentUser'      => $currentUser,
+            'activeAcademic'   => $activeAcademic,
+            'cards'            => $cards,
+            'welcome'          => $welcome,
         ]);
+    }
+
+    /** Ratakan hasil scheduleByType [type=>rows] menjadi satu daftar terurut. */
+    private function flattenSchedule(array $byType, int $limit = 8): array
+    {
+        $flat = [];
+        foreach ($byType as $rows) {
+            foreach ($rows as $r) {
+                $flat[] = $r;
+            }
+        }
+        usort($flat, static function ($a, $b) {
+            $da = $a['scheduled_at'] ?? $a['held_at'] ?? $a['created_at'] ?? '';
+            $db = $b['scheduled_at'] ?? $b['held_at'] ?? $b['created_at'] ?? '';
+            return strcmp((string) $da, (string) $db);
+        });
+        return array_slice($flat, 0, $limit);
     }
 
     protected function getActiveAcademicYearInfo(): array

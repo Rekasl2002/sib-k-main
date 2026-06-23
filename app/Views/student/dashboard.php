@@ -1,331 +1,176 @@
-<!-- app/Views/student/dashboard.php -->
+<?php
+// app/Views/student/dashboard.php
+// Dashboard Siswa — tata letak patokan Admin + NNG (tanpa chart).
+// Fokus pada Jadwal/Kegiatan BK (bukan "konseling" saja).
+?>
 <?= $this->extend('layouts/main') ?>
 <?= $this->section('content') ?>
 
 <?php
-$currentUser    = is_array($currentUser ?? null) ? $currentUser : (array) ($currentUser ?? []);
-$activeAcademic = is_array($activeAcademic ?? null) ? $activeAcademic : (array) ($activeAcademic ?? []);
-$ay  = trim((string) ($activeAcademic['year'] ?? ''));
-$sem = trim((string) ($activeAcademic['semester'] ?? ''));
-?>
+$student          = $student ?? null;
+$activeYear       = $activeYear ?? null;
+$upcomingSessions = is_array($upcomingSessions ?? null) ? $upcomingSessions : [];
+$assessments      = is_array($assessments ?? null) ? $assessments : [];
+$recentResults    = is_array($recentResults ?? null) ? $recentResults : [];
 
-<?php
-// Helper aman untuk ambil nilai dari array/objek
-if (!function_exists('v')) {
-  /**
-   * @param array|object|null $src
-   * @param string            $key
-   * @param mixed             $default
-   * @param bool              $escape  True: kembalikan nilai yang sudah di-esc
-   */
-  function v($src, string $key, $default = '', bool $escape = true) {
-    if (is_array($src)) {
-      $val = $src[$key] ?? $default;
-    } elseif (is_object($src)) {
-      $val = isset($src->$key) ? $src->$key : $default;
-    } else {
-      $val = $default;
+if (! function_exists('dash_date')) {
+    function dash_date($v): string
+    {
+        if (empty($v)) return '-';
+        $ts = strtotime((string) $v);
+        return $ts ? date('d M Y H:i', $ts) : (string) $v;
     }
-    return $escape ? esc($val) : $val;
-  }
 }
-
-// Fallback multi-key: ambil key pertama yang tersedia
-if (!function_exists('vx')) {
-  function vx($src, array $keys, $default='-') {
-    foreach ($keys as $k) {
-      $v = v($src, $k, null, false);
-      if ($v !== null && $v !== '') return esc($v);
+if (! function_exists('sv')) {
+    function sv($src, string $key, $default = '-')
+    {
+        if (is_array($src)) return esc($src[$key] ?? $default);
+        if (is_object($src)) return esc($src->$key ?? $default);
+        return esc($default);
     }
-    return esc($default);
-  }
-}
-
-if (!function_exists('badgeClass')) {
-  function badgeClass($status) {
-    $s = strtolower((string)$status);
-    return match (true) {
-      str_contains($s,'selesai')      => 'bg-success',
-      str_contains($s,'dijadwalkan')  => 'bg-info',
-      str_contains($s,'proses')       => 'bg-primary',
-      str_contains($s,'batal')        => 'bg-danger',
-      str_contains($s,'tidak hadir')  => 'bg-warning',
-      default                         => 'bg-secondary',
-    };
-  }
 }
 ?>
 
-<div class="page-content">
-  <div class="container-fluid">
-
-    <!-- Title / Breadcrumb -->
-    <div class="row">
-      <div class="col-12">
-        <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-          <h4 class="mb-sm-0">Dashboard Siswa</h4>
-          <div class="page-title-right">
-            <ol class="breadcrumb m-0">
-              <li class="breadcrumb-item"><a href="<?= base_url() ?>">Halaman Utama Web</a></li>
-              <li class="breadcrumb-item active">Dashboard</li>
-            </ol>
-          </div>
-        </div>
+<div class="row">
+  <div class="col-12">
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0">Dashboard Siswa</h4>
+      <div class="page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="<?= base_url() ?>">Halaman Utama Web</a></li>
+          <li class="breadcrumb-item active">Dashboard</li>
+        </ol>
       </div>
     </div>
-
-<!-- Welcome Card Siswa (style sama seperti Admin) -->
-<div class="row mb-3">
-    <div class="col-12">
-        <div class="card welcome-card">
-            <div class="card-body">
-                <div class="row align-items-center g-3">
-                    <div class="col-md-7">
-                        <h4 class="text-white mb-2">
-                            Selamat Datang, <?= esc($currentUser['full_name'] ?? 'Siswa') ?>!
-                        </h4>
-
-                        <p class="text-white-50 mb-2">
-                            Anda login sebagai <strong>Siswa</strong>
-                            <?php if ($ay !== '' && $sem !== ''): ?>
-                                <span class="ms-1">• Tahun Ajaran <?= esc($ay) ?> Semester <?= esc($sem) ?></span>
-                            <?php elseif ($ay !== ''): ?>
-                                <span class="ms-1">• Tahun Ajaran <?= esc($ay) ?></span>
-                            <?php endif; ?>
-                        </p>
-
-                        <p class="text-white-50 mb-0">
-                            Di sini Anda dapat melihat data pribadi, jadwal kegiatan/acara BK, asesmen, serta info karier dan info studi lanjut.
-                        </p>
-                    </div>
-
-                    <!-- Tombol cepat (kanan) -->
-                    <div class="col-md-5">
-                        <div class="d-grid gap-2">
-                            <a href="<?= base_url('student/profile') ?>" class="btn btn-light">
-                                <i class="mdi mdi-account-circle-outline me-1"></i> Profil Saya
-                            </a>
-                            <a href="<?= base_url('student/staff') ?>" class="btn btn-light">
-                                <i class="mdi mdi-account-circle-outline me-1"></i> Info Guru
-                            </a>
-                        </div>
-                    </div>
-                </div><!-- /row -->
-            </div>
-        </div>
-    </div>
+  </div>
 </div>
 
-<!-- Akses Cepat (Fase 7: dashboard fokus jadwal mendatang + tombol cepat) -->
-<?php
-helper('url');
-$quickShortcuts = [
-  ['label' => 'Jadwal Kegiatan/Acara BK', 'url' => base_url('student/jadwal-bk'), 'icon' => 'mdi-calendar-heart', 'color' => 'success'],
-  ['label' => 'Profil Saya', 'url' => base_url('student/profile'), 'icon' => 'mdi-account-circle', 'color' => 'primary'],
-  ['label' => 'Info Guru', 'url' => base_url('student/staff'), 'icon' => 'mdi-account-tie', 'color' => 'info'],
-  ['label' => 'Asesmen', 'url' => base_url('student/assessments'), 'icon' => 'mdi-clipboard-list-outline', 'color' => 'warning'],
-];
-if (! function_exists('consultation_role_can_view') || consultation_role_can_view('siswa')) {
-  $quickShortcuts[] = ['label' => 'Konsultasi & Pengaduan', 'url' => base_url('student/consultations'), 'icon' => 'mdi-message-alert-outline', 'color' => 'danger'];
-}
-$quickShortcuts[] = ['label' => 'Info Karier & Studi', 'url' => base_url('student/career'), 'icon' => 'mdi-school-outline', 'color' => 'secondary'];
-$quickShortcuts[] = ['label' => 'Pesan', 'url' => base_url('student/messages'), 'icon' => 'mdi-email', 'color' => 'primary'];
-echo $this->include('role_features/_quick_actions');
-?>
+<?= $this->include('partials/dashboard/welcome') ?>
+<?= $this->include('partials/dashboard/stat_cards') ?>
 
-    <!-- Welcome + Info ringkas -->
-    <div class="row">
-      <div class="col-xl-8">
-        <div class="card">
-          <div class="card-body">
-            <div class="row g-3">
-              <div class="col-md-4">
-                <div class="p-3 bg-light rounded">
-                  <div class="fw-semibold">Kelas</div>
-                  <div><?= v($student ?? [],'class_name','-') ?></div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="p-3 bg-light rounded">
-                  <div class="fw-semibold">NIK / NISN</div>
-                  <div class="small">
-                    <?= v($student ?? [], 'nik', '-') ?> / <?= v($student ?? [], 'nisn', '-') ?>
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-4">
-                <div class="p-3 bg-light rounded">
-                  <div class="fw-semibold">Tahun Ajaran Aktif</div>
-                  <div>
-                    <!-- aman untuk year_label ATAU year_name -->
-                    <?= vx($activeYear ?? [], ['year_label','year_name'], '-') ?>
-                    <?php if (!empty(v($activeYear ?? [], 'semester', '', false))): ?>
-                      (<?= v($activeYear ?? [],'semester','') ?>)
-                    <?php endif; ?>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Aksi cepat -->
-            <div class="mt-3 d-flex flex-wrap gap-2">
-              <a href="<?= function_exists('route_to') ? route_to('student.schedule.request') : base_url('student/schedule/request') ?>" class="btn btn-sm btn-outline-primary">
-                <i class="mdi mdi-calendar-plus-outline me-1"></i> Ajukan Konseling
-              </a>
-              <!-- <a href="<?= function_exists('route_to') ? route_to('student.assessments') : base_url('student/assessments') ?>" class="btn btn-sm btn-outline-success">
-                <i class="mdi mdi-clipboard-check-outline me-1"></i> Lihat Asesmen
-              </a>-->
-              <!--<a href="<?= function_exists('route_to') ? route_to('student.assessments.results') : base_url('student/assessments/results') ?>" class="btn btn-sm btn-outline-secondary">
-                <i class="mdi mdi-chart-line me-1"></i> Hasil Saya
-              </a>-->
-              <a href="<?= base_url('student/schedule') ?>" class="btn btn-sm btn-outline-secondary">
-                <i class="mdi mdi-calendar-month-outline me-1"></i> Jadwal Konseling
-              </a>
-              <!--<a href="<?= base_url('student/career') ?>" class="btn btn-sm btn-outline-info">
-                <i class="mdi mdi-compass-outline me-1"></i> Jelajahi Karier
-              </a>-->
+<!-- Info ringkas siswa -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded">
+              <div class="fw-semibold">Kelas</div>
+              <div><?= sv($student, 'class_name', '-') ?></div>
             </div>
           </div>
-        </div>
-
-        <!-- Jadwal Konseling Mendatang -->
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title mb-3">Jadwal Konseling Mendatang</h5>
-            <?php if (!empty($upcomingSessions) && is_array($upcomingSessions)): ?>
-              <div class="table-responsive">
-                <table class="table table-sm align-middle">
-                  <thead>
-                    <tr>
-                      <th>Tanggal</th>
-                      <th>Waktu</th>
-                      <th>Jenis</th>
-                      <th>Lokasi</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <?php foreach ($upcomingSessions as $s): ?>
-                      <?php $s = is_array($s) ? $s : (array)$s; ?>
-                      <tr>
-                        <td><?= esc($s['session_date'] ?? '-') ?></td>
-                        <td><?= esc(($s['session_time'] ?? '') ?: '-') ?></td>
-                        <td><?= esc($s['session_type'] ?? '-') ?></td>
-                        <td><?= esc(($s['location'] ?? '') ?: '-') ?></td>
-                        <td><span class="badge <?= badgeClass($s['status'] ?? '') ?>"><?= esc($s['status'] ?? '-') ?></span></td>
-                      </tr>
-                    <?php endforeach; ?>
-                  </tbody>
-                </table>
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded">
+              <div class="fw-semibold">NIK / NISN</div>
+              <div class="small"><?= sv($student, 'nik', '-') ?> / <?= sv($student, 'nisn', '-') ?></div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="p-3 bg-light rounded">
+              <div class="fw-semibold">Tahun Ajaran Aktif</div>
+              <div>
+                <?= sv($activeYear, 'year_label', '-') ?>
+                <?php $semVal = is_object($activeYear) ? ($activeYear->semester ?? '') : (is_array($activeYear) ? ($activeYear['semester'] ?? '') : ''); ?>
+                <?php if ($semVal !== ''): ?>(<?= esc($semVal) ?>)<?php endif; ?>
               </div>
-            <?php else: ?>
-              <p class="text-dark mb-0">Belum ada jadwal konseling terdekat.</p>
-            <?php endif; ?>
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
 
-      <!-- Sisi kanan: Asesmen & Hasil Terbaru + Karier -->
-      <div class="col-xl-4">
-
-        <!-- Asesmen Tersedia 
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title mb-3">Asesmen Tersedia</h5>
-            <?php if (!empty($assessments) && is_array($assessments)): ?>
-              <ul class="list-group">
-                <?php foreach ($assessments as $a): ?>
-                  <?php
-                    $a = is_array($a) ? $a : (array)$a;
-
-                    // Alternatif yang kamu pilih: sembunyikan item yang sudah dikerjakan.
-                    // Controller idealnya sudah menyaring via HAVING; ini guard tambahan jika flag tersedia.
-                    if (!empty($a['has_done'])) {
-                      continue; // skip yang sudah Completed/Graded
-                    }
-                  ?>
-                  <li class="list-group-item d-flex justify-content-between align-items-start">
-                    <div class="me-auto">
-                      <div class="fw-semibold"><?= esc($a['title'] ?? 'Tanpa Judul') ?></div>
-                      <small class="text-muted">
-                        <?= esc($a['assessment_type'] ?? 'Assessment') ?>
-                        <?php if (!empty($a['total_questions'])): ?>
-                          • <?= esc($a['total_questions']) ?> soal
-                        <?php endif; ?>
-                      </small>
-                    </div>
-                    <a class="btn btn-sm btn-primary"
-                       href="<?= function_exists('route_to')
-                              ? route_to('student.assessments.take', (int)($a['id'] ?? 0))
-                              : base_url('student/assessments/take/'.(int)($a['id'] ?? 0)) ?>">
-                      Kerjakan
-                    </a>
-                  </li>
-                <?php endforeach; ?>
-              </ul>
-            <?php else: ?>
-              <p class="text-muted mb-0">Tidak ada asesmen tersedia saat ini.</p>
-            <?php endif; ?>
-          </div>
-        </div>-->
-
-        <!-- Hasil Asesmen Terbaru 
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title mb-3">Hasil Asesmen Terbaru</h5>
-            <?php if (!empty($recentResults) && is_array($recentResults)): ?>
-              <ul class="list-group">
-                <?php foreach ($recentResults as $r): ?>
-                  <?php $r = is_array($r) ? $r : (array)$r; ?>
-                  <li class="list-group-item d-flex justify-content-between align-items-start">
-                    <div class="me-auto">
-                      <div class="fw-semibold"><?= esc($r['title'] ?? '—') ?></div>
-                      <small class="text-muted">
-                        <?= esc($r['status'] ?? '-') ?>
-                        <?php if (isset($r['percentage'])): ?> • <?= esc($r['percentage']) ?>%<?php endif; ?>
-                      </small>
-                    </div>
-                    <?php if (!empty($r['id'])): ?>
-                      <a class="btn btn-sm btn-outline-secondary"
-                         href="<?= function_exists('route_to')
-                                ? route_to('student.assessments.review', (int)$r['id'])
-                                : base_url('student/assessments/review/'.(int)$r['id']) ?>">
-                        Lihat
-                      </a>
-                    <?php endif; ?>
-                  </li>
-                <?php endforeach; ?>
-              </ul>
-            <?php else: ?>
-              <p class="text-muted mb-0">Belum ada hasil baru.</p>
-            <?php endif; ?>
-          </div>
-        </div>-->
-
-        <!-- Opsional: Sorotan Karier -->
-        <?php if (!empty($careerHighlights) && is_array($careerHighlights)): ?>
-        <div class="card">
-          <div class="card-body">
-            <h5 class="card-title mb-3">Sorotan Karier</h5>
-            <ul class="list-group">
-              <?php foreach ($careerHighlights as $c): ?>
-                <?php $c = is_array($c) ? $c : (array)$c; ?>
-                <li class="list-group-item d-flex justify-content-between align-items-start">
-                  <div class="me-auto">
-                    <div class="fw-semibold"><?= esc($c['title'] ?? 'Karier') ?></div>
-                    <small class="text-dark"><?= esc($c['sector'] ?? '-') ?></small>
-                  </div>
-                  <a class="btn btn-sm btn-outline-info" href="<?= base_url('student/career/'.(int)($c['id'] ?? 0)) ?>">Detail</a>
-                </li>
-              <?php endforeach; ?>
-            </ul>
-          </div>
+<!-- Zona bawah: tabel detail -->
+<div class="row">
+  <div class="col-xl-7">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <h4 class="card-title mb-0 flex-grow-1"><i class="mdi mdi-calendar-check-outline me-2"></i>Jadwal/Kegiatan BK Mendatang</h4>
+          <a href="<?= base_url('student/jadwal-bk') ?>" class="btn btn-sm btn-primary">Lihat Semua <i class="mdi mdi-arrow-right ms-1"></i></a>
         </div>
+        <?php if (! empty($upcomingSessions)): ?>
+          <div class="table-responsive">
+            <table class="table table-centered table-nowrap mb-0">
+              <thead class="table-light">
+                <tr><th>Jenis</th><th>Tanggal & Waktu</th><th>Lokasi</th><th>Status</th></tr>
+              </thead>
+              <tbody>
+                <?php foreach ($upcomingSessions as $s): ?>
+                  <?php $s = is_array($s) ? $s : (array) $s; ?>
+                  <tr>
+                    <td><span class="badge bg-soft-primary text-primary"><?= esc($s['service_type'] ?? '-') ?></span></td>
+                    <td><?= dash_date($s['scheduled_at'] ?? $s['held_at'] ?? null) ?></td>
+                    <td><?= esc($s['location'] ?? '') ?: '-' ?></td>
+                    <td><span class="badge bg-light text-dark border"><?= esc($s['status'] ?? '-') ?></span></td>
+                  </tr>
+                <?php endforeach; ?>
+              </tbody>
+            </table>
+          </div>
+        <?php else: ?>
+          <p class="text-dark mb-0">Belum ada jadwal/kegiatan BK terdekat.</p>
         <?php endif; ?>
+      </div>
+    </div>
+  </div>
 
+  <div class="col-xl-5">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title mb-3"><i class="mdi mdi-clipboard-list-outline me-2"></i>Asesmen Tersedia</h4>
+        <?php
+        $availList = array_filter($assessments, static function ($a) {
+            $a = is_array($a) ? $a : (array) $a;
+            return empty($a['has_done']);
+        });
+        ?>
+        <?php if (! empty($availList)): ?>
+          <ul class="list-group list-group-flush">
+            <?php foreach ($availList as $a): ?>
+              <?php $a = is_array($a) ? $a : (array) $a; ?>
+              <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                <div class="me-auto">
+                  <div class="fw-semibold"><?= esc($a['title'] ?? 'Tanpa Judul') ?></div>
+                  <small class="text-dark"><?= esc($a['assessment_type'] ?? 'Asesmen') ?></small>
+                </div>
+                <a class="btn btn-sm btn-primary" href="<?= base_url('student/assessments/take/' . (int) ($a['id'] ?? 0)) ?>">Kerjakan</a>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        <?php else: ?>
+          <p class="text-dark mb-0">Tidak ada asesmen tersedia saat ini.</p>
+        <?php endif; ?>
       </div>
     </div>
 
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title mb-3"><i class="mdi mdi-clipboard-check-outline me-2"></i>Hasil Asesmen Terbaru</h4>
+        <?php if (! empty($recentResults)): ?>
+          <ul class="list-group list-group-flush">
+            <?php foreach ($recentResults as $r): ?>
+              <?php $r = is_array($r) ? $r : (array) $r; ?>
+              <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                <div class="me-auto">
+                  <div class="fw-semibold"><?= esc($r['title'] ?? '—') ?></div>
+                  <small class="text-dark">
+                    <?= esc($r['status'] ?? '-') ?><?php if (isset($r['percentage'])): ?> • <?= esc($r['percentage']) ?>%<?php endif; ?>
+                  </small>
+                </div>
+                <?php if (! empty($r['id'])): ?>
+                  <a class="btn btn-sm btn-outline-secondary" href="<?= base_url('student/assessments/review/' . (int) $r['id']) ?>">Lihat</a>
+                <?php endif; ?>
+              </li>
+            <?php endforeach; ?>
+          </ul>
+        <?php else: ?>
+          <p class="text-dark mb-0">Belum ada hasil asesmen.</p>
+        <?php endif; ?>
+      </div>
+    </div>
   </div>
 </div>
 

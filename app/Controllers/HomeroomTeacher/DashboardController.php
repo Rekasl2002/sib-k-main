@@ -3,154 +3,132 @@
 /**
  * File Path: app/Controllers/HomeroomTeacher/DashboardController.php
  *
- * Homeroom Teacher Dashboard Controller
- * Menampilkan dashboard untuk Wali Kelas dengan statistik kelas yang diampu
- *
- * @package    SIB-K
- * @subpackage Controllers/HomeroomTeacher
- * @category   Controller
- * @author     Development Team
- * @created    2025-01-07
+ * Wali Kelas • Dashboard
+ * Tata letak patokan Admin + NNG: welcome + 3 shortcut, kartu kecil, chart
+ * (komposisi siswa + jumlah data per fitur BK kelas), dan tabel Jadwal/Kegiatan
+ * BK Mendatang kelas binaan. Fokus pada kegiatan BK (bukan "konseling" saja).
  */
 
 namespace App\Controllers\HomeroomTeacher;
 
 use App\Controllers\BaseController;
-use App\Models\ClassModel;
-use App\Models\StudentModel;
-use App\Models\CounselingSessionModel;
-use CodeIgniter\I18n\Time;
-
+use App\Services\DashboardService;
+use App\Services\BkServiceService;
 
 class DashboardController extends BaseController
 {
-    protected $classModel;
-    protected $studentModel;
-    protected $sessionModel;
     protected $db;
+    protected DashboardService $dash;
+    protected BkServiceService $bk;
 
-    /**
-     * Constructor
-     */
     public function __construct()
     {
-        $this->classModel     = new ClassModel();
-        $this->studentModel   = new StudentModel();
-        $this->sessionModel   = new CounselingSessionModel();
-        $this->db             = \Config\Database::connect();
-
-        // Load helpers
-        helper(['auth', 'permission', 'date', 'response']);
+        $this->db   = \Config\Database::connect();
+        $this->dash = new DashboardService();
+        $this->bk   = new BkServiceService();
+        helper(['auth', 'permission', 'url']);
     }
 
-    /**
-     * Display homeroom teacher dashboard
-     *
-     * @return string|\CodeIgniter\HTTP\RedirectResponse
-     */
     public function index()
     {
-        // Check authentication
-        if (!is_logged_in()) {
+        if (! is_logged_in()) {
             return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
         }
-
-        // Check if user is homeroom teacher
-        if (!is_homeroom_teacher()) {
+        if (! is_homeroom_teacher()) {
             return redirect()->to(get_dashboard_url())->with('error', 'Akses ditolak');
         }
 
-        // ===== FIX: gunakan helper auth_id() (bukan current_user_id()) =====
-        $userId = auth_id();
-        if (!$userId) {
+        $userId = (int) auth_id();
+        if (! $userId) {
             return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu');
         }
-        $userId = (int) $userId;
 
-        // Get homeroom teacher's classes. Satu wali bisa memegang lebih dari satu kelas
-        // pada data demo, jadi dashboard dihitung dari seluruh kelas perwaliannya.
         $classes = $this->getHomeroomClasses($userId);
-
         if (empty($classes)) {
-            $data = [
-                'title'       => 'Dashboard Wali Kelas',
-                'pageTitle'   => 'Dashboard Wali Kelas',
-                'breadcrumbs' => [
-                    ['title' => 'Dashboard', 'url' => '#', 'active' => true],
-                ],
-                'hasClass' => false,
-                'message'  => 'Anda belum ditugaskan sebagai wali kelas. Silakan hubungi administrator.',
-            ];
-
-            return view('homeroom_teacher/dashboard', $data);
+            return view('homeroom_teacher/dashboard', [
+                'pageTitle' => 'Dashboard Wali Kelas',
+                'hasClass'  => false,
+                'message'   => 'Anda belum ditugaskan sebagai wali kelas. Silakan hubungi administrator.',
+            ]);
         }
 
         $classIds = $this->classIds($classes);
         $class    = $this->summarizeHomeroomClasses($classes);
+        $stats    = $this->getClassStatistics($classIds);
+        $role     = 'wali-kelas';
 
-        $stats = $this->getClassStatistics($classIds);
+        $genderMale   = (int) ($stats['gender_distribution']['male'] ?? 0);
+        $genderFemale = (int) ($stats['gender_distribution']['female'] ?? 0);
 
-        $attentionStudents = $this->getAttentionStudents($classIds, 5);
+        $cards = [
+            [
+                'label' => 'Total Siswa', 'value' => $stats['total_students'] ?? 0,
+                'icon' => 'mdi mdi-account-group', 'color' => 'primary',
+                'url' => base_url('homeroom/my-class'), 'link_text' => 'Lihat Kelas Binaan',
+            ],
+            [
+                'label' => 'Kegiatan BK (Kelas)', 'value' => $this->dash->catatanKegiatanCount($role, $userId),
+                'icon' => 'mdi mdi-clipboard-text-outline', 'color' => 'success',
+                'url' => base_url('homeroom/jadwal-bk'), 'link_text' => 'Jadwal Kegiatan BK',
+            ],
+            [
+                'label' => 'Kelas Binaan', 'value' => (int) ($class['class_count'] ?? count($classes)),
+                'icon' => 'mdi mdi-google-classroom', 'color' => 'warning',
+                'url' => base_url('homeroom/my-class'), 'link_text' => esc($class['class_name'] ?? '-'),
+            ],
+            [
+                'label' => 'Pesan Masuk', 'value' => $this->dash->unreadMessages($userId),
+                'icon' => 'mdi mdi-email-outline', 'color' => 'info',
+                'url' => base_url('homeroom/messages'), 'link_text' => 'Buka Pesan',
+            ],
+        ];
 
-        $recentSessions = $this->getRecentSessions($classIds, 5);
-
-        $currentUser = auth_user();
+        $upcoming = $this->flattenSchedule($this->bk->scheduleByType($role, $userId, 'upcoming'), 8);
 
         $data = [
-            'title'               => 'Dashboard Wali Kelas',
-            'pageTitle'           => 'Dashboard Wali Kelas',
-            'breadcrumbs'         => [
-                ['title' => 'Dashboard', 'url' => '#', 'active' => true],
+            'pageTitle'   => 'Dashboard Wali Kelas',
+            'hasClass'    => true,
+            'class'       => $class,
+            'currentUser' => auth_user(),
+            'welcome' => [
+                'name' => (auth_user()['full_name'] ?? 'Wali Kelas'),
+                'role_label' => 'Wali Kelas',
+                'ay' => $class['year_name'] ?? '',
+                'sem' => $class['semester'] ?? '',
+                'desc' => 'Pantau siswa kelas binaan dan jadwal/kegiatan BK yang melibatkan kelas Anda.',
+                'shortcuts' => [
+                    ['label' => 'Kelas Binaan', 'url' => base_url('homeroom/my-class'), 'icon' => 'mdi-google-classroom'],
+                    ['label' => 'Laporan Kelas', 'url' => base_url('homeroom/reports'), 'icon' => 'mdi-file-chart'],
+                    ['label' => 'Konsultasi & Pengaduan', 'url' => base_url('homeroom/consultations'), 'icon' => 'mdi-message-alert-outline'],
+                ],
             ],
-            'hasClass'            => true,
-            'class'               => $class,
-            'classes'             => $classes,
-            'classIds'            => $classIds,
-            'stats'               => $stats,
-            'attentionStudents'   => $attentionStudents,
-            'recentSessions'      => $recentSessions,
-            'currentUser'         => $currentUser,
+            'cards'         => $cards,
+            'genderMale'    => $genderMale,
+            'genderFemale'  => $genderFemale,
+            'featureCounts' => $this->dash->featureCounts($role, $userId),
+            'upcoming'      => $upcoming,
         ];
 
         return view('homeroom_teacher/dashboard', $data);
     }
 
-    /**
-     * Get statistics via AJAX
-     *
-     * @return \CodeIgniter\HTTP\ResponseInterface
-     */
-    public function getStats()
+    /** Ratakan hasil scheduleByType [type=>rows] menjadi satu daftar terurut. */
+    private function flattenSchedule(array $byType, int $limit = 8): array
     {
-        // Check authentication
-        if (!is_logged_in() || !is_homeroom_teacher()) {
-            return json_unauthorized('Unauthorized access');
+        $flat = [];
+        foreach ($byType as $rows) {
+            foreach ($rows as $r) {
+                $flat[] = $r;
+            }
         }
-
-        // ===== FIX: gunakan helper auth_id() (bukan current_user_id()) =====
-        $userId = auth_id();
-        if (!$userId) {
-            return json_unauthorized('Unauthorized access');
-        }
-        $userId = (int) $userId;
-
-        $classes = $this->getHomeroomClasses($userId);
-
-        if (empty($classes)) {
-            return json_error('Class not found');
-        }
-
-        $stats = $this->getClassStatistics($this->classIds($classes));
-
-        return json_success($stats, 'Statistics retrieved successfully');
+        usort($flat, static function ($a, $b) {
+            $da = $a['scheduled_at'] ?? $a['held_at'] ?? $a['created_at'] ?? '';
+            $db = $b['scheduled_at'] ?? $b['held_at'] ?? $b['created_at'] ?? '';
+            return strcmp((string) $da, (string) $db);
+        });
+        return array_slice($flat, 0, $limit);
     }
 
-    /**
-     * Get homeroom teacher's classes.
-     *
-     * @param int $userId
-     * @return array<int, array<string, mixed>>
-     */
     private function getHomeroomClasses($userId): array
     {
         try {
@@ -163,33 +141,23 @@ class DashboardController extends BaseController
                 ->where('academic_years.is_active', 1)
                 ->orderBy('classes.grade_level', 'ASC')
                 ->orderBy('classes.class_name', 'ASC')
-                ->orderBy('classes.id', 'ASC')
-                ->get()
-                ->getResultArray();
+                ->get()->getResultArray();
         } catch (\Exception $e) {
             log_message('error', '[HOMEROOM DASHBOARD] Get classes error: ' . $e->getMessage());
             return [];
         }
     }
 
-    /**
-     * Keep a compact class payload for the view while still supporting several
-     * classes in the controller calculations.
-     */
     private function summarizeHomeroomClasses(array $classes): array
     {
         if (count($classes) <= 1) {
             return $classes[0] ?? [];
         }
-
         $summary = $classes[0];
         $summary['id'] = null;
         $summary['class_count'] = count($classes);
         $summary['is_multiple'] = true;
-        $summary['class_name'] = implode(', ', array_map(static function ($row) {
-            return (string) ($row['class_name'] ?? '-');
-        }, $classes));
-
+        $summary['class_name'] = implode(', ', array_map(static fn($row) => (string) ($row['class_name'] ?? '-'), $classes));
         return $summary;
     }
 
@@ -202,7 +170,6 @@ class DashboardController extends BaseController
                 $ids[] = $id;
             }
         }
-
         return array_values(array_unique($ids));
     }
 
@@ -211,57 +178,34 @@ class DashboardController extends BaseController
         $ids = is_array($classIds) ? $classIds : [$classIds];
         $ids = array_map('intval', $ids);
         $ids = array_filter($ids, static fn($id) => $id > 0);
-
         return array_values(array_unique($ids));
     }
 
     private function applyClassFilter($builder, string $field, $classIds)
     {
         $ids = $this->normalizeClassIds($classIds);
-
         if (count($ids) === 1) {
             return $builder->where($field, $ids[0]);
         }
-
         return $builder->whereIn($field, $ids ?: [0]);
     }
 
-    /**
-     * Get class statistics
-     *
-     * @param int|array $classIds
-     * @return array
-     */
     private function getClassStatistics($classIds)
     {
         $classIds = $this->normalizeClassIds($classIds);
-        $emptyStats = [
-            'total_students'         => 0,
-            'students_in_counseling' => 0,
-            'gender_distribution'    => ['male' => 0, 'female' => 0],
+        $out = [
+            'total_students'      => 0,
+            'gender_distribution' => ['male' => 0, 'female' => 0],
         ];
-
         if (empty($classIds)) {
-            return $emptyStats;
+            return $out;
         }
-
         try {
             $studentFilter = ['status' => 'Aktif', 'deleted_at' => null];
-            $studentCountBuilder = $this->db->table('students')->where($studentFilter);
-            $this->applyClassFilter($studentCountBuilder, 'class_id', $classIds);
-            $emptyStats['total_students'] = $studentCountBuilder->countAllResults();
 
-            $currentMonth = date('m');
-            $currentYear  = date('Y');
-            $studentsCounselingBuilder = $this->db->table('counseling_sessions')
-                ->select('COUNT(DISTINCT counseling_sessions.student_id) as count')
-                ->join('students', 'students.id = counseling_sessions.student_id')
-                ->where('MONTH(counseling_sessions.session_date)', $currentMonth)
-                ->where('YEAR(counseling_sessions.session_date)', $currentYear)
-                ->where('counseling_sessions.deleted_at', null);
-            $this->applyClassFilter($studentsCounselingBuilder, 'students.class_id', $classIds);
-            $rowStudentsCounseling = $studentsCounselingBuilder->get()->getRow();
-            $emptyStats['students_in_counseling'] = (int) ($rowStudentsCounseling->count ?? 0);
+            $cnt = $this->db->table('students')->where($studentFilter);
+            $this->applyClassFilter($cnt, 'class_id', $classIds);
+            $out['total_students'] = $cnt->countAllResults();
 
             $genderRow = $this->db->table('students')
                 ->select("
@@ -272,66 +216,13 @@ class DashboardController extends BaseController
             $this->applyClassFilter($genderRow, 'class_id', $classIds);
             $genderRow = $genderRow->get()->getRowArray();
 
-            $emptyStats['gender_distribution'] = [
+            $out['gender_distribution'] = [
                 'male'   => (int) ($genderRow['male'] ?? 0),
                 'female' => (int) ($genderRow['female'] ?? 0),
             ];
-
-            return $emptyStats;
         } catch (\Exception $e) {
             log_message('error', '[HOMEROOM DASHBOARD] Get statistics error: ' . $e->getMessage());
-            return $emptyStats;
         }
+        return $out;
     }
-
-    /**
-     * Get students that need attention.
-     * Placeholder for non-disciplinary indicators that can be added later.
-     * 
-     * @param int|array $classIds
-     * @param int $limit
-     * @return array
-     */
-    private function getAttentionStudents($classIds, int $limit = 5): array
-    {
-        return [];
-    }
-
-    /**
-     * Get recent counseling sessions
-     *
-     * @param int|array $classIds
-     * @param int $limit
-     * @return array
-     */
-    private function getRecentSessions($classIds, $limit = 5)
-    {
-        try {
-            $builder = $this->db->table('counseling_sessions cs')
-                ->select("
-                    cs.*,
-                    su.full_name AS student_name,
-                    s.nik,
-                    s.nisn,
-                    cu.full_name AS counselor_name
-                ", false)
-                ->join('students s', 's.id = cs.student_id')
-                ->join('users su', 'su.id = s.user_id', 'left')
-                ->join('users cu', 'cu.id = cs.counselor_id', 'left')
-                ->where('cs.deleted_at', null);
-
-            $this->applyClassFilter($builder, 's.class_id', $classIds);
-
-            return $builder
-                ->orderBy('cs.session_date', 'DESC')
-                ->orderBy('cs.created_at', 'DESC')
-                ->limit($limit)
-                ->get()
-                ->getResultArray();
-        } catch (\Exception $e) {
-            log_message('error', '[HOMEROOM DASHBOARD] Get recent sessions error: ' . $e->getMessage());
-            return [];
-        }
-    }
-
 }

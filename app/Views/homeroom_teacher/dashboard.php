@@ -1,36 +1,43 @@
 <?php
-$this->extend('layouts/main');
-$this->section('content');
+// app/Views/homeroom_teacher/dashboard.php
+// Dashboard Wali Kelas — tata letak patokan Admin + NNG. Fokus kegiatan BK kelas.
 
-$stats = $stats ?? [];
-$genderMale = (int) ($stats['gender_distribution']['male'] ?? 0);
-$genderFemale = (int) ($stats['gender_distribution']['female'] ?? 0);
-$totalActiveStudents = $genderMale + $genderFemale;
-$attentionStudents = $attentionStudents ?? [];
-$recentSessions = $recentSessions ?? [];
+$featureCounts = is_array($featureCounts ?? null) ? $featureCounts : [];
+$upcoming      = $upcoming ?? [];
+$genderMale    = (int) ($genderMale ?? 0);
+$genderFemale  = (int) ($genderFemale ?? 0);
+
+if (! function_exists('dash_date')) {
+    function dash_date($v): string
+    {
+        if (empty($v)) return '-';
+        $ts = strtotime((string) $v);
+        return $ts ? date('d M Y H:i', $ts) : (string) $v;
+    }
+}
 ?>
+<?= $this->extend('layouts/main') ?>
+<?= $this->section('content') ?>
 
-<?php if (!$hasClass): ?>
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-body text-center py-5">
-                    <i class="mdi mdi-alert-circle-outline text-warning" style="font-size: 64px;"></i>
-                    <h4 class="mt-3">Belum Ada Kelas yang Ditugaskan</h4>
-                    <p class="text-dark"><?= esc($message) ?></p>
-                    <a href="<?= base_url('/') ?>" class="btn btn-primary mt-3">
-                        <i class="mdi mdi-home me-1"></i> Kembali ke Beranda
-                    </a>
-                </div>
-            </div>
+<?php if (empty($hasClass)): ?>
+  <div class="row">
+    <div class="col-lg-12">
+      <div class="card">
+        <div class="card-body text-center py-5">
+          <i class="mdi mdi-alert-circle-outline text-warning" style="font-size: 64px;"></i>
+          <h4 class="mt-3">Belum Ada Kelas yang Ditugaskan</h4>
+          <p class="text-dark"><?= esc($message ?? '') ?></p>
+          <a href="<?= base_url('/') ?>" class="btn btn-primary mt-3"><i class="mdi mdi-home me-1"></i> Kembali ke Beranda</a>
         </div>
+      </div>
     </div>
+  </div>
 <?php else: ?>
 
 <div class="row">
   <div class="col-12">
-    <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-      <h4 class="mb-sm-0">Dashboard Wali Kelas</h4>
+    <div class="page-title-box d-flex align-items-center justify-content-between">
+      <h4 class="mb-0">Dashboard Wali Kelas</h4>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
           <li class="breadcrumb-item"><a href="<?= base_url() ?>">Halaman Utama Web</a></li>
@@ -41,147 +48,52 @@ $recentSessions = $recentSessions ?? [];
   </div>
 </div>
 
-<!-- Akses Cepat (Fase 7: dashboard fokus jadwal mendatang + tombol cepat) -->
-<?php
-helper('url');
-$quickShortcuts = [
-  ['label' => 'Kelas Binaan', 'url' => base_url('homeroom/my-class'), 'icon' => 'mdi-google-classroom', 'color' => 'primary'],
-  ['label' => 'Jadwal Kegiatan/Acara BK', 'url' => base_url('homeroom/jadwal-bk'), 'icon' => 'mdi-calendar-heart', 'color' => 'success'],
-];
-if (! function_exists('consultation_role_can_view') || consultation_role_can_view('wali kelas')) {
-  $quickShortcuts[] = ['label' => 'Konsultasi & Pengaduan', 'url' => base_url('homeroom/consultations'), 'icon' => 'mdi-message-alert-outline', 'color' => 'warning'];
-}
-$quickShortcuts[] = ['label' => 'Impor Data Siswa', 'url' => base_url('homeroom/students/import'), 'icon' => 'mdi-file-import-outline', 'color' => 'info'];
-$quickShortcuts[] = ['label' => 'Info Karier & Studi', 'url' => base_url('homeroom/career-info'), 'icon' => 'mdi-school-outline', 'color' => 'secondary'];
-$quickShortcuts[] = ['label' => 'Laporan', 'url' => base_url('homeroom/reports'), 'icon' => 'mdi-file-chart', 'color' => 'primary'];
-echo $this->include('role_features/_quick_actions');
-?>
+<?= $this->include('partials/dashboard/welcome') ?>
+<?= $this->include('partials/dashboard/stat_cards') ?>
 
+<!-- Zona tengah: chart -->
 <div class="row">
-  <div class="col-lg-12">
-    <div class="card welcome-card">
+  <div class="col-xl-5">
+    <div class="card">
       <div class="card-body">
-        <div class="row align-items-center">
-          <div class="col-md-8">
-            <h4 class="text-white mb-2">Selamat Datang, <?= esc($currentUser['full_name'] ?? 'Wali Kelas') ?>!</h4>
-            <p class="text-white-50 mb-0">
-              Anda adalah Wali Kelas
-              <strong><?= !empty($class['is_multiple']) ? esc(($class['class_count'] ?? 0) . ' kelas: ' . ($class['class_name'] ?? '-')) : esc($class['class_name'] ?? '-') ?></strong>
-              - Tahun Ajaran <?= esc($class['year_name'] ?? '-') ?> Semester <?= esc($class['semester'] ?? '-') ?>
-            </p>
-          </div>
-          <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <a href="<?= base_url('homeroom/reports') ?>" class="btn btn-light">
-              <i class="mdi mdi-file-chart me-1"></i> Lihat Laporan Kelas
-            </a>
-          </div>
-        </div>
+        <h4 class="card-title mb-4"><i class="mdi mdi-chart-donut me-2"></i>Komposisi Siswa</h4>
+        <canvas id="genderChart" height="240"></canvas>
       </div>
     </div>
   </div>
-</div>
-
-<div class="row">
-  <div class="col-xl-4 col-md-6">
-    <div class="card mini-stats-wid">
-      <div class="card-body">
-        <div class="d-flex">
-          <div class="flex-grow-1">
-            <p class="text-dark fw-medium mb-2">Total Siswa Aktif</p>
-            <h4 class="mb-0 counter"><?= number_format($totalActiveStudents) ?></h4>
-          </div>
-          <div class="mini-stat-icon avatar-sm rounded-circle bg-soft-primary align-self-center">
-            <span class="avatar-title rounded-circle bg-primary">
-              <i class="mdi mdi-account-group font-size-24 text-white"></i>
-            </span>
-          </div>
-        </div>
-        <div class="mt-3">
-          <small class="text-dark">
-            <i class="mdi mdi-gender-male text-info"></i> <?= $genderMale ?> Laki-laki
-            <span class="mx-2">|</span>
-            <i class="mdi mdi-gender-female text-danger"></i> <?= $genderFemale ?> Perempuan
-          </small>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-xl-4 col-md-6">
-    <div class="card mini-stats-wid">
-      <div class="card-body">
-        <div class="d-flex">
-          <div class="flex-grow-1">
-            <p class="text-dark fw-medium mb-2">Sedang Dikonseling</p>
-            <h4 class="mb-0 counter"><?= number_format((int) ($stats['students_in_counseling'] ?? 0)) ?></h4>
-          </div>
-          <div class="mini-stat-icon avatar-sm rounded-circle bg-soft-success align-self-center">
-            <span class="avatar-title rounded-circle bg-success">
-              <i class="mdi mdi-comment-account-outline font-size-24 text-white"></i>
-            </span>
-          </div>
-        </div>
-        <div class="mt-3">
-          <small class="text-dark">Siswa bulan ini</small>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-xl-4 col-md-12">
-    <div class="card mini-stats-wid">
-      <div class="card-body">
-        <div class="d-flex">
-          <div class="flex-grow-1">
-            <p class="text-dark fw-medium mb-2">Kelas Binaan</p>
-            <h4 class="mb-0 counter"><?= number_format((int) ($class['class_count'] ?? 1)) ?></h4>
-          </div>
-          <div class="mini-stat-icon avatar-sm rounded-circle bg-soft-info align-self-center">
-            <span class="avatar-title rounded-circle bg-info">
-              <i class="mdi mdi-google-classroom font-size-24 text-white"></i>
-            </span>
-          </div>
-        </div>
-        <div class="mt-3">
-          <small class="text-dark"><?= esc($class['class_name'] ?? '-') ?></small>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="row">
   <div class="col-xl-7">
     <div class="card">
       <div class="card-body">
-        <div class="d-flex align-items-center justify-content-between mb-3">
-          <h5 class="card-title mb-0">
-            <i class="mdi mdi-calendar-clock text-primary me-2"></i>Catatan Konseling Terbaru
-          </h5>
-          <a href="<?= base_url('homeroom/reports') ?>" class="btn btn-sm btn-soft-primary">Lihat Laporan</a>
-        </div>
+        <h4 class="card-title mb-4"><i class="mdi mdi-chart-bar me-2"></i>Jumlah Data per Fitur BK (Kelas)</h4>
+        <canvas id="featureBarChart" height="240"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
 
-        <?php if (!empty($recentSessions)): ?>
+<!-- Zona bawah: tabel detail -->
+<div class="row">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+          <h4 class="card-title mb-0 flex-grow-1"><i class="mdi mdi-calendar-check-outline me-2"></i>Jadwal/Kegiatan BK Mendatang</h4>
+          <a href="<?= base_url('homeroom/jadwal-bk') ?>" class="btn btn-sm btn-primary">Lihat Semua <i class="mdi mdi-arrow-right ms-1"></i></a>
+        </div>
+        <?php if (! empty($upcoming)): ?>
           <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0">
+            <table class="table table-centered table-nowrap mb-0">
               <thead class="table-light">
-                <tr>
-                  <th>Tanggal</th>
-                  <th>Siswa</th>
-                  <th>Topik</th>
-                  <th>Status</th>
-                </tr>
+                <tr><th>Jenis</th><th>Sasaran</th><th>Waktu</th><th>Lokasi</th><th>Status</th></tr>
               </thead>
               <tbody>
-                <?php foreach (array_slice($recentSessions, 0, 5) as $session): ?>
+                <?php foreach ($upcoming as $u): ?>
                   <tr>
-                    <td><small><?= esc($session['session_date'] ?? '-') ?></small></td>
-                    <td>
-                      <div class="fw-semibold"><?= esc($session['student_name'] ?? '-') ?></div>
-                      <small class="text-dark"><?= esc($session['class_name'] ?? $class['class_name'] ?? '-') ?></small>
-                    </td>
-                    <td><?= esc($session['topic'] ?? '-') ?></td>
-                    <td><span class="badge bg-light text-dark border"><?= esc($session['status'] ?? '-') ?></span></td>
+                    <td><span class="badge bg-soft-primary text-primary"><?= esc($u['service_type'] ?? '-') ?></span></td>
+                    <td><?= esc($u['student_name'] ?? $u['class_name'] ?? '-') ?></td>
+                    <td><?= dash_date($u['scheduled_at'] ?? $u['held_at'] ?? null) ?></td>
+                    <td><?= esc($u['location'] ?? '') ?: '-' ?></td>
+                    <td><span class="badge bg-light text-dark border"><?= esc($u['status'] ?? '-') ?></span></td>
                   </tr>
                 <?php endforeach; ?>
               </tbody>
@@ -190,49 +102,7 @@ echo $this->include('role_features/_quick_actions');
         <?php else: ?>
           <div class="text-center py-4">
             <i class="mdi mdi-calendar-blank-outline text-dark font-size-48"></i>
-            <p class="text-dark mt-2 mb-0">Belum ada catatan konseling terbaru.</p>
-          </div>
-        <?php endif; ?>
-      </div>
-    </div>
-  </div>
-
-  <div class="col-xl-5">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title mb-3">
-          <i class="mdi mdi-account-heart-outline text-success me-2"></i>Siswa Perlu Perhatian
-        </h5>
-
-        <?php if (!empty($attentionStudents)): ?>
-          <div class="list-group list-group-flush">
-            <?php foreach (array_slice($attentionStudents, 0, 5) as $student): ?>
-              <div class="list-group-item px-0">
-                <div class="d-flex align-items-center">
-                  <div class="avatar-sm me-3">
-                    <span class="avatar-title rounded-circle bg-soft-primary text-primary font-size-16 fw-bold">
-                      <?= strtoupper(substr($student['full_name'] ?? $student['student_name'] ?? 'S', 0, 1)) ?>
-                    </span>
-                  </div>
-                  <div class="flex-grow-1">
-                    <h6 class="mb-1 font-size-14"><?= esc($student['full_name'] ?? $student['student_name'] ?? 'Tanpa Nama') ?></h6>
-                    <small class="text-dark">
-                      NIK: <?= esc($student['nik'] ?? '-') ?> | NISN: <?= esc($student['nisn'] ?? '-') ?>
-                    </small>
-                    <?php if (!empty($student['status'])): ?>
-                      <div class="mt-1">
-                        <span class="badge bg-light text-dark border"><?= esc($student['status']) ?></span>
-                      </div>
-                    <?php endif; ?>
-                  </div>
-                </div>
-              </div>
-            <?php endforeach; ?>
-          </div>
-        <?php else: ?>
-          <div class="text-center py-3">
-            <i class="mdi mdi-check-circle-outline text-success font-size-36"></i>
-            <p class="text-dark mt-2 mb-0">Belum ada siswa yang ditandai perlu perhatian khusus.</p>
+            <p class="text-dark mt-2 mb-0">Belum ada jadwal/kegiatan BK mendatang untuk kelas Anda.</p>
           </div>
         <?php endif; ?>
       </div>
@@ -242,4 +112,39 @@ echo $this->include('role_features/_quick_actions');
 
 <?php endif; ?>
 
-<?php $this->endSection(); ?>
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<?php if (! empty($hasClass)): ?>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  (function () {
+    const palette = ['#556ee6', '#34c38f', '#f1b44c', '#f46a6a', '#50a5f1', '#7b6cb6', '#02a499', '#ec4561', '#564ab1'];
+
+    const gCtx = document.getElementById('genderChart');
+    if (gCtx) {
+      new Chart(gCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Laki-laki', 'Perempuan'],
+          datasets: [{ data: [<?= $genderMale ?>, <?= $genderFemale ?>], backgroundColor: ['#50a5f1', '#f46a6a'], borderWidth: 2, borderColor: '#fff' }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+
+    const barCtx = document.getElementById('featureBarChart');
+    if (barCtx) {
+      new Chart(barCtx, {
+        type: 'bar',
+        data: {
+          labels: <?= json_encode(array_keys($featureCounts)) ?>,
+          datasets: [{ label: 'Jumlah Data', data: <?= json_encode(array_values($featureCounts)) ?>, backgroundColor: palette, borderRadius: 4 }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } }
+      });
+    }
+  })();
+</script>
+<?php endif; ?>
+<?= $this->endSection() ?>
