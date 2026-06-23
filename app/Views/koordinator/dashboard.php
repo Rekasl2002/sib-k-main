@@ -40,19 +40,23 @@ if (! function_exists('dash_time')) {
 
 <!-- Zona tengah: chart -->
 <div class="row">
-  <div class="col-xl-7">
-    <div class="card">
+  <div class="col-xl-7 d-flex">
+    <div class="card flex-fill">
       <div class="card-body">
         <h4 class="card-title mb-4"><i class="mdi mdi-chart-bar me-2"></i>Jumlah Data per Fitur BK</h4>
-        <canvas id="featureBarChart" height="220"></canvas>
+        <div style="height: 220px;">
+          <canvas id="featureBarChart"></canvas>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col-xl-5">
-    <div class="card">
+  <div class="col-xl-5 d-flex">
+    <div class="card flex-fill">
       <div class="card-body">
         <h4 class="card-title mb-4"><i class="mdi mdi-chart-line me-2"></i>Catatan BK Dibuat (6 Bulan)</h4>
-        <canvas id="trendLineChart" height="220"></canvas>
+        <div style="height: 220px;">
+          <canvas id="trendLineChart"></canvas>
+        </div>
       </div>
     </div>
   </div>

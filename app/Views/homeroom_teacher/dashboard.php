@@ -53,19 +53,23 @@ if (! function_exists('dash_date')) {
 
 <!-- Zona tengah: chart -->
 <div class="row">
-  <div class="col-xl-5">
-    <div class="card">
+  <div class="col-xl-5 d-flex">
+    <div class="card flex-fill">
       <div class="card-body">
         <h4 class="card-title mb-4"><i class="mdi mdi-chart-donut me-2"></i>Komposisi Siswa</h4>
-        <canvas id="genderChart" height="240"></canvas>
+        <div style="height: 240px;">
+          <canvas id="genderChart"></canvas>
+        </div>
       </div>
     </div>
   </div>
-  <div class="col-xl-7">
-    <div class="card">
+  <div class="col-xl-7 d-flex">
+    <div class="card flex-fill">
       <div class="card-body">
         <h4 class="card-title mb-4"><i class="mdi mdi-chart-bar me-2"></i>Jumlah Data per Fitur BK (Kelas)</h4>
-        <canvas id="featureBarChart" height="240"></canvas>
+        <div style="height: 240px;">
+          <canvas id="featureBarChart"></canvas>
+        </div>
       </div>
     </div>
   </div>

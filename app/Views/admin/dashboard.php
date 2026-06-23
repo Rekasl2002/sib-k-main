@@ -87,108 +87,33 @@ $sem = trim((string) ($activeAcademic['semester'] ?? ''));
 
 
 <!-- Statistics Cards -->
-<div class="row">
-    <!-- Total Users -->
-    <div class="col-xl-3 col-md-6">
-        <div class="card mini-stat bg-primary text-white">
-            <div class="card-body">
-                <div class="mb-4">
-                    <div class="float-start mini-stat-img me-4">
-                        <i class="mdi mdi-account-group font-size-40"></i>
-                    </div>
-                    <h5 class="font-size-16 text-uppercase text-white-50">Total Pengguna</h5>
-                    <h4 class="fw-medium font-size-24">
-                        <?= number_format($stats['total_users']) ?>
-                        <i class="mdi mdi-arrow-up text-success ms-2"></i>
-                    </h4>
-                </div>
-                <div class="pt-2">
-                    <div class="float-end">
-                        <a href="<?= base_url('admin/users') ?>" class="text-white-50">
-                            <i class="mdi mdi-arrow-right h5"></i>
-                        </a>
-                    </div>
-                    <p class="text-white-50 mb-0 mt-1">Kelola Pengguna</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Total Students -->
-    <div class="col-xl-3 col-md-6">
-        <div class="card mini-stat bg-success text-white">
-            <div class="card-body">
-                <div class="mb-4">
-                    <div class="float-start mini-stat-img me-4">
-                        <i class="mdi mdi-school font-size-40"></i>
-                    </div>
-                    <h5 class="font-size-16 text-uppercase text-white-50">Total Siswa</h5>
-                    <h4 class="fw-medium font-size-24">
-                        <?= number_format($stats['total_students']) ?>
-                    </h4>
-                </div>
-                <div class="pt-2">
-                    <div class="float-end">
-                        <a href="<?= base_url('admin/students') ?>" class="text-white-50">
-                            <i class="mdi mdi-arrow-right h5"></i>
-                        </a>
-                    </div>
-                    <p class="text-white-50 mb-0 mt-1">Kelola Siswa</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Active Students -->
-    <div class="col-xl-3 col-md-6">
-        <div class="card mini-stat bg-info text-white">
-            <div class="card-body">
-                <div class="mb-4">
-                    <div class="float-start mini-stat-img me-4">
-                        <i class="mdi mdi-account-check font-size-40"></i>
-                    </div>
-                    <h5 class="font-size-16 text-uppercase text-white-50">Siswa Aktif</h5>
-                    <h4 class="fw-medium font-size-24">
-                        <?= number_format($stats['total_active_students']) ?>
-                    </h4>
-                </div>
-                <div class="pt-2">
-                    <div class="float-end">
-                        <a href="<?= base_url('admin/students') ?>" class="text-white-50">
-                            <i class="mdi mdi-arrow-right h5"></i>
-                        </a>
-                    </div>
-                    <p class="text-white-50 mb-0 mt-1">Lihat Detail</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Total Classes -->
-    <div class="col-xl-3 col-md-6">
-        <div class="card mini-stat bg-warning text-white">
-            <div class="card-body">
-                <div class="mb-4">
-                    <div class="float-start mini-stat-img me-4">
-                        <i class="mdi mdi-google-classroom font-size-40"></i>
-                    </div>
-                    <h5 class="font-size-16 text-uppercase text-white-50">Total Kelas</h5>
-                    <h4 class="fw-medium font-size-24">
-                        <?= number_format($stats['total_classes']) ?>
-                    </h4>
-                </div>
-                <div class="pt-2">
-                    <div class="float-end">
-                        <a href="<?= base_url('admin/classes') ?>" class="text-white-50">
-                            <i class="mdi mdi-arrow-right h5"></i>
-                        </a>
-                    </div>
-                    <p class="text-white-50 mb-0 mt-1">Kelola Kelas</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<?php
+$cards = [
+    [
+        'label' => 'Total Pengguna', 'value' => $stats['total_users'] ?? 0,
+        'icon' => 'mdi mdi-account-group', 'color' => 'primary',
+        'url' => base_url('admin/users'), 'link_text' => 'Kelola Pengguna',
+    ],
+    [
+        'label' => 'Total Siswa', 'value' => $stats['total_students'] ?? 0,
+        'icon' => 'mdi mdi-school', 'color' => 'success',
+        'url' => base_url('admin/students'), 'link_text' => 'Kelola Siswa',
+    ],
+    [
+        'label' => 'Siswa Aktif', 'value' => $stats['total_active_students'] ?? 0,
+        'icon' => 'mdi mdi-account-check', 'color' => 'info',
+        'url' => base_url('admin/students'), 'link_text' => 'Lihat Detail',
+    ],
+    [
+        'label' => 'Total Kelas', 'value' => $stats['total_classes'] ?? 0,
+        'icon' => 'mdi mdi-google-classroom', 'color' => 'warning',
+        'url' => base_url('admin/classes'), 'link_text' => 'Kelola Kelas',
+    ],
+];
+// Sediakan $cards ke data bersama agar terbaca partial (arg ke-2 include = options, bukan data).
+$this->setData(['cards' => $cards]);
+?>
+<?= $this->include('partials/dashboard/stat_cards') ?>
 
 <!-- Charts and Distribution -->
 <div class="row">
