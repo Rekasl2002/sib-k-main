@@ -522,8 +522,8 @@ class UserController extends BaseController
         $inactive = $um->whereIn('role_id', $allowedRoleIds)->where('is_active', 0)->countAllResults();
 
         $data = [
-            'title'      => 'Manajemen Pengguna',
-            'page_title' => 'Manajemen Pengguna',
+            'title'      => 'Kelola Pengguna',
+            'page_title' => 'Kelola Pengguna',
             'breadcrumb' => [
                 ['title' => 'Koordinator BK', 'link' => base_url('koordinator/dashboard')],
                 ['title' => 'Pengguna', 'link' => null],

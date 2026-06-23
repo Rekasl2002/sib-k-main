@@ -7,7 +7,7 @@ helper(['url']);
 // Safe defaults (anti warning Intelephense)
 // ----------------------
 $isPdf            = (bool) ($isPdf ?? false);
-$title            = (string) ($title ?? 'Laporan Anak');
+$title            = (string) ($title ?? 'Cetak Data Anak');
 
 $student          = $student ?? [];
 $parentName       = (string) ($parentName ?? '');
@@ -97,7 +97,7 @@ $renderReportContent = static function () use (
 
             <!-- Header laporan -->
             <div class="text-center mb-4 report-header">
-                <h1 class="h4 mb-1">Laporan Anak</h1>
+                <h1 class="h4 mb-1">Data Anak</h1>
                 <p class="mb-1">Untuk Orang Tua / Wali</p>
                 <small class="text-dark">Dicetak: <?= $todayText ?></small>
 
@@ -321,11 +321,11 @@ $renderReportContent = static function () use (
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
-            <h4 class="mb-sm-0">LIHAT/CETAK LAPORAN ANAK</h4>
+            <h4 class="mb-sm-0">CETAK DATA ANAK</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
                     <li class="breadcrumb-item"><a href="<?= base_url('parent/dashboard') ?>">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="<?= base_url('parent/reports/children') ?>">Laporan</a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_url('parent/reports/children') ?>">Cetak Data Anak</a></li>
                     <li class="breadcrumb-item active">Lihat/Cetak</li>
                 </ol>
             </div>

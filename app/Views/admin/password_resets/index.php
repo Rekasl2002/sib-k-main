@@ -57,7 +57,7 @@ $statusBadge = static function (string $status): string {
     </div>
     <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
       <a href="<?= base_url('admin/users') ?>" class="btn btn-primary">
-        <i class="mdi mdi-account-cog-outline me-1"></i> Manajemen Pengguna
+        <i class="mdi mdi-account-cog-outline me-1"></i> Kelola Pengguna
       </a>
     </div>
   </div>

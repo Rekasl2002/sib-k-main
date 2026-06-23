@@ -121,8 +121,8 @@ class StudentController extends BaseKoordinatorController
         $academicYearOptions = [];
 
         $data = [
-            'title'          => 'Manajemen Siswa',
-            'page_title'     => 'Manajemen Siswa',
+            'title'          => 'Kelola Siswa',
+            'page_title'     => 'Kelola Siswa',
             'breadcrumb'     => [
                 ['title' => 'Koordinator', 'link' => base_url('koordinator/dashboard')],
                 ['title' => 'Siswa', 'link' => null],

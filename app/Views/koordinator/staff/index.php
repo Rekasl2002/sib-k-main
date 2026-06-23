@@ -2,7 +2,7 @@
 <?= $this->section('content'); ?>
 <div class="container-fluid">
   <div class="d-flex align-items-center justify-content-between mb-3">
-    <h4 class="mb-0">Manajemen Staf (Guru BK & Wali Kelas)</h4>
+    <h4 class="mb-0">Kelola Staf (Guru BK & Wali Kelas)</h4>
     <a href="<?= route_to('koordinator.staff.create'); ?>" class="btn btn-primary">Tambah Akun</a>
   </div>
 

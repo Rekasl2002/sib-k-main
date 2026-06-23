@@ -60,8 +60,8 @@ class ClassController extends BaseController
         $stats = $this->classService->getClassStatistics();
 
         $data = [
-            'title' => 'Manajemen Kelas',
-            'page_title' => 'Manajemen Kelas',
+            'title' => 'Kelola Kelas',
+            'page_title' => 'Kelola Kelas',
             'breadcrumb' => [
                 ['title' => 'Admin', 'link' => base_url('admin/dashboard')],
                 ['title' => 'Kelas', 'link' => null],

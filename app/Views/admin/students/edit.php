@@ -444,7 +444,7 @@ $errors = session()->getFlashdata('errors') ?? [];
                         <i class="mdi mdi-alert-outline me-2"></i>
                         <strong>Perhatian:</strong> Untuk mengubah data akun (username, email, password),
                         silakan edit melalui menu
-                        <a href="<?= base_url('admin/users/edit/' . $student['user_id']) ?>">Manajemen Pengguna</a>.
+                        <a href="<?= base_url('admin/users/edit/' . $student['user_id']) ?>">Kelola Pengguna</a>.
                     </div>
 
                     <!-- Form Actions -->

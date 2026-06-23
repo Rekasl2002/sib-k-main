@@ -44,8 +44,8 @@ class RoleController extends BaseController
 
         // Tambahan untuk judul tab (dibaca oleh layouts/partials/title-meta.php)
         return view('admin/roles/index', [
-            'title'      => 'Manajemen Peran',
-            'page_title' => 'Manajemen Peran',
+            'title'      => 'Kelola Peran',
+            'page_title' => 'Kelola Peran',
             'roles'      => $roles,
         ]);
     }

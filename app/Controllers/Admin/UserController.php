@@ -82,8 +82,8 @@ class UserController extends BaseController
         $stats['by_role']['Admin'] = $adminCount;
 
         $data = [
-            'title'      => 'Manajemen Pengguna',
-            'page_title' => 'Manajemen Pengguna',
+            'title'      => 'Kelola Pengguna',
+            'page_title' => 'Kelola Pengguna',
             'breadcrumb' => [
                 ['title' => 'Admin', 'link' => base_url('admin/dashboard')],
                 ['title' => 'Pengguna', 'link' => null],

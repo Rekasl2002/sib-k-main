@@ -65,8 +65,8 @@ class AcademicYearController extends BaseController
         ];
 
         $data = [
-            'title'      => 'Manajemen Tahun Ajaran',
-            'page_title' => 'Manajemen Tahun Ajaran',
+            'title'      => 'Kelola Tahun Ajaran',
+            'page_title' => 'Kelola Tahun Ajaran',
             'breadcrumb' => [
                 ['title' => 'Dashboard', 'link' => base_url('admin/dashboard')],
                 ['title' => 'Tahun Ajaran', 'link' => null],

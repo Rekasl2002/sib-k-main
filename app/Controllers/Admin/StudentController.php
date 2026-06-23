@@ -380,8 +380,8 @@ class StudentController extends BaseController
         }
 
         $data = [
-            'title'           => 'Manajemen Siswa',
-            'page_title'      => 'Manajemen Siswa',
+            'title'           => 'Kelola Siswa',
+            'page_title'      => 'Kelola Siswa',
             'breadcrumb'      => [
                 ['title' => 'Admin', 'link' => base_url('admin/dashboard')],
                 ['title' => 'Siswa', 'link' => null],
