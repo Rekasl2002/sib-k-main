@@ -1572,5 +1572,36 @@ small.text-muted,
 .filter-compact .select2-container--default .select2-selection--single .select2-selection__arrow { height: calc(1.5em + .6rem); }
 
 /* ==========================================================================
+   SIDEBAR: Teks panjang tetap di samping ikon (tidak melipat ke bawah ikon)
+   ========================================================================== */
+
+#sidebar-menu ul li a {
+  display: flex !important;
+  align-items: flex-start;
+}
+
+#sidebar-menu ul li a > i {
+  flex: 0 0 1.75rem;
+  min-width: 1.75rem !important;
+  font-size: 1.1rem;
+  line-height: 1.5;
+  margin-top: 1px;
+}
+
+#sidebar-menu ul li a > span {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.45;
+  white-space: normal;
+}
+
+/* Panah accordion (has-arrow::after) tetap di kanan, sejajar tengah */
+#sidebar-menu ul li a.has-arrow::after {
+  margin-left: auto;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* ==========================================================================
    END OF STYLESHEET
    ========================================================================== */
