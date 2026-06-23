@@ -2,8 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\MessageModel;
-use App\Models\MessageParticipantModel;
 use App\Models\NotificationModel;
 use App\Models\PasswordResetRequestModel;
 use CodeIgniter\HTTP\IncomingRequest;
@@ -35,25 +33,26 @@ class PasswordResetRequestService
 
         $admins = $this->activeAdmins();
         $notifyAdmins = $this->envBool('password_reset.notifyAdmins', true);
-        $messageId = null;
         $notificationId = null;
         $notificationCount = 0;
 
+        // CATATAN: permintaan reset password TIDAK lagi membuat pesan di fitur Pesan.
+        // Fitur Pesan kini berbentuk percakapan (ala WhatsApp) antar pengguna, bukan
+        // kotak masuk surel. Pemberitahuan ke Admin cukup lewat Notifikasi (lonceng)
+        // + halaman khusus Admin "Permintaan Reset Password" — keduanya tidak perlu
+        // dibalas. Maka di sini hanya membuat Notifikasi.
         if ($notifyAdmins && $admins !== []) {
             $link = $this->actionLink($user, $email, $phone);
-            $body = $this->messageBody($email, $phone, $user, $link, $now);
 
-            $messageId = $this->createMessage($admins, $body);
             $notificationIds = $this->createNotifications($admins, $email, $phone, $user, $link, $requestId);
             $notificationCount = count($notificationIds);
             $notificationId = $notificationIds[0] ?? null;
 
             if ($requestId && $db->tableExists('password_reset_requests')) {
                 (new PasswordResetRequestModel())->update($requestId, [
-                    'status'                => ($messageId || $notificationCount > 0) ? 'notified' : 'pending',
-                    'admin_message_id'      => $messageId,
+                    'status'                => $notificationCount > 0 ? 'notified' : 'pending',
                     'admin_notification_id' => $notificationId,
-                    'notified_at'           => ($messageId || $notificationCount > 0) ? $now : null,
+                    'notified_at'           => $notificationCount > 0 ? $now : null,
                 ]);
             }
         }
@@ -62,7 +61,6 @@ class PasswordResetRequestService
             'request_id'          => $requestId,
             'user_found'          => $user !== null,
             'admin_count'         => count($admins),
-            'message_id'          => $messageId,
             'notification_count'  => $notificationCount,
             'admin_notifications' => $notifyAdmins,
         ];
@@ -120,66 +118,6 @@ class PasswordResetRequestService
 
         $keyword = $email ?: ($phone ?: '');
         return site_url('admin/users' . ($keyword !== '' ? ('?search=' . rawurlencode($keyword)) : ''));
-    }
-
-    private function messageBody(?string $email, ?string $phone, ?array $user, string $link, string $requestedAt): string
-    {
-        $userFound = $user !== null ? 'Ya' : 'Tidak';
-        $name = $user['full_name'] ?? '-';
-        $username = $user['username'] ?? '-';
-
-        return implode("\n", [
-            'Ada permintaan lupa/reset password dari halaman login.',
-            '',
-            'Status akun ditemukan: ' . $userFound,
-            'Nama akun: ' . $name,
-            'Username: ' . $username,
-            'Email yang dimasukkan: ' . ($email ?: '-'),
-            'Nomor telepon yang dimasukkan: ' . ($phone ?: '-'),
-            'Waktu permintaan: ' . $requestedAt,
-            '',
-            'Tindak lanjut:',
-            $link,
-            '',
-            'Jika akun ditemukan, buka link di atas lalu gunakan tombol Reset Password di halaman pengguna.',
-        ]);
-    }
-
-    /**
-     * @param list<array<string,mixed>> $admins
-     */
-    private function createMessage(array $admins, string $body): ?int
-    {
-        $db = db_connect();
-        if (! $db->tableExists('messages') || ! $db->tableExists('message_participants')) {
-            return null;
-        }
-
-        try {
-            $messageModel = new MessageModel();
-            $participantModel = new MessageParticipantModel();
-
-            $messageId = (int) $messageModel->insert([
-                'subject'    => 'Permintaan Reset Password',
-                'body'       => $body,
-                'created_by' => null,
-                'is_draft'   => 0,
-            ], true);
-
-            foreach ($admins as $admin) {
-                $participantModel->insert([
-                    'message_id' => $messageId,
-                    'user_id'    => (int) $admin['id'],
-                    'role'       => 'recipient',
-                    'is_read'    => 0,
-                ]);
-            }
-
-            return $messageId > 0 ? $messageId : null;
-        } catch (\Throwable $e) {
-            log_message('error', '[PASSWORD RESET] Failed to create admin message: ' . $e->getMessage());
-            return null;
-        }
     }
 
     /**
