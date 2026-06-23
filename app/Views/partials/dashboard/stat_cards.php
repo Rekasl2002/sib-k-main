@@ -30,7 +30,7 @@ $cards = is_array($cards ?? null) ? $cards : [];
     background: rgba(255, 255, 255, .15);
   }
   .mini-stat .mini-stat-label {
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    display: -webkit-box; -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
     overflow: hidden; min-height: 38px;
   }
   .mini-stat .mini-stat-link { min-width: 0; }
