@@ -244,7 +244,7 @@ $restricted = ($roleName === 'Orang Tua' || $roleName === 'Siswa');
                       <a class="btn btn-sm btn-outline-primary"
                         href="<?= route_to('parent.children.profile', $c['id']) ?>">Profil</a>
                       <a class="btn btn-sm btn-outline-secondary"
-                        href="<?= route_to('parent.children.sessions', $c['id']) ?>">Konseling</a>
+                        href="<?= base_url('parent/jadwal-bk') ?>">Jadwal BK</a>
                     </div>
                   </li>
                 <?php endforeach; ?>

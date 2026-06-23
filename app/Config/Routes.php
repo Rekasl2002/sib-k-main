@@ -1102,16 +1102,11 @@ $routes->group('student', [
             $routes->get('show/(:num)', 'CounselingController::show/$1', ['as' => 'student.counseling.show']);
         });
 
-        // Jadwal/request konseling: kompatibel dengan permission lama schedule_counseling
-        // dan permission baru view_counseling_sessions.
-        $routes->group('schedule', ['filter' => 'permission:any,view_counseling_sessions,schedule_counseling'], function ($routes) {
-            $routes->get('/', 'ScheduleController::index', ['as' => 'student.schedule']);
-            $routes->get('request', 'ScheduleController::requestForm', ['as' => 'student.schedule.request']);
-            $routes->post('request', 'ScheduleController::storeRequest', ['as' => 'student.schedule.store']);
-            $routes->post('submit-request', 'ScheduleController::submitRequest', ['as' => 'student.schedule.submit']);
-            $routes->get('history', 'ScheduleController::history', ['as' => 'student.schedule.history']);
-            $routes->get('detail/(:num)', 'ScheduleController::detail/$1', ['as' => 'student.schedule.detail']);
-        });
+        // Halaman lama "Sesi/Ajukan Konseling" dilebur ke "Jadwal Kegiatan/Acara BK".
+        // Pengajuan kini lewat Konsultasi & Pengaduan. Rute lama redirect agar tautan
+        // lama tetap aman.
+        $routes->get('schedule', static fn() => redirect()->to('/student/jadwal-bk'), ['as' => 'student.schedule']);
+        $routes->get('schedule/(:any)', static fn() => redirect()->to('/student/jadwal-bk'));
 
         // Assessments
         $routes->group('assessments', ['filter' => 'permission:take_assessments'], function ($routes) {
@@ -1215,15 +1210,10 @@ $routes->group('parent', [
                 'as'     => 'parent.children.staff'
             ]);
 
-            // Jadwal/sesi anak
-            $routes->get('(:num)/sessions', 'ChildController::sessions/$1', [
-                'filter' => 'permission:any,view_counseling_sessions,view_student_portfolio',
-                'as'     => 'parent.children.sessions'
-            ]);
-            $routes->get('(:num)/sessions/(:num)', 'ChildController::sessionDetail/$1/$2', [
-                'filter' => 'permission:any,view_counseling_sessions,view_student_portfolio',
-                'as'     => 'parent.children.sessions.detail'
-            ]);
+            // Sesi/Konseling anak dilebur ke "Jadwal Kegiatan/Acara BK" (parent/jadwal-bk).
+            // Rute lama redirect agar tautan lama tetap aman.
+            $routes->get('(:num)/sessions', static fn() => redirect()->to('/parent/jadwal-bk'), ['as' => 'parent.children.sessions']);
+            $routes->get('(:num)/sessions/(:num)', static fn() => redirect()->to('/parent/jadwal-bk'), ['as' => 'parent.children.sessions.detail']);
 
             $routes->post('(:num)/request-update', 'ChildController::requestUpdate/$1', [
                 'filter' => 'permission:send_messages',

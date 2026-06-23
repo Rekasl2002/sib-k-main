@@ -236,9 +236,9 @@ class NotificationService
      */
     public function sendSessionReminder(int $studentId, array $sessionData): bool
     {
-        $title   = 'Pengingat Sesi Konseling';
-        $message = "Anda memiliki sesi konseling pada {$sessionData['session_date']} pukul {$sessionData['session_time']}";
-        $link    = '/student/schedule';
+        $title   = 'Pengingat Kegiatan/Acara BK';
+        $message = "Anda memiliki kegiatan/acara BK pada {$sessionData['session_date']} pukul {$sessionData['session_time']}";
+        $link    = '/student/jadwal-bk';
 
         return $this->send($studentId, $title, $message, 'info', $link, $sessionData);
     }

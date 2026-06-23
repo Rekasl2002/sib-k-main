@@ -165,8 +165,8 @@ $errorsPhoto   = session('errors_photo') ?? [];
             <div class="card-body">
               <h6 class="card-title mb-3">Tautan Cepat</h6>
               <div class="d-grid gap-2">
-                <a class="btn btn-outline-secondary" href="<?= route_to('parent.children.sessions', $studentId) ?>">
-                  Sesi Konseling Anak
+                <a class="btn btn-outline-secondary" href="<?= base_url('parent/jadwal-bk') ?>">
+                  Jadwal Kegiatan/Acara BK
                 </a>
               </div>
             </div>
