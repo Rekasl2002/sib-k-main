@@ -43,7 +43,7 @@ class DashboardController extends BaseKoordinatorController
                 'url' => base_url('koordinator/reports'), 'link_text' => 'Semua layanan & asesmen',
             ],
             [
-                'label' => 'Konsultasi Belum Diproses', 'value' => $this->dash->openComplaints($role, $userId),
+                'label' => 'Konsultasi Perlu Ditinjau', 'value' => $this->dash->complaintsPendingReview($role, $userId),
                 'icon' => 'mdi mdi-message-alert-outline', 'color' => 'danger',
                 'url' => base_url('koordinator/consultations'), 'link_text' => 'Tinjau Konsultasi',
             ],

@@ -67,7 +67,8 @@ if (! function_exists('dash_date')) {
             </table>
           </div>
         <?php else: ?>
-          <p class="text-dark mb-0">Belum ada jadwal/kegiatan BK terdekat.</p>
+          <?php $this->setData(['esIcon' => 'mdi-calendar-blank-outline', 'esText' => 'Belum ada jadwal/kegiatan BK terdekat.']) ?>
+          <?= $this->include('partials/dashboard/empty_state') ?>
         <?php endif; ?>
       </div>
     </div>
@@ -97,7 +98,8 @@ if (! function_exists('dash_date')) {
             </table>
           </div>
         <?php else: ?>
-          <p class="text-dark mb-0">Belum ada data anak terdaftar.</p>
+          <?php $this->setData(['esIcon' => 'mdi-account-child-outline', 'esText' => 'Belum ada data anak terdaftar.']) ?>
+          <?= $this->include('partials/dashboard/empty_state') ?>
         <?php endif; ?>
       </div>
     </div>

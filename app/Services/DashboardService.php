@@ -27,9 +27,6 @@ class DashboardService
 {
     private BaseConnection $db;
 
-    /** Status konsultasi yang dianggap "belum diproses/aktif". */
-    private const COMPLAINT_OPEN = ['Diajukan', 'Ditinjau', 'Diterima', 'Dijadwalkan'];
-
     /** Status penugasan yang dianggap "berjalan". */
     private const ASSIGNMENT_OPEN = ['Ditugaskan', 'Dibaca', 'Berjalan'];
 
@@ -130,12 +127,16 @@ class DashboardService
         }
     }
 
-    /** Konsultasi & Pengaduan yang belum diproses (sesuai cakupan peran). */
-    public function openComplaints(string $role, int $userId): int
+    /**
+     * Konsultasi & Pengaduan yang masih berstatus "Diajukan" (belum dicek /
+     * perlu ditinjau), sesuai cakupan peran. Status lanjutan (Ditinjau, Diterima,
+     * dst.) berarti SUDAH ditinjau → tidak ikut dihitung.
+     */
+    public function complaintsPendingReview(string $role, int $userId): int
     {
         try {
             $b = $this->db->table('consultation_complaints')
-                ->whereIn('status', self::COMPLAINT_OPEN)
+                ->where('status', 'Diajukan')
                 ->where('deleted_at', null);
             if ($role === 'guru-bk') {
                 $b->groupStart()

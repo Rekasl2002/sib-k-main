@@ -111,7 +111,8 @@ if (! function_exists('sv')) {
             </table>
           </div>
         <?php else: ?>
-          <p class="text-dark mb-0">Belum ada jadwal/kegiatan BK terdekat.</p>
+          <?php $this->setData(['esIcon' => 'mdi-calendar-blank-outline', 'esText' => 'Belum ada jadwal/kegiatan BK terdekat.']) ?>
+          <?= $this->include('partials/dashboard/empty_state') ?>
         <?php endif; ?>
       </div>
     </div>
@@ -141,7 +142,8 @@ if (! function_exists('sv')) {
             <?php endforeach; ?>
           </ul>
         <?php else: ?>
-          <p class="text-dark mb-0">Tidak ada asesmen tersedia saat ini.</p>
+          <?php $this->setData(['esIcon' => 'mdi-clipboard-list-outline', 'esText' => 'Tidak ada asesmen tersedia saat ini.']) ?>
+          <?= $this->include('partials/dashboard/empty_state') ?>
         <?php endif; ?>
       </div>
     </div>
@@ -167,7 +169,8 @@ if (! function_exists('sv')) {
             <?php endforeach; ?>
           </ul>
         <?php else: ?>
-          <p class="text-dark mb-0">Belum ada hasil asesmen.</p>
+          <?php $this->setData(['esIcon' => 'mdi-clipboard-check-outline', 'esText' => 'Belum ada hasil asesmen.']) ?>
+          <?= $this->include('partials/dashboard/empty_state') ?>
         <?php endif; ?>
       </div>
     </div>

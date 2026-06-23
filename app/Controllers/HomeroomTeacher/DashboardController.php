@@ -74,7 +74,7 @@ class DashboardController extends BaseController
             [
                 'label' => 'Kelas Binaan', 'value' => (int) ($class['class_count'] ?? count($classes)),
                 'icon' => 'mdi mdi-google-classroom', 'color' => 'warning',
-                'url' => base_url('homeroom/my-class'), 'link_text' => esc($class['class_name'] ?? '-'),
+                'url' => base_url('homeroom/my-class'), 'link_text' => $class['class_name'] ?? '-',
             ],
             [
                 'label' => 'Pesan Masuk', 'value' => $this->dash->unreadMessages($userId),

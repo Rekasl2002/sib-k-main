@@ -62,7 +62,7 @@ class DashboardController extends BaseController
                 'url' => base_url('counselor/counseling'), 'link_text' => 'Kegiatan BK akan datang',
             ],
             [
-                'label' => 'Konsultasi Belum Diproses', 'value' => $this->dash->openComplaints($role, $userId),
+                'label' => 'Konsultasi Perlu Ditinjau', 'value' => $this->dash->complaintsPendingReview($role, $userId),
                 'icon' => 'mdi mdi-message-alert-outline', 'color' => 'danger',
                 'url' => base_url('counselor/consultations'), 'link_text' => 'Tinjau Konsultasi',
             ],

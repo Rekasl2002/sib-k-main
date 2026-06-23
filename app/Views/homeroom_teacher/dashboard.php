@@ -57,7 +57,7 @@ if (! function_exists('dash_date')) {
     <div class="card flex-fill">
       <div class="card-body">
         <h4 class="card-title mb-4"><i class="mdi mdi-chart-donut me-2"></i>Komposisi Siswa</h4>
-        <div style="height: 240px;">
+        <div style="height: 260px;">
           <canvas id="genderChart"></canvas>
         </div>
       </div>
@@ -67,7 +67,7 @@ if (! function_exists('dash_date')) {
     <div class="card flex-fill">
       <div class="card-body">
         <h4 class="card-title mb-4"><i class="mdi mdi-chart-bar me-2"></i>Jumlah Data per Fitur BK (Kelas)</h4>
-        <div style="height: 240px;">
+        <div style="height: 260px;">
           <canvas id="featureBarChart"></canvas>
         </div>
       </div>
@@ -104,10 +104,8 @@ if (! function_exists('dash_date')) {
             </table>
           </div>
         <?php else: ?>
-          <div class="text-center py-4">
-            <i class="mdi mdi-calendar-blank-outline text-dark font-size-48"></i>
-            <p class="text-dark mt-2 mb-0">Belum ada jadwal/kegiatan BK mendatang untuk kelas Anda.</p>
-          </div>
+          <?php $this->setData(['esIcon' => 'mdi-calendar-blank-outline', 'esText' => 'Belum ada jadwal/kegiatan BK mendatang untuk kelas Anda.']) ?>
+          <?= $this->include('partials/dashboard/empty_state') ?>
         <?php endif; ?>
       </div>
     </div>
