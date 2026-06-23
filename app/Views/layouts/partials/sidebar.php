@@ -289,11 +289,11 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permManageUsers): ?>
-                <li><a href="<?= base_url('admin/users') ?>" class="<?= $__active('admin/users*') ? 'active' : '' ?>">Kelola Pengguna</a></li>
-                <li><a href="<?= base_url('admin/password-reset-requests') ?>" class="<?= $__active('admin/password-reset-requests*') ? 'active' : '' ?>">Permintaan Reset Password</a></li>
+                <li><a href="<?= base_url('admin/users') ?>" class="<?= $__active('admin/users*') ? 'active' : '' ?>"><i class="mdi mdi-account-multiple-outline"></i> Kelola Pengguna</a></li>
+                <li><a href="<?= base_url('admin/password-reset-requests') ?>" class="<?= $__active('admin/password-reset-requests*') ? 'active' : '' ?>"><i class="mdi mdi-lock-reset"></i> Permintaan Reset Password</a></li>
               <?php endif; ?>
               <?php if ($__permManageRoles): ?>
-                <li><a href="<?= base_url('admin/roles') ?>" class="<?= $__active('admin/roles*') ? 'active' : '' ?>">Kelola Peran</a></li>
+                <li><a href="<?= base_url('admin/roles') ?>" class="<?= $__active('admin/roles*') ? 'active' : '' ?>"><i class="mdi mdi-shield-account-outline"></i> Kelola Peran</a></li>
               <?php endif; ?>
             </ul>
           </li>
@@ -307,53 +307,36 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permManageAcademicData): ?>
-                <li><a href="<?= base_url('admin/academic-years') ?>" class="<?= $__active('admin/academic-years*') ? 'active' : '' ?>">Kelola Tahun Ajaran</a></li>
-                <li><a href="<?= base_url('admin/classes') ?>" class="<?= $__active('admin/classes*') ? 'active' : '' ?>">Kelola Kelas</a></li>
+                <li><a href="<?= base_url('admin/academic-years') ?>" class="<?= $__active('admin/academic-years*') ? 'active' : '' ?>"><i class="mdi mdi-calendar-range-outline"></i> Kelola Tahun Ajaran</a></li>
+                <li><a href="<?= base_url('admin/classes') ?>" class="<?= $__active('admin/classes*') ? 'active' : '' ?>"><i class="mdi mdi-google-classroom"></i> Kelola Kelas</a></li>
               <?php endif; ?>
               <?php if ($__permManageUsers): ?>
-                <li><a href="<?= base_url('admin/students') ?>" class="<?= $__active('admin/students*') ? 'active' : '' ?>">Kelola Siswa</a></li>
+                <li><a href="<?= base_url('admin/students') ?>" class="<?= $__active('admin/students*') ? 'active' : '' ?>"><i class="mdi mdi-account-school-outline"></i> Kelola Siswa</a></li>
               <?php endif; ?>
             </ul>
           </li>
           <?php endif; ?>
 
-          <li class="menu-title">Lainnya</li>
-
-          <?php if ($__permSendMessages): ?>
-          <li>
-            <a href="<?= base_url('admin/messages') ?>" class="waves-effect<?= $__active('admin/messages*') ?>">
-              <i class="mdi mdi-email"></i>
-              <span>Pesan</span>
+          <li class="<?= $__mm(['admin/messages*', 'admin/notifications*', 'admin/settings*', 'admin/trash*']) ?>">
+            <a href="javascript:void(0);" class="has-arrow waves-effect">
+              <i class="mdi mdi-dots-horizontal-circle-outline"></i>
+              <span>Lainnya</span>
             </a>
+            <ul class="sub-menu" aria-expanded="false">
+              <?php if ($__permSendMessages): ?>
+                <li><a href="<?= base_url('admin/messages') ?>" class="<?= $__active('admin/messages*') ? 'active' : '' ?>"><i class="mdi mdi-email-outline"></i> Pesan</a></li>
+              <?php endif; ?>
+              <?php if ($__permViewDashboard): ?>
+                <li><a href="<?= base_url('admin/notifications') ?>" class="<?= $__active('admin/notifications*') ? 'active' : '' ?>"><i class="mdi mdi-bell-outline"></i> Notifikasi</a></li>
+              <?php endif; ?>
+              <?php if ($__permManageSettings): ?>
+                <li><a href="<?= base_url('admin/settings') ?>" class="<?= $__active('admin/settings*') ? 'active' : '' ?>"><i class="mdi mdi-cog-outline"></i> Pengaturan</a></li>
+              <?php endif; ?>
+              <?php if ($__permViewDashboard): ?>
+                <li><a href="<?= base_url('admin/trash') ?>" class="<?= $__active('admin/trash*') ? 'active' : '' ?>"><i class="mdi mdi-trash-can-outline"></i> Tempat Sampah</a></li>
+              <?php endif; ?>
+            </ul>
           </li>
-          <?php endif; ?>
-
-          <?php if ($__permViewDashboard): ?>
-          <li>
-            <a href="<?= base_url('admin/notifications') ?>" class="waves-effect<?= $__active('admin/notifications*') ?>">
-              <i class="mdi mdi-bell"></i>
-              <span>Notifikasi</span>
-            </a>
-          </li>
-          <?php endif; ?>
-
-          <?php if ($__permManageSettings): ?>
-          <li>
-            <a href="<?= base_url('admin/settings') ?>" class="waves-effect<?= $__active('admin/settings*') ?>">
-              <i class="mdi mdi-cogs"></i>
-              <span>Pengaturan</span>
-            </a>
-          </li>
-          <?php endif; ?>
-
-          <?php if ($__permViewDashboard): ?>
-          <li>
-            <a href="<?= base_url('admin/trash') ?>" class="waves-effect<?= $__active('admin/trash*') ?>">
-              <i class="mdi mdi-trash-can-outline"></i>
-              <span>Tempat Sampah</span>
-            </a>
-          </li>
-          <?php endif; ?>
 
         <?php elseif ($__isKoordinator): ?>
           <!-- KOORDINATOR BK MENU -->
@@ -384,8 +367,8 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
               <span>Kelola</span>
             </a>
             <ul class="sub-menu" aria-expanded="false">
-              <li><a href="<?= base_url('koordinator/students') ?>" class="<?= $__active('koordinator/students*') ? 'active' : '' ?>">Kelola Siswa</a></li>
-              <li><a href="<?= base_url('koordinator/users') ?>" class="<?= $__active('koordinator/users*') ? 'active' : '' ?>">Kelola Pengguna</a></li>
+              <li><a href="<?= base_url('koordinator/students') ?>" class="<?= $__active('koordinator/students*') ? 'active' : '' ?>"><i class="mdi mdi-account-school-outline"></i> Kelola Siswa</a></li>
+              <li><a href="<?= base_url('koordinator/users') ?>" class="<?= $__active('koordinator/users*') ? 'active' : '' ?>"><i class="mdi mdi-account-multiple-outline"></i> Kelola Pengguna</a></li>
             </ul>
           </li>
           <?php endif; ?>
@@ -402,14 +385,14 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permViewBkServices || $__permManageBkServices): ?>
-                <li><a href="<?= base_url('koordinator/guidance') ?>" class="<?= $__active('koordinator/guidance*') ? 'active' : '' ?>">Bimbingan</a></li>
-                <li><a href="<?= base_url('koordinator/counseling') ?>" class="<?= $__active('koordinator/counseling*') ? 'active' : '' ?>">Konseling</a></li>
-                <li><a href="<?= base_url('koordinator/parent-collaborations') ?>" class="<?= $__active('koordinator/parent-collaborations*') ? 'active' : '' ?>">Kolaborasi Orang Tua</a></li>
-                <li><a href="<?= base_url('koordinator/home-visits') ?>" class="<?= $__active('koordinator/home-visits*') ? 'active' : '' ?>">Kunjungan Rumah</a></li>
-                <li><a href="<?= base_url('koordinator/case-conferences') ?>" class="<?= $__active('koordinator/case-conferences*') ? 'active' : '' ?>">Konferensi Kasus</a></li>
+                <li><a href="<?= base_url('koordinator/guidance') ?>" class="<?= $__active('koordinator/guidance*') ? 'active' : '' ?>"><i class="mdi mdi-human-male-board"></i> Bimbingan</a></li>
+                <li><a href="<?= base_url('koordinator/counseling') ?>" class="<?= $__active('koordinator/counseling*') ? 'active' : '' ?>"><i class="mdi mdi-heart-pulse"></i> Konseling</a></li>
+                <li><a href="<?= base_url('koordinator/parent-collaborations') ?>" class="<?= $__active('koordinator/parent-collaborations*') ? 'active' : '' ?>"><i class="mdi mdi-account-child"></i> Kolaborasi Orang Tua</a></li>
+                <li><a href="<?= base_url('koordinator/home-visits') ?>" class="<?= $__active('koordinator/home-visits*') ? 'active' : '' ?>"><i class="mdi mdi-home-outline"></i> Kunjungan Rumah</a></li>
+                <li><a href="<?= base_url('koordinator/case-conferences') ?>" class="<?= $__active('koordinator/case-conferences*') ? 'active' : '' ?>"><i class="mdi mdi-account-group-outline"></i> Konferensi Kasus</a></li>
               <?php endif; ?>
               <?php if ($__enableAssessments && $__canAny(['manage_assessments', 'take_assessments'])): ?>
-                <li><a href="<?= base_url('koordinator/assessments') ?>" class="<?= $__active('koordinator/assessments*') ? 'active' : '' ?>">Asesmen</a></li>
+                <li><a href="<?= base_url('koordinator/assessments') ?>" class="<?= $__active('koordinator/assessments*') ? 'active' : '' ?>"><i class="mdi mdi-clipboard-list-outline"></i> Asesmen</a></li>
               <?php endif; ?>
             </ul>
           </li>
@@ -423,10 +406,10 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permReviewConsultations): ?>
-                <li><a href="<?= base_url('koordinator/consultations') ?>" class="<?= $__active('koordinator/consultations*') ? 'active' : '' ?>">Konsultasi & Pengaduan</a></li>
+                <li><a href="<?= base_url('koordinator/consultations') ?>" class="<?= $__active('koordinator/consultations*') ? 'active' : '' ?>"><i class="mdi mdi-comment-question-outline"></i> Konsultasi & Pengaduan</a></li>
               <?php endif; ?>
               <?php if ($__enableCareerInfo && $__canAny(['manage_career_info', 'view_career_info'])): ?>
-                <li><a href="<?= base_url('koordinator/career-info') ?>" class="<?= $__active('koordinator/career-info*') ? 'active' : '' ?>">Info Karier dan Studi Lanjut</a></li>
+                <li><a href="<?= base_url('koordinator/career-info') ?>" class="<?= $__active('koordinator/career-info*') ? 'active' : '' ?>"><i class="mdi mdi-school"></i> Info Karier dan Studi Lanjut</a></li>
               <?php endif; ?>
             </ul>
           </li>
@@ -441,31 +424,21 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
           </li>
           <?php endif; ?>
 
-          <li class="menu-title">Lainnya</li>
-
-          <?php if ($__permSendMessages): ?>
-          <li>
-            <a href="<?= base_url('koordinator/messages') ?>" class="waves-effect<?= $__active('koordinator/messages*') ?>">
-              <i class="mdi mdi-email"></i>
-              <span>Pesan</span>
+          <li class="<?= $__mm(['koordinator/messages*', 'koordinator/notifications*', 'koordinator/trash*']) ?>">
+            <a href="javascript:void(0);" class="has-arrow waves-effect">
+              <i class="mdi mdi-dots-horizontal-circle-outline"></i>
+              <span>Lainnya</span>
             </a>
+            <ul class="sub-menu" aria-expanded="false">
+              <?php if ($__permSendMessages): ?>
+                <li><a href="<?= base_url('koordinator/messages') ?>" class="<?= $__active('koordinator/messages*') ? 'active' : '' ?>"><i class="mdi mdi-email-outline"></i> Pesan</a></li>
+              <?php endif; ?>
+              <?php if ($__permViewDashboard): ?>
+                <li><a href="<?= base_url('koordinator/notifications') ?>" class="<?= $__active('koordinator/notifications*') ? 'active' : '' ?>"><i class="mdi mdi-bell-outline"></i> Notifikasi</a></li>
+                <li><a href="<?= base_url('koordinator/trash') ?>" class="<?= $__active('koordinator/trash*') ? 'active' : '' ?>"><i class="mdi mdi-trash-can-outline"></i> Tempat Sampah</a></li>
+              <?php endif; ?>
+            </ul>
           </li>
-          <?php endif; ?>
-
-          <?php if ($__permViewDashboard): ?>
-          <li>
-            <a href="<?= base_url('koordinator/notifications') ?>" class="waves-effect<?= $__active('koordinator/notifications*') ?>">
-              <i class="mdi mdi-bell"></i>
-              <span>Notifikasi</span>
-            </a>
-          </li>
-          <li>
-            <a href="<?= base_url('koordinator/trash') ?>" class="waves-effect<?= $__active('koordinator/trash*') ?>">
-              <i class="mdi mdi-trash-can-outline"></i>
-              <span>Tempat Sampah</span>
-            </a>
-          </li>
-          <?php endif; ?>
 
         <?php elseif ($__isCounselor): ?>
           <!-- GURU BK MENU -->
@@ -488,10 +461,10 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permViewBkAssignments): ?>
-                <li><a href="<?= base_url('counselor/assignments') ?>" class="<?= $__active('counselor/assignments*') ? 'active' : '' ?>">Tugas yang Diberikan</a></li>
+                <li><a href="<?= base_url('counselor/assignments') ?>" class="<?= $__active('counselor/assignments*') ? 'active' : '' ?>"><i class="mdi mdi-clipboard-check-outline"></i> Tugas yang Diberikan</a></li>
               <?php endif; ?>
               <?php if ($__permViewAllStudents): ?>
-                <li><a href="<?= base_url('counselor/students') ?>" class="<?= $__active('counselor/students*') ? 'active' : '' ?>">Siswa Binaan</a></li>
+                <li><a href="<?= base_url('counselor/students') ?>" class="<?= $__active('counselor/students*') ? 'active' : '' ?>"><i class="mdi mdi-account-school-outline"></i> Siswa Binaan</a></li>
               <?php endif; ?>
             </ul>
           </li>
@@ -509,14 +482,14 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permViewBkServices || $__permManageBkServices): ?>
-                <li><a href="<?= base_url('counselor/guidance') ?>" class="<?= $__active('counselor/guidance*') ? 'active' : '' ?>">Bimbingan</a></li>
-                <li><a href="<?= base_url('counselor/counseling') ?>" class="<?= $__active('counselor/counseling*') ? 'active' : '' ?>">Konseling</a></li>
-                <li><a href="<?= base_url('counselor/parent-collaborations') ?>" class="<?= $__active('counselor/parent-collaborations*') ? 'active' : '' ?>">Kolaborasi Orang Tua</a></li>
-                <li><a href="<?= base_url('counselor/home-visits') ?>" class="<?= $__active('counselor/home-visits*') ? 'active' : '' ?>">Kunjungan Rumah</a></li>
-                <li><a href="<?= base_url('counselor/case-conferences') ?>" class="<?= $__active('counselor/case-conferences*') ? 'active' : '' ?>">Konferensi Kasus</a></li>
+                <li><a href="<?= base_url('counselor/guidance') ?>" class="<?= $__active('counselor/guidance*') ? 'active' : '' ?>"><i class="mdi mdi-human-male-board"></i> Bimbingan</a></li>
+                <li><a href="<?= base_url('counselor/counseling') ?>" class="<?= $__active('counselor/counseling*') ? 'active' : '' ?>"><i class="mdi mdi-heart-pulse"></i> Konseling</a></li>
+                <li><a href="<?= base_url('counselor/parent-collaborations') ?>" class="<?= $__active('counselor/parent-collaborations*') ? 'active' : '' ?>"><i class="mdi mdi-account-child"></i> Kolaborasi Orang Tua</a></li>
+                <li><a href="<?= base_url('counselor/home-visits') ?>" class="<?= $__active('counselor/home-visits*') ? 'active' : '' ?>"><i class="mdi mdi-home-outline"></i> Kunjungan Rumah</a></li>
+                <li><a href="<?= base_url('counselor/case-conferences') ?>" class="<?= $__active('counselor/case-conferences*') ? 'active' : '' ?>"><i class="mdi mdi-account-group-outline"></i> Konferensi Kasus</a></li>
               <?php endif; ?>
               <?php if ($__enableAssessments && $__canAny(['manage_assessments', 'take_assessments'])): ?>
-                <li><a href="<?= base_url('counselor/assessments') ?>" class="<?= $__active('counselor/assessments*') ? 'active' : '' ?>">Asesmen</a></li>
+                <li><a href="<?= base_url('counselor/assessments') ?>" class="<?= $__active('counselor/assessments*') ? 'active' : '' ?>"><i class="mdi mdi-clipboard-list-outline"></i> Asesmen</a></li>
               <?php endif; ?>
             </ul>
           </li>
@@ -530,10 +503,10 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permReviewConsultations || $__permSubmitConsultations): ?>
-                <li><a href="<?= base_url('counselor/consultations') ?>" class="<?= $__active('counselor/consultations*') ? 'active' : '' ?>">Konsultasi & Pengaduan</a></li>
+                <li><a href="<?= base_url('counselor/consultations') ?>" class="<?= $__active('counselor/consultations*') ? 'active' : '' ?>"><i class="mdi mdi-comment-question-outline"></i> Konsultasi & Pengaduan</a></li>
               <?php endif; ?>
               <?php if ($__enableCareerInfo && $__canAny(['manage_career_info', 'view_career_info'])): ?>
-                <li><a href="<?= base_url('counselor/career-info') ?>" class="<?= $__active('counselor/career-info*') ? 'active' : '' ?>">Info Karier dan Studi Lanjut</a></li>
+                <li><a href="<?= base_url('counselor/career-info') ?>" class="<?= $__active('counselor/career-info*') ? 'active' : '' ?>"><i class="mdi mdi-school"></i> Info Karier dan Studi Lanjut</a></li>
               <?php endif; ?>
             </ul>
           </li>
@@ -548,31 +521,21 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
           </li>
           <?php endif; ?>
 
-          <li class="menu-title">Lainnya</li>
-
-          <?php if ($__permSendMessages): ?>
-          <li>
-            <a href="<?= base_url('counselor/messages') ?>" class="waves-effect<?= $__active('counselor/messages*') ?>">
-              <i class="mdi mdi-email"></i>
-              <span>Pesan</span>
+          <li class="<?= $__mm(['counselor/messages*', 'counselor/notifications*', 'counselor/trash*']) ?>">
+            <a href="javascript:void(0);" class="has-arrow waves-effect">
+              <i class="mdi mdi-dots-horizontal-circle-outline"></i>
+              <span>Lainnya</span>
             </a>
+            <ul class="sub-menu" aria-expanded="false">
+              <?php if ($__permSendMessages): ?>
+                <li><a href="<?= base_url('counselor/messages') ?>" class="<?= $__active('counselor/messages*') ? 'active' : '' ?>"><i class="mdi mdi-email-outline"></i> Pesan</a></li>
+              <?php endif; ?>
+              <?php if ($__permViewDashboard): ?>
+                <li><a href="<?= base_url('counselor/notifications') ?>" class="<?= $__active('counselor/notifications*') ? 'active' : '' ?>"><i class="mdi mdi-bell-outline"></i> Notifikasi</a></li>
+                <li><a href="<?= base_url('counselor/trash') ?>" class="<?= $__active('counselor/trash*') ? 'active' : '' ?>"><i class="mdi mdi-trash-can-outline"></i> Tempat Sampah</a></li>
+              <?php endif; ?>
+            </ul>
           </li>
-          <?php endif; ?>
-
-          <?php if ($__permViewDashboard): ?>
-          <li>
-            <a href="<?= base_url('counselor/notifications') ?>" class="waves-effect<?= $__active('counselor/notifications*') ?>">
-              <i class="mdi mdi-bell"></i>
-              <span>Notifikasi</span>
-            </a>
-          </li>
-          <li>
-            <a href="<?= base_url('counselor/trash') ?>" class="waves-effect<?= $__active('counselor/trash*') ?>">
-              <i class="mdi mdi-trash-can-outline"></i>
-              <span>Tempat Sampah</span>
-            </a>
-          </li>
-          <?php endif; ?>
 
         <?php elseif ($__isHomeroom): ?>
           <!-- WALI KELAS MENU -->
@@ -601,13 +564,13 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permViewBkServices): ?>
-                <li><a href="<?= base_url('homeroom/jadwal-bk') ?>" class="<?= $__active('homeroom/jadwal-bk*') ? 'active' : '' ?>">Jadwal Kegiatan/Acara BK</a></li>
+                <li><a href="<?= base_url('homeroom/jadwal-bk') ?>" class="<?= $__active('homeroom/jadwal-bk*') ? 'active' : '' ?>"><i class="mdi mdi-calendar-month-outline"></i> Jadwal Kegiatan/Acara BK</a></li>
               <?php endif; ?>
               <?php if ($__permSubmitConsultations && $__canUseConsultation()): ?>
-                <li><a href="<?= base_url('homeroom/consultations') ?>" class="<?= $__active('homeroom/consultations*') ? 'active' : '' ?>">Konsultasi & Pengaduan</a></li>
+                <li><a href="<?= base_url('homeroom/consultations') ?>" class="<?= $__active('homeroom/consultations*') ? 'active' : '' ?>"><i class="mdi mdi-comment-question-outline"></i> Konsultasi & Pengaduan</a></li>
               <?php endif; ?>
               <?php if ($__enableCareerInfo && $__canAny(['manage_career_info', 'view_career_info'])): ?>
-                <li><a href="<?= base_url('homeroom/career-info') ?>" class="<?= $__active('homeroom/career-info*') ? 'active' : '' ?>">Info Karier dan Studi Lanjut</a></li>
+                <li><a href="<?= base_url('homeroom/career-info') ?>" class="<?= $__active('homeroom/career-info*') ? 'active' : '' ?>"><i class="mdi mdi-school"></i> Info Karier dan Studi Lanjut</a></li>
               <?php endif; ?>
             </ul>
           </li>
@@ -622,31 +585,21 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
           </li>
           <?php endif; ?>
 
-          <li class="menu-title">Lainnya</li>
-
-          <?php if ($__permSendMessages): ?>
-          <li>
-            <a href="<?= base_url('homeroom/messages') ?>" class="waves-effect<?= $__active('homeroom/messages*') ?>">
-              <i class="mdi mdi-email"></i>
-              <span>Pesan</span>
+          <li class="<?= $__mm(['homeroom/messages*', 'homeroom/notifications*', 'homeroom/trash*']) ?>">
+            <a href="javascript:void(0);" class="has-arrow waves-effect">
+              <i class="mdi mdi-dots-horizontal-circle-outline"></i>
+              <span>Lainnya</span>
             </a>
+            <ul class="sub-menu" aria-expanded="false">
+              <?php if ($__permSendMessages): ?>
+                <li><a href="<?= base_url('homeroom/messages') ?>" class="<?= $__active('homeroom/messages*') ? 'active' : '' ?>"><i class="mdi mdi-email-outline"></i> Pesan</a></li>
+              <?php endif; ?>
+              <?php if ($__permViewDashboard): ?>
+                <li><a href="<?= base_url('homeroom/notifications') ?>" class="<?= $__active('homeroom/notifications*') ? 'active' : '' ?>"><i class="mdi mdi-bell-outline"></i> Notifikasi</a></li>
+                <li><a href="<?= base_url('homeroom/trash') ?>" class="<?= $__active('homeroom/trash*') ? 'active' : '' ?>"><i class="mdi mdi-trash-can-outline"></i> Tempat Sampah</a></li>
+              <?php endif; ?>
+            </ul>
           </li>
-          <?php endif; ?>
-
-          <?php if ($__permViewDashboard): ?>
-          <li>
-            <a href="<?= base_url('homeroom/notifications') ?>" class="waves-effect<?= $__active('homeroom/notifications*') ?>">
-              <i class="mdi mdi-bell"></i>
-              <span>Notifikasi</span>
-            </a>
-          </li>
-          <li>
-            <a href="<?= base_url('homeroom/trash') ?>" class="waves-effect<?= $__active('homeroom/trash*') ?>">
-              <i class="mdi mdi-trash-can-outline"></i>
-              <span>Tempat Sampah</span>
-            </a>
-          </li>
-          <?php endif; ?>
 
         <?php elseif ($__isStudent): ?>
           <!-- SISWA MENU -->
@@ -669,10 +622,10 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permViewStudentPortfolio): ?>
-                <li><a href="<?= base_url('student/profile') ?>" class="<?= $__active('student/profile*') ? 'active' : '' ?>">Profil Saya</a></li>
+                <li><a href="<?= base_url('student/profile') ?>" class="<?= $__active('student/profile*') ? 'active' : '' ?>"><i class="mdi mdi-account-outline"></i> Profil Saya</a></li>
               <?php endif; ?>
               <?php if ($__permViewStaffInfo): ?>
-                <li><a href="<?= base_url('student/staff') ?>" class="<?= $__active('student/staff*') ? 'active' : '' ?>">Info Guru</a></li>
+                <li><a href="<?= base_url('student/staff') ?>" class="<?= $__active('student/staff*') ? 'active' : '' ?>"><i class="mdi mdi-card-account-details-outline"></i> Info Guru</a></li>
               <?php endif; ?>
             </ul>
           </li>
@@ -686,10 +639,10 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permViewBkServices): ?>
-                <li><a href="<?= base_url('student/jadwal-bk') ?>" class="<?= $__active('student/jadwal-bk*') ? 'active' : '' ?>">Jadwal Kegiatan/Acara BK</a></li>
+                <li><a href="<?= base_url('student/jadwal-bk') ?>" class="<?= $__active('student/jadwal-bk*') ? 'active' : '' ?>"><i class="mdi mdi-calendar-month-outline"></i> Jadwal Kegiatan/Acara BK</a></li>
               <?php endif; ?>
               <?php if ($__enableAssessments && $__permTakeAssessments): ?>
-                <li><a href="<?= base_url('student/assessments') ?>" class="<?= $__active('student/assessments*') ? 'active' : '' ?>">Asesmen</a></li>
+                <li><a href="<?= base_url('student/assessments') ?>" class="<?= $__active('student/assessments*') ? 'active' : '' ?>"><i class="mdi mdi-clipboard-list-outline"></i> Asesmen</a></li>
               <?php endif; ?>
             </ul>
           </li>
@@ -703,40 +656,30 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permSubmitConsultations && $__canUseConsultation()): ?>
-                <li><a href="<?= base_url('student/consultations') ?>" class="<?= $__active('student/consultations*') ? 'active' : '' ?>">Konsultasi & Pengaduan</a></li>
+                <li><a href="<?= base_url('student/consultations') ?>" class="<?= $__active('student/consultations*') ? 'active' : '' ?>"><i class="mdi mdi-comment-question-outline"></i> Konsultasi & Pengaduan</a></li>
               <?php endif; ?>
               <?php if ($__enableCareerInfo && $__permViewCareerInfo): ?>
-                <li><a href="<?= base_url('student/career') ?>" class="<?= $__active('student/career*') ? 'active' : '' ?>">Info Karier dan Studi Lanjut</a></li>
+                <li><a href="<?= base_url('student/career') ?>" class="<?= $__active('student/career*') ? 'active' : '' ?>"><i class="mdi mdi-school"></i> Info Karier dan Studi Lanjut</a></li>
               <?php endif; ?>
             </ul>
           </li>
           <?php endif; ?>
 
-          <li class="menu-title">Lainnya</li>
-
-          <?php if ($__permSendMessages): ?>
-          <li>
-            <a href="<?= base_url('student/messages') ?>" class="waves-effect<?= $__active('student/messages*') ?>">
-              <i class="mdi mdi-email"></i>
-              <span>Pesan</span>
+          <li class="<?= $__mm(['student/messages*', 'student/notifications*', 'student/trash*']) ?>">
+            <a href="javascript:void(0);" class="has-arrow waves-effect">
+              <i class="mdi mdi-dots-horizontal-circle-outline"></i>
+              <span>Lainnya</span>
             </a>
+            <ul class="sub-menu" aria-expanded="false">
+              <?php if ($__permSendMessages): ?>
+                <li><a href="<?= base_url('student/messages') ?>" class="<?= $__active('student/messages*') ? 'active' : '' ?>"><i class="mdi mdi-email-outline"></i> Pesan</a></li>
+              <?php endif; ?>
+              <?php if ($__permViewDashboard): ?>
+                <li><a href="<?= base_url('student/notifications') ?>" class="<?= $__active('student/notifications*') ? 'active' : '' ?>"><i class="mdi mdi-bell-outline"></i> Notifikasi</a></li>
+                <li><a href="<?= base_url('student/trash') ?>" class="<?= $__active('student/trash*') ? 'active' : '' ?>"><i class="mdi mdi-trash-can-outline"></i> Tempat Sampah</a></li>
+              <?php endif; ?>
+            </ul>
           </li>
-          <?php endif; ?>
-
-          <?php if ($__permViewDashboard): ?>
-          <li>
-            <a href="<?= base_url('student/notifications') ?>" class="waves-effect<?= $__active('student/notifications*') ?>">
-              <i class="mdi mdi-bell"></i>
-              <span>Notifikasi</span>
-            </a>
-          </li>
-          <li>
-            <a href="<?= base_url('student/trash') ?>" class="waves-effect<?= $__active('student/trash*') ?>">
-              <i class="mdi mdi-trash-can-outline"></i>
-              <span>Tempat Sampah</span>
-            </a>
-          </li>
-          <?php endif; ?>
 
         <?php elseif ($__isParent): ?>
           <!-- ORANG TUA MENU -->
@@ -759,10 +702,10 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permViewStudentPortfolio): ?>
-                <li><a href="<?= base_url('parent/children') ?>" class="<?= $__activeAny(['parent/children*', 'parent/child*']) !== '' ? 'active' : '' ?>">Daftar Anak</a></li>
+                <li><a href="<?= base_url('parent/children') ?>" class="<?= $__activeAny(['parent/children*', 'parent/child*']) !== '' ? 'active' : '' ?>"><i class="mdi mdi-account-child"></i> Daftar Anak</a></li>
               <?php endif; ?>
               <?php if ($__permViewBkServices): ?>
-                <li><a href="<?= base_url('parent/jadwal-bk') ?>" class="<?= $__active('parent/jadwal-bk*') ? 'active' : '' ?>">Jadwal Kegiatan/Acara BK</a></li>
+                <li><a href="<?= base_url('parent/jadwal-bk') ?>" class="<?= $__active('parent/jadwal-bk*') ? 'active' : '' ?>"><i class="mdi mdi-calendar-month-outline"></i> Jadwal Kegiatan/Acara BK</a></li>
               <?php endif; ?>
             </ul>
           </li>
@@ -776,10 +719,10 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             </a>
             <ul class="sub-menu" aria-expanded="false">
               <?php if ($__permSubmitConsultations && $__canUseConsultation()): ?>
-                <li><a href="<?= base_url('parent/consultations') ?>" class="<?= $__active('parent/consultations*') ? 'active' : '' ?>">Konsultasi & Pengaduan</a></li>
+                <li><a href="<?= base_url('parent/consultations') ?>" class="<?= $__active('parent/consultations*') ? 'active' : '' ?>"><i class="mdi mdi-comment-question-outline"></i> Konsultasi & Pengaduan</a></li>
               <?php endif; ?>
               <?php if ($__enableCareerInfo && $__permViewCareerInfo): ?>
-                <li><a href="<?= base_url('parent/career') ?>" class="<?= $__active('parent/career*') ? 'active' : '' ?>">Info Karier dan Studi Lanjut</a></li>
+                <li><a href="<?= base_url('parent/career') ?>" class="<?= $__active('parent/career*') ? 'active' : '' ?>"><i class="mdi mdi-school"></i> Info Karier dan Studi Lanjut</a></li>
               <?php endif; ?>
             </ul>
           </li>
@@ -794,31 +737,21 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
           </li>
           <?php endif; ?>
 
-          <li class="menu-title">Lainnya</li>
-
-          <?php if ($__permSendMessages): ?>
-          <li>
-            <a href="<?= base_url('parent/messages') ?>" class="waves-effect<?= $__active('parent/messages*') ?>">
-              <i class="mdi mdi-email"></i>
-              <span>Pesan</span>
+          <li class="<?= $__mm(['parent/messages*', 'parent/notifications*', 'parent/trash*']) ?>">
+            <a href="javascript:void(0);" class="has-arrow waves-effect">
+              <i class="mdi mdi-dots-horizontal-circle-outline"></i>
+              <span>Lainnya</span>
             </a>
+            <ul class="sub-menu" aria-expanded="false">
+              <?php if ($__permSendMessages): ?>
+                <li><a href="<?= base_url('parent/messages') ?>" class="<?= $__active('parent/messages*') ? 'active' : '' ?>"><i class="mdi mdi-email-outline"></i> Pesan</a></li>
+              <?php endif; ?>
+              <?php if ($__permViewDashboard): ?>
+                <li><a href="<?= base_url('parent/notifications') ?>" class="<?= $__active('parent/notifications*') ? 'active' : '' ?>"><i class="mdi mdi-bell-outline"></i> Notifikasi</a></li>
+                <li><a href="<?= base_url('parent/trash') ?>" class="<?= $__active('parent/trash*') ? 'active' : '' ?>"><i class="mdi mdi-trash-can-outline"></i> Tempat Sampah</a></li>
+              <?php endif; ?>
+            </ul>
           </li>
-          <?php endif; ?>
-
-          <?php if ($__permViewDashboard): ?>
-          <li>
-            <a href="<?= base_url('parent/notifications') ?>" class="waves-effect<?= $__active('parent/notifications*') ?>">
-              <i class="mdi mdi-bell"></i>
-              <span>Notifikasi</span>
-            </a>
-          </li>
-          <li>
-            <a href="<?= base_url('parent/trash') ?>" class="waves-effect<?= $__active('parent/trash*') ?>">
-              <i class="mdi mdi-trash-can-outline"></i>
-              <span>Tempat Sampah</span>
-            </a>
-          </li>
-          <?php endif; ?>
 
         <?php endif; ?>
 
@@ -830,10 +763,10 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
             <span>Prototipe Pengembangan</span>
           </a>
           <ul class="sub-menu" aria-expanded="false">
-            <li><a href="<?= base_url('simulation') ?>" class="<?= $__active('simulation*') ? 'active' : '' ?>">Simulasi Lama</a></li>
-            <li><a href="<?= base_url('prototype') ?>" class="<?= $__active('prototype*') ? 'active' : '' ?>">Halaman Demo BK</a></li>
+            <li><a href="<?= base_url('simulation') ?>" class="<?= $__active('simulation*') ? 'active' : '' ?>"><i class="mdi mdi-flask-outline"></i> Simulasi Lama</a></li>
+            <li><a href="<?= base_url('prototype') ?>" class="<?= $__active('prototype*') ? 'active' : '' ?>"><i class="mdi mdi-monitor-dashboard"></i> Halaman Demo BK</a></li>
             <?php if ($__isAdmin): ?>
-              <li><a href="<?= base_url('admin/simulation-access') ?>" class="<?= $__active('admin/simulation-access*') ? 'active' : '' ?>">Kelola Akses</a></li>
+              <li><a href="<?= base_url('admin/simulation-access') ?>" class="<?= $__active('admin/simulation-access*') ? 'active' : '' ?>"><i class="mdi mdi-key-outline"></i> Kelola Akses</a></li>
             <?php endif; ?>
           </ul>
         </li>
