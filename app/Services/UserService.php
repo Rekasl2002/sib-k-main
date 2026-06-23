@@ -404,26 +404,13 @@ class UserService
                 ];
             }
 
-            // Sinkronkan nama lengkap di tabel students jika user ini adalah siswa
-            $studentRoleId = $this->getStudentRoleId();
-            if ((int) $data['role_id'] === $studentRoleId) {
-                $student = $this->studentModel->asArray()
-                    ->select('id')
-                    ->where('user_id', (int) $userId)
-                    ->first();
-
-                if ($student) {
-                    if (!$this->studentModel->update((int) $student['id'], [
-                        'full_name' => $data['full_name'],
-                    ])) {
-                        $this->db->transRollback();
-                        return [
-                            'success' => false,
-                            'message' => 'Gagal mengupdate nama lengkap siswa: ' . implode(', ', $this->studentModel->errors() ?: []),
-                        ];
-                    }
-                }
-            }
+            /**
+             * Catatan: nama lengkap siswa TIDAK perlu disinkronkan ke tabel students.
+             * Kolom students.full_name sudah DIHAPUS — nama siswa kini single source of truth
+             * di users.full_name (StudentModel mengambilnya via JOIN). Memanggil
+             * studentModel->update(['full_name' => ...]) akan difilter habis oleh allowedFields
+             * sehingga update() melempar DataException "There is no data to update".
+             */
 
             $this->db->transComplete();
             if ($this->db->transStatus() === false) {
