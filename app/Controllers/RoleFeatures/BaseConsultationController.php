@@ -78,6 +78,9 @@ abstract class BaseConsultationController extends BaseController
         if (! $this->canSubmit && ! $this->canReview) {
             return $this->deny();
         }
+        if ($err = $this->validateRequired($this->request->getPost() ?? [])) {
+            return redirect()->back()->withInput()->with('error', $err);
+        }
         if ($err = $this->validateAttachments()) {
             return redirect()->back()->withInput()->with('error', $err);
         }
@@ -141,6 +144,9 @@ abstract class BaseConsultationController extends BaseController
         $row = $this->service->find((int) $id, $this->roleKey, $this->currentUserId());
         if (! $row || (int) ($row['reporter_user_id'] ?? 0) !== $this->currentUserId()) {
             return redirect()->to(site_url($this->routePrefix))->with('error', 'Anda hanya dapat mengubah laporan milik sendiri.');
+        }
+        if ($err = $this->validateRequired($this->request->getPost() ?? [])) {
+            return redirect()->back()->withInput()->with('error', $err);
         }
         if ($err = $this->validateAttachments()) {
             return redirect()->back()->withInput()->with('error', $err);
@@ -227,6 +233,37 @@ abstract class BaseConsultationController extends BaseController
 
         return redirect()->to(site_url($this->routePrefix . '/show/' . $complaintId))
             ->with('success', 'Lampiran dihapus.');
+    }
+
+    /**
+     * Validasi kolom wajib (penegakan sisi server, melengkapi atribut "required"
+     * pada form yang hanya berlaku di sisi peramban). Aturan (Perbaikan Kedua,
+     * Item #9): Judul, Deskripsi, dan Waktu kejadian wajib untuk semua pelapor;
+     * Lokasi wajib hanya bagi peninjau (Koordinator BK & Guru BK), opsional bagi
+     * pelapor. Mengembalikan pesan kesalahan pertama, atau null bila lolos.
+     *
+     * @param array<string,mixed> $post
+     */
+    protected function validateRequired(array $post): ?string
+    {
+        if (trim((string) ($post['title'] ?? '')) === '') {
+            return 'Judul/Topik wajib diisi.';
+        }
+        if (trim((string) ($post['description'] ?? '')) === '') {
+            return 'Deskripsi wajib diisi.';
+        }
+
+        $occurred = trim((string) ($post['occurred_at'] ?? '')) !== ''
+            || trim((string) ($post['occurred_date'] ?? '')) !== '';
+        if (! $occurred) {
+            return 'Waktu kejadian wajib diisi.';
+        }
+
+        if ($this->canReview && trim((string) ($post['location'] ?? '')) === '') {
+            return 'Tempat/Lokasi wajib diisi bagi peninjau.';
+        }
+
+        return null;
     }
 
     /**
