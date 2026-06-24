@@ -207,11 +207,13 @@ class AssessmentResultModel extends Model
             ->where('assessment_id', $assessmentId)
             ->where('student_id', $studentId);
 
-        // guard soft delete jika ada
-        if ($this->fieldExists($this->table, 'deleted_at')) {
-            $maxRow->where('deleted_at', null);
-        }
-
+        // PENTING: JANGAN memfilter deleted_at di sini.
+        // Unique key uq_assessment_results_attempt (assessment_id, student_id, attempt_number)
+        // tetap berlaku untuk baris yang sudah di-soft delete (baris masih ada secara fisik).
+        // Bila attempt_number dihitung hanya dari baris non-deleted, penugasan ULANG ke siswa
+        // yang sama setelah hasilnya dihapus akan menghasilkan attempt_number yang sama dengan
+        // baris lama -> duplicate key -> INSERT gagal diam-diam (siswa tak bisa ditugaskan lagi).
+        // Hitung MAX dari SEMUA baris agar attempt_number selalu monotonik & unik.
         $maxRow = $maxRow->get()->getRowArray();
 
         $maxAttempt = (int) ($maxRow['max_attempt'] ?? 0);
@@ -474,10 +476,9 @@ class AssessmentResultModel extends Model
             ->where('assessment_id', $assessmentId)
             ->where('student_id', $studentId);
 
-        if ($this->fieldExists($this->table, 'deleted_at')) {
-            $q->where('deleted_at', null);
-        }
-
+        // Sengaja TIDAK memfilter deleted_at: attempt_number harus monotonik melintasi
+        // semua baris (termasuk soft-deleted) agar tidak bentrok dengan unique key saat
+        // siswa ditugaskan ulang. Lihat catatan di autoAttemptNumber().
         $row = $q->get()->getRowArray();
         return ((int)($row['max_attempt'] ?? 0)) + 1;
     }

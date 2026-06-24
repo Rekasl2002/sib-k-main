@@ -299,7 +299,11 @@ class AssessmentApiController extends BaseController
             ]);
         }
 
-        $resultId = (int) ($this->request->getPost('result_id') ?? 0);
+        // Halaman pengerjaan mengirim body JSON (heartbeat waktu). getPost() tidak
+        // membaca body JSON, jadi baca juga payload JSON sebagai cadangan.
+        $json     = (array) ($this->request->getJSON(true) ?? []);
+        $resultId = (int) ($this->request->getPost('result_id') ?? ($json['result_id'] ?? 0));
+
         if ($resultId <= 0) {
             $row = $this->db->table('assessment_results')
                 ->select('id')
@@ -320,31 +324,73 @@ class AssessmentApiController extends BaseController
             ]);
         }
 
-        $answers = (array) ($this->request->getPost('answers') ?? []);
-        $saved = 0;
-        foreach ($answers as $questionId => $value) {
-            $payload = $this->answerPayload((int) $questionId, $studentId, $resultId, $value);
-            $model = new AssessmentAnswerModel();
-            $existing = $model->where('result_id', $resultId)
-                ->where('question_id', (int) $questionId)
-                ->where('student_id', $studentId)
-                ->first();
+        // Muat attempt & pastikan MILIK siswa ini serta masih aktif. JANGAN pernah
+        // memproses attempt yang sudah selesai/dinilai/dihapus agar tidak menghidupkan
+        // kembali (resurrect) status menjadi "In Progress".
+        $result = $this->db->table('assessment_results')
+            ->select('id, student_id, status, started_at, time_spent_seconds')
+            ->where('id', $resultId)
+            ->where('student_id', $studentId)
+            ->where('deleted_at', null)
+            ->get()
+            ->getRowArray();
 
-            if ($existing) {
-                $model->update((int) $existing['id'], $payload);
-            } else {
-                $model->insert($payload);
-            }
-            $saved++;
+        if (!$result || !in_array((string) ($result['status'] ?? ''), ['Assigned', 'In Progress'], true)) {
+            return $this->response->setStatusCode(409)->setJSON([
+                'status'  => 'inactive',
+                'message' => 'Attempt asesmen tidak lagi aktif.',
+            ]);
         }
 
+        // Catat waktu pengerjaan secara server-authoritative (anti-curang & anti-drift):
+        // berbasis selisih waktu sejak started_at, di-clamp ke durasi asesmen bila ada.
+        $this->touchTimeSpent($id, $resultId, $result);
+
+        // Simpan progress (jumlah terjawab) tanpa mengubah status menjadi tidak aktif.
         $this->refreshResultProgress($resultId);
 
         return $this->response->setJSON([
             'status'    => 'ok',
             'result_id' => $resultId,
-            'saved'     => $saved,
         ]);
+    }
+
+    /**
+     * Perbarui time_spent_seconds berdasarkan started_at (server-authoritative).
+     * Hanya membesar (monotonik) dan di-clamp ke durasi asesmen agar tidak melebihi batas.
+     */
+    private function touchTimeSpent(int $assessmentId, int $resultId, array $result): void
+    {
+        $startedAt = $result['started_at'] ?? null;
+        if (empty($startedAt)) {
+            return;
+        }
+
+        $elapsed = max(0, time() - strtotime($startedAt));
+
+        $asm = $this->db->table('assessments')
+            ->select('duration_minutes')
+            ->where('id', $assessmentId)
+            ->get()
+            ->getRowArray();
+
+        $durationMin = (int) ($asm['duration_minutes'] ?? 0);
+        if ($durationMin > 0) {
+            $elapsed = min($elapsed, $durationMin * 60);
+        }
+
+        $current = (int) ($result['time_spent_seconds'] ?? 0);
+        $newVal  = max($current, $elapsed);
+        if ($newVal === $current) {
+            return;
+        }
+
+        $this->db->table('assessment_results')
+            ->where('id', $resultId)
+            ->update([
+                'time_spent_seconds' => $newVal,
+                'updated_at'         => date('Y-m-d H:i:s'),
+            ]);
     }
 
     private function publishedAssessmentExists(int $id): bool

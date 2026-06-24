@@ -24,6 +24,8 @@
 .asm-progress{ height:8px; background:#e5e7eb; border-radius:999px; overflow:hidden }
 .asm-progress .bar{ height:100%; width:0%; background:#4f46e5; transition: width .2s }
 .asm-req{ color:#dc2626 }
+/* Saat waktu habis: cegah interaksi TANPA men-disable field (agar csrf & jawaban tetap terkirim). */
+.asm-locked .asm-input{ pointer-events:none; opacity:.85 }
 </style>
 
 <?php
@@ -331,28 +333,29 @@ $submitUrl = function_exists('route_to')
   // --------------- Countdown / Timer up ---------------
   let totalSec = null;
   let warned2min = false;
+  let autoSubmitting = false; // cegah submit ganda saat waktu habis
 
   if (durMin && durMin > 0) {
     // Gunakan sisa waktu dari server agar tidak reset
     totalSec = (typeof remainingInit === 'number') ? remainingInit : (durMin * 60);
 
     const tickDown = () => {
+      if (totalSec < 0) totalSec = 0;
       if (cdEl) {
         const m = Math.floor(totalSec / 60);
         const s = totalSec % 60;
         cdEl.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
       }
+      // Cek HABIS lebih dulu: bila sudah 0 (mis. kadaluarsa saat halaman dibuka),
+      // langsung kumpulkan otomatis TANPA menampilkan peringatan (agar tidak ada
+      // pop-up "kurang dari 2 menit" yang berulang saat waktu sudah habis).
+      if (totalSec <= 0) {
+        submitExpired();
+        return;
+      }
       if (!warned2min && totalSec <= 120) {
         warned2min = true;
         try { alert('Waktu tersisa kurang dari 2 menit. Mohon selesaikan dan kumpulkan jawaban.'); } catch(e) {}
-      }
-      if (totalSec <= 0) {
-        freezeForm();
-        // Tandai pengumpulan otomatis agar server tidak menolak jawaban wajib yang kosong.
-        var teFlag = document.getElementById('timeExpiredFlag');
-        if (teFlag) teFlag.value = '1';
-        if (form) form.submit();
-        return;
       }
       totalSec -= 1;
       setTimeout(tickDown, 1000);
@@ -371,9 +374,33 @@ $submitUrl = function_exists('route_to')
     }, 1000);
   }
 
-  function freezeForm() {
-    const inputs = form ? form.querySelectorAll('input, textarea, button, select') : [];
-    inputs.forEach(i => i.disabled = true);
+  // Pengumpulan otomatis saat waktu habis.
+  // PENTING: JANGAN men-disable field sebelum submit. Input yang di-disable tidak
+  // ikut terkirim — termasuk token CSRF (csrf_token_sibk) — sehingga POST ditolak
+  // dan (karena security.redirect=true) dialihkan balik ke halaman ini → memunculkan
+  // peringatan & submit berulang tanpa henti. Kunci interaksi cukup lewat CSS + tombol.
+  function submitExpired() {
+    if (autoSubmitting) return;
+    autoSubmitting = true;
+
+    var teFlag = document.getElementById('timeExpiredFlag');
+    if (teFlag) teFlag.value = '1'; // server melonggarkan cek jawaban wajib
+
+    try { beaconHeartbeat(true); } catch (e) {}
+    try { localStorage.removeItem(answersKey); } catch (e) {}
+
+    lockForm();
+    // form.submit() (method) sengaja dipakai agar TIDAK memicu listener 'submit'
+    // (validasi jawaban wajib) — jawaban seadanya tetap dikirim beserta CSRF.
+    if (form) form.submit();
+  }
+
+  // Kunci interaksi tanpa men-disable field (field tetap ikut terkirim).
+  function lockForm() {
+    if (!form) return;
+    form.classList.add('asm-locked');
+    if (submitBtn) submitBtn.disabled = true;
+    if (saveBtn) saveBtn.disabled = true;
   }
 
   // --------------- Draft jawaban (LocalStorage) ---------------

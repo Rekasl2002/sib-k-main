@@ -446,6 +446,9 @@ class AssessmentController extends BaseStudentController
         $resultId = (int) ($this->request->getPost('result_id') ?? 0);
         $now      = Time::now($this->tz)->toDateTimeString();
 
+        // Penanda pengumpulan otomatis karena waktu habis (dikirim dari halaman take).
+        $timeExpired = (bool) $this->request->getPost('time_expired');
+
         $this->db->transStart();
 
         try {
@@ -469,6 +472,16 @@ class AssessmentController extends BaseStudentController
                     ->where('deleted_at', null)
                     ->orderBy('id','DESC')
                     ->get()->getRowArray();
+            }
+
+            // Bila pengumpulan OTOMATIS (waktu habis) tetapi attempt sudah tidak ada
+            // (dicabut/dihapus Guru BK, atau attempt-nya kadaluarsa), JANGAN membuat
+            // attempt baru. Cukup arahkan kembali dengan pesan yang jelas agar siswa
+            // tidak terjebak pada halaman pengerjaan.
+            if (!$result && $timeExpired) {
+                $this->db->transRollback();
+                return redirect()->to(route_to('student.assessments.available'))
+                    ->with('info', 'Waktu pengerjaan telah berakhir atau asesmen tidak lagi ditugaskan kepada Anda.');
             }
 
             // Fallback: bila tetap tidak ada, cek kuota sebelum membuat attempt baru.
@@ -519,7 +532,7 @@ class AssessmentController extends BaseStudentController
             // Penegakan jawaban wajib di sisi server (jangan hanya andalkan
             // validasi peramban). Dikecualikan bila pengumpulan otomatis karena
             // waktu habis (time_expired) agar progres siswa tidak hilang.
-            $timeExpired = (bool) $this->request->getPost('time_expired');
+            // ($timeExpired sudah ditentukan di awal method.)
             if (!$timeExpired) {
                 $missingRequired = 0;
                 foreach ($questions as $q) {
