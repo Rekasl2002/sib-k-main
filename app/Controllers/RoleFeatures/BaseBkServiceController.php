@@ -316,14 +316,14 @@ abstract class BaseBkServiceController extends BaseController
             if ($uid <= 0 || $uid === $me) {
                 continue;
             }
-            $prefix = role_route_prefix($uid);
             send_notification(
                 $uid,
                 'Jadwal Kegiatan/Acara BK',
                 'Ada jadwal kegiatan/acara BK untuk Anda. Silakan cek halaman Jadwal Kegiatan/Acara BK.',
                 'session',
                 ['bk_service_record_id' => $recordId],
-                $prefix !== '' ? '/' . $prefix . '/dashboard' : null
+                // Wali Kelas/Siswa/Orang Tua → halaman terpadu Jadwal Kegiatan/Acara BK.
+                bk_schedule_link($uid)
             );
         }
     }

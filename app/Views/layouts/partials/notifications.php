@@ -67,7 +67,7 @@ $csrfHash   = csrf_hash();
       <?php if (! $items): ?>
         <div class="p-3 text-center text-muted">Tidak ada notifikasi.</div>
       <?php else: foreach ($items as $n): ?>
-        <a href="<?= esc(notification_link($n['link'] ?? '')) ?>"
+        <a href="<?= esc(notification_link_for_viewer($n['link'] ?? '', (string)($n['type'] ?? ''), $rolePrefix) ?: '#') ?>"
            class="text-reset notification-item d-block <?= $n['is_read'] ? '' : 'bg-light' ?>"
            data-notif-id="<?= (int) $n['id'] ?>">
           <div class="d-flex">

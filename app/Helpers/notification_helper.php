@@ -254,6 +254,31 @@ if (!function_exists('role_route_prefix')) {
     }
 }
 
+if (!function_exists('bk_schedule_link')) {
+    /**
+     * Tautan halaman tempat seorang pengguna MELIHAT jadwal layanan BK, sesuai
+     * perannya. Wali Kelas, Siswa, dan Orang Tua kini hanya memiliki SATU halaman
+     * terpadu "Jadwal Kegiatan/Acara BK" (/{prefix}/jadwal-bk) — tidak lagi dipisah
+     * per fitur layanan BK seperti dulu. Maka notifikasi jadwal untuk ketiga peran
+     * itu HARUS menuju halaman terpadu tersebut, bukan dashboard/halaman per-fitur.
+     * Staf BK (Guru BK/Koordinator) tidak memakai halaman terpadu ini, jadi
+     * diarahkan ke dashboard masing-masing (tetap valid).
+     *
+     * @param int $user_id
+     * @return string|null Path relatif-host, atau null bila peran tak diketahui.
+     */
+    function bk_schedule_link(int $user_id): ?string
+    {
+        $prefix = role_route_prefix($user_id);
+
+        return match ($prefix) {
+            'homeroom', 'student', 'parent' => '/' . $prefix . '/jadwal-bk',
+            'counselor', 'koordinator'      => '/' . $prefix . '/dashboard',
+            default                          => null,
+        };
+    }
+}
+
 if (!function_exists('notify_users')) {
     /**
      * Send notification to multiple users
@@ -549,6 +574,40 @@ if (!function_exists('notification_link')) {
 
         // Sudah path relatif → pastikan diawali '/' agar tak salah resolve.
         return ($link[0] === '/' || $link[0] === '#') ? $link : '/' . $link;
+    }
+}
+
+if (!function_exists('notification_link_for_viewer')) {
+    /**
+     * Tautan EFEKTIF sebuah notifikasi saat ditampilkan ke pemiliknya, dengan
+     * dua penyesuaian:
+     *  1) Host-relatif: URL absolut (mis. localhost:30 hasil impor DB) dipangkas
+     *     ke path-nya saja — lihat notification_link().
+     *  2) Penyesuaian jadwal terpadu: Wali Kelas, Siswa, dan Orang Tua kini hanya
+     *     punya satu halaman "Jadwal Kegiatan/Acara BK" (/{prefix}/jadwal-bk),
+     *     tidak lagi halaman per-fitur layanan BK. Maka SEMUA notifikasi jadwal/
+     *     detail layanan BK untuk ketiga peran itu diarahkan ke halaman terpadu
+     *     tersebut. Ini sekaligus MENYEMBUHKAN notifikasi LAMA yang dulu menunjuk
+     *     ke dashboard atau halaman fitur yang sudah dihapus.
+     *
+     * @param string|null $link         Nilai mentah notifications.link
+     * @param string      $type         Tipe teknis notifikasi (notifications.type)
+     * @param string      $viewerPrefix Prefix rute peran pemilik (student/parent/homeroom/…)
+     * @return string Path relatif-host, atau '' bila tak ada tautan.
+     */
+    function notification_link_for_viewer(?string $link, string $type, string $viewerPrefix): string
+    {
+        if (in_array($viewerPrefix, ['student', 'parent', 'homeroom'], true)
+            && notification_is_bk_detail($type)) {
+            return '/' . $viewerPrefix . '/jadwal-bk';
+        }
+
+        $link = trim((string) $link);
+        if ($link === '') {
+            return '';
+        }
+
+        return notification_link($link);
     }
 }
 

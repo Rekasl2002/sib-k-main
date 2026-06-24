@@ -155,8 +155,7 @@ $roleLabel  = (string)($roleLabel ?? 'Pengguna');
                   $catKey   = notification_type_category($type);
                   $catLabel = $categories[$catKey] ?? 'Umum';
                   $isRead   = !empty($item['is_read']);
-                  $link     = trim((string)($item['link'] ?? ''));
-                  $link     = $link !== '' ? notification_link($link) : '';
+                  $link     = notification_link_for_viewer($item['link'] ?? '', $type, $basePath);
                   $title    = (string)($item['title'] ?? '-');
                   $message  = (string)($item['message'] ?? '');
                 ?>

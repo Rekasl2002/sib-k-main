@@ -192,7 +192,7 @@ try {
                 <?php if (!$__items): ?>
                   <div class="p-3 text-center text-muted">Tidak ada notifikasi.</div>
                 <?php else: foreach ($__items as $__n): ?>
-                  <a href="<?= esc(notification_link($__n['link'] ?? '')) ?>"
+                  <a href="<?= esc(notification_link_for_viewer($__n['link'] ?? '', (string)($__n['type'] ?? ''), $__rolePrefix) ?: '#') ?>"
                      class="text-reset notification-item d-block <?= !empty($__n['is_read']) ? '' : 'bg-light' ?>"
                      data-notif-id="<?= (int)($__n['id'] ?? 0) ?>">
                     <div class="d-flex">
