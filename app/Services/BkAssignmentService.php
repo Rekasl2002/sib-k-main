@@ -151,6 +151,11 @@ class BkAssignmentService
         $payload = $this->payload($post);
         $payload['assigned_by'] = $userId;
         $payload['assigned_at'] = $payload['assigned_at'] ?? date('Y-m-d H:i:s');
+        // Saat MEMBUAT, status dibatasi ke Ditugaskan/Draft (sisanya hanya saat
+        // mengubah status / Edit). Penegakan di server, bukan sekadar opsi form.
+        if (! in_array($payload['status'] ?? '', self::createStatuses(), true)) {
+            $payload['status'] = 'Ditugaskan';
+        }
 
         $id = (int) $this->model->insert($payload, true);
         $this->syncTargets($id, $post);

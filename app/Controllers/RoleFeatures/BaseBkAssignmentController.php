@@ -197,23 +197,65 @@ abstract class BaseBkAssignmentController extends BaseController
         if (! $hasCounselor) {
             return 'Guru BK yang ditugaskan wajib dipilih (minimal satu).';
         }
+        $type = trim((string) ($post['assignment_type'] ?? ''));
+        if ($type === '') {
+            return 'Jenis Tugas wajib dipilih.';
+        }
+        if (! in_array($type, \App\Services\BkAssignmentService::assignmentTypes(), true)) {
+            return 'Jenis Tugas tidak dikenali.';
+        }
         if (trim((string) ($post['title'] ?? '')) === '') {
             return 'Judul/Topik/Masalah wajib diisi.';
         }
         if (trim((string) ($post['instruction'] ?? '')) === '') {
             return 'Instruksi wajib diisi.';
         }
-        if (trim((string) ($post['due_at'] ?? '')) === '') {
+        $dueAt = trim((string) ($post['due_at'] ?? ''));
+        if ($dueAt === '') {
             return 'Batas Waktu wajib diisi.';
+        }
+        if (! $this->isValidDateTime($dueAt)) {
+            return 'Batas Waktu tidak valid (tanggal/jam tidak logis).';
         }
         if (trim((string) ($post['priority'] ?? '')) === '') {
             return 'Prioritas wajib dipilih.';
         }
-        if (($post['assignment_type'] ?? '') === 'Lainnya' && trim((string) ($post['assignment_type_other'] ?? '')) === '') {
+        if ($type === 'Lainnya' && trim((string) ($post['assignment_type_other'] ?? '')) === '') {
             return 'Karena Jenis Tugas "Lainnya", isi keterangan jenis tugasnya.';
         }
 
         return null;
+    }
+
+    /**
+     * Validasi tanggal-waktu logis (checkdate + rentang jam/menit). Selaras dengan
+     * BaseBkServiceController::isValidDateTime agar konsisten antar fitur BK.
+     */
+    protected function isValidDateTime(string $value): bool
+    {
+        $value = trim(str_replace('T', ' ', $value));
+        if ($value === '') {
+            return false;
+        }
+
+        $parts    = preg_split('/\s+/', $value);
+        $datePart = $parts[0] ?? '';
+        $timePart = $parts[1] ?? '00:00';
+
+        if (! preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $datePart, $d)) {
+            return false;
+        }
+        if (! checkdate((int) $d[2], (int) $d[3], (int) $d[1])) {
+            return false;
+        }
+        if (! preg_match('/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/', $timePart, $t)) {
+            return false;
+        }
+        if ((int) $t[1] > 23 || (int) $t[2] > 59 || (isset($t[3]) && (int) $t[3] > 59)) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
