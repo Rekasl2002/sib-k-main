@@ -95,11 +95,24 @@ class BkServiceService
         $this->applyRoleScope($builder, $role, $userId);
         $this->applyFilters($builder, $filters);
 
-        return $builder
+        $rows = $builder
             ->groupBy('bsr.id')
             ->orderBy('COALESCE(bsr.scheduled_at, bsr.held_at, bsr.created_at)', 'DESC', false)
             ->get()
             ->getResultArray();
+
+        // Kerahasiaan daftar: Siswa & Orang Tua hanya boleh melihat JADWAL
+        // (tanggal–waktu–lokasi), tanpa topik/durasi. Judul disamarkan menjadi
+        // label netral & durasi disembunyikan.
+        if (in_array($role, ['siswa', 'orang-tua'], true)) {
+            foreach ($rows as &$r) {
+                $r['title'] = $this->safeScheduleTitle((string) ($r['service_type'] ?? ''));
+                $r['duration_minutes'] = null;
+            }
+            unset($r);
+        }
+
+        return $rows;
     }
 
     public function find(int $id, string $role, int $userId): ?array
@@ -117,7 +130,42 @@ class BkServiceService
         $record['participants'] = $this->participantsFor((int) $record['id']);
         $record['notes'] = $this->notesFor((int) $record['id'], $role, ! empty($record['visible_to_homeroom']));
 
+        $this->applyConfidentiality($record, $role);
+
         return $record;
+    }
+
+    /**
+     * Kerahasiaan detail layanan BK di SISI SERVER (lihat CLAUDE.md §6):
+     *  - Siswa & Orang Tua: JADWAL SAJA (tanggal–waktu–lokasi). Tidak boleh melihat
+     *    topik/durasi/deskripsi/Detail Khusus/catatan. Judul disamarkan ke label
+     *    netral, durasi & detail dikosongkan.
+     *  - Wali Kelas: detail rinci (Detail Khusus) hanya bila Koordinator BK/Guru BK
+     *    mengizinkan pada data tersebut (visible_to_homeroom = 1). Catatan sudah
+     *    disaring di notesFor().
+     */
+    private function applyConfidentiality(array &$record, string $role): void
+    {
+        if (in_array($role, ['siswa', 'orang-tua'], true)) {
+            $record['detail'] = [];
+            $record['notes'] = [];
+            $record['title'] = $this->safeScheduleTitle((string) ($record['service_type'] ?? ''));
+            $record['duration_minutes'] = null;
+            return;
+        }
+
+        if ($role === 'wali-kelas' && empty($record['visible_to_homeroom'])) {
+            $record['detail'] = [];
+        }
+    }
+
+    /**
+     * Label netral pengganti judul/topik untuk peran read-only (Siswa/Orang Tua),
+     * agar topik tidak bocor namun jenis kegiatan tetap dikenali.
+     */
+    private function safeScheduleTitle(string $serviceType): string
+    {
+        return $serviceType !== '' ? ('Kegiatan/Acara BK: ' . $serviceType) : 'Kegiatan/Acara BK';
     }
 
     public function create(string $serviceType, array $post, int $userId): int

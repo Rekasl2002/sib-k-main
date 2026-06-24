@@ -20,7 +20,8 @@ if (is_array($assignedMap) && !empty($assignedMap)) {
     try {
         $db   = \Config\Database::connect();
         $rows = $db->table('assessment_results')
-            ->select('DISTINCT student_id')
+            ->distinct()
+            ->select('student_id')
             ->where('assessment_id', $aid)
             ->where('deleted_at', null)
             ->get()->getResultArray();

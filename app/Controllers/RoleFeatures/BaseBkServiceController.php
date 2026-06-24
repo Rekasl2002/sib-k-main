@@ -71,11 +71,12 @@ abstract class BaseBkServiceController extends BaseController
         if (! $this->canManage) {
             return $this->deny();
         }
-        if ($err = $this->validateRequired($this->request->getPost() ?? [])) {
+        $post = $this->enforcePic($this->request->getPost() ?? []);
+        if ($err = $this->validateRequired($post)) {
             return redirect()->back()->withInput()->with('error', $err);
         }
 
-        $id = $this->service->create($this->serviceType, $this->request->getPost() ?? [], $this->currentUserId());
+        $id = $this->service->create($this->serviceType, $post, $this->currentUserId());
 
         $this->notifyScheduleParticipants((int) $id);
 
@@ -121,11 +122,12 @@ abstract class BaseBkServiceController extends BaseController
         if (! $this->canManage) {
             return $this->deny();
         }
-        if ($err = $this->validateRequired($this->request->getPost() ?? [])) {
+        $post = $this->enforcePic($this->request->getPost() ?? []);
+        if ($err = $this->validateRequired($post)) {
             return redirect()->back()->withInput()->with('error', $err);
         }
 
-        $this->service->update((int) $id, $this->serviceType, $this->request->getPost() ?? [], $this->currentUserId());
+        $this->service->update((int) $id, $this->serviceType, $post, $this->currentUserId());
 
         $this->notifyScheduleParticipants((int) $id);
 
@@ -252,6 +254,15 @@ abstract class BaseBkServiceController extends BaseController
         if (! $req('scheduled_at') && ! $req('scheduled_date')) {
             return 'Tanggal & Jam Kegiatan wajib diisi.';
         }
+        // Tanggal & Jam harus benar-benar valid (tolak jam/tanggal tidak logis
+        // seperti 99:99 atau 30 Februari) agar tidak tersimpan sebagai 0000-00-00.
+        $dtRaw = trim((string) ($post['scheduled_at'] ?? ''));
+        if ($dtRaw === '') {
+            $dtRaw = trim((string) ($post['scheduled_date'] ?? '') . ' ' . (string) ($post['scheduled_time'] ?? ''));
+        }
+        if (! $this->isValidDateTime($dtRaw)) {
+            return 'Tanggal & Jam Kegiatan tidak valid.';
+        }
         if ((int) ($post['duration_minutes'] ?? 0) <= 0) {
             return 'Lama Kegiatan (menit) wajib diisi.';
         }
@@ -272,6 +283,52 @@ abstract class BaseBkServiceController extends BaseController
         }
 
         return null;
+    }
+
+    /**
+     * Tegakkan aturan Penanggung Jawab (PIC) di SISI SERVER (jangan percaya form):
+     * Guru BK hanya boleh menugaskan DIRINYA sendiri. Memilih Guru BK/Petugas lain
+     * adalah wewenang Koordinator BK (lihat Matriks CRUD §6). Dikecualikan untuk
+     * Konferensi Kasus — PJ ditetapkan Koordinator BK, Guru BK tidak memilih PIC.
+     */
+    protected function enforcePic(array $post): array
+    {
+        if ($this->roleKey === 'guru-bk' && $this->serviceType !== 'Konferensi Kasus') {
+            $post['counselor_id'] = $this->currentUserId();
+        }
+
+        return $post;
+    }
+
+    /**
+     * Validasi tanggal & jam benar-benar valid (kalender + rentang jam/menit).
+     * Menerima format "Y-m-dTH:i", "Y-m-d H:i", atau "Y-m-d H:i:s".
+     */
+    protected function isValidDateTime(string $value): bool
+    {
+        $value = trim(str_replace('T', ' ', $value));
+        if ($value === '') {
+            return false;
+        }
+
+        $parts    = preg_split('/\s+/', $value);
+        $datePart = $parts[0] ?? '';
+        $timePart = $parts[1] ?? '00:00';
+
+        if (! preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $datePart, $d)) {
+            return false;
+        }
+        if (! checkdate((int) $d[2], (int) $d[3], (int) $d[1])) {
+            return false;
+        }
+        if (! preg_match('/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/', $timePart, $t)) {
+            return false;
+        }
+        if ((int) $t[1] > 23 || (int) $t[2] > 59 || (isset($t[3]) && (int) $t[3] > 59)) {
+            return false;
+        }
+
+        return true;
     }
 
     protected function render(string $view, array $data = [])
