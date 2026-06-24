@@ -569,7 +569,7 @@ class AssessmentService
                 $message,
                 'assessment',
                 ['assessment_id' => $assessmentId],
-                site_url('student/assessments')
+                '/student/assessments'
             );
         }
     }

@@ -269,7 +269,7 @@ abstract class BaseBkAssignmentController extends BaseController
                 $message,
                 'info',
                 ['assignment_id' => $id],
-                $prefix !== '' ? site_url($prefix . '/assignments/show/' . $id) : null
+                $prefix !== '' ? '/' . $prefix . '/assignments/show/' . $id : null
             );
         }
     }

@@ -426,7 +426,7 @@ abstract class BaseConsultationController extends BaseController
                 'Ada laporan baru: ' . $title,
                 'info',
                 ['complaint_id' => $id],
-                $prefix !== '' ? site_url($prefix . '/consultations/show/' . $id) : null
+                $prefix !== '' ? '/' . $prefix . '/consultations/show/' . $id : null
             );
         }
     }
@@ -458,7 +458,7 @@ abstract class BaseConsultationController extends BaseController
             'Laporan "' . ($row['title'] ?? 'Tanpa judul') . '" kini berstatus: ' . ($row['status'] ?? '-'),
             'info',
             ['complaint_id' => $id],
-            $prefix !== '' ? site_url($prefix . '/consultations/show/' . $id) : null
+            $prefix !== '' ? '/' . $prefix . '/consultations/show/' . $id : null
         );
     }
 }

@@ -512,6 +512,46 @@ if (!function_exists('delete_all_notifications')) {
     }
 }
 
+if (!function_exists('notification_link')) {
+    /**
+     * Normalkan tautan notifikasi menjadi path relatif-host (mis. "/parent/dashboard").
+     *
+     * Notifikasi LAMA bisa menyimpan URL absolut (mis. "http://localhost:30/...")
+     * karena dahulu dibangun dengan site_url() lalu ikut terbawa saat database
+     * diimpor dari Laragon ke server/VPS. Bila dipakai apa adanya, klik notifikasi
+     * akan menuju host pembuatnya (localhost:30), bukan host yang sedang diakses.
+     * Fungsi ini memangkas skema+host sehingga tautan selalu mengikuti domain
+     * tempat aplikasi dibuka. Penyembuhan otomatis ini berlaku tanpa perlu
+     * memperbaiki data lama di basis data.
+     *
+     * @param string|null $link Nilai mentah dari kolom notifications.link
+     * @return string Path relatif-host, atau '#' bila kosong.
+     */
+    function notification_link(?string $link): string
+    {
+        $link = trim((string) $link);
+        if ($link === '') {
+            return '#';
+        }
+
+        // URL absolut (punya "skema://host") → ambil path + query + fragment saja.
+        if (preg_match('#^[a-zA-Z][a-zA-Z0-9+.\-]*://#', $link) === 1) {
+            $parts = parse_url($link);
+            $path  = $parts['path'] ?? '/';
+            if (isset($parts['query']) && $parts['query'] !== '') {
+                $path .= '?' . $parts['query'];
+            }
+            if (isset($parts['fragment']) && $parts['fragment'] !== '') {
+                $path .= '#' . $parts['fragment'];
+            }
+            return $path !== '' ? $path : '/';
+        }
+
+        // Sudah path relatif → pastikan diawali '/' agar tak salah resolve.
+        return ($link[0] === '/' || $link[0] === '#') ? $link : '/' . $link;
+    }
+}
+
 if (!function_exists('notification_icon')) {
     function notification_icon(string $type): string
     {

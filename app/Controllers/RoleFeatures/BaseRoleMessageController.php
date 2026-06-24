@@ -205,7 +205,7 @@ abstract class BaseRoleMessageController extends BaseController
             'Pesan dari ' . $this->currentUserName($uid),
             'message',
             ['conversation_id' => $convId, 'preview' => $preview],
-            site_url(($prefixes[$otherId] ?? $this->routePrefix) . '/messages/chat/' . $uid)
+            '/' . ($prefixes[$otherId] ?? $this->routePrefix) . '/messages/chat/' . $uid
         );
 
         if ($this->request->isAJAX()) {

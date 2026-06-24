@@ -323,7 +323,7 @@ abstract class BaseBkServiceController extends BaseController
                 'Ada jadwal kegiatan/acara BK untuk Anda. Silakan cek halaman Jadwal Kegiatan/Acara BK.',
                 'session',
                 ['bk_service_record_id' => $recordId],
-                $prefix !== '' ? site_url($prefix . '/dashboard') : null
+                $prefix !== '' ? '/' . $prefix . '/dashboard' : null
             );
         }
     }

@@ -1,7 +1,7 @@
 <?php
 // Notifications partial
 
-helper('settings');
+helper(['settings', 'notification']);
 
 // 1) Hormati toggle dari /admin/settings → Notifications
 if (! setting('enable_internal', true, 'notifications')) {
@@ -67,7 +67,7 @@ $csrfHash   = csrf_hash();
       <?php if (! $items): ?>
         <div class="p-3 text-center text-muted">Tidak ada notifikasi.</div>
       <?php else: foreach ($items as $n): ?>
-        <a href="<?= esc($n['link'] ?? '#') ?>"
+        <a href="<?= esc(notification_link($n['link'] ?? '')) ?>"
            class="text-reset notification-item d-block <?= $n['is_read'] ? '' : 'bg-light' ?>"
            data-notif-id="<?= (int) $n['id'] ?>">
           <div class="d-flex">

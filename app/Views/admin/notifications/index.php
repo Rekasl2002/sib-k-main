@@ -156,6 +156,7 @@ $roleLabel  = (string)($roleLabel ?? 'Pengguna');
                   $catLabel = $categories[$catKey] ?? 'Umum';
                   $isRead   = !empty($item['is_read']);
                   $link     = trim((string)($item['link'] ?? ''));
+                  $link     = $link !== '' ? notification_link($link) : '';
                   $title    = (string)($item['title'] ?? '-');
                   $message  = (string)($item['message'] ?? '');
                 ?>

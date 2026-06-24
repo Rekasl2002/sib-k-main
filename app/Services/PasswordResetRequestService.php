@@ -112,12 +112,14 @@ class PasswordResetRequestService
 
     private function actionLink(?array $user, ?string $email, ?string $phone): string
     {
+        // Simpan path relatif-host (bukan site_url absolut) agar tautan notifikasi
+        // tidak terpaku ke domain/port pembuatnya saat DB dipindah antar lingkungan.
         if ($user && ! empty($user['id'])) {
-            return site_url('admin/users/edit/' . (int) $user['id']);
+            return '/admin/users/edit/' . (int) $user['id'];
         }
 
         $keyword = $email ?: ($phone ?: '');
-        return site_url('admin/users' . ($keyword !== '' ? ('?search=' . rawurlencode($keyword)) : ''));
+        return '/admin/users' . ($keyword !== '' ? ('?search=' . rawurlencode($keyword)) : '');
     }
 
     /**
