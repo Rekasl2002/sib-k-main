@@ -38,6 +38,7 @@ class TrashService
             'note'         => ['table' => 'session_notes', 'label' => 'Catatan Layanan BK', 'titleCol' => 'note_content', 'truncate' => 80],
             'message'      => ['table' => 'messages', 'label' => 'Pesan', 'titleCol' => 'subject'],
             'notification' => ['table' => 'notifications', 'label' => 'Notifikasi', 'titleCol' => 'title'],
+            'assessment'   => ['table' => 'assessments', 'label' => 'Asesmen', 'titleCol' => 'title'],
             'career'       => ['table' => 'career_options', 'label' => 'Info Karier', 'titleCol' => 'title'],
             'university'   => ['table' => 'university_info', 'label' => 'Info Studi Lanjut', 'titleCol' => 'university_name'],
             'student'      => ['table' => 'students', 'label' => 'Data Siswa', 'titleCol' => 'nisn', 'titlePrefix' => 'NISN ', 'nameJoin' => ['users', 'users.id = students.user_id', 'users.full_name']],

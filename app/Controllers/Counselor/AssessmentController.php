@@ -725,6 +725,8 @@ class AssessmentController extends BaseController
     {
         try {
             $model = new AssessmentModel();
+            // Catat penghapus agar data muncul di Tempat Sampah & dapat dipulihkan.
+            $model->update($id, ['deleted_by' => (int) session('user_id')]);
             $model->delete($id);
             return redirect()->to('/counselor/assessments')->with('success', 'Asesmen berhasil dihapus.');
         } catch (\Throwable $e) {
