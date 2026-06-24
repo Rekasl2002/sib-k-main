@@ -482,6 +482,8 @@ class AssessmentController extends BaseController
             }
         }
 
+        // Catat penghapus agar data muncul di Tempat Sampah & dapat dipulihkan.
+        $m->update($id, ['deleted_by' => $this->uid()]);
         $m->delete($id);
         return redirect()->to(base_url('koordinator/assessments'))->with('success', 'Asesmen dihapus.');
     }
