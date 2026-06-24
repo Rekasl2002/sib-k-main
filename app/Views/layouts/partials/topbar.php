@@ -300,13 +300,22 @@ try {
           if (notifBtn.tagName && notifBtn.tagName.toLowerCase() === 'a') e.preventDefault();
       });
 
-      // Klik item notifikasi: mark as read (tanpa mengganggu navigasi ke link)
+      // Klik item notifikasi: tandai dibaca. Bila item ini berpindah halaman,
+      // TUNDA navigasi sampai permintaan tandai-dibaca (POST) selesai. Sebab POST
+      // itu meregenerasi token CSRF di server; jika halaman tujuan (mis. percakapan)
+      // sempat dirender SEBELUM regenerasi selesai, token pada form jadi basi dan
+      // balasan pesan gagal ("The action you requested is not allowed.").
       document.addEventListener('click', function(e){
           const a = e.target.closest('a.notification-item[data-notif-id]');
           if (!a) return;
 
           const id = a.getAttribute('data-notif-id');
           if (!id) return;
+
+          const href        = a.getAttribute('href') || '#';
+          const plainClick   = (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey && !e.altKey);
+          const willNavigate = plainClick && href && href !== '#' && !a.target;
+          if (willNavigate) e.preventDefault();
 
           // Optimistic UI
           a.classList.remove('bg-light');
@@ -319,6 +328,9 @@ try {
               badge.setAttribute('data-zero', next <= 0 ? '1' : '0');
           }
 
+          let navigated = false;
+          const go = function(){ if (willNavigate && !navigated) { navigated = true; window.location.assign(href); } };
+
           fetch('<?= rtrim($__urlMarkRead, "/") ?>/' + encodeURIComponent(id), {
               method:'POST',
               headers:{
@@ -327,7 +339,10 @@ try {
               },
               body: new URLSearchParams(csrfPayload()),
               keepalive: true
-          }).catch(()=>{});
+          }).then(go).catch(go);
+
+          // Jaring pengaman: tetap pindah halaman bila permintaan menggantung.
+          if (willNavigate) setTimeout(go, 1500);
       });
 
       // Mark all as read

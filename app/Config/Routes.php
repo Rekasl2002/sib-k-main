@@ -1365,6 +1365,14 @@ $routes->group('notifications', ['filter' => 'auth'], function ($routes) use ($r
 // ===============================
 $routes->group('api', ['filter' => 'auth', 'namespace' => 'App\Controllers\Api'], function ($routes) {
 
+    // Token CSRF terkini (GET → tidak meregenerasi token). Dipakai klien untuk
+    // pulih dari token basi akibat token diregenerasi proses lain (mis. menandai
+    // notifikasi terbaca dari lonceng saat berpindah ke halaman percakapan),
+    // sehingga balasan pesan tidak gagal dengan "The action you requested is not allowed."
+    $routes->get('csrf', static function () {
+        return \Config\Services::response()->setJSON(['token' => csrf_hash()]);
+    });
+
     // Stats per-role
     $routes->get('stats/admin', 'StatsController::adminStats', ['filter' => 'role:admin,administrator']);
     $routes->get('stats/counselor', 'StatsController::counselorStats', ['filter' => 'role:guru bk,counselor']);

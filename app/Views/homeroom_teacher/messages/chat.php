@@ -180,6 +180,29 @@ $avatar = function (array $info, int $size) use ($photoSrc, $roleColor): string 
     scrollBottom();
   }
 
+  // Ambil token CSRF terbaru dari server (GET → tidak meregenerasi token).
+  // Dipakai untuk pulih dari token basi: token dapat diregenerasi oleh proses
+  // lain (mis. menandai notifikasi terbaca dari lonceng saat berpindah ke
+  // halaman ini), sehingga token yang tertanam di form menjadi usang.
+  function refreshCsrf() {
+    return fetch(<?= json_encode(site_url('api/csrf')) ?>, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { if (j && j.token) csrfHash = j.token; })
+      .catch(function () {});
+  }
+
+  // Kirim sekali; bila ditolak CSRF (403) ambil token baru lalu coba ulang sekali.
+  function postMessage(fd, retried) {
+    fd.set(csrfName, csrfHash);
+    return fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
+      .then(function (r) {
+        if (r.status === 403 && !retried) {
+          return refreshCsrf().then(function () { return postMessage(fd, true); });
+        }
+        return r.json().then(function (d) { return { ok: r.ok, d: d }; }, function () { return { ok: false, d: null }; });
+      });
+  }
+
   // Kirim via AJAX
   if (form) {
     form.addEventListener('submit', function (e) {
@@ -187,10 +210,8 @@ $avatar = function (array $info, int $size) use ($photoSrc, $roleColor): string 
       const text = (input.value || '').trim();
       if (text === '' && (!files || files.files.length === 0)) return;
       const fd = new FormData(form);
-      fd.set(csrfName, csrfHash);
       document.getElementById('chatSend').disabled = true;
-      fetch(form.action, { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: fd })
-        .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      postMessage(fd, false)
         .then(function (res) {
           if (res.d && res.d.csrf) csrfHash = res.d.csrf;
           if (res.ok && res.d && res.d.status === 'ok') {
