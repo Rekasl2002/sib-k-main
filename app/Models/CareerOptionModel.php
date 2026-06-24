@@ -13,7 +13,7 @@ class CareerOptionModel extends Model
     protected $allowedFields    = [
         'title','sector','min_education','description',
         'required_skills','pathways','avg_salary_idr','demand_level',
-        'external_links','is_active','created_by'
+        'external_links','is_active','created_by','deleted_by'
     ];
 
     protected $useTimestamps = true;

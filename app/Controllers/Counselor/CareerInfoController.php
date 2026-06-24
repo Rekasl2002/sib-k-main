@@ -451,6 +451,8 @@ class CareerInfoController extends BaseController
 
         $career = $this->careers->find($id);
         if ($career) {
+            // Catat penghapus agar data muncul di Tempat Sampah & dapat dipulihkan.
+            $this->careers->update($id, ['deleted_by' => (int) session('user_id')]);
             $this->careers->delete($id); // soft delete
         }
 
@@ -702,9 +704,9 @@ class CareerInfoController extends BaseController
 
         $row = $this->universities->find($id);
         if ($row) {
-            if (!empty($row['logo']) && $this->isLocalUpload($row['logo'])) {
-                $this->removeLocalFile($row['logo']);
-            }
+            // Soft delete: jangan hapus berkas logo agar data bisa dipulihkan utuh
+            // dari Tempat Sampah. Catat penghapus agar muncul di Tempat Sampah.
+            $this->universities->update($id, ['deleted_by' => (int) session('user_id')]);
             $this->universities->delete($id); // soft delete
         }
 
