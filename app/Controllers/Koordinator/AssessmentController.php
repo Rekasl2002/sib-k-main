@@ -608,6 +608,16 @@ class AssessmentController extends BaseController
         $qData['points']      = ($qData['points'] === '' ? 1 : (float)$qData['points']);
         $qData['options']     = is_array($options) ? array_values(array_filter($options, fn($v)=>$v!=='')) : [];
 
+        // Penegakan validasi sisi server (bukan hanya atribut peramban).
+        if (trim((string)($qData['question_text'] ?? '')) === '') {
+            return redirect()->back()->withInput()->with('error', 'Teks pertanyaan wajib diisi.');
+        }
+        if (in_array($qData['question_type'], ['Multiple Choice','Checkbox'], true)
+            && count($qData['options']) < 2) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Pertanyaan Pilihan Ganda/Centang minimal memiliki 2 pilihan jawaban.');
+        }
+
         $isUngraded   = ((float)($qData['points'] ?? 0)) <= 0;
         $needsCorrect = in_array($qData['question_type'], ['Multiple Choice','True/False','Checkbox'], true);
 

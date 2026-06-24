@@ -516,6 +516,30 @@ class AssessmentController extends BaseStudentController
                 ->orderBy('order_number', 'ASC')
                 ->get()->getResultArray();
 
+            // Penegakan jawaban wajib di sisi server (jangan hanya andalkan
+            // validasi peramban). Dikecualikan bila pengumpulan otomatis karena
+            // waktu habis (time_expired) agar progres siswa tidak hilang.
+            $timeExpired = (bool) $this->request->getPost('time_expired');
+            if (!$timeExpired) {
+                $missingRequired = 0;
+                foreach ($questions as $q) {
+                    if ((int) ($q['is_required'] ?? 0) !== 1) {
+                        continue;
+                    }
+                    $ans = $this->request->getPost('q_' . (int) $q['id']);
+                    $has = is_array($ans) ? (count($ans) > 0) : ($ans !== null && $ans !== '');
+                    if (!$has) {
+                        $missingRequired++;
+                    }
+                }
+                if ($missingRequired > 0) {
+                    $this->db->transRollback();
+                    return redirect()
+                        ->to(route_to('student.assessments.take', $assessmentId) . '?rid=' . $resultId)
+                        ->with('error', 'Masih ada ' . $missingRequired . ' pertanyaan wajib yang belum dijawab. Mohon lengkapi sebelum mengumpulkan jawaban.');
+                }
+            }
+
             // Hapus jawaban lama untuk result ini (konsistensi jika re-submit)
             $this->db->table('assessment_answers')->where('result_id', $resultId)->delete();
 

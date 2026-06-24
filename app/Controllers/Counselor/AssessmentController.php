@@ -359,6 +359,20 @@ class AssessmentController extends BaseController
                 ->with('error', 'Sesi login kadaluarsa. Silakan login ulang.');
         }
 
+        // Penegakan validasi di sisi server (jangan hanya mengandalkan atribut
+        // "required" di peramban). Konsisten dengan update() & controller Koordinator.
+        $titleChk = trim((string)$this->request->getPost('title'));
+        $typeChk  = trim((string)$this->request->getPost('assessment_type'));
+        $audChk   = trim((string)$this->request->getPost('target_audience'));
+        if ($titleChk === '' || $typeChk === '' || $audChk === '') {
+            return redirect()->back()->withInput()
+                ->with('error', 'Judul, Jenis Asesmen, dan Target Peserta wajib diisi.');
+        }
+        if (mb_strlen($titleChk) < 3) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Judul asesmen minimal 3 karakter.');
+        }
+
         // Ambil evaluation_mode
         $mode = (string)($this->request->getPost('evaluation_mode') ?? 'pass_fail');
         if (!in_array($mode, ['pass_fail', 'score_only', 'survey'], true)) {
@@ -408,7 +422,10 @@ class AssessmentController extends BaseController
             'end_date'                => $this->request->getPost('end_date') ?: null,
             'duration_minutes'        => $duration,
             'passing_score'           => $passingScore,
-            'max_attempts'            => $this->request->getPost('max_attempts') ?: null,
+            'max_attempts'            => (function ($v) {
+                // Kolom NOT NULL (default 1) — jangan kirim null bila field dikosongkan.
+                return ($v === '' || $v === null) ? 1 : max(1, (int) $v);
+            })($this->request->getPost('max_attempts')),
             'show_result_immediately' => $this->request->getPost('show_result_immediately') ? 1 : 0,
             'allow_review'            => $this->request->getPost('allow_review') ? 1 : 0,
             'result_release_at'       => $resultRelease,
@@ -788,6 +805,17 @@ class AssessmentController extends BaseController
         $qData['is_required'] = (int)($this->request->getPost('is_required') ?? 0);
         $qData['points']      = ($qData['points'] === '' ? 1 : (float)$qData['points']);
         $qData['options']     = is_array($options) ? array_values(array_filter($options, fn($v) => $v !== '' && $v !== null)) : [];
+
+        // Penegakan validasi sisi server (bukan hanya atribut peramban).
+        if (trim((string)($qData['question_text'] ?? '')) === '') {
+            return redirect()->back()->withInput()
+                ->with('error', 'Teks pertanyaan wajib diisi.');
+        }
+        if (in_array($qData['question_type'], ['Multiple Choice', 'Checkbox'], true)
+            && count($qData['options']) < 2) {
+            return redirect()->back()->withInput()
+                ->with('error', 'Pertanyaan Pilihan Ganda/Centang minimal memiliki 2 pilihan jawaban.');
+        }
 
         // Pertanyaan "survei/tidak dinilai" jika points <= 0
         $isUngraded = ((float)($qData['points'] ?? 0)) <= 0;

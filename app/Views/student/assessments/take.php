@@ -176,6 +176,8 @@ $submitUrl = function_exists('route_to')
           <?php if ($rid): ?>
             <input type="hidden" name="result_id" value="<?= $rid ?>">
           <?php endif; ?>
+          <?php // Penanda pengumpulan otomatis saat waktu habis (server melonggarkan cek jawaban wajib). ?>
+          <input type="hidden" name="time_expired" id="timeExpiredFlag" value="0">
 
           <?php if (!empty($qs)): ?>
             <?php foreach ($qs as $i => $qRaw): ?>
@@ -346,6 +348,9 @@ $submitUrl = function_exists('route_to')
       }
       if (totalSec <= 0) {
         freezeForm();
+        // Tandai pengumpulan otomatis agar server tidak menolak jawaban wajib yang kosong.
+        var teFlag = document.getElementById('timeExpiredFlag');
+        if (teFlag) teFlag.value = '1';
         if (form) form.submit();
         return;
       }
