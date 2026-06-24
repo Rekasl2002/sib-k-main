@@ -168,7 +168,7 @@ abstract class BaseConsultationController extends BaseController
             return $this->deny();
         }
 
-        $this->service->review((int) $id, $this->request->getPost() ?? [], $this->currentUserId());
+        $this->service->review((int) $id, $this->request->getPost() ?? [], $this->currentUserId(), $this->roleKey);
 
         $this->notifyReporterStatusChange((int) $id);
 

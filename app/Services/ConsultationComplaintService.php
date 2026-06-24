@@ -191,13 +191,21 @@ class ConsultationComplaintService
         ];
     }
 
-    public function review(int $id, array $post, int $userId): bool
+    public function review(int $id, array $post, int $userId, string $role = ''): bool
     {
         $status = (string) ($post['status'] ?? 'Ditinjau');
+
+        // Penegakan sisi server (Matriks CRUD §6): Guru BK hanya boleh menugaskan
+        // dirinya sendiri. Nilai selain dirinya/kosong dipaksa "belum ditugaskan".
+        $assignedTo = $this->nullableInt($post['assigned_to_user_id'] ?? null);
+        if ($role === 'guru-bk' && $assignedTo !== null && $assignedTo !== $userId) {
+            $assignedTo = null;
+        }
+
         $payload = [
             'status' => $status,
             'priority' => $post['priority'] ?? null,
-            'assigned_to_user_id' => $this->nullableInt($post['assigned_to_user_id'] ?? null),
+            'assigned_to_user_id' => $assignedTo,
             'handled_by' => $userId,
             'handled_at' => date('Y-m-d H:i:s'),
             'closed_at' => in_array($status, ['Selesai', 'Ditolak', 'Diarsipkan'], true) ? date('Y-m-d H:i:s') : null,
@@ -225,16 +233,32 @@ class ConsultationComplaintService
     {
         return [
             'students' => $this->studentsForRole($role, $userId),
-            'counselors' => $this->db->table('users')
-                ->select('id, full_name')
-                ->whereIn('role_id', [2, 3])
-                ->where('is_active', 1)
-                ->where('deleted_at', null)
-                ->orderBy('full_name', 'ASC')
-                ->get()
-                ->getResultArray(),
+            'counselors' => $this->assignableCounselors($role, $userId),
             'request_types' => $this->allowedRequestTypes($role),
         ];
+    }
+
+    /**
+     * Daftar petugas yang boleh ditugaskan ("Tugaskan ke").
+     * Aturan Matriks CRUD (§6): Guru BK HANYA dapat menugaskan dirinya sendiri;
+     * pemilihan Guru BK/petugas lain adalah wewenang Koordinator BK. Karena itu,
+     * untuk peran guru-bk daftar dibatasi hanya pada akun yang bersangkutan.
+     *
+     * @return list<array<string,mixed>>
+     */
+    private function assignableCounselors(string $role, int $userId): array
+    {
+        $builder = $this->db->table('users')
+            ->select('id, full_name')
+            ->whereIn('role_id', [2, 3])
+            ->where('is_active', 1)
+            ->where('deleted_at', null);
+
+        if ($role === 'guru-bk') {
+            $builder->where('id', $userId);
+        }
+
+        return $builder->orderBy('full_name', 'ASC')->get()->getResultArray();
     }
 
     private function baseBuilder(): BaseBuilder
