@@ -121,6 +121,10 @@ abstract class BaseRoleMessageController extends BaseController
             'conversationId' => $conv['id'] ?? null,
             'messages'       => $messages,
             'lastMessageId'  => $lastId,
+            // Aturan lampiran (sumber tunggal di controller) untuk validasi & petunjuk di view.
+            'attachMax'      => $this->maxAttachments,
+            'attachMaxMb'    => (int) round($this->maxAttachmentSizeKb / 1024),
+            'attachExts'     => array_values($this->allowedAttachmentExt),
         ]);
     }
 

@@ -14,6 +14,12 @@ $msgBase  = site_url($basePath . '/messages');
 $other    = $other ?? [];
 $otherId  = (int)($other['id'] ?? 0);
 
+// Aturan lampiran (dikirim controller; ada nilai cadangan agar aman).
+$attachMax   = (int)($attachMax ?? 5);
+$attachMaxMb = (int)($attachMaxMb ?? 5);
+$attachExts  = array_values($attachExts ?? ['jpg', 'jpeg', 'png', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip']);
+$acceptAttr  = '.' . implode(',.', $attachExts);
+
 $roleColor = static function (int $roleId): string {
     return [1 => '#556ee6', 2 => '#34c38f', 3 => '#50a5f1', 4 => '#f1b44c', 5 => '#6f42c1', 6 => '#e83e8c'][$roleId] ?? '#74788d';
 };
@@ -98,18 +104,29 @@ $avatar = function (array $info, int $size) use ($photoSrc, $roleColor): string 
 
         <!-- Composer -->
         <div class="card-footer">
-          <div id="chatError" class="alert alert-danger py-1 px-2 mb-2 d-none small"></div>
+          <?php // Jaring pengaman: tampilkan pesan error bila pengiriman jatuh ke mode non-AJAX (mis. JS gagal). ?>
+          <?php if (session()->getFlashdata('error')): ?>
+            <div class="alert alert-danger py-1 px-2 mb-2 small" role="alert">
+              <i class="mdi mdi-alert-circle me-1"></i><?= esc(session()->getFlashdata('error')) ?>
+            </div>
+          <?php endif; ?>
+          <div id="chatError" class="alert alert-danger py-1 px-2 mb-2 d-none small" role="alert"></div>
           <form id="chatForm" method="post" action="<?= site_url($basePath . '/messages/send/' . $otherId) ?>" enctype="multipart/form-data">
             <?= csrf_field() ?>
             <div class="d-flex align-items-end gap-2">
               <label class="btn btn-light mb-0" title="Lampirkan berkas">
                 <i class="mdi mdi-paperclip"></i>
-                <input type="file" name="attachments[]" id="chatFiles" multiple class="d-none">
+                <input type="file" name="attachments[]" id="chatFiles" multiple accept="<?= esc($acceptAttr, 'attr') ?>" class="d-none">
               </label>
               <textarea name="body" id="chatInput" class="form-control" rows="1" placeholder="Tulis pesan..." style="resize:none;max-height:120px;"></textarea>
               <button type="submit" class="btn btn-primary" id="chatSend"><i class="mdi mdi-send"></i></button>
             </div>
             <div id="fileHint" class="small text-dark mt-1 d-none"></div>
+            <div class="small text-muted mt-1">
+              <i class="mdi mdi-information-outline me-1"></i>
+              Lampiran maksimal <?= $attachMax ?> berkas, masing-masing &le; <?= $attachMaxMb ?> MB.
+              Jenis yang diperbolehkan: <?= esc(implode(', ', $attachExts)) ?>.
+            </div>
           </form>
         </div>
       </div>
@@ -128,6 +145,11 @@ $avatar = function (array $info, int $size) use ($photoSrc, $roleColor): string 
   let   csrfHash = '<?= csrf_hash() ?>';
   let   lastId   = <?= (int)($lastMessageId ?? 0) ?>;
 
+  // Aturan lampiran (sinkron dengan controller).
+  const maxFiles   = <?= (int)$attachMax ?>;
+  const maxMb      = <?= (int)$attachMaxMb ?>;
+  const allowedExt = <?= json_encode($attachExts) ?>;
+
   const body  = document.getElementById('chatBody');
   const form  = document.getElementById('chatForm');
   const input = document.getElementById('chatInput');
@@ -135,6 +157,36 @@ $avatar = function (array $info, int $size) use ($photoSrc, $roleColor): string 
   const hint  = document.getElementById('fileHint');
   const errBox = document.getElementById('chatError');
   const empty = document.getElementById('chatEmpty');
+
+  function showError(msg) {
+    if (!errBox) return;
+    errBox.textContent = msg;
+    errBox.classList.remove('d-none');
+  }
+  function clearError() {
+    if (errBox) errBox.classList.add('d-none');
+  }
+
+  // Validasi lampiran di sisi klien (peringatan instan sebelum dikirim ke server).
+  function validateFiles() {
+    if (!files || !files.files || files.files.length === 0) return null;
+    const list = files.files;
+    if (list.length > maxFiles) {
+      return 'Lampiran maksimal ' + maxFiles + ' berkas sekaligus. Anda memilih ' + list.length + ' berkas.';
+    }
+    for (let i = 0; i < list.length; i++) {
+      const f = list[i];
+      const dot = f.name.lastIndexOf('.');
+      const ext = dot >= 0 ? f.name.slice(dot + 1).toLowerCase() : '';
+      if (allowedExt.indexOf(ext) === -1) {
+        return 'Jenis berkas "' + (ext || f.name) + '" tidak diizinkan. Jenis yang diperbolehkan: ' + allowedExt.join(', ') + '.';
+      }
+      if (f.size > maxMb * 1024 * 1024) {
+        return 'Berkas "' + f.name + '" melebihi batas ' + maxMb + ' MB.';
+      }
+    }
+    return null;
+  }
 
   function scrollBottom() { if (body) body.scrollTop = body.scrollHeight; }
   scrollBottom();
@@ -153,6 +205,9 @@ $avatar = function (array $info, int $size) use ($photoSrc, $roleColor): string 
 
   if (files) {
     files.addEventListener('change', function () {
+      // Peringatan langsung saat berkas dipilih.
+      const err = validateFiles();
+      if (err) { showError(err); } else { clearError(); }
       if (!hint) return;
       if (this.files.length) { hint.textContent = this.files.length + ' berkas dipilih'; hint.classList.remove('d-none'); }
       else { hint.classList.add('d-none'); }
@@ -208,7 +263,15 @@ $avatar = function (array $info, int $size) use ($photoSrc, $roleColor): string 
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       const text = (input.value || '').trim();
-      if (text === '' && (!files || files.files.length === 0)) return;
+      if (text === '' && (!files || files.files.length === 0)) {
+        showError('Tulis pesan atau lampirkan berkas terlebih dahulu.');
+        return;
+      }
+      // Validasi lampiran sebelum kirim — tampilkan peringatan & batalkan bila tak lolos.
+      const fErr = validateFiles();
+      if (fErr) { showError(fErr); return; }
+      clearError();
+
       const fd = new FormData(form);
       document.getElementById('chatSend').disabled = true;
       postMessage(fd, false)
@@ -219,12 +282,12 @@ $avatar = function (array $info, int $size) use ($photoSrc, $roleColor): string 
             input.value = ''; input.style.height = 'auto';
             if (files) files.value = '';
             if (hint) hint.classList.add('d-none');
-            if (errBox) errBox.classList.add('d-none');
+            clearError();
           } else {
-            if (errBox) { errBox.textContent = (res.d && res.d.message) || 'Gagal mengirim pesan.'; errBox.classList.remove('d-none'); }
+            showError((res.d && res.d.message) || 'Gagal mengirim pesan.');
           }
         })
-        .catch(function () { if (errBox) { errBox.textContent = 'Gagal mengirim pesan.'; errBox.classList.remove('d-none'); } })
+        .catch(function () { showError('Gagal mengirim pesan.'); })
         .finally(function () { document.getElementById('chatSend').disabled = false; });
     });
   }
