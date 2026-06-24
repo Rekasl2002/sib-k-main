@@ -19,7 +19,7 @@ class UniversityInfoModel extends Model
     protected $allowedFields    = [
         'university_name', 'alias', 'accreditation', 'location', 'website', 'logo', 'description',
         'faculties', 'programs', 'admission_info', 'tuition_range', 'scholarships', 'contacts',
-        'is_active', 'created_by', // created_by ditambahkan
+        'is_active', 'created_by', 'deleted_by', // created_by & deleted_by ditambahkan
     ];
 
     protected array $casts = [
