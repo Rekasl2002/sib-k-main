@@ -210,6 +210,22 @@ class BkServiceService
         return (bool) $this->recordModel->delete($id);
     }
 
+    /**
+     * Penanggung Jawab/PIC (counselor_id) yang TERSIMPAN pada sebuah record, atau
+     * null bila belum ada. Dipakai untuk mempertahankan PJ saat Guru BK menyunting
+     * Konferensi Kasus (PJ hanya boleh ditetapkan Koordinator BK).
+     */
+    public function counselorIdOf(int $id): ?int
+    {
+        $row = $this->db->table('bk_service_records')
+            ->select('counselor_id')
+            ->where('id', $id)
+            ->where('deleted_at', null)
+            ->get()->getRowArray();
+
+        return isset($row['counselor_id']) && (int) $row['counselor_id'] > 0 ? (int) $row['counselor_id'] : null;
+    }
+
     public function addNote(int $recordId, array $post, int $userId): bool
     {
         // Alih fungsi opsi "dirahasiakan": jika diizinkan, catatan boleh dilihat

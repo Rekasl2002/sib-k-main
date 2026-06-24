@@ -122,7 +122,7 @@ abstract class BaseBkServiceController extends BaseController
         if (! $this->canManage) {
             return $this->deny();
         }
-        $post = $this->enforcePic($this->request->getPost() ?? []);
+        $post = $this->enforcePic($this->request->getPost() ?? [], (int) $id);
         if ($err = $this->validateRequired($post)) {
             return redirect()->back()->withInput()->with('error', $err);
         }
@@ -263,6 +263,17 @@ abstract class BaseBkServiceController extends BaseController
         if (! $this->isValidDateTime($dtRaw)) {
             return 'Tanggal & Jam Kegiatan tidak valid.';
         }
+        // Tidak boleh MENJADWALKAN kegiatan di masa lampau (tanggal kunjungan/kegiatan
+        // sebelum hari ini). Hanya ditegakkan saat status 'Dijadwalkan' (rencana ke
+        // depan). Perekaman kegiatan yang sudah berlangsung/selesai (Berlangsung,
+        // Selesai, Dibatalkan, Perlu Tindak Lanjut) atau Draft tetap boleh tanggal lampau.
+        $status = trim((string) ($post['status'] ?? 'Dijadwalkan')) ?: 'Dijadwalkan';
+        if ($status === 'Dijadwalkan') {
+            $datePart = substr(trim(str_replace('T', ' ', $dtRaw)), 0, 10);
+            if ($datePart !== '' && $datePart < date('Y-m-d')) {
+                return 'Tanggal kegiatan tidak boleh di masa lampau untuk kegiatan yang dijadwalkan.';
+            }
+        }
         if ((int) ($post['duration_minutes'] ?? 0) <= 0) {
             return 'Lama Kegiatan (menit) wajib diisi.';
         }
@@ -288,12 +299,24 @@ abstract class BaseBkServiceController extends BaseController
     /**
      * Tegakkan aturan Penanggung Jawab (PIC) di SISI SERVER (jangan percaya form):
      * Guru BK hanya boleh menugaskan DIRINYA sendiri. Memilih Guru BK/Petugas lain
-     * adalah wewenang Koordinator BK (lihat Matriks CRUD §6). Dikecualikan untuk
-     * Konferensi Kasus — PJ ditetapkan Koordinator BK, Guru BK tidak memilih PIC.
+     * adalah wewenang Koordinator BK (lihat Matriks CRUD §6).
+     *
+     * Khusus Konferensi Kasus: PJ ditetapkan Koordinator BK — Guru BK TIDAK boleh
+     * memilih PIC sama sekali. Saat MEMBUAT, PIC dikosongkan (menunggu penetapan
+     * Koordinator). Saat MENYUNTING, PIC yang sudah ada (bila Koordinator telah
+     * menetapkan) DIPERTAHANKAN agar tidak terhapus oleh Guru BK.
+     *
+     * @param int|null $recordId id record yang sedang disunting (null saat membuat).
      */
-    protected function enforcePic(array $post): array
+    protected function enforcePic(array $post, ?int $recordId = null): array
     {
-        if ($this->roleKey === 'guru-bk' && $this->serviceType !== 'Konferensi Kasus') {
+        if ($this->roleKey !== 'guru-bk') {
+            return $post;
+        }
+
+        if ($this->serviceType === 'Konferensi Kasus') {
+            $post['counselor_id'] = $recordId ? $this->service->counselorIdOf($recordId) : null;
+        } else {
             $post['counselor_id'] = $this->currentUserId();
         }
 
