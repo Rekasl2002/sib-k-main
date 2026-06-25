@@ -549,7 +549,8 @@ $checked = static function($value): bool {
               Atur siapa saja yang boleh mengirim Konsultasi &amp; Pengaduan. Koordinator BK dan Guru BK
               selalu dapat memakai fitur ini. Untuk Wali Kelas, Siswa, dan Orang Tua bisa dinyalakan atau
               dimatikan di bawah. Jika sakelar utama dimatikan, menu Konsultasi &amp; Pengaduan disembunyikan
-              untuk semua orang.
+              untuk Wali Kelas, Siswa, dan Orang Tua &mdash; namun Koordinator BK &amp; Guru BK tetap dapat
+              mengaksesnya untuk menangani laporan yang masih berjalan.
             </div>
           </div>
 
@@ -569,7 +570,8 @@ $checked = static function($value): bool {
                   <label class="form-check-label fw-semibold text-dark" for="c_enabled">Aktifkan fitur Konsultasi &amp; Pengaduan (sakelar utama)</label>
                 </div>
                 <div class="small text-dark mt-2">
-                  Jika dimatikan, semua peran tidak bisa membuka atau mengirim Konsultasi &amp; Pengaduan.
+                  Jika dimatikan, Wali Kelas, Siswa, dan Orang Tua tidak bisa membuka atau mengirim
+                  Konsultasi &amp; Pengaduan. Koordinator BK &amp; Guru BK tetap dapat mengaksesnya.
                 </div>
               </div>
             </div>
