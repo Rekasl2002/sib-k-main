@@ -535,7 +535,9 @@ if (!function_exists('safe_user_avatar_src')) {
         });
 
         // Delete User modal
-        $('.btn-delete').on('click', function() {
+        // ✅ Delegated: tombol Hapus tetap berfungsi untuk baris di halaman DataTables
+        //    manapun / hasil pencarian (sebelumnya binding langsung hanya kena baris awal).
+        $(document).on('click', '.btn-delete', function() {
             const userId = $(this).data('id');
             const userName = $(this).data('name');
 

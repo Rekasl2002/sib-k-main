@@ -594,7 +594,8 @@ $(document).ready(function() {
     });
 
     // Reset password modal handler (kalau tombol diaktifkan lagi)
-    $('.btn-reset').on('click', function() {
+    // ✅ Delegated: tetap berfungsi untuk baris di halaman DataTables manapun / hasil pencarian.
+    $(document).on('click', '.btn-reset', function() {
         const id = $(this).data('id');
         const name = $(this).data('name');
 
@@ -605,7 +606,9 @@ $(document).ready(function() {
     });
 
     // Delete modal handler
-    $('.btn-delete').on('click', function() {
+    // ✅ Delegated: sebelumnya pakai binding langsung sehingga tombol Hapus pada baris
+    //    di luar halaman pertama DataTables (atau hasil pencarian) tidak bereaksi.
+    $(document).on('click', '.btn-delete', function() {
         const id = $(this).data('id');
         const name = $(this).data('name');
 
