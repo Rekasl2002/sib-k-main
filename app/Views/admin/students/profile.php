@@ -212,6 +212,14 @@
                                 <td class="text-muted"><i class="mdi mdi-wheelchair-accessibility me-1"></i>Disabilitas</td>
                                 <td class="fw-medium"><?= !empty($student['disability']) ? esc($student['disability']) : '-' ?></td>
                             </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-soccer me-1"></i>Hobi</td>
+                                <td class="fw-medium"><?= !empty($student['hobi']) ? esc($student['hobi']) : '-' ?></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted"><i class="mdi mdi-account-group me-1"></i>Ekstrakurikuler / Organisasi</td>
+                                <td class="fw-medium"><?= !empty($student['ekskul_organisasi']) ? esc($student['ekskul_organisasi']) : '-' ?></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>

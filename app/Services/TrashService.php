@@ -42,6 +42,7 @@ class TrashService
             'career'       => ['table' => 'career_options', 'label' => 'Info Karier', 'titleCol' => 'title'],
             'university'   => ['table' => 'university_info', 'label' => 'Info Studi Lanjut', 'titleCol' => 'university_name'],
             'student'      => ['table' => 'students', 'label' => 'Data Siswa', 'titleCol' => 'nisn', 'titlePrefix' => 'NISN ', 'nameJoin' => ['users', 'users.id = students.user_id', 'users.full_name']],
+            'user'         => ['table' => 'users', 'label' => 'Pengguna', 'titleCol' => 'full_name'],
         ];
     }
 

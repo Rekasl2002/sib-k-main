@@ -473,6 +473,13 @@ class UserService
                 ];
             }
 
+            // Catat penghapus agar akun bisa dipulihkan lewat Tempat Sampah
+            // (selaras dengan StudentService; difilter berdasarkan deleted_by).
+            $uid = (int) (session('user_id') ?? 0);
+            if ($uid > 0 && $this->db->fieldExists('deleted_by', 'users')) {
+                $this->db->table('users')->where('id', (int) $userId)->update(['deleted_by' => $uid]);
+            }
+
             if (!$this->userModel->delete($userId)) {
                 return [
                     'success' => false,
