@@ -101,14 +101,14 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
     <?php
       $miniCards = [
         ['label' => 'Total Pilihan Karier',       'value' => isset($pager) ? $pager->getTotal() : count($careers),                'bg' => 'bg-primary',   'icon' => 'mdi-briefcase-outline'],
-        ['label' => 'Karier Tersimpan',           'value' => count($savedCareerIds),                                              'bg' => 'bg-success',   'icon' => 'mdi-bookmark-check-outline'],
-        ['label' => 'Total Perguruan Tinggi',     'value' => isset($uniPager) ? $uniPager->getTotal('universities') : count($universities), 'bg' => 'bg-info',       'icon' => 'mdi-town-hall'],
-        ['label' => 'Perguruan Tinggi Tersimpan', 'value' => count($savedUniversityIds),                                          'bg' => 'bg-secondary', 'icon' => 'mdi-bookmark-check-outline'],
+        ['label' => 'Karier Tersimpan',           'value' => count($savedCareerIds),                                              'bg' => 'bg-success',   'icon' => 'mdi-bookmark-check'],
+        ['label' => 'Total Perguruan Tinggi',     'value' => isset($uniPager) ? $uniPager->getTotal('universities') : count($universities), 'bg' => 'bg-info',       'icon' => 'mdi-bank'],
+        ['label' => 'Perguruan Tinggi Tersimpan', 'value' => count($savedUniversityIds),                                          'bg' => 'bg-secondary', 'icon' => 'mdi-bookmark-check'],
       ];
     ?>
     <?php foreach ($miniCards as $mc): ?>
       <div class="col-6 col-md-3">
-        <div class="card mini-stats-wid">
+        <div class="card mini-stats-wid h-100">
           <div class="card-body">
             <div class="d-flex">
               <div class="flex-grow-1">
@@ -151,7 +151,7 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
         <li class="nav-item">
           <a class="nav-link <?= ($activeTab === 'universities' ? 'active' : '') ?>"
              href="<?= site_url('student/career?tab=universities') ?>">
-            <i class="mdi mdi-town-hall me-1"></i>Info Perguruan Tinggi
+            <i class="mdi mdi-bank me-1"></i>Info Perguruan Tinggi
           </a>
         </li>
       </ul>

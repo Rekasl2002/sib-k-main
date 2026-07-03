@@ -64,7 +64,7 @@ $logoSrc = $srcOld !== null
 
 <div class="d-flex align-items-center justify-content-between mb-3">
   <h4 class="mb-0">
-    <i class="mdi mdi-town-hall me-2"></i>
+    <i class="mdi mdi-bank me-2"></i>
     <?= $isEdit ? 'Edit Info Universitas' : 'Tambah Info Universitas' ?>
   </h4>
   <a href="<?= site_url('counselor/career-info/universities?tab=universities') ?>" class="btn btn-sm btn-secondary">

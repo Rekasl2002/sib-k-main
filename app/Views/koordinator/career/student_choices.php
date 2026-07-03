@@ -65,7 +65,7 @@ $tabUrl  = static function (string $tab) use ($baseUrl, $filters) {
     </li>
     <li class="nav-item">
         <a class="nav-link <?= $activeTab === 'universities' ? 'active' : '' ?>" href="<?= $tabUrl('universities') ?>">
-            <i class="mdi mdi-town-hall me-1"></i>Pilihan Perguruan Tinggi
+            <i class="mdi mdi-bank me-1"></i>Pilihan Perguruan Tinggi
         </a>
     </li>
 </ul>

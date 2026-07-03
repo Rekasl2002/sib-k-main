@@ -71,7 +71,7 @@ $uq       = $uq       ?? '';
   <!-- Kartu Statistik -->
   <div class="row">
     <div class="col-6 col-md-3">
-      <div class="card mini-stats-wid">
+      <div class="card mini-stats-wid h-100">
         <div class="card-body">
           <div class="d-flex">
             <div class="flex-grow-1">
@@ -88,7 +88,7 @@ $uq       = $uq       ?? '';
       </div>
     </div>
     <div class="col-6 col-md-3">
-      <div class="card mini-stats-wid">
+      <div class="card mini-stats-wid h-100">
         <div class="card-body">
           <div class="d-flex">
             <div class="flex-grow-1">
@@ -97,7 +97,7 @@ $uq       = $uq       ?? '';
             </div>
             <div class="flex-shrink-0 align-self-center">
               <div class="mini-stat-icon avatar-sm rounded-circle bg-info">
-                <span class="avatar-title"><i class="mdi mdi-town-hall font-size-24"></i></span>
+                <span class="avatar-title"><i class="mdi mdi-bank font-size-24"></i></span>
               </div>
             </div>
           </div>

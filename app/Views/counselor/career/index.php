@@ -77,8 +77,8 @@ $choicesUniUrl    = route_to('counselor.career.choices') . '?tab=universities';
     <?php
     $miniCards = [
         ['label' => 'Total Pilihan Karier', 'value' => $stats['careers_total'] ?? 0,  'bg' => 'bg-primary', 'icon' => 'mdi-briefcase-outline'],
-        ['label' => 'Karier Ditampilkan',   'value' => $stats['careers_active'] ?? 0, 'bg' => 'bg-success', 'icon' => 'mdi-briefcase-check-outline'],
-        ['label' => 'Total Perguruan Tinggi','value' => $stats['uni_total'] ?? 0,      'bg' => 'bg-info',    'icon' => 'mdi-town-hall'],
+        ['label' => 'Karier Ditampilkan',   'value' => $stats['careers_active'] ?? 0, 'bg' => 'bg-success', 'icon' => 'mdi-briefcase-check'],
+        ['label' => 'Total Perguruan Tinggi','value' => $stats['uni_total'] ?? 0,      'bg' => 'bg-info',    'icon' => 'mdi-bank'],
         ['label' => 'PT Ditampilkan',        'value' => $stats['uni_active'] ?? 0,     'bg' => 'bg-secondary','icon' => 'mdi-school-outline'],
     ];
     ?>
@@ -114,7 +114,7 @@ $choicesUniUrl    = route_to('counselor.career.choices') . '?tab=universities';
     <li class="nav-item">
         <a class="nav-link <?= ($activeTab === 'universities' ? 'active' : '') ?>"
            href="<?= site_url('counselor/career-info?tab=universities') ?>">
-            <i class="mdi mdi-town-hall me-1"></i>Info Perguruan Tinggi
+            <i class="mdi mdi-bank me-1"></i>Info Perguruan Tinggi
         </a>
     </li>
 </ul>
@@ -249,7 +249,7 @@ $choicesUniUrl    = route_to('counselor.career.choices') . '?tab=universities';
                                 <?php else: ?>
                                     <tr>
                                         <td colspan="8" class="text-center py-5">
-                                            <i class="mdi mdi-briefcase-off-outline text-dark" style="font-size: 48px;"></i>
+                                            <i class="mdi mdi-briefcase-remove-outline text-dark" style="font-size: 48px;"></i>
                                             <p class="text-dark mt-2 mb-0">Belum ada data karier</p>
                                         </td>
                                     </tr>
@@ -332,7 +332,7 @@ $choicesUniUrl    = route_to('counselor.career.choices') . '?tab=universities';
             <div class="col-12">
                 <div class="card">
                     <div class="card-header d-flex justify-content-between align-items-center">
-                        <h4 class="card-title mb-0"><i class="mdi mdi-town-hall me-2"></i>Daftar Perguruan Tinggi</h4>
+                        <h4 class="card-title mb-0"><i class="mdi mdi-bank me-2"></i>Daftar Perguruan Tinggi</h4>
                         <div class="text-end d-flex gap-2 align-items-center flex-wrap">
                             <a href="<?= $choicesUniUrl ?>" class="btn btn-info">
                                 <i class="mdi mdi-account-multiple-outline me-1"></i> Pilihan Siswa
@@ -394,7 +394,7 @@ $choicesUniUrl    = route_to('counselor.career.choices') . '?tab=universities';
                                 <?php else: ?>
                                     <tr>
                                         <td colspan="8" class="text-center py-5">
-                                            <i class="mdi mdi-town-hall text-dark" style="font-size: 48px;"></i>
+                                            <i class="mdi mdi-bank text-dark" style="font-size: 48px;"></i>
                                             <p class="text-dark mt-2 mb-0">Belum ada data perguruan tinggi</p>
                                         </td>
                                     </tr>
