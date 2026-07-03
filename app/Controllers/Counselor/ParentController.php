@@ -11,17 +11,20 @@ namespace App\Controllers\Counselor;
 
 use App\Controllers\BaseController;
 use App\Models\UserModel;
+use App\Services\UserService;
 
 class ParentController extends BaseController
 {
     protected UserModel $userModel;
+    protected UserService $userService;
     protected $db;
 
     public function __construct()
     {
         helper(['auth']);
-        $this->userModel = new UserModel();
-        $this->db        = \Config\Database::connect();
+        $this->userModel    = new UserModel();
+        $this->userService  = new UserService();
+        $this->db           = \Config\Database::connect();
     }
 
     private function me(): int
@@ -302,6 +305,41 @@ class ParentController extends BaseController
 
         return redirect()->to(base_url('counselor/parents'))
             ->with('warning', 'Keterhubungan dilepas. Akun tidak dihapus karena masih terhubung dengan siswa lain.');
+    }
+
+    /**
+     * POST /counselor/parents/reset-password/(:num)
+     * Reset password akun orang tua (hanya yang terhubung ke siswa binaan Guru BK ini).
+     */
+    public function resetParentPassword($id)
+    {
+        $classIds = $this->scopedClassIds();
+        $parent   = $this->parentInScope((int)$id, $classIds);
+
+        if (!$parent) {
+            return redirect()->to(base_url('counselor/parents'))
+                ->with('error', 'Akun orang tua tidak ditemukan di kelas binaan Anda.');
+        }
+
+        $newPassword = $this->generateRandomPassword();
+        $result      = $this->userService->changePassword((int)$id, $newPassword);
+
+        if (empty($result['success'])) {
+            return redirect()->back()->with('error', $result['message'] ?? 'Gagal reset password.');
+        }
+
+        return redirect()->back()
+            ->with('success', 'Password orang tua berhasil direset. Password baru: ' . $newPassword . ' (harap catat & sampaikan ke orang tua).');
+    }
+
+    private function generateRandomPassword(int $length = 8): string
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $password   = '';
+        for ($i = 0; $i < $length; $i++) {
+            $password .= $characters[random_int(0, strlen($characters) - 1)];
+        }
+        return $password;
     }
 
     private function createParentFromPost(array $post): array

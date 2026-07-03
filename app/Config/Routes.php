@@ -660,6 +660,7 @@ $routes->group('counselor', [
             $routes->get('(:num)/edit', 'StudentController::edit/$1', ['as' => 'counselor.students.edit']);
             $routes->post('(:num)', 'StudentController::update/$1', ['as' => 'counselor.students.update']);
             $routes->get('detail/(:num)', 'StudentController::detail/$1', ['as' => 'counselor.students.detail']);
+            $routes->post('reset-password/(:num)', 'StudentController::resetStudentPassword/$1', ['as' => 'counselor.students.reset_password']);
         });
 
         // Akun Orang Tua siswa binaan (Guru BK: C,R,U,D* sesuai Matriks CRUD)
@@ -685,6 +686,10 @@ $routes->group('counselor', [
             $routes->post('delete/(:num)', 'ParentController::delete/$1', [
                 'filter' => 'permission:manage_bk_services',
                 'as'     => 'counselor.parents.delete',
+            ]);
+            $routes->post('reset-password/(:num)', 'ParentController::resetParentPassword/$1', [
+                'filter' => 'permission:manage_bk_services',
+                'as'     => 'counselor.parents.reset_password',
             ]);
         });
 
@@ -962,6 +967,10 @@ $routes->group('homeroom', [
             'filter' => 'permission:manage_students',
             'as'     => 'homeroom.students.delete'
         ]);
+        $routes->post('students/reset-password/(:num)', 'StudentController::resetStudentPassword/$1', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.students.reset_password'
+        ]);
         $routes->get('students/export', 'StudentController::export', [
             'filter' => 'permission:import_export_data',
             'as'     => 'homeroom.students.export'
@@ -1005,6 +1014,10 @@ $routes->group('homeroom', [
         $routes->post('parents/delete/(:num)', 'StudentController::deleteParent/$1', [
             'filter' => 'permission:manage_students',
             'as'     => 'homeroom.parents.delete'
+        ]);
+        $routes->post('parents/reset-password/(:num)', 'StudentController::resetParentPassword/$1', [
+            'filter' => 'permission:manage_students',
+            'as'     => 'homeroom.parents.reset_password'
         ]);
         $routes->get('students/(:num)', 'StudentController::show/$1', [
             'filter' => 'permission:view_all_students',

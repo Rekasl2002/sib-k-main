@@ -22,6 +22,9 @@ $children = is_array($children ?? null) ? $children : [];
       </div>
       <div class="d-flex gap-2">
         <a href="<?= base_url('homeroom/parents/edit/' . (int) ($parent['id'] ?? 0)) ?>" class="btn btn-primary">Edit</a>
+        <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#resetPasswordParentModal">
+            <i class="mdi mdi-key-variant me-1"></i>Reset Password
+        </button>
         <a href="<?= base_url('homeroom/parents') ?>" class="btn btn-outline-secondary">Kembali</a>
       </div>
     </div>
@@ -90,6 +93,29 @@ $children = is_array($children ?? null) ? $children : [];
       </div>
     </div>
   </div>
+</div>
+
+<!-- Modal Reset Password Orang Tua -->
+<div class="modal fade" id="resetPasswordParentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="mdi mdi-key-variant text-warning me-2"></i>Reset Password Orang Tua</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= base_url('homeroom/parents/reset-password/' . (int) ($parent['id'] ?? 0)) ?>" method="POST">
+                <?= csrf_field() ?>
+                <div class="modal-body">
+                    <p>Reset password akun <strong><?= esc($parent['full_name'] ?? '-') ?></strong>?</p>
+                    <p class="text-warning mb-0"><i class="mdi mdi-information me-1"></i>Password baru dibuat otomatis. Catat & sampaikan ke orang tua.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning"><i class="mdi mdi-key-variant me-1"></i>Reset Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <?= $this->endSection() ?>

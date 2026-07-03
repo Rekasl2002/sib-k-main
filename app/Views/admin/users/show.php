@@ -227,9 +227,9 @@ helper('app');
                         </a>
                     </div>
                     <div class="col-md-6 mb-2">
-                        <!--<button type="button" class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
+                        <button type="button" class="btn btn-warning w-100" data-bs-toggle="modal" data-bs-target="#resetPasswordModal">
                             <i class="mdi mdi-key-variant me-1"></i> Reset Password
-                        </button>-->
+                        </button>
                     </div>
                     <div class="col-md-6 mb-2">
                         <button type="button" class="btn btn-info w-100" data-bs-toggle="modal" data-bs-target="#uploadPhotoModal">
@@ -367,7 +367,7 @@ helper('app');
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar-xs">
-                                            <span class="avatar-title rounded-circle bg-primary bg-soft text-primary font-size-18">
+                                            <span class="avatar-title rounded-circle bg-soft-primary text-primary font-size-18">
                                                 <i class="mdi mdi-account-clock"></i>
                                             </span>
                                         </div>
@@ -401,7 +401,7 @@ helper('app');
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar-xs">
-                                            <span class="avatar-title rounded-circle bg-success bg-soft text-success font-size-18">
+                                            <span class="avatar-title rounded-circle bg-soft-success text-success font-size-18">
                                                 <i class="mdi mdi-calendar-check"></i>
                                             </span>
                                         </div>

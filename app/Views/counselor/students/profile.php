@@ -180,6 +180,9 @@ if (!empty($birthDate)) {
                             <a href="<?= base_url('counselor/students/' . (int) $studentId . '/edit') ?>" class="btn btn-primary">
                                 <i class="mdi mdi-pencil me-1"></i>Edit Data
                             </a>
+                            <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#resetPasswordStudentModal">
+                                <i class="mdi mdi-key-variant me-1"></i>Reset Password
+                            </button>
                             <?php endif; ?>
                             <a href="<?= base_url('counselor/students') ?>" class="btn btn-secondary">
                                 <i class="mdi mdi-arrow-left me-1"></i>Kembali
@@ -508,6 +511,31 @@ if (!empty($birthDate)) {
         </div>
     </div>
 </div>
+
+<!-- Modal Reset Password Siswa -->
+<?php if (!empty($canUpdate) && !empty($studentId)): ?>
+<div class="modal fade" id="resetPasswordStudentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="mdi mdi-key-variant text-warning me-2"></i>Reset Password Siswa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= base_url('counselor/students/reset-password/' . (int) $studentId) ?>" method="POST">
+                <?= csrf_field() ?>
+                <div class="modal-body">
+                    <p>Reset password akun <strong><?= esc($fullName) ?></strong>?</p>
+                    <p class="text-warning mb-0"><i class="mdi mdi-information me-1"></i>Password baru dibuat otomatis. Catat & sampaikan ke siswa.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning"><i class="mdi mdi-key-variant me-1"></i>Reset Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <?= $this->endSection() ?>
 

@@ -6,6 +6,7 @@ namespace App\Controllers\HomeroomTeacher;
 use App\Controllers\BaseController;
 use App\Models\UserModel;
 use App\Services\StudentService;
+use App\Services\UserService;
 use App\Validation\StudentValidation;
 use CodeIgniter\Database\BaseConnection;
 
@@ -15,12 +16,14 @@ class StudentController extends BaseController
     protected $db;
     protected StudentService $studentService;
     protected UserModel $userModel;
+    protected UserService $userService;
 
     public function __construct()
     {
-        $this->db = \Config\Database::connect();
+        $this->db           = \Config\Database::connect();
         $this->studentService = new StudentService();
-        $this->userModel = new UserModel();
+        $this->userModel    = new UserModel();
+        $this->userService  = new UserService();
     }
 
     private function normalizeIdPhoneTo08(?string $phone): string
@@ -950,6 +953,77 @@ class StudentController extends BaseController
 
         return redirect()->to(base_url('homeroom/parents'))
             ->with('warning', 'Keterhubungan orang tua dengan siswa binaan Anda sudah dilepas. Akun tidak dihapus karena masih terhubung dengan siswa lain.');
+    }
+
+    /**
+     * POST /homeroom/students/reset-password/(:num)
+     * Reset password akun siswa (hanya siswa kelas binaan Wali Kelas ini).
+     */
+    public function resetStudentPassword($id)
+    {
+        $context = $this->homeroomContext();
+        if ($redir = $this->guardHomeroom($context)) {
+            return $redir;
+        }
+
+        $student = $this->studentInScope((int) $id, $context['classIds']);
+        if (!$student) {
+            return redirect()->to(base_url('homeroom/my-class'))
+                ->with('error', 'Siswa tidak ditemukan di kelas binaan Anda.');
+        }
+
+        $userId = (int) ($student['user_id'] ?? 0);
+        if ($userId <= 0) {
+            return redirect()->back()->with('error', 'Akun pengguna siswa tidak ditemukan.');
+        }
+
+        $newPassword = $this->generateRandomPassword();
+        $result      = $this->userService->changePassword($userId, $newPassword);
+
+        if (empty($result['success'])) {
+            return redirect()->back()->with('error', $result['message'] ?? 'Gagal reset password.');
+        }
+
+        return redirect()->back()
+            ->with('success', 'Password siswa berhasil direset. Password baru: ' . $newPassword . ' (harap catat & sampaikan ke siswa).');
+    }
+
+    /**
+     * POST /homeroom/parents/reset-password/(:num)
+     * Reset password akun orang tua (hanya yang terhubung ke siswa kelas binaan Wali Kelas ini).
+     */
+    public function resetParentPassword($id)
+    {
+        $context = $this->homeroomContext();
+        if ($redir = $this->guardHomeroom($context)) {
+            return $redir;
+        }
+
+        $parent = $this->parentInScope((int) $id, $context['classIds']);
+        if (!$parent) {
+            return redirect()->to(base_url('homeroom/parents'))
+                ->with('error', 'Akun orang tua tidak ditemukan di kelas binaan Anda.');
+        }
+
+        $newPassword = $this->generateRandomPassword();
+        $result      = $this->userService->changePassword((int) $id, $newPassword);
+
+        if (empty($result['success'])) {
+            return redirect()->back()->with('error', $result['message'] ?? 'Gagal reset password.');
+        }
+
+        return redirect()->back()
+            ->with('success', 'Password orang tua berhasil direset. Password baru: ' . $newPassword . ' (harap catat & sampaikan ke orang tua).');
+    }
+
+    private function generateRandomPassword(int $length = 8): string
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $password   = '';
+        for ($i = 0; $i < $length; $i++) {
+            $password .= $characters[random_int(0, strlen($characters) - 1)];
+        }
+        return $password;
     }
 
     private function createParentAccountFromPost(array $post): array

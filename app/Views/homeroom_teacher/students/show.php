@@ -197,6 +197,9 @@ $avatarSrc = user_avatar($photo);
             <a href="<?= base_url('homeroom/students/edit/' . $studentId) ?>" class="btn btn-primary btn-sm">
                 <i class="mdi mdi-pencil me-1"></i>Edit Siswa
             </a>
+            <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#resetPasswordStudentModal">
+                <i class="mdi mdi-key-variant me-1"></i>Reset Password
+            </button>
             <?php if ($parentId > 0): ?>
                 <a href="<?= base_url('homeroom/parents/' . $parentId) ?>" class="btn btn-outline-info btn-sm">
                     <i class="mdi mdi-account-supervisor me-1"></i>Akun Orang Tua
@@ -592,5 +595,30 @@ $avatarSrc = user_avatar($photo);
 
             </div>
         </div>
+
+<!-- Modal Reset Password Siswa -->
+<?php if (function_exists('has_permission') && has_permission('manage_students') && $studentId > 0): ?>
+<div class="modal fade" id="resetPasswordStudentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="mdi mdi-key-variant text-warning me-2"></i>Reset Password Siswa</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="<?= base_url('homeroom/students/reset-password/' . $studentId) ?>" method="POST">
+                <?= csrf_field() ?>
+                <div class="modal-body">
+                    <p>Reset password akun <strong><?= esc($fullName) ?></strong>?</p>
+                    <p class="text-warning mb-0"><i class="mdi mdi-information me-1"></i>Password baru dibuat otomatis. Catat & sampaikan ke siswa.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-warning"><i class="mdi mdi-key-variant me-1"></i>Reset Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
 
 <?= $this->endSection() ?>

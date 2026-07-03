@@ -11,6 +11,7 @@ use App\Models\StudentModel;
 use App\Models\UserModel;
 use App\Models\ClassModel;
 use App\Services\StudentService;
+use App\Services\UserService;
 
 class StudentController extends BaseController
 {
@@ -18,6 +19,7 @@ class StudentController extends BaseController
     protected UserModel $userModel;
     protected ClassModel $classModel;
     protected StudentService $studentService;
+    protected UserService $userService;
     protected $db;
 
     public function __construct()
@@ -27,6 +29,7 @@ class StudentController extends BaseController
         $this->userModel        = new UserModel();
         $this->classModel       = new ClassModel();
         $this->studentService   = new StudentService();
+        $this->userService      = new UserService();
         $this->db               = \Config\Database::connect();
     }
 
@@ -304,5 +307,44 @@ class StudentController extends BaseController
             return redirect()->to('counselor/students')->with('error', 'Siswa tidak ditemukan.');
         }
         return $this->show($id);
+    }
+
+    /**
+     * POST /counselor/students/reset-password/(:num)
+     * Reset password akun siswa (hanya siswa binaan Guru BK yang login).
+     */
+    public function resetStudentPassword(int $id)
+    {
+        $student = $this->scopedBuilder()->where('students.id', $id)->first();
+
+        if (!$student) {
+            return redirect()->to('counselor/students')
+                ->with('error', 'Siswa tidak ditemukan atau bukan binaan Anda.');
+        }
+
+        $userId = (int) ($student['user_id'] ?? 0);
+        if ($userId <= 0) {
+            return redirect()->back()->with('error', 'Akun pengguna siswa tidak ditemukan.');
+        }
+
+        $newPassword = $this->generateRandomPassword();
+        $result      = $this->userService->changePassword($userId, $newPassword);
+
+        if (empty($result['success'])) {
+            return redirect()->back()->with('error', $result['message'] ?? 'Gagal reset password.');
+        }
+
+        return redirect()->back()
+            ->with('success', 'Password siswa berhasil direset. Password baru: ' . $newPassword . ' (harap catat & sampaikan ke siswa).');
+    }
+
+    private function generateRandomPassword(int $length = 8): string
+    {
+        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $password   = '';
+        for ($i = 0; $i < $length; $i++) {
+            $password .= $characters[random_int(0, strlen($characters) - 1)];
+        }
+        return $password;
     }
 }
