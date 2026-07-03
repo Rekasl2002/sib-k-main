@@ -77,6 +77,37 @@ $activeChildId = $activeChildId ?? null;
     </div>
   <?php endif; ?>
 
+  <!-- Kartu Statistik -->
+  <div class="row">
+    <?php
+      $miniCards = [
+        ['label' => 'Total Pilihan Karier',       'value' => isset($pager) ? $pager->getTotal() : count($careers),                'bg' => 'bg-primary',   'icon' => 'mdi-briefcase-outline'],
+        ['label' => 'Karier Tersimpan Anak',      'value' => count($savedCareerIds),                                              'bg' => 'bg-success',   'icon' => 'mdi-bookmark-check-outline'],
+        ['label' => 'Total Perguruan Tinggi',     'value' => isset($uniPager) ? $uniPager->getTotal('universities') : count($universities), 'bg' => 'bg-info',       'icon' => 'mdi-town-hall'],
+        ['label' => 'PT Tersimpan Anak',          'value' => count($savedUniversityIds),                                          'bg' => 'bg-secondary', 'icon' => 'mdi-bookmark-check-outline'],
+      ];
+    ?>
+    <?php foreach ($miniCards as $mc): ?>
+      <div class="col-6 col-md-3">
+        <div class="card mini-stats-wid">
+          <div class="card-body">
+            <div class="d-flex">
+              <div class="flex-grow-1">
+                <p class="text-dark fw-medium mb-2"><?= esc($mc['label']) ?></p>
+                <h4 class="mb-0 text-dark"><?= number_format((int) $mc['value']) ?></h4>
+              </div>
+              <div class="flex-shrink-0 align-self-center">
+                <div class="mini-stat-icon avatar-sm rounded-circle <?= esc($mc['bg'], 'attr') ?>">
+                  <span class="avatar-title"><i class="mdi <?= esc($mc['icon'], 'attr') ?> font-size-24"></i></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <?php endforeach; ?>
+  </div>
+
   <!-- Kontrol Anak + Tabs -->
   <div class="card">
     <div class="card-body pb-0">

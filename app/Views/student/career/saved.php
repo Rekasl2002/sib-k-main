@@ -19,6 +19,23 @@ if (!function_exists('clip')) {
     return esc(mb_substr($s, 0, $len - 3) . '...');
   }
 }
+if (!function_exists('pagerInfo')) {
+  function pagerInfo($pager, string $group = 'default'): ?array
+  {
+    if (!$pager) {
+      return null;
+    }
+    $total = $pager->getTotal($group);
+    if ($total < 1) {
+      return null;
+    }
+    $perPage = $pager->getPerPage($group);
+    $current = $pager->getCurrentPage($group);
+    $from    = ($current - 1) * $perPage + 1;
+    $to      = min($current * $perPage, $total);
+    return [$from, $to, $total];
+  }
+}
 
 $careers         = $careers ?? [];
 $careerCount     = $careerCount ?? count($careers);
@@ -28,6 +45,10 @@ $activeTab       = $activeTab ?? 'careers';
 if (!in_array($activeTab, ['careers', 'universities'], true)) {
   $activeTab = 'careers';
 }
+$pager    = $pager    ?? null;
+$uniPager = $uniPager ?? null;
+$q        = $q        ?? '';
+$uq       = $uq       ?? '';
 ?>
 
 <div class="container-fluid">
@@ -42,6 +63,44 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
             <li class="breadcrumb-item"><a href="<?= site_url('student/career') ?>">Info Karier dan Studi Lanjut</a></li>
             <li class="breadcrumb-item active">Item Tersimpan</li>
           </ol>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kartu Statistik -->
+  <div class="row">
+    <div class="col-6 col-md-3">
+      <div class="card mini-stats-wid">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-grow-1">
+              <p class="text-dark fw-medium mb-2">Karier Tersimpan</p>
+              <h4 class="mb-0 text-dark"><?= number_format((int) $careerCount) ?></h4>
+            </div>
+            <div class="flex-shrink-0 align-self-center">
+              <div class="mini-stat-icon avatar-sm rounded-circle bg-primary">
+                <span class="avatar-title"><i class="mdi mdi-briefcase-outline font-size-24"></i></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card mini-stats-wid">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-grow-1">
+              <p class="text-dark fw-medium mb-2">Perguruan Tinggi Tersimpan</p>
+              <h4 class="mb-0 text-dark"><?= number_format((int) $universityCount) ?></h4>
+            </div>
+            <div class="flex-shrink-0 align-self-center">
+              <div class="mini-stat-icon avatar-sm rounded-circle bg-info">
+                <span class="avatar-title"><i class="mdi mdi-town-hall font-size-24"></i></span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -82,10 +141,38 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
     <div class="tab-pane fade <?= ($activeTab === 'careers' ? 'show active' : '') ?>">
       <div class="card shadow-sm">
         <div class="card-body">
+
+          <!-- Cari di karier tersimpan -->
+          <form class="row g-2 align-items-end mb-3" method="get" action="<?= site_url('student/career/saved') ?>">
+            <input type="hidden" name="tab" value="careers">
+            <div class="col-12 col-md-6">
+              <label class="form-label mb-1">Cari karier tersimpan</label>
+              <input
+                type="text"
+                name="q"
+                class="form-control"
+                placeholder="Cari judul atau sektor karier..."
+                value="<?= esc($q) ?>"
+              >
+            </div>
+            <div class="col-6 col-md-2 d-grid">
+              <button class="btn btn-primary">Cari</button>
+            </div>
+            <?php if ($q !== ''): ?>
+              <div class="col-6 col-md-2 d-grid">
+                <a class="btn btn-light" href="<?= site_url('student/career/saved?tab=careers') ?>">Reset</a>
+              </div>
+            <?php endif; ?>
+          </form>
+
           <?php if (empty($careers)): ?>
             <div class="alert alert-info mb-0">
-              Belum ada karier yang kamu simpan.
-              Coba eksplor di halaman <a href="<?= site_url('student/career') ?>">Info Karier dan Studi Lanjut</a>.
+              <?php if ($q !== ''): ?>
+                Tidak ada karier tersimpan yang cocok dengan pencarian "<?= esc($q) ?>".
+              <?php else: ?>
+                Belum ada karier yang kamu simpan.
+                Coba eksplor di halaman <a href="<?= site_url('student/career') ?>">Info Karier dan Studi Lanjut</a>.
+              <?php endif; ?>
             </div>
           <?php else: ?>
             <div class="row g-3">
@@ -148,6 +235,16 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
                 </div>
               <?php endforeach; ?>
             </div>
+
+            <?php $info = pagerInfo($pager); ?>
+            <?php if ($info): ?>
+              <p class="text-muted small mt-3 mb-1">
+                Menampilkan <?= $info[0] ?>-<?= $info[1] ?> dari <?= $info[2] ?> data
+              </p>
+            <?php endif; ?>
+            <div class="mt-1">
+              <?= $pager ? $pager->links() : '' ?>
+            </div>
           <?php endif; ?>
         </div>
       </div>
@@ -157,10 +254,38 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
     <div class="tab-pane fade <?= ($activeTab === 'universities' ? 'show active' : '') ?>">
       <div class="card shadow-sm">
         <div class="card-body">
+
+          <!-- Cari di perguruan tinggi tersimpan -->
+          <form class="row g-2 align-items-end mb-3" method="get" action="<?= site_url('student/career/saved') ?>">
+            <input type="hidden" name="tab" value="universities">
+            <div class="col-12 col-md-6">
+              <label class="form-label mb-1">Cari perguruan tinggi tersimpan</label>
+              <input
+                type="text"
+                name="u_q"
+                class="form-control"
+                placeholder="Cari nama, alias, atau lokasi..."
+                value="<?= esc($uq) ?>"
+              >
+            </div>
+            <div class="col-6 col-md-2 d-grid">
+              <button class="btn btn-primary">Cari</button>
+            </div>
+            <?php if ($uq !== ''): ?>
+              <div class="col-6 col-md-2 d-grid">
+                <a class="btn btn-light" href="<?= site_url('student/career/saved?tab=universities') ?>">Reset</a>
+              </div>
+            <?php endif; ?>
+          </form>
+
           <?php if (empty($universities)): ?>
             <div class="alert alert-info mb-0">
-              Belum ada perguruan tinggi yang kamu simpan.
-              Coba jelajahi tab <strong>Info Perguruan Tinggi</strong> di halaman eksplorasi.
+              <?php if ($uq !== ''): ?>
+                Tidak ada perguruan tinggi tersimpan yang cocok dengan pencarian "<?= esc($uq) ?>".
+              <?php else: ?>
+                Belum ada perguruan tinggi yang kamu simpan.
+                Coba jelajahi tab <strong>Info Perguruan Tinggi</strong> di halaman eksplorasi.
+              <?php endif; ?>
             </div>
           <?php else: ?>
             <div class="row g-3">
@@ -228,6 +353,16 @@ if (!in_array($activeTab, ['careers', 'universities'], true)) {
                   </div>
                 </div>
               <?php endforeach; ?>
+            </div>
+
+            <?php $uniInfo = pagerInfo($uniPager, 'universities'); ?>
+            <?php if ($uniInfo): ?>
+              <p class="text-muted small mt-3 mb-1">
+                Menampilkan <?= $uniInfo[0] ?>-<?= $uniInfo[1] ?> dari <?= $uniInfo[2] ?> data
+              </p>
+            <?php endif; ?>
+            <div class="mt-1">
+              <?= $uniPager ? $uniPager->links('universities') : '' ?>
             </div>
           <?php endif; ?>
         </div>

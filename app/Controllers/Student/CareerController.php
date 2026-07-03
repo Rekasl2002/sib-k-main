@@ -341,24 +341,44 @@ class CareerController extends BaseStudentController
 
     /**
      * GET /student/career/saved
-     * Daftar karier & perguruan tinggi yang disimpan siswa.
+     * Daftar karier & perguruan tinggi yang disimpan siswa (dipaginasi, bisa dicari).
      */
     public function saved()
     {
         $this->requireStudent();
 
+        // Tentukan tab aktif di halaman tersimpan
+        $activeTab = $this->request->getGet('tab') ?? 'careers';
+        if (!in_array($activeTab, ['careers', 'universities'], true)) {
+            $activeTab = 'careers';
+        }
+
+        // Kata kunci pencarian per tab
+        $q  = trim((string) $this->request->getGet('q'));
+        $uq = trim((string) $this->request->getGet('u_q'));
+
         // -------------------------------------------------
         // Karier tersimpan
         // -------------------------------------------------
         $careerList = [];
+        $pager      = null;
         if ($this->db->tableExists('student_saved_careers')) {
-            $careerList = $this->applyPublicScope(clone $this->careers)
+            $careerBuilder = $this->applyPublicScope(clone $this->careers)
                 ->select('career_options.*, creator.full_name AS created_by_name, ssc.created_at AS saved_at')
                 ->join('student_saved_careers ssc', 'ssc.career_id = career_options.id', 'inner')
                 ->join('users AS creator', 'creator.id = career_options.created_by', 'left')
-                ->where('ssc.student_id', $this->studentId)
-                ->orderBy('career_options.updated_at', 'DESC')
-                ->findAll();
+                ->where('ssc.student_id', $this->studentId);
+
+            if ($q !== '') {
+                $careerBuilder = $careerBuilder->groupStart()
+                    ->like('career_options.title', $q)
+                    ->orLike('career_options.sector', $q)
+                ->groupEnd();
+            }
+
+            $careerBuilder = $careerBuilder->orderBy('career_options.updated_at', 'DESC');
+            $careerList    = $careerBuilder->paginate(12);
+            $pager         = $careerBuilder->pager;
         } else {
             $ids = array_map('intval', session()->get('saved_careers') ?? []);
             if ($ids) {
@@ -371,16 +391,27 @@ class CareerController extends BaseStudentController
         // -------------------------------------------------
         // Perguruan tinggi tersimpan
         // -------------------------------------------------
-        $uniList = [];
+        $uniList  = [];
+        $uniPager = null;
         if ($this->db->tableExists('student_saved_universities')) {
-            $uniList = $this->unis
+            $uniBuilder = $this->unis
                 ->select('university_info.*, creator.full_name AS created_by_name, ssu.created_at AS saved_at')
                 ->join('student_saved_universities ssu', 'ssu.university_id = university_info.id', 'inner')
                 ->join('users AS creator', 'creator.id = university_info.created_by', 'left')
                 ->where('university_info.is_active', 1)
-                ->where('ssu.student_id', $this->studentId)
-                ->orderBy('university_info.university_name', 'ASC')
-                ->findAll();
+                ->where('ssu.student_id', $this->studentId);
+
+            if ($uq !== '') {
+                $uniBuilder = $uniBuilder->groupStart()
+                    ->like('university_info.university_name', $uq)
+                    ->orLike('university_info.alias', $uq)
+                    ->orLike('university_info.location', $uq)
+                ->groupEnd();
+            }
+
+            $uniBuilder = $uniBuilder->orderBy('university_info.university_name', 'ASC');
+            $uniList    = $uniBuilder->paginate(9, 'universities');
+            $uniPager   = $uniBuilder->pager;
         } else {
             $ids = array_map('intval', session()->get('saved_universities') ?? []);
             if ($ids) {
@@ -392,18 +423,16 @@ class CareerController extends BaseStudentController
             }
         }
 
-        // Tentukan tab aktif di halaman tersimpan
-        $activeTab = $this->request->getGet('tab') ?? 'careers';
-        if (!in_array($activeTab, ['careers', 'universities'], true)) {
-            $activeTab = 'careers';
-        }
-
         return view('student/career/saved', [
-            'careers'           => $careerList,
-            'careerCount'       => count($careerList),
-            'universities'      => $uniList,
-            'universityCount'   => count($uniList),
-            'activeTab'         => $activeTab,
+            'careers'         => $careerList,
+            'careerCount'     => $pager ? $pager->getTotal() : count($careerList),
+            'universities'    => $uniList,
+            'universityCount' => $uniPager ? $uniPager->getTotal('universities') : count($uniList),
+            'activeTab'       => $activeTab,
+            'pager'           => $pager,
+            'uniPager'        => $uniPager,
+            'q'               => $q,
+            'uq'              => $uq,
         ]);
     }
 

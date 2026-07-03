@@ -293,7 +293,7 @@ class CareerController extends BaseParentController
 
     /**
      * GET /parent/career/saved
-     * Daftar karier & perguruan tinggi yang disimpan anak tertentu.
+     * Daftar karier & perguruan tinggi yang disimpan anak tertentu (dipaginasi, bisa dicari).
      * Anak dipilih via dropdown (child_id).
      */
     public function saved()
@@ -303,6 +303,14 @@ class CareerController extends BaseParentController
         $children      = $this->getChildrenForCurrentParent();
         $activeChildId = $this->resolveActiveChildId($children);
 
+        $activeTab = $this->request->getGet('tab') ?? 'careers';
+        if (!in_array($activeTab, ['careers', 'universities'], true)) {
+            $activeTab = 'careers';
+        }
+
+        $q  = trim((string) $this->request->getGet('q'));
+        $uq = trim((string) $this->request->getGet('u_q'));
+
         // Jika orang tua belum punya anak terhubung
         if (!$activeChildId) {
             return view('parent/career/saved', [
@@ -310,51 +318,75 @@ class CareerController extends BaseParentController
                 'careerCount'     => 0,
                 'universities'    => [],
                 'universityCount' => 0,
-                'activeTab'       => 'careers',
+                'activeTab'       => $activeTab,
                 'children'        => $children,
                 'activeChildId'   => null,
+                'pager'           => null,
+                'uniPager'        => null,
+                'q'               => $q,
+                'uq'              => $uq,
             ]);
         }
 
         // Karier tersimpan untuk anak aktif
         $careerList = [];
+        $pager      = null;
         if ($this->db->tableExists('student_saved_careers')) {
-            $careerList = $this->applyPublicScope(clone $this->careers)
+            $careerBuilder = $this->applyPublicScope(clone $this->careers)
                 ->select('career_options.*, creator.full_name AS created_by_name, ssc.created_at AS saved_at')
                 ->join('student_saved_careers ssc', 'ssc.career_id = career_options.id', 'inner')
                 ->join('users AS creator', 'creator.id = career_options.created_by', 'left')
-                ->where('ssc.student_id', $activeChildId)
-                ->orderBy('career_options.updated_at', 'DESC')
-                ->findAll();
+                ->where('ssc.student_id', $activeChildId);
+
+            if ($q !== '') {
+                $careerBuilder = $careerBuilder->groupStart()
+                    ->like('career_options.title', $q)
+                    ->orLike('career_options.sector', $q)
+                ->groupEnd();
+            }
+
+            $careerBuilder = $careerBuilder->orderBy('career_options.updated_at', 'DESC');
+            $careerList    = $careerBuilder->paginate(12);
+            $pager         = $careerBuilder->pager;
         }
 
         // Perguruan tinggi tersimpan untuk anak aktif
-        $uniList = [];
+        $uniList  = [];
+        $uniPager = null;
         if ($this->db->tableExists('student_saved_universities')) {
-            $uniList = (clone $this->unis)
+            $uniBuilder = (clone $this->unis)
                 ->select('university_info.*, creator.full_name AS created_by_name, ssu.created_at AS saved_at')
                 ->join('student_saved_universities ssu', 'ssu.university_id = university_info.id', 'inner')
                 ->join('users AS creator', 'creator.id = university_info.created_by', 'left')
                 ->where('university_info.is_active', 1)
-                ->where('ssu.student_id', $activeChildId)
-                ->orderBy('university_info.university_name', 'ASC')
-                ->findAll();
-        }
+                ->where('ssu.student_id', $activeChildId);
 
-        $activeTab = $this->request->getGet('tab') ?? 'careers';
-        if (!in_array($activeTab, ['careers', 'universities'], true)) {
-            $activeTab = 'careers';
+            if ($uq !== '') {
+                $uniBuilder = $uniBuilder->groupStart()
+                    ->like('university_info.university_name', $uq)
+                    ->orLike('university_info.alias', $uq)
+                    ->orLike('university_info.location', $uq)
+                ->groupEnd();
+            }
+
+            $uniBuilder = $uniBuilder->orderBy('university_info.university_name', 'ASC');
+            $uniList    = $uniBuilder->paginate(9, 'universities');
+            $uniPager   = $uniBuilder->pager;
         }
 
         return view('parent/career/saved', [
             'careers'         => $careerList,
-            'careerCount'     => count($careerList),
+            'careerCount'     => $pager ? $pager->getTotal() : count($careerList),
             'universities'    => $uniList,
-            'universityCount' => count($uniList),
+            'universityCount' => $uniPager ? $uniPager->getTotal('universities') : count($uniList),
             'activeTab'       => $activeTab,
 
             'children'        => $children,
             'activeChildId'   => $activeChildId,
+            'pager'           => $pager,
+            'uniPager'        => $uniPager,
+            'q'               => $q,
+            'uq'              => $uq,
         ]);
     }
 
