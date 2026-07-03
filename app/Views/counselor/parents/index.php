@@ -3,34 +3,27 @@
 
 <?php
 /**
- * File Path: app/Views/homeroom_teacher/students/parents.php
- * Akun Orang Tua — Wali Kelas (hanya orang tua siswa kelas binaan).
+ * File Path: app/Views/counselor/parents/index.php
+ * Daftar akun orang tua siswa binaan — Guru BK.
  */
 
 helper('permission');
 
-$parents = is_array($parents ?? null) ? $parents : [];
-$class   = is_array($class ?? null) ? $class : [];
-
-$totalParents   = count($parents);
-$activeParents  = count(array_filter($parents, static fn($p) => (int)($p['is_active'] ?? 0) === 1));
-$inactiveParents = $totalParents - $activeParents;
-
-$isMultipleClass = !empty($class['is_multiple']);
-$className = $isMultipleClass
-    ? (($class['class_count'] ?? '') . ' kelas')
-    : ($class['class_name'] ?? 'Kelas Binaan');
+$parents         = is_array($parents ?? null) ? $parents : [];
+$totalParents    = $totalParents ?? count($parents);
+$activeParents   = $activeParents ?? 0;
+$inactiveParents = $inactiveParents ?? 0;
 ?>
 
 <!-- Page Title -->
 <div class="row">
     <div class="col-12">
         <div class="page-title-box d-flex align-items-center justify-content-between">
-            <h4 class="mb-0"><i class="mdi mdi-account-supervisor me-2"></i>Akun Orang Tua</h4>
+            <h4 class="mb-0"><i class="mdi mdi-account-supervisor me-2"></i><?= esc($pageTitle ?? 'Akun Orang Tua') ?></h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="<?= base_url('homeroom/my-class') ?>">Kelas Binaan</a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_url('counselor/students') ?>">Siswa Binaan</a></li>
                     <li class="breadcrumb-item active">Akun Orang Tua</li>
                 </ol>
             </div>
@@ -56,8 +49,8 @@ $className = $isMultipleClass
                 <div class="d-flex">
                     <div class="flex-grow-1">
                         <p class="text-dark fw-medium mb-2">Total Orang Tua</p>
-                        <h4 class="mb-0 text-dark"><?= $totalParents ?></h4>
-                        <p class="mb-0 text-muted small">terhubung ke <?= esc($className) ?></p>
+                        <h4 class="mb-0 text-dark"><?= (int)$totalParents ?></h4>
+                        <p class="mb-0 text-muted small">dari siswa binaan</p>
                     </div>
                     <div class="flex-shrink-0 align-self-center">
                         <div class="mini-stat-icon avatar-sm rounded-circle bg-primary">
@@ -74,7 +67,7 @@ $className = $isMultipleClass
                 <div class="d-flex">
                     <div class="flex-grow-1">
                         <p class="text-dark fw-medium mb-2">Akun Aktif</p>
-                        <h4 class="mb-0 text-dark"><?= $activeParents ?></h4>
+                        <h4 class="mb-0 text-dark"><?= (int)$activeParents ?></h4>
                     </div>
                     <div class="flex-shrink-0 align-self-center">
                         <div class="mini-stat-icon avatar-sm rounded-circle bg-success">
@@ -91,7 +84,7 @@ $className = $isMultipleClass
                 <div class="d-flex">
                     <div class="flex-grow-1">
                         <p class="text-dark fw-medium mb-2">Akun Nonaktif</p>
-                        <h4 class="mb-0 text-dark"><?= $inactiveParents ?></h4>
+                        <h4 class="mb-0 text-dark"><?= (int)$inactiveParents ?></h4>
                     </div>
                     <div class="flex-shrink-0 align-self-center">
                         <div class="mini-stat-icon avatar-sm rounded-circle bg-secondary">
@@ -107,18 +100,18 @@ $className = $isMultipleClass
 <!-- Tombol Aksi -->
 <div class="row mb-3">
     <div class="col-12 d-flex flex-wrap gap-2">
-        <?php if (function_exists('has_permission') && has_permission('manage_students')): ?>
-            <a href="<?= base_url('homeroom/parents/create') ?>" class="btn btn-primary">
+        <?php if (function_exists('has_permission') && has_permission('manage_bk_services')): ?>
+            <a href="<?= base_url('counselor/parents/create') ?>" class="btn btn-primary">
                 <i class="mdi mdi-account-plus me-1"></i>Tambah Akun Orang Tua
             </a>
         <?php endif; ?>
-        <a href="<?= base_url('homeroom/my-class') ?>" class="btn btn-outline-secondary">
-            <i class="mdi mdi-arrow-left me-1"></i>Kembali ke Kelas Binaan
+        <a href="<?= base_url('counselor/students') ?>" class="btn btn-outline-secondary">
+            <i class="mdi mdi-arrow-left me-1"></i>Kembali ke Siswa Binaan
         </a>
     </div>
 </div>
 
-<!-- Tabel Orang Tua -->
+<!-- Tabel -->
 <div class="row">
     <div class="col-12">
         <div class="card">
@@ -126,13 +119,13 @@ $className = $isMultipleClass
                 <h5 class="card-title mb-0">
                     <i class="mdi mdi-account-multiple me-2"></i>Daftar Akun Orang Tua
                 </h5>
-                <span class="badge bg-primary"><?= $totalParents ?> akun</span>
+                <span class="badge bg-primary"><?= (int)$totalParents ?> akun</span>
             </div>
             <div class="card-body">
                 <?php if (empty($parents)): ?>
                     <div class="text-center text-muted py-4">
                         <i class="mdi mdi-account-off font-size-48 d-block mb-2"></i>
-                        Belum ada akun orang tua yang terhubung dengan siswa kelas binaan Anda.
+                        Belum ada akun orang tua yang terhubung dengan siswa binaan Anda.
                     </div>
                 <?php else: ?>
                     <div class="table-responsive">
@@ -175,12 +168,12 @@ $className = $isMultipleClass
                                         </td>
                                         <td class="text-center">
                                             <div class="d-flex gap-1 justify-content-center">
-                                                <a href="<?= base_url('homeroom/parents/' . (int)($p['id'] ?? 0)) ?>"
+                                                <a href="<?= base_url('counselor/parents/' . (int)($p['id'] ?? 0)) ?>"
                                                    class="btn btn-sm btn-outline-primary" title="Detail">
                                                     <i class="mdi mdi-eye"></i>
                                                 </a>
-                                                <?php if (function_exists('has_permission') && has_permission('manage_students')): ?>
-                                                    <a href="<?= base_url('homeroom/parents/edit/' . (int)($p['id'] ?? 0)) ?>"
+                                                <?php if (function_exists('has_permission') && has_permission('manage_bk_services')): ?>
+                                                    <a href="<?= base_url('counselor/parents/edit/' . (int)($p['id'] ?? 0)) ?>"
                                                        class="btn btn-sm btn-outline-secondary" title="Edit">
                                                         <i class="mdi mdi-pencil"></i>
                                                     </a>
@@ -198,7 +191,6 @@ $className = $isMultipleClass
     </div>
 </div>
 
-<!-- DataTables -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof $.fn.DataTable === 'undefined') return;

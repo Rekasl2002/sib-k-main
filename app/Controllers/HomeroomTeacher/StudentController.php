@@ -184,8 +184,18 @@ class StudentController extends BaseController
         }
 
         return $this->db->table('users p')
-            ->select('p.id, p.username, p.full_name, p.email, p.phone, p.is_active, COUNT(s.id) AS child_count')
+            ->select([
+                'p.id',
+                'p.username',
+                'p.full_name',
+                'p.email',
+                'p.phone',
+                'p.is_active',
+                'COUNT(s.id) AS child_count',
+                "GROUP_CONCAT(DISTINCT CONCAT(c.grade_level, ' ', c.class_name) ORDER BY c.grade_level, c.class_name SEPARATOR ', ') AS child_classes",
+            ])
             ->join('students s', 's.parent_id = p.id AND s.deleted_at IS NULL', 'inner')
+            ->join('classes c', 'c.id = s.class_id AND c.deleted_at IS NULL', 'left')
             ->whereIn('s.class_id', $classIds)
             ->where('p.deleted_at', null)
             ->groupBy('p.id')

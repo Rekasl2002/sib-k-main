@@ -194,6 +194,7 @@ $routes->group('admin', [
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'admin.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'admin.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'admin.notifications.delete']);
+            $routes->post('delete-all', 'NotificationController::deleteAll', ['as' => 'admin.notifications.delete_all']);
             $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'admin.notifications.count']);
         });
 
@@ -211,6 +212,7 @@ $routes->group('admin', [
             $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'admin.messages.poll']);
             $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'admin.messages.send']);
             $routes->post('delete', 'MessageController::delete', ['as' => 'admin.messages.delete']);
+            $routes->post('delete-all', 'MessageController::deleteAll', ['as' => 'admin.messages.delete_all']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'admin.messages.attachment']);
         });
 
@@ -344,6 +346,7 @@ $routes->group('koordinator', [
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'koordinator.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'koordinator.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'koordinator.notifications.delete']);
+            $routes->post('delete-all', 'NotificationController::deleteAll', ['as' => 'koordinator.notifications.delete_all']);
             $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'koordinator.notifications.count']);
         });
 
@@ -361,6 +364,7 @@ $routes->group('koordinator', [
             $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'koordinator.messages.poll']);
             $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'koordinator.messages.send']);
             $routes->post('delete', 'MessageController::delete', ['as' => 'koordinator.messages.delete']);
+            $routes->post('delete-all', 'MessageController::deleteAll', ['as' => 'koordinator.messages.delete_all']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'koordinator.messages.attachment']);
         });
 
@@ -497,6 +501,7 @@ $routes->group('koordinator', [
             $routes->post('delete/(:num)', $controller . '::delete/$1', ['as' => $alias . '.delete']);
             $routes->post('note/(:num)', $controller . '::addNote/$1', ['as' => $alias . '.note']);
             $routes->post('participants/(:num)', $controller . '::updateParticipant/$1', ['as' => $alias . '.participant']);
+            $routes->post('participant-add/(:num)', $controller . '::addParticipant/$1', ['as' => $alias . '.participantAdd']);
             $routes->post('participant-delete/(:num)', $controller . '::deleteParticipant/$1', ['as' => $alias . '.participantDelete']);
             $routes->post('note-delete/(:num)', $controller . '::deleteNote/$1', ['as' => $alias . '.noteDelete']);
         };
@@ -621,6 +626,7 @@ $routes->group('counselor', [
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'counselor.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'counselor.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'counselor.notifications.delete']);
+            $routes->post('delete-all', 'NotificationController::deleteAll', ['as' => 'counselor.notifications.delete_all']);
             $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'counselor.notifications.count']);
         });
 
@@ -638,6 +644,7 @@ $routes->group('counselor', [
             $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'counselor.messages.poll']);
             $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'counselor.messages.send']);
             $routes->post('delete', 'MessageController::delete', ['as' => 'counselor.messages.delete']);
+            $routes->post('delete-all', 'MessageController::deleteAll', ['as' => 'counselor.messages.delete_all']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'counselor.messages.attachment']);
         });
 
@@ -653,6 +660,32 @@ $routes->group('counselor', [
             $routes->get('(:num)/edit', 'StudentController::edit/$1', ['as' => 'counselor.students.edit']);
             $routes->post('(:num)', 'StudentController::update/$1', ['as' => 'counselor.students.update']);
             $routes->get('detail/(:num)', 'StudentController::detail/$1', ['as' => 'counselor.students.detail']);
+        });
+
+        // Akun Orang Tua siswa binaan (Guru BK: C,R,U,D* sesuai Matriks CRUD)
+        $routes->group('parents', ['filter' => 'permission:view_all_students'], function ($routes) {
+            $routes->get('/', 'ParentController::index', ['as' => 'counselor.parents.index']);
+            $routes->get('(:num)', 'ParentController::show/$1', ['as' => 'counselor.parents.show']);
+            $routes->get('create', 'ParentController::create', [
+                'filter' => 'permission:manage_bk_services',
+                'as'     => 'counselor.parents.create',
+            ]);
+            $routes->post('store', 'ParentController::store', [
+                'filter' => 'permission:manage_bk_services',
+                'as'     => 'counselor.parents.store',
+            ]);
+            $routes->get('edit/(:num)', 'ParentController::edit/$1', [
+                'filter' => 'permission:manage_bk_services',
+                'as'     => 'counselor.parents.edit',
+            ]);
+            $routes->post('update/(:num)', 'ParentController::update/$1', [
+                'filter' => 'permission:manage_bk_services',
+                'as'     => 'counselor.parents.update',
+            ]);
+            $routes->post('delete/(:num)', 'ParentController::delete/$1', [
+                'filter' => 'permission:manage_bk_services',
+                'as'     => 'counselor.parents.delete',
+            ]);
         });
 
         // Fitur final pengembangan BK untuk Guru BK.
@@ -679,6 +712,7 @@ $routes->group('counselor', [
             $routes->post('delete/(:num)', $controller . '::delete/$1', ['as' => $alias . '.delete']);
             $routes->post('note/(:num)', $controller . '::addNote/$1', ['as' => $alias . '.note']);
             $routes->post('participants/(:num)', $controller . '::updateParticipant/$1', ['as' => $alias . '.participant']);
+            $routes->post('participant-add/(:num)', $controller . '::addParticipant/$1', ['as' => $alias . '.participantAdd']);
             $routes->post('participant-delete/(:num)', $controller . '::deleteParticipant/$1', ['as' => $alias . '.participantDelete']);
             $routes->post('note-delete/(:num)', $controller . '::deleteNote/$1', ['as' => $alias . '.noteDelete']);
         };
@@ -816,6 +850,7 @@ $routes->group('homeroom', [
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'homeroom.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'homeroom.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'homeroom.notifications.delete']);
+            $routes->post('delete-all', 'NotificationController::deleteAll', ['as' => 'homeroom.notifications.delete_all']);
             $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'homeroom.notifications.count']);
         });
 
@@ -833,6 +868,7 @@ $routes->group('homeroom', [
             $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'homeroom.messages.poll']);
             $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'homeroom.messages.send']);
             $routes->post('delete', 'MessageController::delete', ['as' => 'homeroom.messages.delete']);
+            $routes->post('delete-all', 'MessageController::deleteAll', ['as' => 'homeroom.messages.delete_all']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'homeroom.messages.attachment']);
         });
 
@@ -1035,6 +1071,7 @@ $routes->group('student', [
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'student.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'student.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'student.notifications.delete']);
+            $routes->post('delete-all', 'NotificationController::deleteAll', ['as' => 'student.notifications.delete_all']);
             $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'student.notifications.count']);
         });
 
@@ -1052,6 +1089,7 @@ $routes->group('student', [
             $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'student.messages.poll']);
             $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'student.messages.send']);
             $routes->post('delete', 'MessageController::delete', ['as' => 'student.messages.delete']);
+            $routes->post('delete-all', 'MessageController::deleteAll', ['as' => 'student.messages.delete_all']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'student.messages.attachment']);
         });
 
@@ -1154,6 +1192,7 @@ $routes->group('parent', [
             $routes->post('mark-read/(:num)', 'NotificationController::markAsRead/$1', ['as' => 'parent.notifications.read']);
             $routes->post('mark-all-read', 'NotificationController::markAllAsRead', ['as' => 'parent.notifications.read_all']);
             $routes->post('delete/(:num)', 'NotificationController::delete/$1', ['as' => 'parent.notifications.delete']);
+            $routes->post('delete-all', 'NotificationController::deleteAll', ['as' => 'parent.notifications.delete_all']);
             $routes->get('count', 'NotificationController::getUnreadCount', ['as' => 'parent.notifications.count']);
         });
 
@@ -1171,6 +1210,7 @@ $routes->group('parent', [
             $routes->get('poll/(:num)', 'MessageController::poll/$1', ['as' => 'parent.messages.poll']);
             $routes->post('send/(:num)', 'MessageController::send/$1', ['as' => 'parent.messages.send']);
             $routes->post('delete', 'MessageController::delete', ['as' => 'parent.messages.delete']);
+            $routes->post('delete-all', 'MessageController::deleteAll', ['as' => 'parent.messages.delete_all']);
             $routes->get('attachment/(:num)', 'MessageController::downloadAttachment/$1', ['as' => 'parent.messages.attachment']);
         });
 

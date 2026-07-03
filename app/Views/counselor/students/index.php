@@ -278,7 +278,11 @@ $useShowAlerts = function_exists('show_alerts');
                         <i class="mdi mdi-account-group me-2"></i>Daftar Siswa
                     </h4>
                 </div>
-
+                <div class="d-flex gap-2">
+                    <a href="<?= base_url('counselor/parents') ?>" class="btn btn-outline-primary btn-sm">
+                        <i class="mdi mdi-account-supervisor me-1"></i>Akun Orang Tua
+                    </a>
+                </div>
             </div>
 
             <div class="card-body">

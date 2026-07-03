@@ -305,6 +305,12 @@ $importWarnings = session()->getFlashdata('import_warnings');
                         </a>
                     <?php endif; ?>
 
+                    <?php if (has_permission('manage_users')): ?>
+                        <a href="<?= base_url('koordinator/users?role_id=6') ?>" class="btn btn-outline-primary">
+                            <i class="mdi mdi-account-supervisor me-1"></i> Akun Orang Tua
+                        </a>
+                    <?php endif; ?>
+
                     <?php if (has_permission('import_export_data')): ?>
                         <a href="<?= base_url('koordinator/students/import') ?>" class="btn btn-info">
                             <i class="mdi mdi-upload me-1"></i> Impor
