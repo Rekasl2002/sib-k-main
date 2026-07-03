@@ -36,6 +36,10 @@ $value = static function (string $key, $default = '') use ($row, $detail) {
     return old($key, $row[$key] ?? $detail[$key] ?? $default);
 };
 
+$participantName = static function (array $p): string {
+    return (string) ($p['participant_student_name'] ?? $p['participant_user_name'] ?? $p['participant_parent_name'] ?? $p['participant_class_name'] ?? $p['manual_name'] ?? '-');
+};
+
 $selfId = (int) (session('user_id') ?? 0);
 $selfName = trim((string) (session('full_name') ?? '')) ?: 'Saya (akun ini)';
 $isGuruBk = ($roleKey === 'guru-bk');
@@ -46,30 +50,39 @@ $pjLabel = $isKonferensi ? 'Penanggung Jawab' : 'Guru BK/Penanggung Jawab';
 $pjList = $isKonferensi ? ($options['coordinators'] ?? []) : ($options['counselors'] ?? []);
 $pjValue = (string) $value('counselor_id', $isGuruBk && ! $isEdit && ! $isKonferensi ? (string) $selfId : '');
 
-// Peserta tambahan yang sudah ada (untuk dikelola/hapus pada halaman edit).
+// Kumpulkan siswa sasaran dan kelas sasaran dari peserta
+$selectedStudents = [];
+$selectedClasses = [];
 $extraParticipants = [];
+
 foreach ($participants as $p) {
-    // Subjek utama (siswa/kelas sasaran) tidak ditampilkan di daftar peserta tambahan.
-    $extraParticipants[] = $p;
+    if ($p['participant_type'] === 'student') {
+        $selectedStudents[] = [
+            'id' => (int) $p['participant_student_id'],
+            'text' => trim((string) ($p['participant_student_name'] ?? 'Siswa #' . $p['participant_student_id']))
+        ];
+    } elseif ($p['participant_type'] === 'class') {
+        $selectedClasses[] = [
+            'id' => (int) $p['participant_class_id'],
+            'text' => trim((string) ($p['participant_class_name'] ?? 'Kelas #' . $p['participant_class_id']))
+        ];
+    } else {
+        $extraParticipants[] = $p;
+    }
 }
-$participantName = static function (array $p): string {
-    return (string) ($p['participant_student_name'] ?? $p['participant_user_name'] ?? $p['participant_parent_name'] ?? $p['participant_class_name'] ?? $p['manual_name'] ?? '-');
-};
 
-// Helper membuat satu "chip" (kotak pilihan) berisi hidden input + tombol hapus.
-$renderChip = static function (string $name, $val, string $text): string {
-    return '<span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;">'
-        . '<span>' . esc($text) . '</span>'
-        . '<input type="hidden" name="' . esc($name, 'attr') . '" value="' . esc((string) $val, 'attr') . '">'
-        . '<button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>'
-        . '</span>';
+$renderChip = static function (string $name, int $id, string $text) {
+    return sprintf(
+        '<span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;">' .
+        '<span>%s</span>' .
+        '<input type="hidden" name="%s" value="%d">' .
+        '<button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>' .
+        '</span>',
+        esc($text),
+        esc($name, 'attr'),
+        $id
+    );
 };
-
-// Prefill subjek utama pada halaman edit (1 chip masing-masing).
-$preStudentId = $isEdit ? (int) ($row['target_student_id'] ?? 0) : 0;
-$preStudentText = trim((string) ($row['student_name'] ?? ''));
-$preClassId = $isEdit ? (int) ($row['target_class_id'] ?? 0) : 0;
-$preClassText = trim((string) ($row['class_name'] ?? ''));
 ?>
 
 <div class="row">
@@ -102,15 +115,15 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
           </div>
 
           <!-- Siswa Sasaran: klik pilihan -> langsung jadi chip (boleh lebih dari satu). -->
-          <div class="mb-3 js-multi" data-name="participant_student_ids[]">
+          <div class="mb-3 js-multi" data-name="participant_student_ids[]" id="studentPickerContainer">
             <label class="form-label text-dark">Siswa Sasaran <span class="text-dark fw-normal">(dari data &mdash; boleh lebih dari satu)</span></label>
             <div class="js-chips border rounded p-2 mb-2 bg-light">
-              <?php if ($preStudentId > 0): ?>
-                <?= $renderChip('participant_student_ids[]', $preStudentId, $preStudentText !== '' ? $preStudentText : ('Siswa #' . $preStudentId)) ?>
-              <?php endif; ?>
-              <span class="text-dark js-chip-empty"<?= $preStudentId > 0 ? ' style="display:none;"' : '' ?>>Belum ada siswa dipilih.</span>
+              <?php foreach ($selectedStudents as $stu): ?>
+                <?= $renderChip('participant_student_ids[]', $stu['id'], $stu['text']) ?>
+              <?php endforeach; ?>
+              <span class="text-dark js-chip-empty"<?= !empty($selectedStudents) ? ' style="display:none;"' : '' ?>>Belum ada siswa dipilih.</span>
             </div>
-            <select class="form-select select2-search js-picker">
+            <select class="form-select select2-search js-picker" id="studentPicker">
               <option value="">Ketik untuk mencari siswa&hellip;</option>
               <?php foreach (($options['students'] ?? []) as $student): ?>
                 <option value="<?= esc((string) $student['id']) ?>">
@@ -122,15 +135,15 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
           </div>
 
           <!-- Kelas Sasaran: pola yang sama dengan Siswa Sasaran. -->
-          <div class="mb-3 js-multi" data-name="participant_class_ids[]">
+          <div class="mb-3 js-multi" data-name="participant_class_ids[]" id="classPickerContainer">
             <label class="form-label text-dark">Kelas Sasaran <span class="text-dark fw-normal">(dari data &mdash; boleh lebih dari satu)</span></label>
             <div class="js-chips border rounded p-2 mb-2 bg-light">
-              <?php if ($preClassId > 0): ?>
-                <?= $renderChip('participant_class_ids[]', $preClassId, $preClassText !== '' ? $preClassText : ('Kelas #' . $preClassId)) ?>
-              <?php endif; ?>
-              <span class="text-dark js-chip-empty"<?= $preClassId > 0 ? ' style="display:none;"' : '' ?>>Belum ada kelas dipilih.</span>
+              <?php foreach ($selectedClasses as $cls): ?>
+                <?= $renderChip('participant_class_ids[]', $cls['id'], $cls['text']) ?>
+              <?php endforeach; ?>
+              <span class="text-dark js-chip-empty"<?= !empty($selectedClasses) ? ' style="display:none;"' : '' ?>>Belum ada kelas dipilih.</span>
             </div>
-            <select class="form-select select2-search js-picker">
+            <select class="form-select select2-search js-picker" id="classPicker">
               <option value="">Ketik untuk mencari kelas&hellip;</option>
               <?php foreach (($options['classes'] ?? []) as $class): ?>
                 <option value="<?= esc((string) $class['id']) ?>"><?= esc($class['class_name'] ?? '-') ?></option>
@@ -307,19 +320,29 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
                   <tr>
                     <td class="text-dark"><?= esc($participantName($p)) ?></td>
                     <td class="text-dark"><?= esc($p['role_in_session'] ?? '-') ?></td>
-                    <td class="text-dark"><?= esc($p['attendance_status'] ?? '-') ?></td>
+                    <td class="text-dark">
+                      <select name="attendance[<?= (int) $p['id'] ?>]" class="form-select form-select-sm js-attendance-select" data-id="<?= (int) $p['id'] ?>">
+                        <?php foreach (['Hadir','Izin','Sakit','Alpha','Belum Hadir'] as $status): ?>
+                          <option value="<?= esc($status) ?>" <?= ($p['attendance_status'] ?? '') === $status ? 'selected' : '' ?>><?= esc($status) ?></option>
+                        <?php endforeach; ?>
+                      </select>
+                    </td>
                     <td class="text-end">
-                      <button type="button" class="btn btn-sm btn-danger js-del-participant"
-                              data-id="<?= (int) $p['id'] ?>" title="Hapus peserta" data-bs-toggle="tooltip">
-                        <i class="mdi mdi-delete"></i>
-                      </button>
+                      <?php if (($p['participant_type'] ?? '') !== 'student'): ?>
+                        <button type="button" class="btn btn-sm btn-danger js-del-participant"
+                                data-id="<?= (int) $p['id'] ?>" title="Hapus peserta" data-bs-toggle="tooltip">
+                          <i class="mdi mdi-delete"></i>
+                        </button>
+                      <?php else: ?>
+                        <span class="badge bg-secondary text-white" title="Hapus siswa dari kotak Siswa Sasaran di atas" data-bs-toggle="tooltip">Hapus via Sasaran</span>
+                      <?php endif; ?>
                     </td>
                   </tr>
                 <?php endforeach; ?>
               </tbody>
             </table>
           </div>
-          <small class="text-dark d-block mt-2">Pengaturan kehadiran rinci dilakukan di halaman Detail.</small>
+          <small class="text-dark d-block mt-2">Ubah kehadiran otomatis akan tersimpan saat Anda menekan tombol "Simpan" di bawah.</small>
         </div>
       </div>
       <?php endif; ?>
@@ -475,6 +498,7 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
       var $chip = addChip($widget, pickerVal, text);
       $picker.val('').trigger('change');
       if ($chip) { detachOption($chip, $picker, pickerVal); }
+      
     });
 
     // Hapus chip -> kembalikan opsinya ke daftar pilihan.
@@ -486,7 +510,11 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
       if ($widget.find('.js-chip').length === 0) {
         $widget.find('.js-chip-empty').show();
       }
+      
     });
+
+    // Panggil saat inisialisasi
+    
 
     // ---- Penanggung Jawab (pilihan TUNGGAL): tampil di kotak chip yang sama. ----
     // Memilih yang baru mengganti chip lama; bisa dikosongkan lewat tombol hapus.
@@ -527,6 +555,113 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
     });
 
     [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (el) { return new bootstrap.Tooltip(el); });
+
+        // ---- Mutual Exclusivity: Siswa Sasaran vs Kelas Sasaran ----
+    function updatePickerExclusivity() {
+      var hasClass = $('#classPickerContainer .js-chip').length > 0;
+      var hasStudent = $('#studentPickerContainer .js-chip').length > 0;
+
+      if (hasClass) {
+        $('#studentPicker').prop('disabled', true).trigger('change');
+        $('#studentPickerContainer').css('opacity', '0.5');
+      } else {
+        $('#studentPicker').prop('disabled', false).trigger('change');
+        $('#studentPickerContainer').css('opacity', '1');
+      }
+
+      if (hasStudent) {
+        $('#classPicker').prop('disabled', true).trigger('change');
+        $('#classPickerContainer').css('opacity', '0.5');
+      } else {
+        $('#classPicker').prop('disabled', false).trigger('change');
+        $('#classPickerContainer').css('opacity', '1');
+      }
+    }
+
+    // ---- Client-side Sync of Student Chips with the Attendance Table ----
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function syncStudentChipsWithTable() {
+      var $table = $('.table-responsive table');
+      if (!$table.length) return;
+      var $tbody = $table.find('tbody');
+
+      // Gather current selected student IDs
+      var selectedIds = [];
+      $('#studentPickerContainer').find('.js-chip input[type=hidden]').each(function() {
+        selectedIds.push(String(this.value));
+      });
+
+      // Remove any student rows not currently in the selected IDs list
+      $tbody.find('tr[data-participant-type="student"]').each(function() {
+        var sid = String($(this).data('student-id'));
+        if (selectedIds.indexOf(sid) === -1) {
+          $(this).remove();
+        }
+      });
+
+      // Add rows for new student IDs
+      selectedIds.forEach(function(sid) {
+        var $existingRow = $tbody.find('tr[data-student-id="' + sid + '"]');
+        if (!$existingRow.length) {
+          var name = '';
+          $('#studentPickerContainer').find('.js-chip input[type=hidden][value="' + sid + '"]').each(function() {
+            name = $(this).closest('.js-chip').find('span').text();
+          });
+
+          var rowHtml = 
+            '<tr data-participant-type="student" data-student-id="' + sid + '">' +
+            '  <td class="text-dark">' + escapeHtml(name) + '</td>' +
+            '  <td class="text-dark">Siswa terkait</td>' +
+            '  <td class="text-dark">' +
+            '    <select name="student_attendance[' + sid + ']" class="form-select form-select-sm js-attendance-select" data-id="' + sid + '">' +
+            '      <option value="Hadir" selected>Hadir</option>' +
+            '      <option value="Izin">Izin</option>' +
+            '      <option value="Sakit">Sakit</option>' +
+            '      <option value="Alpha">Alpha</option>' +
+            '      <option value="Belum Hadir">Belum Hadir</option>' +
+            '    </select>' +
+            '  </td>' +
+            '  <td class="text-end">' +
+            '    <span class="badge bg-secondary text-white" title="Hapus siswa dari kotak Siswa Sasaran di atas" data-bs-toggle="tooltip">Hapus via Sasaran</span>' +
+            '  </td>' +
+            '</tr>';
+
+          $tbody.append(rowHtml);
+        }
+      });
+
+      // Manage empty placeholder row
+      if ($tbody.find('tr:not(#emptyParticipantPlaceholder)').length === 0) {
+        $('#emptyParticipantPlaceholder').show();
+      } else {
+        $('#emptyParticipantPlaceholder').hide();
+      }
+
+      // Re-initialize tooltips
+      [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (el) { return new bootstrap.Tooltip(el); });
+    }
+
+    var observer = new MutationObserver(function() {
+      updatePickerExclusivity();
+      syncStudentChipsWithTable();
+    });
+
+    var classChips = document.querySelector('#classPickerContainer .js-chips');
+    if (classChips) {
+      observer.observe(classChips, { childList: true, subtree: true });
+    }
+
+    var studentChips = document.querySelector('#studentPickerContainer .js-chips');
+    if (studentChips) {
+      observer.observe(studentChips, { childList: true, subtree: true });
+    }
+
+    // Run on load
+    updatePickerExclusivity();
+    syncStudentChipsWithTable();
 
     var f = document.getElementById('delParticipantForm');
     if (f) {

@@ -144,6 +144,29 @@ abstract class BaseRoleNotificationController extends BaseController
         return redirect()->to(site_url($this->routePrefix . '/notifications'));
     }
 
+    /**
+     * Hapus (soft delete) SEMUA notifikasi milik pengguna saat ini.
+     */
+    public function deleteAll()
+    {
+        $uid = $this->currentUserId();
+        if ($uid <= 0) {
+            return $this->denyUnauthenticated();
+        }
+
+        $ids = $this->notif->where('user_id', $uid)->findColumn('id') ?? [];
+        if (!empty($ids)) {
+            $this->notif->delete($ids);
+        }
+
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON(['status' => 'ok']);
+        }
+
+        return redirect()->to(site_url($this->routePrefix . '/notifications'))
+            ->with('success', 'Semua notifikasi berhasil dihapus.');
+    }
+
     public function getUnreadCount()
     {
         $uid = $this->currentUserId();

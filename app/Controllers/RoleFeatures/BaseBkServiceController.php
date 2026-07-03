@@ -86,7 +86,7 @@ abstract class BaseBkServiceController extends BaseController
 
     public function show($id)
     {
-        $row = $this->service->find((int) $id, $this->roleKey, $this->currentUserId());
+        $row = $this->service->find((int) $id, $this->roleKey, $this->currentUserId(), $this->serviceType);
         if (! $row) {
             return redirect()->to(site_url($this->routePrefix))->with('error', 'Data tidak ditemukan atau tidak bisa diakses.');
         }
@@ -104,7 +104,7 @@ abstract class BaseBkServiceController extends BaseController
             return $this->deny();
         }
 
-        $row = $this->service->find((int) $id, $this->roleKey, $this->currentUserId());
+        $row = $this->service->find((int) $id, $this->roleKey, $this->currentUserId(), $this->serviceType);
         if (! $row) {
             return redirect()->to(site_url($this->routePrefix))->with('error', 'Data tidak ditemukan.');
         }
@@ -121,6 +121,11 @@ abstract class BaseBkServiceController extends BaseController
     {
         if (! $this->canManage) {
             return $this->deny();
+        }
+        // Pastikan record memang jenis layanan ini (cegah menyunting record jenis lain
+        // lewat rute yang salah, yang bisa mengubah service_type & merusak data detail).
+        if (! $this->service->find((int) $id, $this->roleKey, $this->currentUserId(), $this->serviceType)) {
+            return redirect()->to(site_url($this->routePrefix))->with('error', 'Data tidak ditemukan.');
         }
         $post = $this->enforcePic($this->request->getPost() ?? [], (int) $id);
         if ($err = $this->validateRequired($post)) {
@@ -147,12 +152,13 @@ abstract class BaseBkServiceController extends BaseController
         // Hanya pembuat data yang boleh menghapus (Koordinator BK & Guru BK sama-sama
         // hanya dapat menghapus data buatannya sendiri). Edit isi tetap boleh lintas peran.
         $rec = $db->table('bk_service_records')
-            ->select('id, created_by')
+            ->select('id, created_by, service_type')
             ->where('id', (int) $id)
             ->where('deleted_at', null)
             ->get()->getRowArray();
 
-        if (! $rec) {
+        // Tidak ada, atau jenis layanannya bukan milik rute ini → anggap tidak ditemukan.
+        if (! $rec || (string) ($rec['service_type'] ?? '') !== $this->serviceType) {
             return redirect()->to(site_url($this->routePrefix))->with('error', 'Data tidak ditemukan.');
         }
 
@@ -196,6 +202,19 @@ abstract class BaseBkServiceController extends BaseController
 
         return redirect()->to(site_url($this->routePrefix . '/show/' . $recordId))
             ->with('success', 'Kehadiran peserta berhasil diperbarui.');
+    }
+
+    public function addParticipant($id)
+    {
+        if (! $this->canManage) {
+            return $this->deny();
+        }
+
+        $post = $this->request->getPost() ?? [];
+        $this->service->addSingleParticipant((int) $id, $post);
+
+        return redirect()->to(site_url($this->routePrefix . '/show/' . (int) $id))
+            ->with('success', 'Peserta berhasil ditambahkan.');
     }
 
     public function deleteParticipant($id)

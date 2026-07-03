@@ -13,6 +13,10 @@
  *    ke dirinya sendiri; Koordinator BK bebas memilih. Khusus Konferensi Kasus: hanya
  *    Koordinator BK; Guru BK tidak memilih siapa pun (dikosongkan, ditetapkan Koordinator).
  * Field khusus ditampilkan berdasarkan $serviceType.
+ *  - Tanda wajib (*): Judul, Penanggung Jawab (kecuali Konferensi Kasus oleh Guru BK),
+ *    Tanggal & Jam, Lama Kegiatan, Tempat/Lokasi/Alamat, dan field deskripsi utama
+ *    (Ringkasan Materi/Deskripsi Masalah/Ringkasan/Hasil Kunjungan/Kronologi).
+ *    Siswa/Kelas Sasaran & peserta TIDAK wajib. Penegakan PIC juga di sisi server.
  */
 ?>
 <?= $this->extend('layouts/main') ?>
@@ -32,6 +36,10 @@ $value = static function (string $key, $default = '') use ($row, $detail) {
     return old($key, $row[$key] ?? $detail[$key] ?? $default);
 };
 
+$participantName = static function (array $p): string {
+    return (string) ($p['participant_student_name'] ?? $p['participant_user_name'] ?? $p['participant_parent_name'] ?? $p['participant_class_name'] ?? $p['manual_name'] ?? '-');
+};
+
 $selfId = (int) (session('user_id') ?? 0);
 $selfName = trim((string) (session('full_name') ?? '')) ?: 'Saya (akun ini)';
 $isGuruBk = ($roleKey === 'guru-bk');
@@ -42,30 +50,39 @@ $pjLabel = $isKonferensi ? 'Penanggung Jawab' : 'Guru BK/Penanggung Jawab';
 $pjList = $isKonferensi ? ($options['coordinators'] ?? []) : ($options['counselors'] ?? []);
 $pjValue = (string) $value('counselor_id', $isGuruBk && ! $isEdit && ! $isKonferensi ? (string) $selfId : '');
 
-// Peserta tambahan yang sudah ada (untuk dikelola/hapus pada halaman edit).
+// Kumpulkan siswa sasaran dan kelas sasaran dari peserta
+$selectedStudents = [];
+$selectedClasses = [];
 $extraParticipants = [];
+
 foreach ($participants as $p) {
-    // Subjek utama (siswa/kelas sasaran) tidak ditampilkan di daftar peserta tambahan.
-    $extraParticipants[] = $p;
+    if ($p['participant_type'] === 'student') {
+        $selectedStudents[] = [
+            'id' => (int) $p['participant_student_id'],
+            'text' => trim((string) ($p['participant_student_name'] ?? 'Siswa #' . $p['participant_student_id']))
+        ];
+    } elseif ($p['participant_type'] === 'class') {
+        $selectedClasses[] = [
+            'id' => (int) $p['participant_class_id'],
+            'text' => trim((string) ($p['participant_class_name'] ?? 'Kelas #' . $p['participant_class_id']))
+        ];
+    } else {
+        $extraParticipants[] = $p;
+    }
 }
-$participantName = static function (array $p): string {
-    return (string) ($p['participant_student_name'] ?? $p['participant_user_name'] ?? $p['participant_parent_name'] ?? $p['participant_class_name'] ?? $p['manual_name'] ?? '-');
-};
 
-// Helper membuat satu "chip" (kotak pilihan) berisi hidden input + tombol hapus.
-$renderChip = static function (string $name, $val, string $text): string {
-    return '<span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;">'
-        . '<span>' . esc($text) . '</span>'
-        . '<input type="hidden" name="' . esc($name, 'attr') . '" value="' . esc((string) $val, 'attr') . '">'
-        . '<button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>'
-        . '</span>';
+$renderChip = static function (string $name, int $id, string $text) {
+    return sprintf(
+        '<span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;">' .
+        '<span>%s</span>' .
+        '<input type="hidden" name="%s" value="%d">' .
+        '<button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>' .
+        '</span>',
+        esc($text),
+        esc($name, 'attr'),
+        $id
+    );
 };
-
-// Prefill subjek utama pada halaman edit (1 chip masing-masing).
-$preStudentId = $isEdit ? (int) ($row['target_student_id'] ?? 0) : 0;
-$preStudentText = trim((string) ($row['student_name'] ?? ''));
-$preClassId = $isEdit ? (int) ($row['target_class_id'] ?? 0) : 0;
-$preClassText = trim((string) ($row['class_name'] ?? ''));
 ?>
 
 <div class="row">
@@ -93,20 +110,20 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
         <div class="card-body">
           <h5 class="card-title mb-3 text-dark">Data Utama</h5>
           <div class="mb-3">
-            <label class="form-label text-dark">Judul/Topik/Masalah</label>
+            <label class="form-label text-dark">Judul/Topik/Masalah <span class="text-danger">*</span></label>
             <input type="text" name="title" class="form-control" required value="<?= esc($value('title')) ?>">
           </div>
 
           <!-- Siswa Sasaran: klik pilihan -> langsung jadi chip (boleh lebih dari satu). -->
-          <div class="mb-3 js-multi" data-name="participant_student_ids[]">
+          <div class="mb-3 js-multi" data-name="participant_student_ids[]" id="studentPickerContainer">
             <label class="form-label text-dark">Siswa Sasaran <span class="text-dark fw-normal">(dari data &mdash; boleh lebih dari satu)</span></label>
             <div class="js-chips border rounded p-2 mb-2 bg-light">
-              <?php if ($preStudentId > 0): ?>
-                <?= $renderChip('participant_student_ids[]', $preStudentId, $preStudentText !== '' ? $preStudentText : ('Siswa #' . $preStudentId)) ?>
-              <?php endif; ?>
-              <span class="text-dark js-chip-empty"<?= $preStudentId > 0 ? ' style="display:none;"' : '' ?>>Belum ada siswa dipilih.</span>
+              <?php foreach ($selectedStudents as $stu): ?>
+                <?= $renderChip('participant_student_ids[]', $stu['id'], $stu['text']) ?>
+              <?php endforeach; ?>
+              <span class="text-dark js-chip-empty"<?= !empty($selectedStudents) ? ' style="display:none;"' : '' ?>>Belum ada siswa dipilih.</span>
             </div>
-            <select class="form-select select2-search js-picker">
+            <select class="form-select select2-search js-picker" id="studentPicker">
               <option value="">Ketik untuk mencari siswa&hellip;</option>
               <?php foreach (($options['students'] ?? []) as $student): ?>
                 <option value="<?= esc((string) $student['id']) ?>">
@@ -118,15 +135,15 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
           </div>
 
           <!-- Kelas Sasaran: pola yang sama dengan Siswa Sasaran. -->
-          <div class="mb-3 js-multi" data-name="participant_class_ids[]">
+          <div class="mb-3 js-multi" data-name="participant_class_ids[]" id="classPickerContainer">
             <label class="form-label text-dark">Kelas Sasaran <span class="text-dark fw-normal">(dari data &mdash; boleh lebih dari satu)</span></label>
             <div class="js-chips border rounded p-2 mb-2 bg-light">
-              <?php if ($preClassId > 0): ?>
-                <?= $renderChip('participant_class_ids[]', $preClassId, $preClassText !== '' ? $preClassText : ('Kelas #' . $preClassId)) ?>
-              <?php endif; ?>
-              <span class="text-dark js-chip-empty"<?= $preClassId > 0 ? ' style="display:none;"' : '' ?>>Belum ada kelas dipilih.</span>
+              <?php foreach ($selectedClasses as $cls): ?>
+                <?= $renderChip('participant_class_ids[]', $cls['id'], $cls['text']) ?>
+              <?php endforeach; ?>
+              <span class="text-dark js-chip-empty"<?= !empty($selectedClasses) ? ' style="display:none;"' : '' ?>>Belum ada kelas dipilih.</span>
             </div>
-            <select class="form-select select2-search js-picker">
+            <select class="form-select select2-search js-picker" id="classPicker">
               <option value="">Ketik untuk mencari kelas&hellip;</option>
               <?php foreach (($options['classes'] ?? []) as $class): ?>
                 <option value="<?= esc((string) $class['id']) ?>"><?= esc($class['class_name'] ?? '-') ?></option>
@@ -137,7 +154,7 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
 
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label text-dark"><?= esc($pjLabel) ?></label>
+              <label class="form-label text-dark"><?= esc($pjLabel) ?><?php if (! ($isGuruBk && $isKonferensi)): ?> <span class="text-danger">*</span><?php endif; ?></label>
               <?php
                 // Nama PJ yang sedang terpilih (untuk chip awal). Cari di daftar pilihan;
                 // jika tak ada, pakai nama akun sendiri / nama dari record.
@@ -215,17 +232,17 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
           </div>
           <div class="row">
             <div class="col-md-6 mb-3">
-              <label class="form-label text-dark">Tanggal &amp; Jam Kegiatan</label>
-              <input type="datetime-local" name="scheduled_at" class="form-control" value="<?= esc(str_replace(' ', 'T', substr((string) $value('scheduled_at'), 0, 16))) ?>">
+              <label class="form-label text-dark">Tanggal &amp; Jam Kegiatan <span class="text-danger">*</span></label>
+              <input type="datetime-local" name="scheduled_at" class="form-control" required value="<?= esc(str_replace(' ', 'T', substr((string) $value('scheduled_at'), 0, 16))) ?>">
             </div>
             <div class="col-md-6 mb-3">
-              <label class="form-label text-dark">Lama Kegiatan (menit)</label>
-              <input type="number" name="duration_minutes" class="form-control" value="<?= esc($value('duration_minutes', 60)) ?>">
+              <label class="form-label text-dark">Lama Kegiatan (menit) <span class="text-danger">*</span></label>
+              <input type="number" name="duration_minutes" class="form-control" min="1" required value="<?= esc($value('duration_minutes', 60)) ?>">
             </div>
           </div>
           <div class="mb-3">
-            <label class="form-label text-dark">Tempat/Lokasi/Alamat</label>
-            <textarea name="location" class="form-control" rows="2" placeholder="Contoh: Ruang BK, ruang kelas, atau alamat lengkap"><?= esc($value('location')) ?></textarea>
+            <label class="form-label text-dark">Tempat/Lokasi/Alamat <span class="text-danger">*</span></label>
+            <textarea name="location" class="form-control" rows="2" required placeholder="Contoh: Ruang BK, ruang kelas, atau alamat lengkap"><?= esc($value('location')) ?></textarea>
           </div>
 
           <?php if ($serviceType === 'Bimbingan'): ?>
@@ -238,8 +255,8 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label text-dark">Ringkasan Materi</label>
-              <textarea name="summary" class="form-control" rows="4"><?= esc($value('summary')) ?></textarea>
+              <label class="form-label text-dark">Ringkasan Materi <span class="text-danger">*</span></label>
+              <textarea name="summary" class="form-control" rows="4" required><?= esc($value('summary')) ?></textarea>
             </div>
           <?php elseif ($serviceType === 'Konseling'): ?>
             <div class="mb-3">
@@ -251,8 +268,8 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
               </select>
             </div>
             <div class="mb-3">
-              <label class="form-label text-dark">Deskripsi Masalah</label>
-              <textarea name="problem_description" class="form-control" rows="4"><?= esc($value('problem_description')) ?></textarea>
+              <label class="form-label text-dark">Deskripsi Masalah <span class="text-danger">*</span></label>
+              <textarea name="problem_description" class="form-control" rows="4" required><?= esc($value('problem_description')) ?></textarea>
             </div>
             <div class="mb-3">
               <label class="form-label text-dark">Rencana Tindak Lanjut</label>
@@ -260,14 +277,14 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
             </div>
           <?php elseif ($serviceType === 'Kolaborasi Orang Tua'): ?>
             <div class="mb-3">
-              <label class="form-label text-dark">Ringkasan dan Tindak Lanjut</label>
-              <textarea name="summary" class="form-control" rows="4"><?= esc($value('summary')) ?></textarea>
+              <label class="form-label text-dark">Ringkasan dan Tindak Lanjut <span class="text-danger">*</span></label>
+              <textarea name="summary" class="form-control" rows="4" required><?= esc($value('summary')) ?></textarea>
             </div>
             <small class="text-dark d-block mb-2"><i class="mdi mdi-information-outline me-1"></i>Pilih Orang Tua yang hadir pada kartu <strong>Peserta Tambahan dan Catatan</strong> di samping (dari data atau tulis manual). Mereka otomatis tercatat sebagai peserta dan bisa diatur kehadirannya.</small>
           <?php elseif ($serviceType === 'Kunjungan Rumah'): ?>
             <div class="mb-3">
-              <label class="form-label text-dark">Hasil Kunjungan</label>
-              <textarea name="visit_result" class="form-control" rows="4"><?= esc($value('visit_result')) ?></textarea>
+              <label class="form-label text-dark">Hasil Kunjungan <span class="text-danger">*</span></label>
+              <textarea name="visit_result" class="form-control" rows="4" required><?= esc($value('visit_result')) ?></textarea>
             </div>
             <div class="mb-3">
               <label class="form-label text-dark">Tindak Lanjut</label>
@@ -276,8 +293,8 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
             <small class="text-dark d-block mb-2"><i class="mdi mdi-information-outline me-1"></i>Alamat kunjungan diisi pada kolom <strong>Tempat/Lokasi/Alamat</strong> di atas. Pilih Orang Tua &amp; Wali Kelas yang ditemui pada kartu <strong>Peserta Tambahan dan Catatan</strong>.</small>
           <?php elseif ($serviceType === 'Konferensi Kasus'): ?>
             <div class="mb-3">
-              <label class="form-label text-dark">Kronologi/Ringkasan Masalah</label>
-              <textarea name="chronology" class="form-control" rows="3"><?= esc($value('chronology')) ?></textarea>
+              <label class="form-label text-dark">Kronologi/Ringkasan Masalah <span class="text-danger">*</span></label>
+              <textarea name="chronology" class="form-control" rows="3" required><?= esc($value('chronology')) ?></textarea>
             </div>
             <div class="mb-3">
               <label class="form-label text-dark">Pembahasan dan Keputusan</label>
@@ -303,19 +320,29 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
                   <tr>
                     <td class="text-dark"><?= esc($participantName($p)) ?></td>
                     <td class="text-dark"><?= esc($p['role_in_session'] ?? '-') ?></td>
-                    <td class="text-dark"><?= esc($p['attendance_status'] ?? '-') ?></td>
+                    <td class="text-dark">
+                      <select name="attendance[<?= (int) $p['id'] ?>]" class="form-select form-select-sm js-attendance-select" data-id="<?= (int) $p['id'] ?>">
+                        <?php foreach (['Hadir','Izin','Sakit','Alpha','Belum Hadir'] as $status): ?>
+                          <option value="<?= esc($status) ?>" <?= ($p['attendance_status'] ?? '') === $status ? 'selected' : '' ?>><?= esc($status) ?></option>
+                        <?php endforeach; ?>
+                      </select>
+                    </td>
                     <td class="text-end">
-                      <button type="button" class="btn btn-sm btn-danger js-del-participant"
-                              data-id="<?= (int) $p['id'] ?>" title="Hapus peserta" data-bs-toggle="tooltip">
-                        <i class="mdi mdi-delete"></i>
-                      </button>
+                      <?php if (($p['participant_type'] ?? '') !== 'student'): ?>
+                        <button type="button" class="btn btn-sm btn-danger js-del-participant"
+                                data-id="<?= (int) $p['id'] ?>" title="Hapus peserta" data-bs-toggle="tooltip">
+                          <i class="mdi mdi-delete"></i>
+                        </button>
+                      <?php else: ?>
+                        <span class="badge bg-secondary text-white" title="Hapus siswa dari kotak Siswa Sasaran di atas" data-bs-toggle="tooltip">Hapus via Sasaran</span>
+                      <?php endif; ?>
                     </td>
                   </tr>
                 <?php endforeach; ?>
               </tbody>
             </table>
           </div>
-          <small class="text-dark d-block mt-2">Pengaturan kehadiran rinci dilakukan di halaman Detail.</small>
+          <small class="text-dark d-block mt-2">Ubah kehadiran otomatis akan tersimpan saat Anda menekan tombol "Simpan" di bawah.</small>
         </div>
       </div>
       <?php endif; ?>
@@ -471,6 +498,7 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
       var $chip = addChip($widget, pickerVal, text);
       $picker.val('').trigger('change');
       if ($chip) { detachOption($chip, $picker, pickerVal); }
+      
     });
 
     // Hapus chip -> kembalikan opsinya ke daftar pilihan.
@@ -482,7 +510,11 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
       if ($widget.find('.js-chip').length === 0) {
         $widget.find('.js-chip-empty').show();
       }
+      
     });
+
+    // Panggil saat inisialisasi
+    
 
     // ---- Penanggung Jawab (pilihan TUNGGAL): tampil di kotak chip yang sama. ----
     // Memilih yang baru mengganti chip lama; bisa dikosongkan lewat tombol hapus.
@@ -523,6 +555,113 @@ $preClassText = trim((string) ($row['class_name'] ?? ''));
     });
 
     [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (el) { return new bootstrap.Tooltip(el); });
+
+        // ---- Mutual Exclusivity: Siswa Sasaran vs Kelas Sasaran ----
+    function updatePickerExclusivity() {
+      var hasClass = $('#classPickerContainer .js-chip').length > 0;
+      var hasStudent = $('#studentPickerContainer .js-chip').length > 0;
+
+      if (hasClass) {
+        $('#studentPicker').prop('disabled', true).trigger('change');
+        $('#studentPickerContainer').css('opacity', '0.5');
+      } else {
+        $('#studentPicker').prop('disabled', false).trigger('change');
+        $('#studentPickerContainer').css('opacity', '1');
+      }
+
+      if (hasStudent) {
+        $('#classPicker').prop('disabled', true).trigger('change');
+        $('#classPickerContainer').css('opacity', '0.5');
+      } else {
+        $('#classPicker').prop('disabled', false).trigger('change');
+        $('#classPickerContainer').css('opacity', '1');
+      }
+    }
+
+    // ---- Client-side Sync of Student Chips with the Attendance Table ----
+    function escapeHtml(str) {
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+
+    function syncStudentChipsWithTable() {
+      var $table = $('.table-responsive table');
+      if (!$table.length) return;
+      var $tbody = $table.find('tbody');
+
+      // Gather current selected student IDs
+      var selectedIds = [];
+      $('#studentPickerContainer').find('.js-chip input[type=hidden]').each(function() {
+        selectedIds.push(String(this.value));
+      });
+
+      // Remove any student rows not currently in the selected IDs list
+      $tbody.find('tr[data-participant-type="student"]').each(function() {
+        var sid = String($(this).data('student-id'));
+        if (selectedIds.indexOf(sid) === -1) {
+          $(this).remove();
+        }
+      });
+
+      // Add rows for new student IDs
+      selectedIds.forEach(function(sid) {
+        var $existingRow = $tbody.find('tr[data-student-id="' + sid + '"]');
+        if (!$existingRow.length) {
+          var name = '';
+          $('#studentPickerContainer').find('.js-chip input[type=hidden][value="' + sid + '"]').each(function() {
+            name = $(this).closest('.js-chip').find('span').text();
+          });
+
+          var rowHtml = 
+            '<tr data-participant-type="student" data-student-id="' + sid + '">' +
+            '  <td class="text-dark">' + escapeHtml(name) + '</td>' +
+            '  <td class="text-dark">Siswa terkait</td>' +
+            '  <td class="text-dark">' +
+            '    <select name="student_attendance[' + sid + ']" class="form-select form-select-sm js-attendance-select" data-id="' + sid + '">' +
+            '      <option value="Hadir" selected>Hadir</option>' +
+            '      <option value="Izin">Izin</option>' +
+            '      <option value="Sakit">Sakit</option>' +
+            '      <option value="Alpha">Alpha</option>' +
+            '      <option value="Belum Hadir">Belum Hadir</option>' +
+            '    </select>' +
+            '  </td>' +
+            '  <td class="text-end">' +
+            '    <span class="badge bg-secondary text-white" title="Hapus siswa dari kotak Siswa Sasaran di atas" data-bs-toggle="tooltip">Hapus via Sasaran</span>' +
+            '  </td>' +
+            '</tr>';
+
+          $tbody.append(rowHtml);
+        }
+      });
+
+      // Manage empty placeholder row
+      if ($tbody.find('tr:not(#emptyParticipantPlaceholder)').length === 0) {
+        $('#emptyParticipantPlaceholder').show();
+      } else {
+        $('#emptyParticipantPlaceholder').hide();
+      }
+
+      // Re-initialize tooltips
+      [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]')).map(function (el) { return new bootstrap.Tooltip(el); });
+    }
+
+    var observer = new MutationObserver(function() {
+      updatePickerExclusivity();
+      syncStudentChipsWithTable();
+    });
+
+    var classChips = document.querySelector('#classPickerContainer .js-chips');
+    if (classChips) {
+      observer.observe(classChips, { childList: true, subtree: true });
+    }
+
+    var studentChips = document.querySelector('#studentPickerContainer .js-chips');
+    if (studentChips) {
+      observer.observe(studentChips, { childList: true, subtree: true });
+    }
+
+    // Run on load
+    updatePickerExclusivity();
+    syncStudentChipsWithTable();
 
     var f = document.getElementById('delParticipantForm');
     if (f) {

@@ -101,6 +101,56 @@ class BkServiceService
             ->get()
             ->getResultArray();
 
+        if (! empty($rows)) {
+            $recordIds = array_column($rows, 'id');
+            $participants = $this->db->table('session_participants sp')
+                ->select(
+                    'sp.bk_service_record_id, sp.participant_type, sp.manual_name, ' .
+                    'su.full_name AS participant_student_name, c.class_name AS participant_class_name'
+                )
+                ->join('students ps', 'ps.id = sp.participant_student_id', 'left')
+                ->join('users su', 'su.id = ps.user_id', 'left')
+                ->join('classes c', 'c.id = sp.participant_class_id', 'left')
+                ->whereIn('sp.bk_service_record_id', $recordIds)
+                ->where('sp.deleted_at', null)
+                ->orderBy('sp.id', 'ASC')
+                ->get()
+                ->getResultArray();
+
+            $pMap = [];
+            foreach ($participants as $p) {
+                $rid = (int) $p['bk_service_record_id'];
+                $pMap[$rid][] = $p;
+            }
+
+            foreach ($rows as &$r) {
+                $rid = (int) $r['id'];
+                $rParticipants = $pMap[$rid] ?? [];
+                $students = [];
+                $classes = [];
+                foreach ($rParticipants as $p) {
+                    if ($p['participant_type'] === 'student') {
+                        $name = $p['participant_student_name'] ?? $p['manual_name'] ?? '';
+                        if ($name !== '') {
+                            $students[] = $name;
+                        }
+                    } elseif ($p['participant_type'] === 'class') {
+                        $name = $p['participant_class_name'] ?? '';
+                        if ($name !== '') {
+                            $classes[] = $name;
+                        }
+                    }
+                }
+                if (! empty($students)) {
+                    $r['student_name'] = implode(', ', $students);
+                }
+                if (! empty($classes)) {
+                    $r['class_name'] = implode(', ', $classes);
+                }
+            }
+            unset($r);
+        }
+
         // Kerahasiaan daftar: Siswa & Orang Tua hanya boleh melihat JADWAL
         // (tanggal–waktu–lokasi), tanpa topik/durasi. Judul disamarkan menjadi
         // label netral & durasi disembunyikan.
@@ -115,10 +165,15 @@ class BkServiceService
         return $rows;
     }
 
-    public function find(int $id, string $role, int $userId): ?array
+    public function find(int $id, string $role, int $userId, ?string $expectedType = null): ?array
     {
         $builder = $this->baseListBuilder(null)
             ->where('bsr.id', $id);
+        // Kunci ke jenis layanan yang benar bila diminta: mencegah membuka/menyunting
+        // record jenis lain lewat rute fitur yang salah (mis. /guidance/show/<id konseling>).
+        if ($expectedType !== null && $expectedType !== '') {
+            $builder->where('bsr.service_type', $expectedType);
+        }
         $this->applyRoleScope($builder, $role, $userId);
 
         $record = $builder->groupBy('bsr.id')->get()->getRowArray();
@@ -129,6 +184,29 @@ class BkServiceService
         $record['detail'] = $this->detailFor((int) $record['id'], (string) $record['service_type']);
         $record['participants'] = $this->participantsFor((int) $record['id']);
         $record['notes'] = $this->notesFor((int) $record['id'], $role, ! empty($record['visible_to_homeroom']));
+
+        // Extract all student names and class names from participants to format them
+        $students = [];
+        $classes = [];
+        foreach ($record['participants'] as $p) {
+            if ($p['participant_type'] === 'student') {
+                $name = $p['participant_student_name'] ?? $p['manual_name'] ?? '';
+                if ($name !== '') {
+                    $students[] = $name;
+                }
+            } elseif ($p['participant_type'] === 'class') {
+                $name = $p['participant_class_name'] ?? '';
+                if ($name !== '') {
+                    $classes[] = $name;
+                }
+            }
+        }
+        if (! empty($students)) {
+            $record['student_name'] = implode(', ', $students);
+        }
+        if (! empty($classes)) {
+            $record['class_name'] = implode(', ', $classes);
+        }
 
         $this->applyConfidentiality($record, $role);
 
@@ -174,7 +252,7 @@ class BkServiceService
 
         $recordId = (int) $this->recordModel->insert($this->servicePayload($serviceType, $post, $userId), true);
         $this->upsertDetail($recordId, $serviceType, $post);
-        $this->saveParticipants($recordId, $post);
+        $this->saveParticipants($recordId, $post, $userId);
         $this->createInitialNote($recordId, $post, $userId);
 
         $this->db->transComplete();
@@ -190,7 +268,15 @@ class BkServiceService
         $this->upsertDetail($id, $serviceType, $post);
         // Tambahkan peserta baru tanpa menghapus yang sudah ada (status kehadiran
         // yang sudah disetel tetap aman). Penghapusan peserta dilakukan terpisah.
-        $this->saveParticipants($id, $post);
+        $this->saveParticipants($id, $post, $userId);
+        
+        // Proses pembaruan kehadiran massal dari halaman edit
+        if (isset($post['attendance']) && is_array($post['attendance'])) {
+            foreach ($post['attendance'] as $participantId => $status) {
+                $this->updateParticipant((int) $participantId, ['attendance_status' => $status]);
+            }
+        }
+        
         // Catatan baru opsional dari form edit.
         if (trim((string) ($post['initial_note'] ?? '')) !== '') {
             $this->addNote($id, [
@@ -507,7 +593,9 @@ class BkServiceService
         if ($role === 'siswa') {
             $builder->where(
                 '(s.user_id = ' . $userId . ' OR sp_scope.participant_user_id = ' . $userId
-                . ' OR sp_scope.participant_student_id IN (SELECT id FROM students WHERE user_id = ' . $userId . '))',
+                . ' OR sp_scope.participant_student_id IN (SELECT id FROM students WHERE user_id = ' . $userId . ')'
+                . ' OR sp_scope.participant_class_id IN (SELECT class_id FROM students WHERE user_id = ' . $userId . ')'
+                . ' OR bsr.target_class_id IN (SELECT class_id FROM students WHERE user_id = ' . $userId . '))',
                 null,
                 false
             );
@@ -517,7 +605,10 @@ class BkServiceService
         if ($role === 'orang-tua') {
             $builder->where(
                 '(s.parent_id = ' . $userId . ' OR sp_scope.participant_parent_id = ' . $userId
-                . ' OR sp_scope.participant_user_id = ' . $userId . ')',
+                . ' OR sp_scope.participant_user_id = ' . $userId
+                . ' OR sp_scope.participant_student_id IN (SELECT id FROM students WHERE parent_id = ' . $userId . ')'
+                . ' OR sp_scope.participant_class_id IN (SELECT class_id FROM students WHERE parent_id = ' . $userId . ')'
+                . ' OR bsr.target_class_id IN (SELECT class_id FROM students WHERE parent_id = ' . $userId . '))',
                 null,
                 false
             );
@@ -690,7 +781,7 @@ class BkServiceService
      *  - Orang Tua data (participant_parent_ids[]), Wali Kelas data (participant_user_ids[])
      *  - Peserta Tambahan manual (manual_participants[] atau teks dipisah baris/koma)
      */
-    private function saveParticipants(int $recordId, array $post): void
+    private function saveParticipants(int $recordId, array $post, int $userId): void
     {
         $now = date('Y-m-d H:i:s');
         $existing = $this->existingParticipantKeys($recordId);
@@ -728,14 +819,7 @@ class BkServiceService
                 $studentIds[] = $sid;
             }
         }
-        foreach (array_unique($studentIds) as $sid) {
-            $push('student:' . $sid, $base + [
-                'participant_type' => 'student',
-                'participant_student_id' => $sid,
-                'student_id' => $sid,
-                'role_in_session' => 'Siswa terkait',
-            ]);
-        }
+        $studentIds = array_unique($studentIds);
 
         // Kelas subjek utama + Kelas dari pilihan ganda.
         $classIds = [];
@@ -749,7 +833,66 @@ class BkServiceService
                 $classIds[] = $cid;
             }
         }
-        foreach (array_unique($classIds) as $cid) {
+        $classIds = array_unique($classIds);
+
+        // Sync existing student & class participants: soft-delete any in DB that are not in the new lists.
+        $existingDb = $this->db->table('session_participants')
+            ->where('bk_service_record_id', $recordId)
+            ->where('deleted_at', null)
+            ->whereIn('participant_type', ['student', 'class'])
+            ->get()->getResultArray();
+
+        $toDelete = [];
+        foreach ($existingDb as $row) {
+            $type = $row['participant_type'];
+            $pRowId = (int) $row['id'];
+            if ($type === 'student') {
+                $sid = (int) $row['participant_student_id'];
+                if (!in_array($sid, $studentIds, true)) {
+                    $toDelete[] = $pRowId;
+                }
+            } elseif ($type === 'class') {
+                $cid = (int) $row['participant_class_id'];
+                if (!in_array($cid, $classIds, true)) {
+                    $toDelete[] = $pRowId;
+                }
+            }
+        }
+
+        if (!empty($toDelete)) {
+            $update = ['deleted_at' => $now];
+            if ($this->db->fieldExists('deleted_by', 'session_participants')) {
+                $update['deleted_by'] = $userId;
+            }
+            $this->db->table('session_participants')
+                ->whereIn('id', $toDelete)
+                ->update($update);
+        }
+
+        // Now prepare insertions or updates for the remaining ones
+        foreach ($studentIds as $sid) {
+            $status = $post['student_attendance'][$sid] ?? 'Hadir';
+            $key = 'student:' . $sid;
+            if (isset($existing[$key])) {
+                // Update existing participant attendance status
+                $this->db->table('session_participants')
+                    ->where('bk_service_record_id', $recordId)
+                    ->where('participant_type', 'student')
+                    ->where('participant_student_id', $sid)
+                    ->where('deleted_at', null)
+                    ->update(['attendance_status' => $status, 'updated_at' => $now]);
+                continue;
+            }
+            $push($key, $base + [
+                'participant_type' => 'student',
+                'participant_student_id' => $sid,
+                'student_id' => $sid,
+                'role_in_session' => 'Siswa terkait',
+                'attendance_status' => $status,
+            ]);
+        }
+
+        foreach ($classIds as $cid) {
             $push('class:' . $cid, $base + [
                 'participant_type' => 'class',
                 'participant_class_id' => $cid,
@@ -851,6 +994,92 @@ class BkServiceService
         }
 
         return $keys;
+    }
+
+    /**
+     * Tambah satu atau beberapa peserta secara langsung (untuk presensi ketidakhadiran di kelas sasaran).
+     */
+    public function addSingleParticipant(int $recordId, array $post): bool
+    {
+        $now = date('Y-m-d H:i:s');
+        $studentIds = [];
+        if (isset($post['student_ids']) && is_array($post['student_ids'])) {
+            $studentIds = $post['student_ids'];
+        } elseif (isset($post['student_id']) && $post['student_id']) {
+            $studentIds = [$post['student_id']];
+        }
+        $attendanceStatus = $post['attendance_status'] ?? 'Alpha'; // Default ke Alpha (Tidak Hadir)
+        $success = false;
+
+        foreach ($studentIds as $studentId) {
+            $studentId = $this->nullableInt($studentId);
+            if (!$studentId) {
+                continue;
+            }
+
+            $existing = $this->db->table('session_participants')
+                ->where('bk_service_record_id', $recordId)
+                ->where('participant_student_id', $studentId)
+                ->where('participant_type', 'student')
+                ->where('deleted_at', null)
+                ->get()->getRowArray();
+            if ($existing) {
+                $this->db->table('session_participants')
+                    ->where('id', (int) $existing['id'])
+                    ->update(['attendance_status' => $attendanceStatus, 'updated_at' => $now]);
+                $success = true;
+                continue;
+            }
+            
+            $deleted = $this->db->table('session_participants')
+                ->where('bk_service_record_id', $recordId)
+                ->where('participant_student_id', $studentId)
+                ->where('participant_type', 'student')
+                ->where('deleted_at !=', null)
+                ->get()->getRowArray();
+            if ($deleted) {
+                $this->db->table('session_participants')
+                    ->where('id', (int) $deleted['id'])
+                    ->update(['deleted_at' => null, 'deleted_by' => null, 'attendance_status' => $attendanceStatus, 'updated_at' => $now]);
+                $success = true;
+                continue;
+            }
+
+            $this->db->table('session_participants')->insert([
+                'bk_service_record_id' => $recordId,
+                'participant_type' => 'student',
+                'participant_student_id' => $studentId,
+                'student_id' => $studentId,
+                'role_in_session' => 'Siswa terkait',
+                'attendance_status' => $attendanceStatus,
+                'invitation_status' => 'Konfirmasi',
+                'is_active' => 1,
+                'joined_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+            $success = true;
+        }
+
+        $manualName = trim((string) ($post['manual_name'] ?? ''));
+        $manualRole = trim((string) ($post['manual_role'] ?? 'Peserta'));
+        if ($manualName !== '') {
+            $this->db->table('session_participants')->insert([
+                'bk_service_record_id' => $recordId,
+                'participant_type' => 'manual',
+                'manual_name' => $manualName,
+                'role_in_session' => $manualRole,
+                'attendance_status' => $attendanceStatus,
+                'invitation_status' => 'Konfirmasi',
+                'is_active' => 1,
+                'joined_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+            $success = true;
+        }
+
+        return $success;
     }
 
     /**

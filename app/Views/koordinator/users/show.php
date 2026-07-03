@@ -528,7 +528,7 @@ $homeroomClass    = $assignedClasses['homeroom'] ?? null;
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar-xs">
-                                            <span class="avatar-title rounded-circle bg-primary bg-soft text-primary font-size-18">
+                                            <span class="avatar-title rounded-circle bg-soft-primary text-primary font-size-18">
                                                 <i class="mdi mdi-account-clock"></i>
                                             </span>
                                         </div>
@@ -566,7 +566,7 @@ $homeroomClass    = $assignedClasses['homeroom'] ?? null;
                                 <div class="d-flex">
                                     <div class="flex-shrink-0 me-3">
                                         <div class="avatar-xs">
-                                            <span class="avatar-title rounded-circle bg-success bg-soft text-success font-size-18">
+                                            <span class="avatar-title rounded-circle bg-soft-success text-success font-size-18">
                                                 <i class="mdi mdi-calendar-check"></i>
                                             </span>
                                         </div>

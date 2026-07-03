@@ -103,6 +103,12 @@ foreach (($conversations ?? []) as $c) {
           <button type="button" class="btn btn-outline-danger" id="toggleDeleteBtn">
             <i class="mdi mdi-trash-can-outline me-1"></i> Pilih &amp; Hapus
           </button>
+          <form method="post" action="<?= site_url($basePath . '/messages/delete-all') ?>" id="deleteAllForm" class="d-inline">
+            <?= csrf_field() ?>
+            <button type="submit" class="btn btn-danger" id="deleteAllBtn">
+              <i class="mdi mdi-trash-can me-1"></i> Hapus Semua
+            </button>
+          </form>
         </div>
       </div>
 
@@ -117,8 +123,14 @@ foreach (($conversations ?? []) as $c) {
         <form method="post" action="<?= site_url($basePath . '/messages/delete') ?>" id="deleteForm">
           <?= csrf_field() ?>
 
-          <div class="d-none mb-3 d-flex justify-content-between align-items-center" id="deleteBar">
-            <span class="text-dark"><span id="selCount">0</span> percakapan dipilih</span>
+          <div class="d-none mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2" id="deleteBar">
+            <div class="d-flex align-items-center gap-3">
+              <div class="form-check mb-0">
+                <input class="form-check-input" type="checkbox" id="selectAllCb">
+                <label class="form-check-label text-dark fw-semibold" for="selectAllCb">Pilih Semua</label>
+              </div>
+              <span class="text-dark text-muted">(<span id="selCount">0</span> dipilih)</span>
+            </div>
             <div class="d-flex gap-2">
               <button type="button" class="btn btn-light btn-sm" id="cancelDeleteBtn">Batal</button>
               <button type="submit" class="btn btn-danger btn-sm" id="confirmDeleteBtn" disabled>
@@ -245,11 +257,14 @@ foreach (($conversations ?? []) as $c) {
   const deleteBar   = document.getElementById('deleteBar');
   const confirmBtn  = document.getElementById('confirmDeleteBtn');
   const selCount    = document.getElementById('selCount');
+  const selectAllCb = document.getElementById('selectAllCb');
 
   function refreshSel() {
-    const n = document.querySelectorAll('.conv-cb:checked').length;
+    const cbs   = document.querySelectorAll('.conv-cb');
+    const n     = document.querySelectorAll('.conv-cb:checked').length;
     if (selCount) selCount.textContent = n;
     if (confirmBtn) confirmBtn.disabled = (n === 0);
+    if (selectAllCb) selectAllCb.checked = (cbs.length > 0 && n === cbs.length);
   }
 
   function setDeleteMode(on) {
@@ -257,13 +272,22 @@ foreach (($conversations ?? []) as $c) {
     if (deleteBar) deleteBar.classList.toggle('d-none', !on);
     document.querySelectorAll('.conv-check').forEach(function (el) { el.classList.toggle('d-none', !on); });
     if (!on) {
-      document.querySelectorAll('.conv-cb:checked').forEach(function (cb) { cb.checked = false; });
+      document.querySelectorAll('.conv-cb').forEach(function (cb) { cb.checked = false; });
+      if (selectAllCb) selectAllCb.checked = false;
       refreshSel();
     }
   }
 
   if (toggleBtn) toggleBtn.addEventListener('click', function () { setDeleteMode(!deleteMode); });
   if (cancelBtn) cancelBtn.addEventListener('click', function () { setDeleteMode(false); });
+
+  if (selectAllCb) {
+    selectAllCb.addEventListener('change', function () {
+      document.querySelectorAll('.conv-cb').forEach(function (cb) { cb.checked = selectAllCb.checked; });
+      refreshSel();
+    });
+  }
+
   document.querySelectorAll('.conv-cb').forEach(function (cb) { cb.addEventListener('change', refreshSel); });
 
   // --- Klik baris percakapan ---
@@ -284,6 +308,16 @@ foreach (($conversations ?? []) as $c) {
     confirmBtn.closest('form').addEventListener('submit', function (e) {
       if (document.querySelectorAll('.conv-cb:checked').length === 0) { e.preventDefault(); return; }
       if (!confirm('Hapus percakapan terpilih? Percakapan akan disembunyikan dari daftar Anda (dapat muncul kembali bila ada pesan baru).')) {
+        e.preventDefault();
+      }
+    });
+  }
+
+  // --- Konfirmasi Hapus Semua ---
+  const deleteAllForm = document.getElementById('deleteAllForm');
+  if (deleteAllForm) {
+    deleteAllForm.addEventListener('submit', function (e) {
+      if (!confirm('Hapus SEMUA percakapan? Semua percakapan akan disembunyikan dari daftar Anda (dapat muncul kembali bila ada pesan baru).')) {
         e.preventDefault();
       }
     });

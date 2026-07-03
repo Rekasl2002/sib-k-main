@@ -122,11 +122,17 @@ $roleLabel  = (string)($roleLabel ?? 'Pengguna');
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h4 class="card-title mb-0"><i class="mdi mdi-bell-outline me-2"></i>Daftar Notifikasi</h4>
-        <div class="text-end">
+        <div class="d-flex gap-2 flex-wrap justify-content-end">
           <form method="post" action="<?= site_url($basePath . '/notifications/mark-all-read') ?>" class="d-inline">
             <?= csrf_field() ?>
             <button type="submit" class="btn btn-primary">
               <i class="mdi mdi-check-all me-1"></i> Tandai Semua Dibaca
+            </button>
+          </form>
+          <form method="post" action="<?= site_url($basePath . '/notifications/delete-all') ?>" class="d-inline" id="deleteAllNotifForm">
+            <?= csrf_field() ?>
+            <button type="submit" class="btn btn-danger">
+              <i class="mdi mdi-trash-can me-1"></i> Hapus Semua Notifikasi
             </button>
           </form>
         </div>
@@ -306,6 +312,15 @@ $roleLabel  = (string)($roleLabel ?? 'Pengguna');
         if (delModal) delModal.show();
       });
     });
+
+    var deleteAllNotifForm = document.getElementById('deleteAllNotifForm');
+    if (deleteAllNotifForm) {
+      deleteAllNotifForm.addEventListener('submit', function (e) {
+        if (!confirm('Hapus SEMUA notifikasi? Tindakan ini tidak dapat dibatalkan.')) {
+          e.preventDefault();
+        }
+      });
+    }
   });
 </script>
 <?= $this->endSection() ?>

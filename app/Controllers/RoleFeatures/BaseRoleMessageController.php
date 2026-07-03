@@ -321,6 +321,37 @@ abstract class BaseRoleMessageController extends BaseController
             ->with('success', $count . ' percakapan dihapus.');
     }
 
+    /**
+     * Hapus (soft delete) SEMUA percakapan milik pengguna saat ini — hanya dari sisi penghapus.
+     */
+    public function deleteAll()
+    {
+        $uid = $this->currentUserId();
+        if ($uid <= 0) {
+            return redirect()->to('/login');
+        }
+
+        $db  = \Config\Database::connect();
+        $now = date('Y-m-d H:i:s');
+
+        $db->table('conversations')
+            ->where('user_one_id', $uid)
+            ->where('one_deleted_at', null)
+            ->where('deleted_at', null)
+            ->set(['one_deleted_at' => $now])
+            ->update();
+
+        $db->table('conversations')
+            ->where('user_two_id', $uid)
+            ->where('two_deleted_at', null)
+            ->where('deleted_at', null)
+            ->set(['two_deleted_at' => $now])
+            ->update();
+
+        return redirect()->to(site_url($this->routePrefix . '/messages'))
+            ->with('success', 'Semua percakapan berhasil dihapus.');
+    }
+
     // ===================================================================
     // Data percakapan (helper privat)
     // ===================================================================

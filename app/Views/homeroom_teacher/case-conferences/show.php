@@ -96,6 +96,7 @@ $participantName = static function (array $p): string {
       <div class="card-body">
         <h5 class="card-title mb-3">Peserta/Undangan</h5>
         <?php foreach ($participants as $participant): ?>
+          <?php if (($participant['participant_type'] ?? '') === 'class') continue; ?>
           <div class="border-bottom pb-2 mb-2">
             <div class="fw-semibold"><?= esc($participantName($participant)) ?></div>
             <small class="text-muted"><?= esc($participant['role_in_session'] ?? '-') ?> - <?= esc($participant['attendance_status'] ?? '-') ?></small>

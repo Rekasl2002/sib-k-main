@@ -195,9 +195,9 @@ try {
                   <a href="<?= esc(notification_link_for_viewer($__n['link'] ?? '', (string)($__n['type'] ?? ''), $__rolePrefix) ?: '#') ?>"
                      class="text-reset notification-item d-block <?= !empty($__n['is_read']) ? '' : 'bg-light' ?>"
                      data-notif-id="<?= (int)($__n['id'] ?? 0) ?>">
-                    <div class="d-flex">
-                      <div class="avatar-xs me-3">
-                        <span class="avatar-title bg-primary bg-soft rounded-circle font-size-16">
+                    <div class="d-flex align-items-center">
+                      <div class="avatar-xs me-3 flex-shrink-0">
+                        <span class="avatar-title bg-soft-primary text-primary rounded-circle font-size-16">
                           <i class="mdi mdi-bell"></i>
                         </span>
                       </div>

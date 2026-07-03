@@ -19,6 +19,11 @@ $routePrefix = (string) ($routePrefix ?? '');
 $serviceType = (string) ($serviceType ?? '');
 $canManage = ! empty($canManage);
 $me = (int) (session('user_id') ?? 0);
+// Model "hanya catat yang TIDAK hadir" HANYA untuk Bimbingan Klasikal/Kelas Besar
+// (audiens besar). Layanan lain (Konseling, Kolaborasi Ortu, Kunjungan Rumah,
+// Konferensi Kasus) & Bimbingan Kelompok memakai daftar Peserta/Undangan biasa.
+$isAbsenteeMode = ($serviceType === 'Bimbingan')
+    && in_array((string) ($detail['guidance_type'] ?? ''), ['Klasikal', 'Kelas Besar'], true);
 
 $hiddenDetailKeys = ['id','bk_service_record_id','created_at','updated_at','deleted_at','deleted_by',
     'student_id','class_id','counselor_id','session_id','status','session_date','session_time','location',
@@ -139,7 +144,7 @@ $participantName = static function (array $p): string {
   <div class="col-lg-4">
     <div class="card">
       <div class="card-body">
-        <h5 class="card-title mb-3 text-dark">Peserta/Undangan</h5>
+        <h5 class="card-title mb-3 text-dark"><?= $isAbsenteeMode ? 'Peserta Tidak Hadir' : 'Peserta/Undangan' ?></h5>
         <?php if ($canManage && $serviceType === 'Bimbingan'): ?>
           <div class="alert alert-info py-2 px-3 small text-dark">
             <i class="mdi mdi-information-outline me-1"></i>
@@ -147,6 +152,7 @@ $participantName = static function (array $p): string {
           </div>
         <?php endif; ?>
         <?php foreach ($participants as $participant): ?>
+          <?php if (($participant['participant_type'] ?? '') === 'class') continue; ?>
           <div class="border-bottom pb-2 mb-2">
             <div class="fw-semibold text-dark"><?= esc($participantName($participant)) ?></div>
             <small class="text-dark"><?= esc($participant['role_in_session'] ?? '-') ?> &mdash; <?= esc($participant['attendance_status'] ?? '-') ?></small>
@@ -175,6 +181,42 @@ $participantName = static function (array $p): string {
         <?php endforeach; ?>
         <?php if (! $participants): ?>
           <p class="text-dark mb-0">Belum ada peserta.</p>
+        <?php endif; ?>
+
+                <?php if ($canManage && $isAbsenteeMode && ! empty($row['target_class_id'])): ?>
+          <div class="mt-3 pt-3 border-top js-multi" data-name="student_ids[]" id="absentStudentPickerContainer">
+            <h6 class="text-dark mb-2">Catat Siswa Tidak Hadir</h6>
+            
+            <div class="js-chips border rounded p-2 mb-2 bg-light">
+              <span class="text-dark js-chip-empty">Belum ada siswa dipilih.</span>
+            </div>
+
+            <form method="post" action="<?= site_url($routePrefix . '/participant-add/' . (int) $row['id']) ?>">
+              <?= csrf_field() ?>
+              <div class="mb-2">
+                <select class="form-select select2-search js-picker" id="absentStudentPicker">
+                  <option value="">Ketik untuk mencari siswa&hellip;</option>
+                  <?php 
+                    $targetClassNames = array_map('trim', explode(',', (string) ($row['class_name'] ?? '')));
+                    foreach (($options['students'] ?? []) as $stu): 
+                      if (! in_array(trim((string) ($stu['class_name'] ?? '')), $targetClassNames, true)) {
+                          continue;
+                      }
+                  ?>
+                    <option value="<?= (int) $stu['id'] ?>"><?= esc($stu['full_name']) ?> (<?= esc($stu['class_name']) ?>)</option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <div class="mb-2">
+                <select name="attendance_status" class="form-select form-select-sm">
+                  <?php foreach (['Alpha','Izin','Sakit','Hadir','Belum Hadir'] as $status): ?>
+                    <option value="<?= esc($status) ?>"><?= esc($status) ?></option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
+              <button class="btn btn-sm btn-primary w-100"><i class="mdi mdi-plus me-1"></i>Tambah Ketidakhadiran</button>
+            </form>
+          </div>
         <?php endif; ?>
       </div>
     </div>
@@ -207,4 +249,82 @@ $participantName = static function (array $p): string {
     <?php endif; ?>
   </div>
 </div>
+<?= $this->endSection() ?>
+
+
+<?= $this->section('scripts') ?>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/css/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  $(document).ready(function () {
+    if ($.fn.select2) {
+      $('#absentStudentPicker').select2({
+        theme: 'bootstrap-5',
+        width: '100%',
+        placeholder: 'Ketik untuk mencari...'
+      });
+    }
+
+    function pickerOptionByValue($picker, val) {
+      return $picker.find('option').filter(function () { return this.value === String(val); });
+    }
+
+    function detachOption($chip, $picker, val) {
+      var $opt = pickerOptionByValue($picker, val);
+      if ($opt.length) {
+        $chip.data('opt', $opt);
+        $chip.data('optParent', $opt.parent());
+        $opt.detach();
+      }
+    }
+
+    function restoreOption($chip) {
+      var $opt = $chip.data('opt');
+      var $parent = $chip.data('optParent');
+      if ($opt && $parent && $parent.length) { $parent.append($opt); }
+    }
+
+    function addAbsentChip($widget, pickerVal, text) {
+      if (!pickerVal) { return null; }
+      var name = $widget.data('name');
+      var hiddenName = name;
+      var hiddenVal = pickerVal;
+
+      var $chips = $widget.find('.js-chips');
+      var dup = false;
+      $chips.find('input[type=hidden]').each(function () {
+        if (this.name === hiddenName && this.value === String(hiddenVal)) { dup = true; }
+      });
+      if (dup) { return null; }
+
+      var $chip = $('<span class="badge bg-primary text-white d-inline-flex align-items-center gap-1 me-1 mb-1 p-2 js-chip" style="font-size:.8rem;"></span>');
+      $('<span></span>').text(text).appendTo($chip);
+      $('<input type="hidden">').attr('name', hiddenName).val(hiddenVal).appendTo($chip);
+      $('<button type="button" class="btn-close btn-close-white js-chip-remove" aria-label="Hapus" style="font-size:.55rem;"></button>').appendTo($chip);
+      $widget.find('.js-chip-empty').hide().before($chip);
+      return $chip;
+    }
+
+    $('#absentStudentPicker').on('select2:select', function () {
+      var $widget = $(this).closest('.js-multi');
+      var $picker = $(this);
+      var pickerVal = $picker.val();
+      var text = $.trim($picker.find('option:selected').text());
+      var $chip = addAbsentChip($widget, pickerVal, text);
+      $picker.val('').trigger('change');
+      if ($chip) { detachOption($chip, $picker, pickerVal); }
+    });
+
+    $('#absentStudentPickerContainer').on('click', '.js-chip-remove', function () {
+      var $widget = $(this).closest('.js-multi');
+      var $chip = $(this).closest('.js-chip');
+      restoreOption($chip);
+      $chip.remove();
+      if ($widget.find('.js-chip').length === 0) {
+        $widget.find('.js-chip-empty').show();
+      }
+    });
+  });
+</script>
 <?= $this->endSection() ?>
