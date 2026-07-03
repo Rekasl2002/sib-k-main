@@ -175,11 +175,6 @@ if (!empty($birthDate)) {
                     </div>
 
                     <div class="col-lg-8 d-flex flex-column">
-                        <p class="text-dark mb-3">
-                            Halaman ini menampilkan data pribadi, akademik, orang tua/wali, akun, serta
-                            kegiatan layanan BK yang diikuti siswa binaan secara lengkap.
-                        </p>
-
                         <div class="d-flex gap-2 flex-wrap mt-auto">
                             <?php if (!empty($canUpdate) && !empty($studentId)): ?>
                             <a href="<?= base_url('counselor/students/' . (int) $studentId . '/edit') ?>" class="btn btn-primary">
@@ -411,9 +406,13 @@ if (!empty($birthDate)) {
                                 </table>
                             </div>
                         </div>
-                        <!-- Counselor tidak mengelola akun orang tua → hanya info -->
                         <div class="col-md-6">
-                            <div class="d-flex align-items-center h-100">
+                            <div class="d-flex flex-column gap-2 justify-content-center h-100">
+                                <?php if (!empty($parentId)): ?>
+                                    <a href="<?= base_url('counselor/parents/' . (int) $parentId) ?>" class="btn btn-outline-info">
+                                        <i class="mdi mdi-account-supervisor me-1"></i>Lihat Profil Orang Tua
+                                    </a>
+                                <?php endif; ?>
                                 <a href="<?= base_url('counselor/students') ?>" class="btn btn-outline-secondary">
                                     <i class="mdi mdi-arrow-left me-1"></i>Kembali ke Daftar
                                 </a>

@@ -171,49 +171,46 @@ if ($photoTrim === '') {
 $avatarSrc = user_avatar($photo);
 ?>
 
-<div class="page-content">
-    <div class="container-fluid">
-
-        <!-- Header + breadcrumb kecil -->
-        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-            <div>
-                <h4 class="mb-0">Detail Siswa</h4>
-                <div class="text-muted small">
-                    Wali Kelas melihat data untuk
-                    <strong><?= esc($fullName) ?></strong>
-                    <?php if ($className): ?>
-                        · Kelas <?= esc($className) ?>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <div class="d-flex align-items-center gap-2">
-                <a href="<?= $backUrl ?>" class="btn btn-light btn-sm">
-                    &larr; Kembali ke Kelas Binaan
-                </a>
-                <?php if (function_exists('has_permission') && has_permission('manage_students')): ?>
-                    <a href="<?= base_url('homeroom/students/edit/' . $studentId) ?>" class="btn btn-primary btn-sm">
-                        Edit Siswa
-                    </a>
-                    <?php if ($parentId > 0): ?>
-                        <a href="<?= base_url('homeroom/parents/' . $parentId) ?>" class="btn btn-outline-info btn-sm">
-                            Akun Orang Tua
-                        </a>
-                    <?php endif; ?>
-                    <form method="post" action="<?= base_url('homeroom/students/delete/' . $studentId) ?>" class="d-inline" onsubmit="return confirm('Hapus siswa ini dari kelas binaan?')">
-                        <?= csrf_field() ?>
-                        <button type="submit" class="btn btn-outline-danger btn-sm">Hapus</button>
-                    </form>
-                <?php endif; ?>
-            </div>
+<!-- Page Title -->
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box d-flex align-items-center justify-content-between">
+            <h4 class="mb-0">Detail Siswa</h4>
             <div class="page-title-right">
-        <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Dashboard</a></li>
-          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/my-class') ?>">Kelas</a></li>
-          <li class="breadcrumb-item active">Detail Siswa</li>
-        </ol>
-      </div>
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_url('homeroom/my-class') ?>">Kelas Binaan</a></li>
+                    <li class="breadcrumb-item active">Detail Siswa</li>
+                </ol>
+            </div>
         </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="row mb-3">
+    <div class="col-12 d-flex gap-2 flex-wrap">
+        <a href="<?= $backUrl ?>" class="btn btn-secondary btn-sm">
+            <i class="mdi mdi-arrow-left me-1"></i>Kembali ke Kelas Binaan
+        </a>
+        <?php if (function_exists('has_permission') && has_permission('manage_students')): ?>
+            <a href="<?= base_url('homeroom/students/edit/' . $studentId) ?>" class="btn btn-primary btn-sm">
+                <i class="mdi mdi-pencil me-1"></i>Edit Siswa
+            </a>
+            <?php if ($parentId > 0): ?>
+                <a href="<?= base_url('homeroom/parents/' . $parentId) ?>" class="btn btn-outline-info btn-sm">
+                    <i class="mdi mdi-account-supervisor me-1"></i>Akun Orang Tua
+                </a>
+            <?php endif; ?>
+            <form method="post" action="<?= base_url('homeroom/students/delete/' . $studentId) ?>" class="d-inline" onsubmit="return confirm('Hapus siswa ini dari kelas binaan?')">
+                <?= csrf_field() ?>
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="mdi mdi-delete me-1"></i>Hapus
+                </button>
+            </form>
+        <?php endif; ?>
+    </div>
+</div>
 
         <!-- Flash message -->
         <?php if (session()->getFlashdata('error')): ?>
@@ -592,63 +589,8 @@ $avatarSrc = user_avatar($photo);
                     </div>
                 </div>
 
-                <!-- Jadwal konseling mendatang (jika disediakan dari controller) -->
-                <?php if (! empty($upcomingSessions)): ?>
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <h5 class="card-title mb-3">
-                                <i class="mdi mdi-calendar-clock-outline me-2"></i>Jadwal Konseling Mendatang
-                            </h5>
-
-                            <div class="table-responsive">
-                                <table class="table table-sm align-middle mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th style="width: 18%;">Tanggal</th>
-                                            <th style="width: 15%;">Jam</th>
-                                            <th>Topik</th>
-                                            <th style="width: 22%;">Guru BK</th>
-                                            <th style="width: 15%;">Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($upcomingSessions as $s): ?>
-                                            <?php
-                                            $row     = rowa($s);
-                                            $sd      = $row['session_date'] ?? null;
-                                            $st      = $row['session_time'] ?? null;
-                                            $topic   = $row['topic'] ?? $row['title'] ?? '-';
-                                            $cName   = $row['counselor_name'] ?? '-';
-                                            $sStatus = $row['status_label'] ?? $row['status'] ?? 'Dijadwalkan';
-                                            ?>
-                                            <tr>
-                                                <td><?= fmt_date_id($sd) ?></td>
-                                                <td><?= ! empty($st) ? esc(substr($st, 0, 5)) : '-' ?></td>
-                                                <td><?= esc($topic) ?></td>
-                                                <td><?= esc($cName) ?></td>
-                                                <td>
-                                                    <span class="badge badge-soft-primary">
-                                                        <?= esc($sStatus) ?>
-                                                    </span>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <p class="text-muted small mt-2 mb-0">
-                                Wali Kelas hanya dapat melihat jadwal konseling, tanpa isi catatan konseling
-                                yang bersifat rahasia (sesuai perancangan sistem).
-                            </p>
-                        </div>
-                    </div>
-                <?php endif; ?>
 
             </div>
         </div>
-
-    </div>
-</div>
 
 <?= $this->endSection() ?>

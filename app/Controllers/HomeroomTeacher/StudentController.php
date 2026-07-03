@@ -493,37 +493,13 @@ class StudentController extends BaseController
             }
         }
 
-        // Jadwal konseling mendatang (meta saja, tanpa isi ringkasan/masalah detail)
-        $today = date('Y-m-d');
-
-        $upcomingSessions = $this->db->table('counseling_sessions cs')
-            ->select("
-                cs.id,
-                cs.session_date,
-                cs.session_time,
-                cs.topic,
-                cs.status,
-                u.full_name AS counselor_name
-            ")
-            ->join('users u', 'u.id = cs.counselor_id AND u.deleted_at IS NULL', 'left')
-            ->where('cs.student_id', (int)$student['id'])
-            ->where('cs.deleted_at', null)
-            ->where('cs.status !=', 'Dibatalkan')
-            ->where('cs.session_date >=', $today)
-            ->orderBy('cs.session_date', 'ASC')
-            ->orderBy('cs.session_time', 'ASC')
-            ->limit(5)
-            ->get()
-            ->getResultArray();
-
         return view('homeroom_teacher/students/show', [
-            'pageTitle'        => 'Detail Siswa',
-            'student'          => $student,
-            'class'            => $class,
-            'classes'          => $classes,
-            'classIds'         => $classIds,
-            'activeYear'       => $activeYear,
-            'upcomingSessions' => $upcomingSessions,
+            'pageTitle'  => 'Detail Siswa',
+            'student'    => $student,
+            'class'      => $class,
+            'classes'    => $classes,
+            'classIds'   => $classIds,
+            'activeYear' => $activeYear,
         ]);
     }
 

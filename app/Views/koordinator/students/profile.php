@@ -150,11 +150,6 @@ if (!empty($student['birth_date'])) {
                     </div>
 
                     <div class="col-lg-8 d-flex flex-column">
-                        <p class="text-dark mb-3">
-                            Halaman ini menampilkan data pribadi, akademik, orang tua/wali, akun, serta
-                            kegiatan layanan BK yang diikuti siswa secara lengkap.
-                        </p>
-
                         <div class="d-flex gap-2 flex-wrap mt-auto">
                             <a href="<?= base_url('koordinator/students/edit/' . ($student['id'] ?? 0)) ?>" class="btn btn-primary">
                                 <i class="mdi mdi-pencil me-1"></i>Edit Data
@@ -162,6 +157,11 @@ if (!empty($student['birth_date'])) {
                             <?php if (! empty($student['user_id'])): ?>
                                 <a href="<?= base_url('koordinator/users/show/' . (int) $student['user_id']) ?>" class="btn btn-info">
                                     <i class="mdi mdi-account-cog me-1"></i>Kelola Akun &amp; Sandi
+                                </a>
+                            <?php endif; ?>
+                            <?php if (! empty($student['parent_id'])): ?>
+                                <a href="<?= base_url('koordinator/users/show/' . (int) $student['parent_id']) ?>" class="btn btn-outline-info">
+                                    <i class="mdi mdi-account-supervisor me-1"></i>Akun Orang Tua
                                 </a>
                             <?php endif; ?>
                             <a href="<?= base_url('koordinator/students') ?>" class="btn btn-secondary">
