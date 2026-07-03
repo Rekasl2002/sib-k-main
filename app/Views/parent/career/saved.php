@@ -224,9 +224,9 @@ $childQS       = $activeChildId ? '&child_id=' . (int) $activeChildId : '';
                       <?php endif; ?>
 
                       <div class="card-body d-flex flex-column">
-                        <h5 class="card-title mb-1"><?= esc($ttl) ?></h5>
+                        <h5 class="card-title mb-1 cc-title"><?= esc($ttl) ?></h5>
 
-                        <div class="mb-2">
+                        <div class="mb-2 cc-badges">
                           <?php if ($sec): ?>
                             <span class="badge bg-light text-body border me-1">
                               <?= esc($sec) ?>
@@ -239,7 +239,7 @@ $childQS       = $activeChildId ? '&child_id=' . (int) $activeChildId : '';
                           <?php endif; ?>
                         </div>
 
-                        <p class="card-text flex-grow-1"><?= clip($desc, 140) ?></p>
+                        <p class="card-text flex-grow-1 cc-desc"><?= clip($desc, 140) ?></p>
 
                         <div class="d-flex justify-content-between align-items-center mt-2">
                           <a
@@ -270,7 +270,7 @@ $childQS       = $activeChildId ? '&child_id=' . (int) $activeChildId : '';
                 </p>
               <?php endif; ?>
               <div class="mt-1">
-                <?= $pager ? $pager->links() : '' ?>
+                <?= $pager ? $pager->links('default', 'bootstrap_pagination') : '' ?>
               </div>
             <?php endif; ?>
           <?php endif; ?>
@@ -346,14 +346,14 @@ $childQS       = $activeChildId ? '&child_id=' . (int) $activeChildId : '';
                       <?php endif; ?>
 
                       <div class="card-body d-flex flex-column">
-                        <h5 class="card-title mb-1">
+                        <h5 class="card-title mb-1 cc-title">
                           <?= esc($name) ?>
                           <?php if ($alias): ?>
                             <span class="text-muted small"> (<?= esc($alias) ?>)</span>
                           <?php endif; ?>
                         </h5>
 
-                        <div class="mb-2">
+                        <div class="mb-2 cc-badges">
                           <?php if ($accr): ?>
                             <span class="badge bg-secondary me-1">
                               Akreditasi: <?= esc($accr) ?>
@@ -366,7 +366,7 @@ $childQS       = $activeChildId ? '&child_id=' . (int) $activeChildId : '';
                           <?php endif; ?>
                         </div>
 
-                        <p class="card-text flex-grow-1"><?= clip($desc, 140) ?></p>
+                        <p class="card-text flex-grow-1 cc-desc"><?= clip($desc, 140) ?></p>
 
                         <div class="d-flex justify-content-between align-items-center mt-2">
                           <a
@@ -397,7 +397,7 @@ $childQS       = $activeChildId ? '&child_id=' . (int) $activeChildId : '';
                 </p>
               <?php endif; ?>
               <div class="mt-1">
-                <?= $uniPager ? $uniPager->links('universities') : '' ?>
+                <?= $uniPager ? $uniPager->links('universities', 'bootstrap_pagination') : '' ?>
               </div>
             <?php endif; ?>
           <?php endif; ?>
@@ -409,6 +409,22 @@ $childQS       = $activeChildId ? '&child_id=' . (int) $activeChildId : '';
 
 <style>
   .nav-tabs .nav-link { white-space: nowrap; }
+
+  /* Konsistensi tinggi kartu Karier & Perguruan Tinggi, apa pun panjang isinya */
+  .cc-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6em;
+  }
+  .cc-badges { min-height: 30px; }
+  .cc-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 </style>
 
 <?= $this->endSection() ?>

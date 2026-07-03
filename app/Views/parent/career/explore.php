@@ -23,6 +23,23 @@ if (!function_exists('clip')) {
     return esc(mb_substr($s, 0, $len - 3) . '...');
   }
 }
+if (!function_exists('pagerInfo')) {
+  function pagerInfo($pager, string $group = 'default'): ?array
+  {
+    if (!$pager) {
+      return null;
+    }
+    $total = $pager->getTotal($group);
+    if ($total < 1) {
+      return null;
+    }
+    $perPage = $pager->getPerPage($group);
+    $current = $pager->getCurrentPage($group);
+    $from    = ($current - 1) * $perPage + 1;
+    $to      = min($current * $perPage, $total);
+    return [$from, $to, $total];
+  }
+}
 
 $filters            = $filters            ?? [];
 $careers            = $careers            ?? [];
@@ -274,15 +291,15 @@ $activeChildId = $activeChildId ?? null;
                     <?php endif; ?>
 
                     <div class="card-body d-flex flex-column">
-                      <h5 class="card-title mb-1"><?= esc($ttl) ?></h5>
+                      <h5 class="card-title mb-1 cc-title"><?= esc($ttl) ?></h5>
 
-                      <?php if ($creator): ?>
-                        <div class="small text-muted mb-1">
+                      <div class="small text-muted mb-1 cc-creator">
+                        <?php if ($creator): ?>
                           Dibagikan oleh <?= esc($creator) ?>
-                        </div>
-                      <?php endif; ?>
+                        <?php endif; ?>
+                      </div>
 
-                      <div class="mb-2">
+                      <div class="mb-2 cc-badges">
                         <?php if ($sec): ?>
                           <span class="badge bg-light text-body border me-1">
                             Sektor: <?= esc($sec) ?>
@@ -300,10 +317,10 @@ $activeChildId = $activeChildId ?? null;
                         <?php endif; ?>
                       </div>
 
-                      <p class="card-text flex-grow-1"><?= clip($desc, 160) ?></p>
+                      <p class="card-text flex-grow-1 cc-desc"><?= clip($desc, 160) ?></p>
 
-                      <?php if (!empty($skills)): ?>
-                        <div class="mb-2">
+                      <div class="mb-2 cc-skills">
+                        <?php if (!empty($skills)): ?>
                           <?php foreach (array_slice($skills, 0, 3) as $sk): ?>
                             <span class="badge bg-light text-body border me-1">
                               <?= esc($sk) ?>
@@ -314,8 +331,8 @@ $activeChildId = $activeChildId ?? null;
                               +<?= count($skills) - 3 ?> skill lain
                             </span>
                           <?php endif; ?>
-                        </div>
-                      <?php endif; ?>
+                        <?php endif; ?>
+                      </div>
 
                       <div class="d-flex justify-content-between align-items-center mt-2">
                         <a class="btn btn-outline-primary btn-sm"
@@ -350,8 +367,14 @@ $activeChildId = $activeChildId ?? null;
             <?php endif; ?>
           </div>
 
-          <div class="mt-3">
-            <?= isset($pager) ? $pager->links() : '' ?>
+          <?php $info = isset($pager) ? pagerInfo($pager) : null; ?>
+          <?php if ($info): ?>
+            <p class="text-muted small mt-3 mb-1">
+              Menampilkan <?= $info[0] ?>-<?= $info[1] ?> dari <?= $info[2] ?> data
+            </p>
+          <?php endif; ?>
+          <div class="mt-1">
+            <?= isset($pager) ? $pager->links('default', 'bootstrap_pagination') : '' ?>
           </div>
         </div>
       </div>
@@ -472,20 +495,20 @@ $activeChildId = $activeChildId ?? null;
                     <?php endif; ?>
 
                     <div class="card-body d-flex flex-column">
-                      <h5 class="card-title mb-1">
+                      <h5 class="card-title mb-1 cc-title">
                         <?= esc($name) ?>
                         <?php if ($alias): ?>
                           <span class="text-muted small"> (<?= esc($alias) ?>)</span>
                         <?php endif; ?>
                       </h5>
 
-                      <?php if ($creatorUni): ?>
-                        <div class="small text-muted mb-1">
+                      <div class="small text-muted mb-1 cc-creator">
+                        <?php if ($creatorUni): ?>
                           Dibagikan oleh <?= esc($creatorUni) ?>
-                        </div>
-                      <?php endif; ?>
+                        <?php endif; ?>
+                      </div>
 
-                      <div class="mb-2">
+                      <div class="mb-2 cc-badges">
                         <?php if ($accr): ?>
                           <span class="badge bg-secondary me-1">
                             Akreditasi: <?= esc($accr) ?>
@@ -498,7 +521,7 @@ $activeChildId = $activeChildId ?? null;
                         <?php endif; ?>
                       </div>
 
-                      <p class="card-text flex-grow-1"><?= clip($desc, 160) ?></p>
+                      <p class="card-text flex-grow-1 cc-desc"><?= clip($desc, 160) ?></p>
 
                       <div class="d-flex justify-content-between align-items-center mt-2">
                         <a class="btn btn-outline-primary btn-sm"
@@ -534,8 +557,14 @@ $activeChildId = $activeChildId ?? null;
             </div>
 
             <?php if (isset($uniPager)): ?>
-              <div class="mt-3">
-                <?= $uniPager->links('universities') ?>
+              <?php $uniInfo = pagerInfo($uniPager, 'universities'); ?>
+              <?php if ($uniInfo): ?>
+                <p class="text-muted small mt-3 mb-1">
+                  Menampilkan <?= $uniInfo[0] ?>-<?= $uniInfo[1] ?> dari <?= $uniInfo[2] ?> data
+                </p>
+              <?php endif; ?>
+              <div class="mt-1">
+                <?= $uniPager->links('universities', 'bootstrap_pagination') ?>
               </div>
             <?php endif; ?>
           <?php endif; ?>
@@ -548,6 +577,24 @@ $activeChildId = $activeChildId ?? null;
 <style>
   .nav-tabs .nav-link { white-space: nowrap; }
   .btn { white-space: nowrap; }
+
+  /* Konsistensi tinggi kartu Karier & Perguruan Tinggi, apa pun panjang isinya */
+  .cc-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 2.6em;
+  }
+  .cc-creator { min-height: 1.3em; }
+  .cc-badges { min-height: 30px; }
+  .cc-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .cc-skills { min-height: 30px; }
 </style>
 
 <?= $this->endSection() ?>
