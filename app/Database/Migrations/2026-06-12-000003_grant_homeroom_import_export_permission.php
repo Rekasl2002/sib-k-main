@@ -19,6 +19,11 @@ class GrantHomeroomImportExportPermission extends Migration
             return;
         }
 
+        // DB instal-dari-nol belum punya roles (diisi RoleSeeder): lewati agar FK aman.
+        if ($this->db->table('roles')->where('id', 4)->countAllResults() === 0) {
+            return;
+        }
+
         $exists = $this->db->table('role_permissions')
             ->where('role_id', 4)
             ->where('permission_id', $permissionId)

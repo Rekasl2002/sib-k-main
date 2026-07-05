@@ -37,9 +37,31 @@ class CreateBkDevelopmentSchema extends Migration
         $this->db->query('SET FOREIGN_KEY_CHECKS=1');
     }
 
+    /**
+     * Cek tabel/kolom TANPA cache CI4.
+     * Saat seluruh migrasi dijalankan dalam SATU proses `spark migrate`
+     * (instal dari nol), cache daftar tabel/kolom menjadi basi setelah
+     * migrasi sebelumnya membuat tabel — guard bisa salah jawab dan
+     * CREATE TABLE gagal "already exists". Riwayat lama tidak terdampak
+     * karena tiap migrasi dulunya dijalankan pada proses terpisah.
+     */
+    private function tableExistsFresh(string $table): bool
+    {
+        $this->db->resetDataCache();
+
+        return $this->db->tableExists($table, false);
+    }
+
+    private function fieldExistsFresh(string $column, string $table): bool
+    {
+        $this->db->resetDataCache();
+
+        return $this->db->fieldExists($column, $table);
+    }
+
     private function createConsultationComplaints(): void
     {
-        if (! $this->db->tableExists('consultation_complaints')) {
+        if (! $this->tableExistsFresh('consultation_complaints')) {
             $this->db->query(<<<'SQL'
 CREATE TABLE consultation_complaints (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -79,7 +101,7 @@ CREATE TABLE consultation_complaints (
 SQL);
         }
 
-        if (! $this->db->tableExists('consultation_complaint_attachments')) {
+        if (! $this->tableExistsFresh('consultation_complaint_attachments')) {
             $this->db->query(<<<'SQL'
 CREATE TABLE consultation_complaint_attachments (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -101,7 +123,7 @@ SQL);
 
     private function createBkServiceRecords(): void
     {
-        if ($this->db->tableExists('bk_service_records')) {
+        if ($this->tableExistsFresh('bk_service_records')) {
             return;
         }
 
@@ -142,7 +164,7 @@ SQL);
 
     private function createBkServiceDetailTables(): void
     {
-        if (! $this->db->tableExists('guidances')) {
+        if (! $this->tableExistsFresh('guidances')) {
             $this->db->query(<<<'SQL'
 CREATE TABLE guidances (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -159,7 +181,7 @@ CREATE TABLE guidances (
 SQL);
         }
 
-        if (! $this->db->tableExists('parent_collaborations')) {
+        if (! $this->tableExistsFresh('parent_collaborations')) {
             $this->db->query(<<<'SQL'
 CREATE TABLE parent_collaborations (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -177,7 +199,7 @@ CREATE TABLE parent_collaborations (
 SQL);
         }
 
-        if (! $this->db->tableExists('home_visits')) {
+        if (! $this->tableExistsFresh('home_visits')) {
             $this->db->query(<<<'SQL'
 CREATE TABLE home_visits (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -195,7 +217,7 @@ CREATE TABLE home_visits (
 SQL);
         }
 
-        if (! $this->db->tableExists('case_conferences')) {
+        if (! $this->tableExistsFresh('case_conferences')) {
             $this->db->query(<<<'SQL'
 CREATE TABLE case_conferences (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -216,7 +238,7 @@ SQL);
 
     private function syncSessionTables(): void
     {
-        if ($this->db->tableExists('session_notes')) {
+        if ($this->tableExistsFresh('session_notes')) {
             $this->makeColumnNullableIfExists('session_notes', 'session_id', 'INT UNSIGNED NULL');
             $this->addColumnIfMissing('session_notes', 'bk_service_record_id', 'INT UNSIGNED NULL AFTER id');
             $this->addColumnIfMissing('session_notes', 'related_participant_id', 'INT UNSIGNED NULL AFTER attachments');
@@ -228,7 +250,7 @@ SQL);
             $this->addForeignKeyIfMissing('session_notes', 'fk_session_notes_bk_service', 'bk_service_record_id', 'bk_service_records', 'id', 'CASCADE', 'CASCADE');
         }
 
-        if ($this->db->tableExists('session_participants')) {
+        if ($this->tableExistsFresh('session_participants')) {
             $this->makeColumnNullableIfExists('session_participants', 'session_id', 'INT UNSIGNED NULL');
             $this->makeColumnNullableIfExists('session_participants', 'student_id', 'INT UNSIGNED NULL');
             $this->addColumnIfMissing('session_participants', 'bk_service_record_id', 'INT UNSIGNED NULL AFTER id');
@@ -247,7 +269,7 @@ SQL);
 
     private function syncCounselingSessions(): void
     {
-        if (! $this->db->tableExists('counseling_sessions')) {
+        if (! $this->tableExistsFresh('counseling_sessions')) {
             $this->db->query(<<<'SQL'
 CREATE TABLE counseling_sessions (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -278,7 +300,7 @@ SQL);
 
     private function createBkAssignments(): void
     {
-        if (! $this->db->tableExists('bk_assignments')) {
+        if (! $this->tableExistsFresh('bk_assignments')) {
             $this->db->query(<<<'SQL'
 CREATE TABLE bk_assignments (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -312,7 +334,7 @@ CREATE TABLE bk_assignments (
 SQL);
         }
 
-        if (! $this->db->tableExists('bk_assignment_status_histories')) {
+        if (! $this->tableExistsFresh('bk_assignment_status_histories')) {
             $this->db->query(<<<'SQL'
 CREATE TABLE bk_assignment_status_histories (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -332,7 +354,7 @@ CREATE TABLE bk_assignment_status_histories (
 SQL);
         }
 
-        if ($this->db->tableExists('bk_service_records')) {
+        if ($this->tableExistsFresh('bk_service_records')) {
             $this->addForeignKeyIfMissing('bk_service_records', 'fk_bk_service_assignment', 'assignment_id', 'bk_assignments', 'id', 'CASCADE', 'SET NULL');
         }
     }
@@ -359,14 +381,14 @@ SQL);
 
     private function cleanDeprecatedPointSettings(): void
     {
-        if ($this->db->tableExists('settings')) {
+        if ($this->tableExistsFresh('settings')) {
             $this->db->table('settings')->where('group', 'points')->delete();
         }
     }
 
     private function addColumnIfMissing(string $table, string $column, string $definition): void
     {
-        if (! $this->db->tableExists($table) || $this->db->fieldExists($column, $table)) {
+        if (! $this->tableExistsFresh($table) || $this->fieldExistsFresh($column, $table)) {
             return;
         }
 
@@ -375,7 +397,7 @@ SQL);
 
     private function makeColumnNullableIfExists(string $table, string $column, string $definition): void
     {
-        if (! $this->db->tableExists($table) || ! $this->db->fieldExists($column, $table)) {
+        if (! $this->tableExistsFresh($table) || ! $this->fieldExistsFresh($column, $table)) {
             return;
         }
 
@@ -413,7 +435,7 @@ SQL);
 
     private function ensurePermission(string $name, string $description): void
     {
-        if (! $this->db->tableExists('permissions')) {
+        if (! $this->tableExistsFresh('permissions')) {
             return;
         }
 

@@ -50,6 +50,13 @@ class GrantDataManagementPermissions extends Migration
         }
 
         foreach ($this->rolePermissions as $roleId => $permissionNames) {
+            // DB instal-dari-nol belum punya roles (diisi RoleSeeder, bukan migrasi):
+            // lewati agar FK tidak gagal; RolePermissionSeeder yang akan memetakan izin.
+            $roleExists = $this->db->table('roles')->where('id', $roleId)->countAllResults();
+            if ($roleExists === 0) {
+                continue;
+            }
+
             foreach ($permissionNames as $permissionName) {
                 $permissionId = $permissionMap[$permissionName] ?? 0;
                 if ($permissionId <= 0) {

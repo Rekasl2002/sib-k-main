@@ -59,6 +59,11 @@ class GrantViewStaffInfoPermission extends Migration
         }
 
         foreach ($this->rolePermissions as $roleId => $permissionNames) {
+            // DB instal-dari-nol belum punya roles (diisi RoleSeeder): lewati agar FK aman.
+            if ($this->db->table('roles')->where('id', $roleId)->countAllResults() === 0) {
+                continue;
+            }
+
             foreach ($permissionNames as $permissionName) {
                 $permissionId = $permissionMap[$permissionName] ?? 0;
                 if ($permissionId <= 0) {
