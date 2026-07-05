@@ -183,12 +183,6 @@ $__permViewAllStudents           = $__can('view_all_students');
 $__permImportExport              = $__can('import_export_data');
 $__permManageSettings            = $__can('manage_settings');
 
-$__permViewCounselingSessions    = $__can('view_counseling_sessions');
-$__permManageCounselingSessions  = $__can('manage_counseling_sessions');
-
-$__permViewCounselingSchedule    = $__canAny(['view_counseling_schedule', 'schedule_counseling']);
-
-$__permViewReports               = $__can('view_reports');
 $__permViewReportsAggregate      = $__canAny(['view_reports_aggregate']);
 $__permViewReportsIndividual     = $__canAny(['view_reports_individual']);
 $__permGenerateReportsAggregate  = $__can('generate_reports_aggregate');
@@ -212,7 +206,6 @@ $__permSubmitConsultations       = $__can('submit_consultation_complaints');
 $__permReviewConsultations       = $__canAny(['review_consultation_complaints', 'manage_consultation_complaints']);
 $__permViewBkAssignments         = $__can('view_bk_assignments');
 $__permManageBkAssignments       = $__can('manage_bk_assignments');
-$__permViewBkReports             = $__can('view_bk_reports');
 
 // Sakelar fitur Konsultasi & Pengaduan dari Pengaturan Aplikasi Admin.
 $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSubmitConsultations): bool {

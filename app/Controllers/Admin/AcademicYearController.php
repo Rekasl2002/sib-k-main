@@ -31,8 +31,8 @@ class AcademicYearController extends BaseController
      */
     protected function ensurePermission(): void
     {
-        // Pastikan helper/func ini memang ada di proyek kamu (kamu sudah pakai di index())
-        require_permission('manage_academic_years');
+        // Samakan dengan filter rute admin/academic-years (permission:manage_academic_data).
+        require_permission('manage_academic_data');
     }
 
     /**
