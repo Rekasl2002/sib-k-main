@@ -71,6 +71,16 @@ $valPhone    = old('phone',     $user['phone']    ?? '');
 
 // Peran terbatas => tombol Ajukan Perubahan (opsional, saat ini masih komentar)
 $restricted = ($roleName === 'Orang Tua' || $roleName === 'Siswa');
+
+// Breadcrumb: halaman ini dipakai semua peran — tautan dashboard mengikuti peran.
+$__crumbDash = [
+    'Admin'          => ['admin/dashboard', 'Admin'],
+    'Koordinator BK' => ['koordinator/dashboard', 'Koordinator'],
+    'Guru BK'        => ['counselor/dashboard', 'Guru BK'],
+    'Wali Kelas'     => ['homeroom/dashboard', 'Wali Kelas'],
+    'Siswa'          => ['student/dashboard', 'Siswa'],
+    'Orang Tua'      => ['parent/dashboard', 'Orang Tua'],
+][$roleName] ?? null;
 ?>
 
 <div class="page-content">
@@ -80,8 +90,13 @@ $restricted = ($roleName === 'Orang Tua' || $roleName === 'Siswa');
       <div class="col">
         <h4 class="mb-0">PROFIL PENGGUNA</h4>
       </div>
-      <div class="col-auto text-muted">
-        <small><?= esc($roleName) ?></small>
+      <div class="col-auto">
+        <ol class="breadcrumb m-0">
+          <?php if ($__crumbDash): ?>
+            <li class="breadcrumb-item"><a href="<?= base_url($__crumbDash[0]) ?>"><?= esc($__crumbDash[1]) ?></a></li>
+          <?php endif; ?>
+          <li class="breadcrumb-item active">Profil Saya</li>
+        </ol>
       </div>
     </div>
 

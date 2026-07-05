@@ -67,9 +67,16 @@ $logoSrc = $srcOld !== null
     <i class="mdi mdi-bank me-2"></i>
     <?= $isEdit ? 'Edit Info Universitas' : 'Tambah Info Universitas' ?>
   </h4>
-  <a href="<?= site_url('counselor/career-info/universities?tab=universities') ?>" class="btn btn-sm btn-secondary">
-    &larr; Kembali
-  </a>
+  <div class="d-flex align-items-center flex-wrap gap-3 page-title-right">
+    <ol class="breadcrumb m-0">
+      <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Guru BK</a></li>
+      <li class="breadcrumb-item"><a href="<?= site_url('counselor/career-info/universities?tab=universities') ?>">Info Karier dan Studi Lanjut</a></li>
+      <li class="breadcrumb-item active"><?= $isEdit ? 'Edit' : 'Tambah' ?></li>
+    </ol>
+    <a href="<?= site_url('counselor/career-info/universities?tab=universities') ?>" class="btn btn-sm btn-secondary">
+      &larr; Kembali
+    </a>
+  </div>
 </div>
 
 <?php if ($msg = session()->getFlashdata('error')): ?>

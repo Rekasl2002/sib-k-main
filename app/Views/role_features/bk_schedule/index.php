@@ -70,6 +70,16 @@ $idTime = static function (?string $raw): ?string {
 
 $totalUpcoming = 0;
 foreach ($schedule as $rows) { $totalUpcoming += count($rows); }
+
+// Breadcrumb: halaman ini dipakai bersama Siswa/Orang Tua/Wali Kelas — peran
+// ditentukan dari segmen pertama URL.
+$__crumbSeg   = (string) (service('uri')->getSegment(1) ?? '');
+$__crumbRoles = [
+    'student'  => ['student/dashboard', 'Siswa'],
+    'parent'   => ['parent/dashboard', 'Orang Tua'],
+    'homeroom' => ['homeroom/dashboard', 'Wali Kelas'],
+];
+$__crumbRole = $__crumbRoles[$__crumbSeg] ?? null;
 ?>
 
 <div class="row">
@@ -81,15 +91,23 @@ foreach ($schedule as $rows) { $totalUpcoming += count($rows); }
           <?= $isHistory ? 'Arsip kegiatan/acara BK yang sudah lewat.' : 'Jadwal kegiatan/acara BK yang akan datang.' ?>
         </p>
       </div>
-      <?php if ($historyUrl): ?>
-        <div class="btn-group">
-          <?php if ($isHistory): ?>
-            <a href="<?= esc($historyUrl['back'] ?? '#', 'attr') ?>" class="btn btn-outline-primary"><i class="mdi mdi-calendar-clock me-1"></i> Jadwal Akan Datang</a>
-          <?php else: ?>
-            <a href="<?= esc($historyUrl['history'] ?? '#', 'attr') ?>" class="btn btn-outline-secondary"><i class="mdi mdi-history me-1"></i> Riwayat</a>
-          <?php endif; ?>
-        </div>
-      <?php endif; ?>
+      <div class="d-flex align-items-center flex-wrap gap-3 page-title-right">
+        <?php if ($__crumbRole): ?>
+          <ol class="breadcrumb m-0">
+            <li class="breadcrumb-item"><a href="<?= base_url($__crumbRole[0]) ?>"><?= esc($__crumbRole[1]) ?></a></li>
+            <li class="breadcrumb-item active"><?= esc($title) ?></li>
+          </ol>
+        <?php endif; ?>
+        <?php if ($historyUrl): ?>
+          <div class="btn-group">
+            <?php if ($isHistory): ?>
+              <a href="<?= esc($historyUrl['back'] ?? '#', 'attr') ?>" class="btn btn-outline-primary"><i class="mdi mdi-calendar-clock me-1"></i> Jadwal Akan Datang</a>
+            <?php else: ?>
+              <a href="<?= esc($historyUrl['history'] ?? '#', 'attr') ?>" class="btn btn-outline-secondary"><i class="mdi mdi-history me-1"></i> Riwayat</a>
+            <?php endif; ?>
+          </div>
+        <?php endif; ?>
+      </div>
     </div>
   </div>
 </div>

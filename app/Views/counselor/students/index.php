@@ -47,7 +47,7 @@ $useShowAlerts = function_exists('show_alerts');
 
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Guru BK</a></li>
                     <li class="breadcrumb-item active">Siswa</li>
                 </ol>
             </div>

@@ -25,7 +25,7 @@ $isSingleClass = $hasClasses && count($classes) <= 1;
       <h4 class="mb-sm-0">Laporan Kelas (Wali Kelas)</h4>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item"><a href="<?= site_url('homeroom_teacher/dashboard') ?>">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Wali Kelas</a></li>
           <li class="breadcrumb-item active">Laporan</li>
         </ol>
       </div>

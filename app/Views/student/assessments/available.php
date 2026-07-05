@@ -62,7 +62,11 @@ $inProgressByAssessment = isset($inProgressByAssessment) && is_array($inProgress
   <div class="container-fluid">
     <div class="d-flex align-items-center justify-content-between mb-3">
       <h4 class="mb-0">Asesmen Tersedia</h4>
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end">
+        <ol class="breadcrumb m-0 me-2">
+          <li class="breadcrumb-item"><a href="<?= base_url('student/dashboard') ?>">Siswa</a></li>
+          <li class="breadcrumb-item active">Asesmen</li>
+        </ol>
         <a href="<?= function_exists('route_to') ? route_to('student.assessments.results') : base_url('student/assessments/results') ?>" class="btn btn-sm btn-outline-secondary">
           <i class="fas fa-clipboard-check me-1"></i> Riwayat Hasil
         </a>

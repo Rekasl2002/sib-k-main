@@ -324,7 +324,7 @@ $renderReportContent = static function () use (
             <h4 class="mb-sm-0">CETAK DATA ANAK</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="<?= base_url('parent/dashboard') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_url('parent/dashboard') ?>">Orang Tua</a></li>
                     <li class="breadcrumb-item"><a href="<?= base_url('parent/reports/children') ?>">Cetak Data Anak</a></li>
                     <li class="breadcrumb-item active">Lihat/Cetak</li>
                 </ol>

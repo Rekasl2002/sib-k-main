@@ -39,9 +39,15 @@ $targetIcons = [
         <h4 class="mb-sm-0 text-dark">Asesmen</h4>
         <p class="text-dark mb-0">Kelola asesmen psikologi, minat bakat, dan lainnya untuk siswa.</p>
       </div>
-      <a href="<?= site_url($prefix . '/create') ?>" class="btn btn-primary">
-        <i class="mdi mdi-plus me-1"></i> Tambah Asesmen
-      </a>
+      <div class="d-flex align-items-center flex-wrap gap-3 page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Guru BK</a></li>
+          <li class="breadcrumb-item active">Asesmen</li>
+        </ol>
+        <a href="<?= site_url($prefix . '/create') ?>" class="btn btn-primary">
+          <i class="mdi mdi-plus me-1"></i> Tambah Asesmen
+        </a>
+      </div>
     </div>
   </div>
 </div>

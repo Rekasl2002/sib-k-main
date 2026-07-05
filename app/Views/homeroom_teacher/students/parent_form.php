@@ -23,7 +23,14 @@ $val = static fn (string $key, $default = '') => old($key, $parent[$key] ?? $def
         <h4 class="mb-sm-0"><?= esc($pageTitle ?? ($isEdit ? 'Edit Akun Orang Tua' : 'Tambah Akun Orang Tua')) ?></h4>
         <p class="text-muted mb-0">Akun ini dapat dihubungkan ke satu atau beberapa siswa.</p>
       </div>
-      <a href="<?= base_url('homeroom/parents') ?>" class="btn btn-outline-secondary">Kembali</a>
+      <div class="d-flex align-items-center flex-wrap gap-3 page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Wali Kelas</a></li>
+          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/parents') ?>">Akun Orang Tua</a></li>
+          <li class="breadcrumb-item active"><?= $isEdit ? 'Edit' : 'Tambah' ?></li>
+        </ol>
+        <a href="<?= base_url('homeroom/parents') ?>" class="btn btn-outline-secondary">Kembali</a>
+      </div>
     </div>
   </div>
 </div>

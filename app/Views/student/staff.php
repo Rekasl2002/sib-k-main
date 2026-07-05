@@ -156,7 +156,7 @@ if (!function_exists('staff_card')) {
             <h4 class="mb-sm-0">Info Guru BK & Wali Kelas</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="<?= route_to('student.dashboard') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= route_to('student.dashboard') ?>">Siswa</a></li>
                     <li class="breadcrumb-item active">Info Guru</li>
                 </ol>
             </div>

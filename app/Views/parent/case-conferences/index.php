@@ -25,11 +25,17 @@ $canManage = ! empty($canManage);
         <h4 class="mb-sm-0"><?= esc($title) ?></h4>
         <p class="text-muted mb-0">Tampilan <?= esc($roleLabel ?? 'Pengguna') ?> untuk layanan <?= esc($serviceType ?? 'BK') ?>.</p>
       </div>
-      <?php if ($canManage): ?>
-        <a href="<?= site_url($routePrefix . '/create') ?>" class="btn btn-primary">
-          <i class="mdi mdi-plus me-1"></i> Tambah
-        </a>
-      <?php endif; ?>
+      <div class="d-flex align-items-center flex-wrap gap-3 page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="<?= base_url('parent/dashboard') ?>">Orang Tua</a></li>
+          <li class="breadcrumb-item active"><?= esc($serviceType) ?></li>
+        </ol>
+        <?php if ($canManage): ?>
+          <a href="<?= site_url($routePrefix . '/create') ?>" class="btn btn-primary">
+            <i class="mdi mdi-plus me-1"></i> Tambah
+          </a>
+        <?php endif; ?>
+      </div>
     </div>
   </div>
 </div>

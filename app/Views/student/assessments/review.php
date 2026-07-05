@@ -177,6 +177,15 @@ $releaseAt = $res['result_release_at'] ?? null;
 ?>
 
 
+<nav aria-label="breadcrumb" class="mb-2">
+  <ol class="breadcrumb m-0 justify-content-end">
+    <li class="breadcrumb-item"><a href="<?= base_url('student/dashboard') ?>">Siswa</a></li>
+    <li class="breadcrumb-item"><a href="<?= function_exists('route_to') ? route_to('student.assessments.available') : base_url('student/assessments/available') ?>">Asesmen</a></li>
+    <li class="breadcrumb-item"><a href="<?= function_exists('route_to') ? route_to('student.assessments.results') : base_url('student/assessments/results') ?>">Riwayat Hasil</a></li>
+    <li class="breadcrumb-item active">Ringkasan Hasil</li>
+  </ol>
+</nav>
+
 <div class="d-flex align-items-center justify-content-between mb-3">
   <div>
     <h4 class="mb-1">

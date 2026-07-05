@@ -29,7 +29,12 @@ $statusVal = $row['status'] ?? '-';
         <h4 class="mb-sm-0 text-dark"><?= esc($row['title'] ?? 'Konsultasi & Pengaduan') ?></h4>
         <p class="text-dark mb-0"><?= esc($row['request_type'] ?? '-') ?> &middot; <span class="badge bg-<?= esc($statusColors[$statusVal] ?? 'secondary', 'attr') ?>"><?= esc($statusVal) ?></span></p>
       </div>
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end page-title-right">
+        <ol class="breadcrumb m-0 me-2">
+          <li class="breadcrumb-item"><a href="<?= base_url('student/dashboard') ?>">Siswa</a></li>
+          <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>">Konsultasi &amp; Pengaduan</a></li>
+          <li class="breadcrumb-item active">Detail</li>
+        </ol>
         <a href="<?= site_url($routePrefix) ?>" class="btn btn-outline-secondary">Kembali</a>
         <?php if (! empty($canSubmit) && (int) ($row['reporter_user_id'] ?? 0) === $me && in_array($statusVal, ['Diajukan','Ditinjau'], true)): ?>
           <a href="<?= site_url($routePrefix . '/edit/' . (int) $row['id']) ?>" class="btn btn-primary">Edit</a>

@@ -37,7 +37,18 @@ $creatorName = trim((string) ($career['created_by_name'] ?? ''));
     <div class="col-12">
         <div class="page-title-box d-flex align-items-center justify-content-between">
             <h4 class="mb-0">Detail Karier</h4>
-            <div class="page-title-right">
+            <div class="page-title-right d-flex align-items-center flex-wrap gap-3">
+                <?php if (! empty($crumbs) && is_array($crumbs)): ?>
+                    <ol class="breadcrumb m-0">
+                        <?php foreach (array_values($crumbs) as $ci => $c): ?>
+                            <?php if (! empty($c['url']) && $ci < count($crumbs) - 1): ?>
+                                <li class="breadcrumb-item"><a href="<?= esc($c['url'], 'attr') ?>"><?= esc($c['label'] ?? '') ?></a></li>
+                            <?php else: ?>
+                                <li class="breadcrumb-item active"><?= esc($c['label'] ?? '') ?></li>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </ol>
+                <?php endif; ?>
                 <a href="<?= esc($backUrl, 'attr') ?>" class="btn btn-secondary btn-sm">
                     <i class="mdi mdi-arrow-left me-1"></i> Kembali
                 </a>

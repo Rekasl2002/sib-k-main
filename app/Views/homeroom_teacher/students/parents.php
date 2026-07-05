@@ -34,7 +34,7 @@ $statusColIdx = 6;
             <h4 class="mb-0"><i class="mdi mdi-account-supervisor me-2"></i>Akun Orang Tua</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Wali Kelas</a></li>
                     <li class="breadcrumb-item"><a href="<?= base_url('homeroom/my-class') ?>">Kelas Binaan</a></li>
                     <li class="breadcrumb-item active">Akun Orang Tua</li>
                 </ol>

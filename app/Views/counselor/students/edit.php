@@ -31,7 +31,7 @@ $statusOptions  = is_array($status_options ?? null) ? $status_options : ['Aktif'
             <h4 class="mb-0">Edit Siswa</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Guru BK</a></li>
                     <li class="breadcrumb-item"><a href="<?= base_url('counselor/students') ?>">Siswa Binaan</a></li>
                     <li class="breadcrumb-item active">Edit Siswa</li>
                 </ol>

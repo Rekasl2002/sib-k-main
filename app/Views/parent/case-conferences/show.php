@@ -27,7 +27,12 @@ $participantName = static function (array $p): string {
         <h4 class="mb-sm-0"><?= esc($row['title'] ?? $title ?? 'Detail Layanan BK') ?></h4>
         <p class="text-muted mb-0"><?= esc($serviceType ?? '-') ?> - <?= esc($roleLabel ?? 'Pengguna') ?></p>
       </div>
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end page-title-right">
+        <ol class="breadcrumb m-0 me-2">
+          <li class="breadcrumb-item"><a href="<?= base_url('parent/dashboard') ?>">Orang Tua</a></li>
+          <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>"><?= esc($serviceType) ?></a></li>
+          <li class="breadcrumb-item active">Detail</li>
+        </ol>
         <a href="<?= site_url($routePrefix) ?>" class="btn btn-outline-secondary">Kembali</a>
         <?php if ($canManage): ?>
           <a href="<?= site_url($routePrefix . '/edit/' . (int) $row['id']) ?>" class="btn btn-primary">Edit</a>

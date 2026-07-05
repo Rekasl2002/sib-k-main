@@ -1,6 +1,14 @@
 <?= $this->extend('layouts/main'); ?>
 <?= $this->section('content'); ?>
 <div class="container-fluid">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0"><?= isset($user) ? 'Edit Akun Staf' : 'Tambah Akun Staf'; ?></h4>
+    <ol class="breadcrumb m-0">
+      <li class="breadcrumb-item"><a href="<?= base_url('koordinator/dashboard') ?>">Koordinator</a></li>
+      <li class="breadcrumb-item"><a href="<?= route_to('koordinator.staff.index'); ?>">Staf</a></li>
+      <li class="breadcrumb-item active"><?= isset($user) ? 'Edit' : 'Tambah'; ?></li>
+    </ol>
+  </div>
   <div class="row">
     <div class="col-lg-8">
       <div class="card">

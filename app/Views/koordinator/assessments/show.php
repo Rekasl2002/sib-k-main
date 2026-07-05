@@ -95,7 +95,12 @@ if ($target === 'Class' && !empty($assessment['target_class_name'])) {
           <?php endif; ?>
         </div>
       </div>
-      <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0">
+      <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0 align-items-center">
+        <ol class="breadcrumb m-0 me-2 align-self-center">
+          <li class="breadcrumb-item"><a href="<?= base_url('koordinator/dashboard') ?>">Koordinator</a></li>
+          <li class="breadcrumb-item"><a href="<?= base_url('koordinator/assessments') ?>">Asesmen</a></li>
+          <li class="breadcrumb-item active">Detail</li>
+        </ol>
         <a href="<?= base_url('koordinator/assessments') ?>" class="btn btn-secondary"><i class="mdi mdi-arrow-left me-1"></i>Kembali</a>
         <a href="<?= base_url('koordinator/assessments/'.$aid.'/questions') ?>" class="btn btn-outline-primary"><i class="mdi mdi-help-box me-1"></i>Kelola Soal</a>
         <a href="<?= base_url('koordinator/assessments/'.$aid.'/results') ?>" class="btn btn-outline-info"><i class="mdi mdi-chart-bar me-1"></i>Hasil</a>

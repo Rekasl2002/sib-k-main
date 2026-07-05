@@ -172,7 +172,7 @@ function staff_card(string $title, ?array $u, string $studentName, string $class
             <h4 class="mb-sm-0">Info Guru BK & Wali Kelas</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="<?= route_to('parent.dashboard') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= route_to('parent.dashboard') ?>">Orang Tua</a></li>
                     <li class="breadcrumb-item active">Info Guru</li>
                 </ol>
             </div>

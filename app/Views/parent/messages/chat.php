@@ -50,7 +50,7 @@ $avatar = function (array $info, int $size) use ($photoSrc, $roleColor): string 
 ?>
 
 <style>
-  .chat-wrap { display:flex; flex-direction:column; height:calc(100vh - 230px); min-height:420px; }
+  .chat-wrap { display:flex; flex-direction:column; height:calc(100vh - 262px); min-height:420px; }
   .chat-body { flex:1 1 auto; overflow-y:auto; padding:1rem; background:#f5f6fa; }
   .chat-row { display:flex; margin-bottom:.5rem; }
   .chat-row.mine { justify-content:flex-end; }
@@ -60,6 +60,21 @@ $avatar = function (array $info, int $size) use ($photoSrc, $roleColor): string 
   .chat-bubble .chat-time { font-size:.7rem; color:#555; text-align:right; margin-top:.15rem; }
   .chat-bubble .chat-att a { font-size:.8rem; }
 </style>
+
+<?php
+// Breadcrumb: label peran diambil dari $basePath yang dikirim controller per peran.
+$__crumbRoles = [
+    'admin' => 'Admin', 'koordinator' => 'Koordinator', 'counselor' => 'Guru BK',
+    'homeroom' => 'Wali Kelas', 'student' => 'Siswa', 'parent' => 'Orang Tua',
+];
+?>
+<div class="d-flex justify-content-end mb-2">
+  <ol class="breadcrumb m-0">
+    <li class="breadcrumb-item"><a href="<?= base_url($basePath . '/dashboard') ?>"><?= esc($__crumbRoles[$basePath] ?? 'Beranda') ?></a></li>
+    <li class="breadcrumb-item"><a href="<?= $msgBase ?>">Pesan</a></li>
+    <li class="breadcrumb-item active">Percakapan</li>
+  </ol>
+</div>
 
 <div class="row">
   <div class="col-12">

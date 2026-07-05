@@ -40,7 +40,7 @@ $fieldError = static fn (string $key): string => isset($errors[$key]) ? '<div cl
       </div>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Wali Kelas</a></li>
           <li class="breadcrumb-item"><a href="<?= base_url('homeroom/my-class') ?>">Kelas Binaan</a></li>
           <li class="breadcrumb-item active"><?= $isEdit ? 'Edit' : 'Tambah' ?></li>
         </ol>

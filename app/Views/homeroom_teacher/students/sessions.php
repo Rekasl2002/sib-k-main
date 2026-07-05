@@ -119,7 +119,7 @@ foreach ($all as $it) {
       </div>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Wali Kelas</a></li>
           <li class="breadcrumb-item active">Sesi Konseling</li>
         </ol>
       </div>

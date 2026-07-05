@@ -53,7 +53,14 @@ $showStudent  = in_array($roleKey, ['orang-tua', 'wali-kelas'], true) || ! empty
   <div class="col-12">
     <div class="page-title-box d-sm-flex align-items-center justify-content-between">
       <h4 class="mb-sm-0 text-dark"><?= esc($title ?? 'Konsultasi & Pengaduan') ?></h4>
-      <a href="<?= site_url($routePrefix) ?>" class="btn btn-outline-secondary">Kembali</a>
+      <div class="d-flex align-items-center flex-wrap gap-3 page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="<?= base_url('parent/dashboard') ?>">Orang Tua</a></li>
+          <li class="breadcrumb-item"><a href="<?= site_url($routePrefix) ?>">Konsultasi &amp; Pengaduan</a></li>
+          <li class="breadcrumb-item active"><?= ! empty($row['id']) ? 'Edit' : 'Ajukan' ?></li>
+        </ol>
+        <a href="<?= site_url($routePrefix) ?>" class="btn btn-outline-secondary">Kembali</a>
+      </div>
     </div>
   </div>
 </div>

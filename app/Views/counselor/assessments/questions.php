@@ -22,7 +22,12 @@ $errors       = session('errors') ?? [];
         <i class="mdi mdi-help-box me-1"></i>
         Soal: <?= esc($assessment['title'] ?? '') ?>
       </h4>
-      <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0">
+      <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0 align-items-center">
+        <ol class="breadcrumb m-0 me-2 align-self-center">
+          <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Guru BK</a></li>
+          <li class="breadcrumb-item"><a href="<?= base_url('counselor/assessments') ?>">Asesmen</a></li>
+          <li class="breadcrumb-item active">Soal</li>
+        </ol>
         <a class="btn btn-secondary btn-sm" href="<?= site_url('counselor/assessments/'.$assessment['id']) ?>">
           <i class="mdi mdi-arrow-left me-1"></i> Detail Asesmen
         </a>

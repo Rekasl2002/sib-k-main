@@ -64,9 +64,16 @@ $targetTextMap = ['Individual' => 'Individu', 'Class' => 'Kelas', 'Grade' => 'Ti
         <h4 class="mb-sm-0 text-dark"><i class="mdi mdi-account-plus me-1"></i>Tugaskan Asesmen</h4>
         <p class="text-dark mb-0">Pilih siswa yang akan mengerjakan asesmen: <strong><?= esc($assessment['title']) ?></strong></p>
       </div>
-      <a href="<?= base_url('koordinator/assessments/show/' . $assessment['id']) ?>" class="btn btn-secondary mt-2 mt-sm-0">
-        <i class="mdi mdi-arrow-left me-1"></i> Kembali
-      </a>
+      <div class="d-flex align-items-center flex-wrap gap-3 page-title-right mt-2 mt-sm-0">
+        <ol class="breadcrumb m-0 me-2 align-self-center">
+          <li class="breadcrumb-item"><a href="<?= base_url('koordinator/dashboard') ?>">Koordinator</a></li>
+          <li class="breadcrumb-item"><a href="<?= base_url('koordinator/assessments') ?>">Asesmen</a></li>
+          <li class="breadcrumb-item active">Tugaskan</li>
+        </ol>
+        <a href="<?= base_url('koordinator/assessments/show/' . $assessment['id']) ?>" class="btn btn-secondary">
+          <i class="mdi mdi-arrow-left me-1"></i> Kembali
+        </a>
+      </div>
     </div>
   </div>
 </div>

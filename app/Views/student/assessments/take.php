@@ -125,7 +125,14 @@ $submitUrl = function_exists('route_to')
     <div class="d-flex align-items-center justify-content-between mb-3">
       <h4 class="mb-0">Kerjakan Asesmen</h4>
       <?php $toAvail = function_exists('route_to') ? route_to('student.assessments') : base_url('student/assessments'); ?>
-      <a class="btn btn-light" href="<?= $toAvail ?>">Kembali</a>
+      <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end">
+        <ol class="breadcrumb m-0 me-2">
+          <li class="breadcrumb-item"><a href="<?= base_url('student/dashboard') ?>">Siswa</a></li>
+          <li class="breadcrumb-item"><a href="<?= $toAvail ?>">Asesmen</a></li>
+          <li class="breadcrumb-item active">Kerjakan</li>
+        </ol>
+        <a class="btn btn-light" href="<?= $toAvail ?>">Kembali</a>
+      </div>
     </div>
 
     <div class="card">

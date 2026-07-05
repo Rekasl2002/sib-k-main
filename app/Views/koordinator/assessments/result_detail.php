@@ -184,6 +184,15 @@ $flashSuccess = session()->getFlashdata('success');
 $flashError   = session()->getFlashdata('error');
 ?>
 
+<nav aria-label="breadcrumb" class="mb-2">
+  <ol class="breadcrumb m-0 justify-content-end">
+    <li class="breadcrumb-item"><a href="<?= base_url('koordinator/dashboard') ?>">Koordinator</a></li>
+    <li class="breadcrumb-item"><a href="<?= base_url('koordinator/assessments') ?>">Asesmen</a></li>
+    <li class="breadcrumb-item"><a href="<?= site_url('koordinator/assessments/' . $assessmentId . '/results') ?>">Hasil</a></li>
+    <li class="breadcrumb-item active">Detail Hasil</li>
+  </ol>
+</nav>
+
 <div class="d-flex align-items-center justify-content-between mb-3" id="top">
   <div>
     <h4 class="mb-1">

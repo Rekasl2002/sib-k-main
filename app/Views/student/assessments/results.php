@@ -99,9 +99,16 @@ if (!function_exists('pass_fail_cell')) {
   <div class="container-fluid">
     <div class="d-flex align-items-center justify-content-between mb-3">
       <h4 class="mb-0">Riwayat Hasil Asesmen</h4>
-      <a href="<?= function_exists('route_to') ? route_to('student.assessments.available') : base_url('student/assessments/available') ?>" class="btn btn-sm btn-outline-secondary">
-        <i class="fas fa-list me-1"></i> Asesmen Tersedia
-      </a>
+      <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end">
+        <ol class="breadcrumb m-0 me-2">
+          <li class="breadcrumb-item"><a href="<?= base_url('student/dashboard') ?>">Siswa</a></li>
+          <li class="breadcrumb-item"><a href="<?= function_exists('route_to') ? route_to('student.assessments.available') : base_url('student/assessments/available') ?>">Asesmen</a></li>
+          <li class="breadcrumb-item active">Riwayat Hasil</li>
+        </ol>
+        <a href="<?= function_exists('route_to') ? route_to('student.assessments.available') : base_url('student/assessments/available') ?>" class="btn btn-sm btn-outline-secondary">
+          <i class="fas fa-list me-1"></i> Asesmen Tersedia
+        </a>
+      </div>
     </div>
 
 

@@ -105,7 +105,12 @@
                 <h4 class="mb-sm-0 text-dark">Hasil Asesmen</h4>
                 <p class="text-dark mb-0"><strong><?= esc($assessment['title'] ?? '-') ?></strong></p>
             </div>
-            <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0">
+            <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0 align-items-center">
+              <ol class="breadcrumb m-0 me-2 align-self-center">
+                <li class="breadcrumb-item"><a href="<?= base_url('koordinator/dashboard') ?>">Koordinator</a></li>
+                <li class="breadcrumb-item"><a href="<?= base_url('koordinator/assessments') ?>">Asesmen</a></li>
+                <li class="breadcrumb-item active">Hasil</li>
+              </ol>
                 <a href="<?= base_url('koordinator/assessments/show/' . $assessmentId) ?>" class="btn btn-secondary">
                     <i class="mdi mdi-arrow-left me-1"></i> Kembali
                 </a>

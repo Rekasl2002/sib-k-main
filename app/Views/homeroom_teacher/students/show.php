@@ -178,7 +178,7 @@ $avatarSrc = user_avatar($photo);
             <h4 class="mb-0">Detail Siswa</h4>
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Wali Kelas</a></li>
                     <li class="breadcrumb-item"><a href="<?= base_url('homeroom/my-class') ?>">Kelas Binaan</a></li>
                     <li class="breadcrumb-item active">Detail Siswa</li>
                 </ol>

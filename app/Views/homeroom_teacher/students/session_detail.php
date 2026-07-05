@@ -113,7 +113,7 @@ if (!function_exists('fmtDateTime')) {
         &laquo; Kembali ke Jadwal
       </a>
       <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Wali Kelas</a></li>
           <li class="breadcrumb-item"><a href="<?= base_url('homeroom/sessions') ?>">Sesi Konseling</a></li>          
           <li class="breadcrumb-item active">Detail Sesi Konseling</li>
         </ol>

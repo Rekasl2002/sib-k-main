@@ -92,7 +92,7 @@ if ($avatarPath) {
           <h4 class="mb-sm-0">Profil Siswa</h4>
           <div class="page-title-right">
             <ol class="breadcrumb m-0">
-              <li class="breadcrumb-item"><a href="<?= route_to('student.dashboard') ?>">Dashboard</a></li>
+              <li class="breadcrumb-item"><a href="<?= route_to('student.dashboard') ?>">Siswa</a></li>
               <li class="breadcrumb-item active">Profil</li>
             </ol>
           </div>

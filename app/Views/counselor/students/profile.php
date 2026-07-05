@@ -87,7 +87,7 @@ if (!empty($birthDate)) {
 
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Guru BK</a></li>
                     <li class="breadcrumb-item"><a href="<?= base_url('counselor/students') ?>">Siswa</a></li>
                     <li class="breadcrumb-item active">Profil Siswa</li>
                 </ol>

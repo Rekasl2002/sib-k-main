@@ -20,7 +20,12 @@ $children = is_array($children ?? null) ? $children : [];
         <h4 class="mb-sm-0">Detail Orang Tua</h4>
         <p class="text-muted mb-0"><?= esc($parent['full_name'] ?? '-') ?></p>
       </div>
-      <div class="d-flex gap-2">
+      <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end">
+        <ol class="breadcrumb m-0 me-2">
+          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Wali Kelas</a></li>
+          <li class="breadcrumb-item"><a href="<?= base_url('homeroom/parents') ?>">Akun Orang Tua</a></li>
+          <li class="breadcrumb-item active">Detail</li>
+        </ol>
         <a href="<?= base_url('homeroom/parents/edit/' . (int) ($parent['id'] ?? 0)) ?>" class="btn btn-primary">Edit</a>
         <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#resetPasswordParentModal">
             <i class="mdi mdi-key-variant me-1"></i>Reset Password

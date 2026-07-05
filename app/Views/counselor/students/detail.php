@@ -36,9 +36,16 @@
     <div class="col-12">
         <div class="page-title-box d-sm-flex align-items-center justify-content-between">
             <h4 class="mb-sm-0">Detail Siswa</h4>
-            <a href="<?= base_url('counselor/students') ?>" class="btn btn-sm btn-secondary">
-                <i class="mdi mdi-arrow-left"></i> Kembali
-            </a>
+            <div class="d-flex align-items-center flex-wrap gap-3 page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Guru BK</a></li>
+                    <li class="breadcrumb-item"><a href="<?= base_url('counselor/students') ?>">Siswa Binaan</a></li>
+                    <li class="breadcrumb-item active">Detail</li>
+                </ol>
+                <a href="<?= base_url('counselor/students') ?>" class="btn btn-sm btn-secondary">
+                    <i class="mdi mdi-arrow-left"></i> Kembali
+                </a>
+            </div>
         </div>
     </div>
 </div>

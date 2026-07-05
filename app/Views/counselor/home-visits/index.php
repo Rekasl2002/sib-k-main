@@ -40,11 +40,17 @@ $statusColors = [
         <h4 class="mb-sm-0 text-dark"><?= esc($title) ?></h4>
         <p class="text-dark mb-0">Tampilan <?= esc($roleLabel ?? 'Pengguna') ?>.</p>
       </div>
-      <?php if ($canManage): ?>
-        <a href="<?= site_url($routePrefix . '/create') ?>" class="btn btn-primary">
-          <i class="mdi mdi-plus me-1"></i> Tambah
-        </a>
-      <?php endif; ?>
+      <div class="d-flex align-items-center flex-wrap gap-3 page-title-right">
+        <ol class="breadcrumb m-0">
+          <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Guru BK</a></li>
+          <li class="breadcrumb-item active"><?= esc($serviceType) ?></li>
+        </ol>
+        <?php if ($canManage): ?>
+          <a href="<?= site_url($routePrefix . '/create') ?>" class="btn btn-primary">
+            <i class="mdi mdi-plus me-1"></i> Tambah
+          </a>
+        <?php endif; ?>
+      </div>
     </div>
   </div>
 </div>

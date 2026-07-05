@@ -115,7 +115,7 @@ $errorsPhoto   = session('errors_photo') ?? [];
 
           <div class="page-title-right">
             <ol class="breadcrumb m-0">
-              <li class="breadcrumb-item"><a href="<?= route_to('parent.dashboard') ?>">Dashboard</a></li>
+              <li class="breadcrumb-item"><a href="<?= route_to('parent.dashboard') ?>">Orang Tua</a></li>
               <li class="breadcrumb-item active">Profil Anak</li>
             </ol>
           </div>

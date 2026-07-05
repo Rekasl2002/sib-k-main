@@ -23,7 +23,7 @@ $canDownload = !function_exists('has_permission') || has_permission('generate_re
       <h4 class="mb-sm-0">Laporan BK (Guru BK)</h4>
       <div class="page-title-right">
         <ol class="breadcrumb m-0">
-          <li class="breadcrumb-item"><a href="<?= site_url('counselor/dashboard') ?>">Dashboard</a></li>
+          <li class="breadcrumb-item"><a href="<?= site_url('counselor/dashboard') ?>">Guru BK</a></li>
           <li class="breadcrumb-item active">Laporan</li>
         </ol>
       </div>

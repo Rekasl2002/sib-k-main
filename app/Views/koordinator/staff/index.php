@@ -3,7 +3,13 @@
 <div class="container-fluid">
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h4 class="mb-0">Kelola Staf (Guru BK & Wali Kelas)</h4>
-    <a href="<?= route_to('koordinator.staff.create'); ?>" class="btn btn-primary">Tambah Akun</a>
+    <div class="d-flex align-items-center flex-wrap gap-3 page-title-right">
+      <ol class="breadcrumb m-0">
+        <li class="breadcrumb-item"><a href="<?= base_url('koordinator/dashboard') ?>">Koordinator</a></li>
+        <li class="breadcrumb-item active">Staf</li>
+      </ol>
+      <a href="<?= route_to('koordinator.staff.create'); ?>" class="btn btn-primary">Tambah Akun</a>
+    </div>
   </div>
 
   <div class="card">

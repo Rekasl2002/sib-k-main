@@ -14,9 +14,15 @@ $isMultipleClass = ! empty($class['is_multiple']);
 <div class="container-fluid">
   <div class="d-flex align-items-center justify-content-between mb-3">
     <h4 class="mb-0"><i class="bi bi-people"></i> <?= esc($pageTitle ?? 'Daftar Siswa Kelas Saya'); ?></h4>
-    <?php if (!empty($activeYear)) : ?>
-      <span class="badge bg-primary">Tahun Ajaran: <?= esc($activeYear['year_name']); ?> (<?= esc($activeYear['semester']); ?>)</span>
-    <?php endif; ?>
+    <div class="d-flex align-items-center flex-wrap gap-3 page-title-right">
+      <ol class="breadcrumb m-0">
+        <li class="breadcrumb-item"><a href="<?= base_url('homeroom/dashboard') ?>">Wali Kelas</a></li>
+        <li class="breadcrumb-item active">Daftar Siswa</li>
+      </ol>
+      <?php if (!empty($activeYear)) : ?>
+        <span class="badge bg-primary">Tahun Ajaran: <?= esc($activeYear['year_name']); ?> (<?= esc($activeYear['semester']); ?>)</span>
+      <?php endif; ?>
+    </div>
   </div>
 
   <?php if (empty($class)) : ?>

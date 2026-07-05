@@ -64,7 +64,12 @@ $errors       = session('errors') ?? [];
         <i class="mdi mdi-clipboard-text me-1"></i>
         <?= $method === 'edit' ? 'Ubah Asesmen' : 'Tambah Asesmen' ?>
       </h4>
-      <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0">
+      <div class="d-flex gap-2 flex-wrap mt-2 mt-sm-0 align-items-center">
+        <ol class="breadcrumb m-0 me-2 align-self-center">
+          <li class="breadcrumb-item"><a href="<?= base_url('koordinator/dashboard') ?>">Koordinator</a></li>
+          <li class="breadcrumb-item"><a href="<?= base_url('koordinator/assessments') ?>">Asesmen</a></li>
+          <li class="breadcrumb-item active"><?= $method === 'edit' ? 'Ubah' : 'Tambah' ?></li>
+        </ol>
         <?php if ($method === 'edit' && ! empty($A['id'])): ?>
           <a class="btn btn-sm btn-outline-primary" href="<?= site_url('koordinator/assessments/show/' . (int) $A['id']) ?>">
             <i class="mdi mdi-eye me-1"></i> Lihat Detail

@@ -28,9 +28,16 @@ function oldv($key, $default = '')
         <i class="mdi mdi-briefcase-outline me-2"></i>
         <?= $isEdit ? 'Edit Pilihan Karier' : 'Tambah Pilihan Karier' ?>
     </h4>
-    <a href="<?= site_url('counselor/career-info?tab=careers') ?>" class="btn btn-sm btn-secondary">
-        &larr; Kembali
-    </a>
+    <div class="d-flex align-items-center flex-wrap gap-3 page-title-right">
+        <ol class="breadcrumb m-0">
+            <li class="breadcrumb-item"><a href="<?= base_url('counselor/dashboard') ?>">Guru BK</a></li>
+            <li class="breadcrumb-item"><a href="<?= site_url('counselor/career-info?tab=careers') ?>">Info Karier dan Studi Lanjut</a></li>
+            <li class="breadcrumb-item active"><?= $isEdit ? 'Edit' : 'Tambah' ?></li>
+        </ol>
+        <a href="<?= site_url('counselor/career-info?tab=careers') ?>" class="btn btn-sm btn-secondary">
+            &larr; Kembali
+        </a>
+    </div>
 </div>
 
 <div class="card">
