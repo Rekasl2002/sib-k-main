@@ -153,9 +153,6 @@ $builtinRoleIds = array_map('intval', $builtinRoleIds ?? [1, 2, 3, 4, 5, 6]);
         <div class="card">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <h4 class="card-title mb-0">Daftar Peran</h4>
-                <a href="<?= base_url('admin/roles/create') ?>" class="btn btn-success">
-                    <i class="mdi mdi-plus me-1"></i> Tambah Peran
-                </a>
             </div>
 
             <div class="card-body">
