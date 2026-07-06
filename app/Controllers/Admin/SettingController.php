@@ -208,14 +208,16 @@ class SettingController extends BaseController
     }
 
     /**
-     * Hapus semua berkas di dalam $dir secara rekursif, kecuali index.html,
-     * tanpa menghapus struktur foldernya.
+     * Hapus semua berkas di dalam $dir secara rekursif, kecuali berkas
+     * penjaga struktur (index.html dan .gitkeep), tanpa menghapus foldernya.
      */
     private function purgeUploadedFiles(string $dir): void
     {
         if (! is_dir($dir)) {
             return;
         }
+
+        $keep = ['index.html', '.gitkeep'];
 
         $items = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
@@ -224,7 +226,7 @@ class SettingController extends BaseController
 
         foreach ($items as $item) {
             /** @var \SplFileInfo $item */
-            if ($item->isFile() && strtolower($item->getFilename()) !== 'index.html') {
+            if ($item->isFile() && ! in_array(strtolower($item->getFilename()), $keep, true)) {
                 @unlink($item->getPathname());
             }
         }
