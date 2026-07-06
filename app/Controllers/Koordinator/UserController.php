@@ -1060,9 +1060,13 @@ class UserController extends BaseController
         require_permission('manage_users');
 
         $rules = [
-            'old_password'         => 'required|validateOldPassword',
-            'new_password'         => 'required|min_length[6]|max_length[255]',
-            'new_password_confirm' => 'required|matches[new_password]',
+            'old_password'         => ['label' => 'Password Lama', 'rules' => 'required|validateOldPassword'],
+            'new_password'         => ['label' => 'Password Baru', 'rules' => 'required|min_length[6]|max_length[255]'],
+            'new_password_confirm' => [
+                'label'  => 'Konfirmasi Password Baru',
+                'rules'  => 'required|matches[new_password]',
+                'errors' => ['matches' => 'Konfirmasi Password Baru tidak sama dengan Password Baru.'],
+            ],
         ];
 
         if (!$this->validate($rules)) {

@@ -564,9 +564,9 @@ class AssessmentController extends BaseController
         } else {
             // Minimal rules (fallback aman)
             $rules = [
-                'title'           => 'required|min_length[3]',
-                'assessment_type' => 'required',
-                'target_audience' => 'required',
+                'title'           => ['label' => 'Judul Asesmen', 'rules' => 'required|min_length[3]'],
+                'assessment_type' => ['label' => 'Jenis Asesmen', 'rules' => 'required'],
+                'target_audience' => ['label' => 'Sasaran Peserta', 'rules' => 'required'],
             ];
             $msgs = [];
         }

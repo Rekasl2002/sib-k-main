@@ -78,26 +78,26 @@ class SettingController extends BaseController
          * Catatan: Upload file divalidasi di SettingService (MIME/size/move).
          */
         $rules = [
-            'app_name' => 'permit_empty|string|min_length[2]|max_length[100]',
-            'school_name' => 'permit_empty|string|max_length[150]',
-            'contact_email' => 'permit_empty|valid_email|max_length[150]',
-            'from_email' => 'permit_empty|valid_email|max_length[150]',
+            'app_name' => ['label' => 'Nama Aplikasi', 'rules' => 'permit_empty|string|min_length[2]|max_length[100]'],
+            'school_name' => ['label' => 'Nama Sekolah', 'rules' => 'permit_empty|string|max_length[150]'],
+            'contact_email' => ['label' => 'Email Kontak', 'rules' => 'permit_empty|valid_email|max_length[150]'],
+            'from_email' => ['label' => 'Email Pengirim', 'rules' => 'permit_empty|valid_email|max_length[150]'],
 
             // Academic year: optional, tapi kalau ada harus integer > 0
-            'default_academic_year_id' => 'permit_empty|is_natural_no_zero',
+            'default_academic_year_id' => ['label' => 'Tahun Ajaran Aktif', 'rules' => 'permit_empty|is_natural_no_zero'],
 
             // Batas tingkat kelas (1-12)
-            'grade_level_min' => 'permit_empty|integer|greater_than_equal_to[1]|less_than_equal_to[12]',
-            'grade_level_max' => 'permit_empty|integer|greater_than_equal_to[1]|less_than_equal_to[12]',
+            'grade_level_min' => ['label' => 'Tingkat Kelas Minimal', 'rules' => 'permit_empty|integer|greater_than_equal_to[1]|less_than_equal_to[12]'],
+            'grade_level_max' => ['label' => 'Tingkat Kelas Maksimal', 'rules' => 'permit_empty|integer|greater_than_equal_to[1]|less_than_equal_to[12]'],
 
             // Security
-            'session_timeout_minutes' => 'permit_empty|integer|greater_than_equal_to[5]|less_than_equal_to[1440]',
-            'password_min_length' => 'permit_empty|integer|greater_than_equal_to[6]|less_than_equal_to[64]',
+            'session_timeout_minutes' => ['label' => 'Batas Waktu Sesi (menit)', 'rules' => 'permit_empty|integer|greater_than_equal_to[5]|less_than_equal_to[1440]'],
+            'password_min_length' => ['label' => 'Panjang Password Minimal', 'rules' => 'permit_empty|integer|greater_than_equal_to[6]|less_than_equal_to[64]'],
 
             // Mail override (optional)
-            'host' => 'permit_empty|string|max_length[150]',
-            'port' => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[65535]',
-            'crypto' => 'permit_empty|in_list[tls,ssl,starttls,none]',
+            'host' => ['label' => 'Host Email (SMTP)', 'rules' => 'permit_empty|string|max_length[150]'],
+            'port' => ['label' => 'Port Email (SMTP)', 'rules' => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[65535]'],
+            'crypto' => ['label' => 'Enkripsi Email (SMTP)', 'rules' => 'permit_empty|in_list[tls,ssl,starttls,none]'],
         ];
 
         if (! $this->validate($rules)) {

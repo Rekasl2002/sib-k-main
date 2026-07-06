@@ -524,7 +524,7 @@ if (!function_exists('safe_user_avatar_src')) {
                     if (window.Swal) {
                         Swal.fire({
                             icon: 'error',
-                            title: 'Error!',
+                            title: 'Gagal!',
                             text: 'Terjadi kesalahan sistem'
                         });
                     } else {

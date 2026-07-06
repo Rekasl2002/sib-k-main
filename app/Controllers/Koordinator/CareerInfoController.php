@@ -355,13 +355,13 @@ class CareerInfoController extends BaseController
         require_permission('manage_career_info');
 
         $rules = [
-            'title'         => 'required|string|min_length[3]',
-            'sector'        => 'permit_empty|string|max_length[100]',
-            'min_education' => 'permit_empty|string|max_length[50]',
-            'description'   => 'required|string',
-            'avg_salary_idr'=> 'permit_empty|integer',
-            'demand_level'  => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[10]',
-            'is_active'     => 'required|in_list[0,1]',
+            'title'         => ['label' => 'Nama Karier', 'rules' => 'required|string|min_length[3]'],
+            'sector'        => ['label' => 'Sektor/Bidang', 'rules' => 'permit_empty|string|max_length[100]'],
+            'min_education' => ['label' => 'Pendidikan Minimal', 'rules' => 'permit_empty|string|max_length[50]'],
+            'description'   => ['label' => 'Deskripsi', 'rules' => 'required|string'],
+            'avg_salary_idr'=> ['label' => 'Rata-rata Gaji', 'rules' => 'permit_empty|integer'],
+            'demand_level'  => ['label' => 'Tingkat Kebutuhan', 'rules' => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[10]'],
+            'is_active'     => ['label' => 'Status', 'rules' => 'required|in_list[0,1]'],
         ];
 
         if (! $this->validate($rules)) {
@@ -424,13 +424,13 @@ class CareerInfoController extends BaseController
         }
 
         $rules = [
-            'title'         => 'required|string|min_length[3]',
-            'sector'        => 'permit_empty|string|max_length[100]',
-            'min_education' => 'permit_empty|string|max_length[50]',
-            'description'   => 'required|string',
-            'avg_salary_idr'=> 'permit_empty|integer',
-            'demand_level'  => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[10]',
-            'is_active'     => 'required|in_list[0,1]',
+            'title'         => ['label' => 'Nama Karier', 'rules' => 'required|string|min_length[3]'],
+            'sector'        => ['label' => 'Sektor/Bidang', 'rules' => 'permit_empty|string|max_length[100]'],
+            'min_education' => ['label' => 'Pendidikan Minimal', 'rules' => 'permit_empty|string|max_length[50]'],
+            'description'   => ['label' => 'Deskripsi', 'rules' => 'required|string'],
+            'avg_salary_idr'=> ['label' => 'Rata-rata Gaji', 'rules' => 'permit_empty|integer'],
+            'demand_level'  => ['label' => 'Tingkat Kebutuhan', 'rules' => 'permit_empty|integer|greater_than_equal_to[0]|less_than_equal_to[10]'],
+            'is_active'     => ['label' => 'Status', 'rules' => 'required|in_list[0,1]'],
         ];
 
         if (! $this->validate($rules)) {
@@ -576,19 +576,26 @@ class CareerInfoController extends BaseController
 
         // Validasi dasar
         $baseRules = [
-            'university_name' => 'required|string|min_length[3]',
-            'accreditation'   => 'permit_empty|string|max_length[20]',
-            'location'        => 'permit_empty|string|max_length[255]',
-            'website'         => 'permit_empty|valid_url',
-            'is_active'       => 'required|in_list[0,1]',
-            'logo_source'     => 'permit_empty|in_list[url,upload]',
+            'university_name' => ['label' => 'Nama Perguruan Tinggi', 'rules' => 'required|string|min_length[3]'],
+            'accreditation'   => ['label' => 'Akreditasi', 'rules' => 'permit_empty|string|max_length[20]'],
+            'location'        => ['label' => 'Lokasi', 'rules' => 'permit_empty|string|max_length[255]'],
+            'website'         => ['label' => 'Situs Web', 'rules' => 'permit_empty|valid_url'],
+            'is_active'       => ['label' => 'Status', 'rules' => 'required|in_list[0,1]'],
+            'logo_source'     => ['label' => 'Sumber Logo', 'rules' => 'permit_empty|in_list[url,upload]'],
         ];
 
         // Validasi file jika sumber upload
         $logoSource = $this->request->getPost('logo_source') ?? 'url';
         if ($logoSource === 'upload') {
-            $baseRules['logo_file'] =
-                'uploaded[logo_file]|is_image[logo_file]|max_size[logo_file,2048]|mime_in[logo_file,image/png,image/jpeg,image/jpg,image/gif]';
+            $baseRules['logo_file'] = [
+                'label' => 'Berkas Logo',
+                'rules' => 'uploaded[logo_file]|is_image[logo_file]|max_size[logo_file,2048]|mime_in[logo_file,image/png,image/jpeg,image/jpg,image/gif]',
+                'errors' => [
+                    'uploaded' => 'Silakan pilih Berkas Logo terlebih dahulu.',
+                    'max_size' => 'Ukuran Berkas Logo maksimal 2 MB.',
+                    'mime_in'  => 'Berkas Logo harus berupa gambar PNG, JPG, atau GIF.',
+                ],
+            ];
         }
 
         if (! $this->validate($baseRules)) {
@@ -666,12 +673,12 @@ class CareerInfoController extends BaseController
         }
 
         $baseRules = [
-            'university_name' => 'required|string|min_length[3]',
-            'accreditation'   => 'permit_empty|string|max_length[20]',
-            'location'        => 'permit_empty|string|max_length[255]',
-            'website'         => 'permit_empty|valid_url',
-            'is_active'       => 'required|in_list[0,1]',
-            'logo_source'     => 'permit_empty|in_list[url,upload]',
+            'university_name' => ['label' => 'Nama Perguruan Tinggi', 'rules' => 'required|string|min_length[3]'],
+            'accreditation'   => ['label' => 'Akreditasi', 'rules' => 'permit_empty|string|max_length[20]'],
+            'location'        => ['label' => 'Lokasi', 'rules' => 'permit_empty|string|max_length[255]'],
+            'website'         => ['label' => 'Situs Web', 'rules' => 'permit_empty|valid_url'],
+            'is_active'       => ['label' => 'Status', 'rules' => 'required|in_list[0,1]'],
+            'logo_source'     => ['label' => 'Sumber Logo', 'rules' => 'permit_empty|in_list[url,upload]'],
             'remove_logo'     => 'permit_empty|in_list[0,1]',
         ];
 
@@ -680,8 +687,14 @@ class CareerInfoController extends BaseController
             // File opsional saat edit, tapi jika ada harus valid
             if ($file = $this->request->getFile('logo_file')) {
                 if ($file->isValid() && !$file->hasMoved() && $file->getSize() > 0) {
-                    $baseRules['logo_file'] =
-                        'is_image[logo_file]|max_size[logo_file,2048]|mime_in[logo_file,image/png,image/jpeg,image/jpg,image/gif]';
+                    $baseRules['logo_file'] = [
+                        'label' => 'Berkas Logo',
+                        'rules' => 'is_image[logo_file]|max_size[logo_file,2048]|mime_in[logo_file,image/png,image/jpeg,image/jpg,image/gif]',
+                        'errors' => [
+                            'max_size' => 'Ukuran Berkas Logo maksimal 2 MB.',
+                            'mime_in'  => 'Berkas Logo harus berupa gambar PNG, JPG, atau GIF.',
+                        ],
+                    ];
                 }
             }
         }

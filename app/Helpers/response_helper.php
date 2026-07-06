@@ -252,7 +252,7 @@ if (!function_exists('back_with_input')) {
      * @param string $message Error message
      * @return \CodeIgniter\HTTP\RedirectResponse
      */
-    function back_with_input(string $message = 'Please check your input')
+    function back_with_input(string $message = 'Periksa kembali isian Anda.')
     {
         return redirect()->back()->withInput()->with('error', $message);
     }

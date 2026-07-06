@@ -64,21 +64,25 @@ class ProfileController extends BaseStudentController
         $this->requireStudent();
 
         $rules = [
-            'full_name'   => 'required|max_length[255]',
-            'phone'       => 'permit_empty|max_length[20]|regex_match[/^[0-9+()\s-]{6,20}$/]',
-            'gender'      => 'permit_empty|in_list[L,P]',
-            'birth_place' => 'permit_empty|max_length[100]',
-            'birth_date'  => 'permit_empty|valid_date[Y-m-d]',
-            'religion'    => 'permit_empty|in_list[Islam,Kristen,Katolik,Hindu,Buddha,Konghucu]',
-            'address'     => 'permit_empty|max_length[255]',
-            'special_needs'     => 'permit_empty|max_length[100]',
-            'disability'        => 'permit_empty|max_length[100]',
-            'hobi'              => 'permit_empty|max_length[255]',
-            'ekskul_organisasi' => 'permit_empty|max_length[255]',
-            'kip_pip_number'    => 'permit_empty|max_length[50]',
-            'father_name'       => 'permit_empty|max_length[255]',
-            'mother_name'       => 'permit_empty|max_length[255]',
-            'guardian_name'     => 'permit_empty|max_length[255]',
+            'full_name'   => ['label' => 'Nama Lengkap', 'rules' => 'required|max_length[255]'],
+            'phone'       => [
+                'label'  => 'Nomor Telepon',
+                'rules'  => 'permit_empty|max_length[20]|regex_match[/^[0-9+()\s-]{6,20}$/]',
+                'errors' => ['regex_match' => 'Nomor Telepon hanya boleh berisi 6-20 karakter angka, spasi, atau tanda + ( ) -.'],
+            ],
+            'gender'      => ['label' => 'Jenis Kelamin', 'rules' => 'permit_empty|in_list[L,P]'],
+            'birth_place' => ['label' => 'Tempat Lahir', 'rules' => 'permit_empty|max_length[100]'],
+            'birth_date'  => ['label' => 'Tanggal Lahir', 'rules' => 'permit_empty|valid_date[Y-m-d]'],
+            'religion'    => ['label' => 'Agama', 'rules' => 'permit_empty|in_list[Islam,Kristen,Katolik,Hindu,Buddha,Konghucu]'],
+            'address'     => ['label' => 'Alamat', 'rules' => 'permit_empty|max_length[255]'],
+            'special_needs'     => ['label' => 'Kebutuhan Khusus', 'rules' => 'permit_empty|max_length[100]'],
+            'disability'        => ['label' => 'Disabilitas', 'rules' => 'permit_empty|max_length[100]'],
+            'hobi'              => ['label' => 'Hobi', 'rules' => 'permit_empty|max_length[255]'],
+            'ekskul_organisasi' => ['label' => 'Ekskul/Organisasi', 'rules' => 'permit_empty|max_length[255]'],
+            'kip_pip_number'    => ['label' => 'Nomor KIP/PIP', 'rules' => 'permit_empty|max_length[50]'],
+            'father_name'       => ['label' => 'Nama Ayah', 'rules' => 'permit_empty|max_length[255]'],
+            'mother_name'       => ['label' => 'Nama Ibu', 'rules' => 'permit_empty|max_length[255]'],
+            'guardian_name'     => ['label' => 'Nama Wali', 'rules' => 'permit_empty|max_length[255]'],
         ];
 
         if (! $this->validate($rules)) {

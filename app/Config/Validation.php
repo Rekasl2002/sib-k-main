@@ -55,130 +55,14 @@ class Validation extends BaseConfig
     ];
 
     // --------------------------------------------------------------------
-    // Custom Messages (opsional)
+    // Pesan validasi Indonesia
     // --------------------------------------------------------------------
-
-    /**
-     * Pesan error (ID) untuk custom rules dari ValidationHelper.
-     *
-     * @var array<string, array<string, string>>
-     */
-    public array $customMessages = [
-        'valid_phone' => [
-            'valid_phone' => 'Nomor telepon harus diawali 08 dan terdiri dari 10–15 digit (format 08xxxxxxxxxx).',
-        ],
-        'valid_nisn' => [
-            'valid_nisn' => 'NISN harus terdiri dari tepat 10 digit angka.',
-        ],
-        'valid_indo_date' => [
-            '_default' => '{field} harus berformat tanggal Indonesia (dd-mm-yyyy atau dd/mm/yyyy)',
-        ],
-        'valid_academic_year' => [
-            '_default' => '{field} harus berformat tahun ajaran (YYYY/YYYY)',
-        ],
-        'strong_password' => [
-            '_default' => '{field} minimal 6 karakter dengan kombinasi huruf dan angka',
-        ],
-        'valid_time' => [
-            '_default' => '{field} harus berformat waktu yang valid (HH:MM)',
-        ],
-        'unique_with_soft_delete' => [
-            '_default' => '{field} sudah digunakan',
-        ],
-        'valid_file_extension' => [
-            '_default' => 'Ekstensi file {field} tidak diizinkan',
-        ],
-        'valid_file_size' => [
-            '_default' => 'Ukuran file {field} terlalu besar',
-        ],
-        'valid_image' => [
-            '_default' => '{field} harus berupa file gambar yang valid (jpg, jpeg, png, gif)',
-        ],
-        'valid_username' => [
-            '_default' => '{field} hanya boleh mengandung huruf, angka, titik, dan underscore (3-50 karakter)',
-        ],
-        'valid_nik' => [
-            '_default' => '{field} harus 16 digit angka',
-        ],
-        'valid_grade_level' => [
-            '_default' => '{field} harus berupa tingkat kelas yang valid',
-        ],
-        'valid_semester' => [
-            '_default' => '{field} harus Ganjil atau Genap',
-        ],
-        'valid_gender' => [
-            '_default' => '{field} harus L (Laki-laki) atau P (Perempuan)',
-        ],
-        'valid_religion' => [
-            '_default' => '{field} harus dipilih dari pilihan yang tersedia',
-        ],
-    ];
-
-    /**
-     * Pesan error (ID) untuk default rules bawaan CI.
-     * (Opsional; pakai bila ingin override pesan default.)
-     *
-     * @var array<string, string>
-     */
-    public array $indonesianMessages = [
-        // Required
-        'required'              => '{field} harus diisi',
-        'required_with'         => '{field} harus diisi ketika {param} diisi',
-        'required_without'      => '{field} harus diisi ketika {param} tidak diisi',
-
-        // String
-        'min_length'            => '{field} minimal {param} karakter',
-        'max_length'            => '{field} maksimal {param} karakter',
-        'exact_length'          => '{field} harus tepat {param} karakter',
-        'alpha'                 => '{field} hanya boleh berisi huruf',
-        'alpha_space'           => '{field} hanya boleh berisi huruf dan spasi',
-        'alpha_numeric'         => '{field} hanya boleh berisi huruf dan angka',
-        'alpha_numeric_space'   => '{field} hanya boleh berisi huruf, angka, dan spasi',
-        'alpha_dash'            => '{field} hanya boleh berisi huruf, angka, dash, dan underscore',
-
-        // Numbers
-        'numeric'               => '{field} harus berupa angka',
-        'integer'               => '{field} harus berupa bilangan bulat',
-        'decimal'               => '{field} harus berupa angka desimal',
-        'greater_than'          => '{field} harus lebih besar dari {param}',
-        'greater_than_equal_to' => '{field} harus lebih besar atau sama dengan {param}',
-        'less_than'             => '{field} harus lebih kecil dari {param}',
-        'less_than_equal_to'    => '{field} harus lebih kecil atau sama dengan {param}',
-
-        // Email & URL
-        'valid_email'           => '{field} harus berupa alamat email yang valid',
-        'valid_emails'          => '{field} harus berupa alamat email yang valid',
-        'valid_url'             => '{field} harus berupa URL yang valid',
-        'valid_ip'              => '{field} harus berupa alamat IP yang valid',
-
-        // Database
-        'is_unique'             => '{field} sudah digunakan',
-        'is_not_unique'         => '{field} tidak ditemukan dalam database',
-
-        // Date
-        'valid_date'            => '{field} harus berupa tanggal yang valid',
-
-        // File Upload
-        'uploaded'              => '{field} harus diunggah',
-        'max_size'              => 'Ukuran {field} maksimal {param} KB',
-        'max_dims'              => 'Dimensi {field} terlalu besar',
-        'mime_in'               => 'Tipe file {field} tidak valid',
-        'ext_in'                => 'Ekstensi file {field} tidak valid',
-        'is_image'              => '{field} harus berupa gambar',
-
-        // Matching
-        'matches'               => '{field} tidak cocok dengan {param}',
-        'differs'               => '{field} harus berbeda dengan {param}',
-
-        // Lists
-        'in_list'               => '{field} harus salah satu dari: {param}',
-        'not_in_list'           => '{field} tidak boleh salah satu dari: {param}',
-
-        // Others
-        'regex_match'           => '{field} tidak sesuai dengan format yang diharapkan',
-        'permit_empty'          => '{field} boleh kosong',
-        'field_exists'          => '{field} harus ada',
-    ];
+    // CATATAN: pesan default (rules bawaan CI4 + custom rules ValidationHelper)
+    // sekarang ada di app/Language/id/Validation.php. Berkas bahasa itulah yang
+    // dibaca otomatis oleh CI4 (defaultLocale = 'id') untuk semua rule yang
+    // tidak diberi pesan kustom di controller/model. Dua array lama di sini
+    // ($customMessages & $indonesianMessages) dihapus karena tidak pernah
+    // dibaca framework (kode mati).
 
     // --------------------------------------------------------------------
     // Prebuilt validation rule sets (opsional; dipakai via config('Validation')->xxx)

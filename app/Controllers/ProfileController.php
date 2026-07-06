@@ -304,10 +304,18 @@ class ProfileController extends BaseController
         // Validasi file hanya jika ada unggahan & role boleh
         if (in_array('profile_photo', $editable, true) && $hasUpload) {
             $rules = [
-                $fileField => 'is_image[' . $fileField . ']'
-                    . '|mime_in[' . $fileField . ',image/jpg,image/jpeg,image/png,image/webp]'
-                    . '|ext_in[' . $fileField . ',jpg,jpeg,png,webp]'
-                    . '|max_size[' . $fileField . ',2048]',
+                $fileField => [
+                    'label' => 'Foto Profil',
+                    'rules' => 'is_image[' . $fileField . ']'
+                        . '|mime_in[' . $fileField . ',image/jpg,image/jpeg,image/png,image/webp]'
+                        . '|ext_in[' . $fileField . ',jpg,jpeg,png,webp]'
+                        . '|max_size[' . $fileField . ',2048]',
+                    'errors' => [
+                        'mime_in'  => 'Foto Profil harus berupa gambar JPG, PNG, atau WEBP.',
+                        'ext_in'   => 'Foto Profil harus berupa gambar JPG, PNG, atau WEBP.',
+                        'max_size' => 'Ukuran Foto Profil maksimal 2 MB.',
+                    ],
+                ],
             ];
             if (!$this->validate($rules)) {
                 return redirect()->to('/profile')
@@ -592,10 +600,18 @@ class ProfileController extends BaseController
         }
 
         $rules = [
-            'profile_photo' => 'is_image[profile_photo]'
-                . '|mime_in[profile_photo,image/jpg,image/jpeg,image/png,image/webp]'
-                . '|ext_in[profile_photo,jpg,jpeg,png,webp]'
-                . '|max_size[profile_photo,2048]',
+            'profile_photo' => [
+                'label' => 'Foto Profil',
+                'rules' => 'is_image[profile_photo]'
+                    . '|mime_in[profile_photo,image/jpg,image/jpeg,image/png,image/webp]'
+                    . '|ext_in[profile_photo,jpg,jpeg,png,webp]'
+                    . '|max_size[profile_photo,2048]',
+                'errors' => [
+                    'mime_in'  => 'Foto Profil harus berupa gambar JPG, PNG, atau WEBP.',
+                    'ext_in'   => 'Foto Profil harus berupa gambar JPG, PNG, atau WEBP.',
+                    'max_size' => 'Ukuran Foto Profil maksimal 2 MB.',
+                ],
+            ],
         ];
         if (!$this->validate($rules)) {
             return redirect()->to('/profile')

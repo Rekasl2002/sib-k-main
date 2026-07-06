@@ -63,8 +63,8 @@ class AuthController extends BaseController
     {
         // Validation rules
         $rules = [
-            'username' => 'required',
-            'password' => 'required',
+            'username' => ['label' => 'Username atau Email', 'rules' => 'required'],
+            'password' => ['label' => 'Password', 'rules' => 'required'],
         ];
 
         if (!$this->validate($rules)) {
@@ -159,11 +159,15 @@ class AuthController extends BaseController
 
         // Validation rules
         $rules = [
-            'username' => 'required|min_length[3]|max_length[50]|is_unique[users.username]|alpha_numeric',
-            'email' => 'permit_empty|valid_email|is_unique[users.email]',
-            'password' => 'required|min_length[6]',
-            'password_confirm' => 'required|matches[password]',
-            'full_name' => 'required|min_length[3]|max_length[255]',
+            'username' => ['label' => 'Username', 'rules' => 'required|min_length[3]|max_length[50]|is_unique[users.username]|alpha_numeric'],
+            'email' => ['label' => 'Email', 'rules' => 'permit_empty|valid_email|is_unique[users.email]'],
+            'password' => ['label' => 'Password', 'rules' => 'required|min_length[6]'],
+            'password_confirm' => [
+                'label' => 'Konfirmasi Password',
+                'rules' => 'required|matches[password]',
+                'errors' => ['matches' => 'Konfirmasi Password tidak sama dengan Password.'],
+            ],
+            'full_name' => ['label' => 'Nama Lengkap', 'rules' => 'required|min_length[3]|max_length[255]'],
         ];
 
         if (!$this->validate($rules)) {
@@ -232,8 +236,8 @@ class AuthController extends BaseController
     private function sendAdminResetRequest(): RedirectResponse
     {
         $rules = [
-            'email' => 'permit_empty|valid_email|max_length[255]',
-            'phone' => 'permit_empty|max_length[30]',
+            'email' => ['label' => 'Email', 'rules' => 'permit_empty|valid_email|max_length[255]'],
+            'phone' => ['label' => 'Nomor Telepon', 'rules' => 'permit_empty|max_length[30]'],
         ];
 
         if (!$this->validate($rules)) {
@@ -267,7 +271,7 @@ class AuthController extends BaseController
     private function sendEmailResetLink(): RedirectResponse
     {
         $rules = [
-            'email' => 'required|valid_email',
+            'email' => ['label' => 'Email', 'rules' => 'required|valid_email'],
         ];
 
         if (!$this->validate($rules)) {
@@ -351,9 +355,13 @@ class AuthController extends BaseController
     public function doResetPassword(): RedirectResponse
     {
         $rules = [
-            'token'            => 'required',
-            'password'         => 'required|min_length[6]',
-            'password_confirm' => 'required|matches[password]',
+            'token'            => ['label' => 'Token', 'rules' => 'required'],
+            'password'         => ['label' => 'Password Baru', 'rules' => 'required|min_length[6]'],
+            'password_confirm' => [
+                'label' => 'Konfirmasi Password',
+                'rules' => 'required|matches[password]',
+                'errors' => ['matches' => 'Konfirmasi Password tidak sama dengan Password Baru.'],
+            ],
         ];
 
         if (!$this->validate($rules)) {

@@ -52,11 +52,11 @@ class StaffController extends BaseKoordinatorController
 
         $data = $this->request->getPost();
         $rules = [
-            'username'  => 'required|min_length[4]|is_unique[users.username]',
-            'full_name' => 'required',
-            'email'     => 'permit_empty|valid_email|is_unique[users.email]',
-            'password'  => 'required|min_length[6]',
-            'role_id'   => 'required|integer',
+            'username'  => ['label' => 'Username', 'rules' => 'required|min_length[4]|is_unique[users.username]'],
+            'full_name' => ['label' => 'Nama Lengkap', 'rules' => 'required'],
+            'email'     => ['label' => 'Email', 'rules' => 'permit_empty|valid_email|is_unique[users.email]'],
+            'password'  => ['label' => 'Password', 'rules' => 'required|min_length[6]'],
+            'role_id'   => ['label' => 'Peran', 'rules' => 'required|integer'],
         ];
 
         if (!$this->validate($rules)) {
@@ -104,10 +104,10 @@ class StaffController extends BaseKoordinatorController
         $data  = $this->request->getPost();
         // is_unique abaikan diri sendiri
         $rules = [
-            'username'  => "required|min_length[4]|is_unique[users.username,id,{$id}]",
-            'full_name' => 'required',
-            'email'     => "permit_empty|valid_email|is_unique[users.email,id,{$id}]",
-            'role_id'   => 'required|integer',
+            'username'  => ['label' => 'Username', 'rules' => "required|min_length[4]|is_unique[users.username,id,{$id}]"],
+            'full_name' => ['label' => 'Nama Lengkap', 'rules' => 'required'],
+            'email'     => ['label' => 'Email', 'rules' => "permit_empty|valid_email|is_unique[users.email,id,{$id}]"],
+            'role_id'   => ['label' => 'Peran', 'rules' => 'required|integer'],
         ];
 
         if (!$this->validate($rules)) {

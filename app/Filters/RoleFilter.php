@@ -43,7 +43,7 @@ class RoleFilter implements FilterInterface
             if ($isAjax || $isApi) {
                 return $response->setStatusCode(401)->setJSON([
                     'status'  => 401,
-                    'message' => 'Unauthenticated. Please login.',
+                    'message' => 'Sesi Anda berakhir. Silakan login kembali.',
                 ]);
             }
             return redirect()->to('/login')->with('error', 'Silakan login terlebih dahulu.');
@@ -79,7 +79,7 @@ class RoleFilter implements FilterInterface
             if ($isAjax || $isApi) {
                 return $response->setStatusCode(403)->setJSON([
                     'status'  => 403,
-                    'message' => 'Forbidden. You do not have access to this resource.',
+                    'message' => 'Anda tidak memiliki akses ke halaman/data ini.',
                 ]);
             }
 
