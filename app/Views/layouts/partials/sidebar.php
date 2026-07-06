@@ -9,7 +9,7 @@
 
 try {
     // url_is() ada di url helper. auth_user/auth_role biasanya di auth helper.
-    helper(['permission', 'auth', 'url', 'simulation_access', 'app']);
+    helper(['permission', 'auth', 'url', 'app']);
 } catch (\Throwable $e) {
     // Jika salah satu helper tidak ada, kita tetap jalan dengan fallback.
 }
@@ -137,15 +137,6 @@ $__rolePrefix = match (true) {
     $__isParent => 'parent',
     default => 'dashboard',
 };
-
-$__canAccessDemoSuite = false;
-try {
-    $__canAccessDemoSuite = function_exists('can_access_simulation_suite')
-        ? can_access_simulation_suite()
-        : $__isAdmin;
-} catch (\Throwable $e) {
-    $__canAccessDemoSuite = $__isAdmin;
-}
 
 // Active helper
 $__active = function (string $pattern): string {
@@ -747,8 +738,6 @@ $__canUseConsultation = function () use ($__roleName, $__roleNameNorm, $__permSu
           </li>
 
         <?php endif; ?>
-
-        <?php /* Prototipe Pengembangan disembunyikan dari sidebar (masih bisa diakses via URL langsung) */ ?>
 
       </ul>
     </div>

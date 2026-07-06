@@ -100,12 +100,6 @@ class PermissionModel extends Model
                 'keterangan' => 'Mengirim dan menerima pesan (chat) di dalam aplikasi.',
                 'group'      => 'Umum',
             ],
-            'access_simulation_suite' => [
-                'label'      => 'Membuka Halaman Prototipe/Simulasi',
-                'keterangan' => 'Mengakses halaman prototipe dan evaluasi (khusus keperluan penelitian).',
-                'group'      => 'Umum',
-            ],
-
             // ----- Administrasi Sistem -----
             'manage_users' => [
                 'label'      => 'Kelola Akun Pengguna',
