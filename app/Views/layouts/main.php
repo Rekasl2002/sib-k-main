@@ -65,8 +65,6 @@
 </div>
 <!-- END layout-wrapper -->
 
-<?= $this->include('layouts/partials/right-sidebar') ?>
-
 <?= $this->include('layouts/partials/vendor-scripts') ?>
 
 <!-- App js -->
