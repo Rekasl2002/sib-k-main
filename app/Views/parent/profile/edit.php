@@ -48,11 +48,9 @@
           <div class="mb-3">
             <label class="form-label">Foto Profil (opsional)</label>
             <input type="file" name="photo" class="form-control">
-            <?php if(!empty($user['profile_photo'])): ?>
-              <div class="mt-2">
-                <img src="/<?= esc($user['profile_photo']) ?>" class="img-thumbnail" style="max-height:120px">
-              </div>
-            <?php endif; ?>
+            <div class="mt-2">
+              <img src="<?= esc(user_avatar($user['profile_photo'] ?? null), 'attr') ?>" class="img-thumbnail" style="max-height:120px">
+            </div>
           </div>
 
           <button type="submit" class="btn btn-primary">Simpan</button>

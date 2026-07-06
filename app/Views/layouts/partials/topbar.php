@@ -68,7 +68,7 @@ foreach ($__logoCandidates as $__c) {
 
 // Avatar resolver
 $__avatar     = session('profile_photo') ?: ($user['profile_photo'] ?? null);
-$__avatarUrl  = $__avatar ? base_url($__avatar) : base_url('assets/images/users/avatar-silhouette.svg');
+$__avatarUrl  = $__avatar ? base_url($__avatar) : base_url('assets/images/users/default-avatar.svg');
 
 // Cache-busting (opsional)
 $__avatarBust = '';

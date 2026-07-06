@@ -27,9 +27,8 @@
         $statusClass = 'warning';
     }
 
-    // Foto profil (fallback ke default)
-    $avatar = $student['profile_photo'] ?? null;
-    $avatarUrl = $avatar ? base_url($avatar) : base_url('assets/images/users/default-avatar.png');
+    // Foto profil (fallback ke default-avatar.svg via helper user_avatar)
+    $avatarUrl = user_avatar($student['profile_photo'] ?? null);
 ?>
 
 <div class="row">

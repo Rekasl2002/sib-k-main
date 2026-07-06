@@ -309,7 +309,7 @@ $useShowAlerts = function_exists('show_alerts');
                                         <td>
                                             <div class="d-flex align-items-center">
                                                 <div class="flex-shrink-0 me-3">
-                                                    <img src="<?= function_exists('user_avatar') ? user_avatar($student['profile_photo'] ?? null) : base_url('assets/images/users/avatar-1.jpg') ?>"
+                                                    <img src="<?= user_avatar($student['profile_photo'] ?? null) ?>"
                                                          alt="<?= esc($student['full_name'] ?? '-') ?>"
                                                          class="avatar-xs rounded-circle">
                                                 </div>
