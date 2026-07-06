@@ -141,4 +141,92 @@ class SettingController extends BaseController
         return redirect()->to(site_url('admin/settings'))
             ->with('success', 'Pengaturan tersimpan');
     }
+
+    /**
+     * Reset seluruh data aplikasi ke kondisi awal pakai (satu klik dari
+     * Pengaturan Admin): semua tabel data dikosongkan lalu diisi ulang data
+     * awal + data contoh (DatabaseSeeder), dan berkas unggahan dibersihkan.
+     *
+     * Pengaman: wajib mengetik "RESET" + memasukkan password akun admin
+     * yang sedang login.
+     */
+    public function reset(): RedirectResponse
+    {
+        require_permission('manage_settings');
+
+        if (strtoupper($this->request->getMethod()) !== 'POST') {
+            return redirect()->to(site_url('admin/settings'))
+                ->with('error', 'Metode tidak valid.');
+        }
+
+        $confirmText     = trim((string) $this->request->getPost('confirm_text'));
+        $confirmPassword = (string) $this->request->getPost('confirm_password');
+
+        if ($confirmText !== 'RESET') {
+            return redirect()->to(site_url('admin/settings'))
+                ->with('error', 'Reset dibatalkan: ketik RESET (huruf besar) pada kolom konfirmasi.');
+        }
+
+        $userId = (int) (session('user_id') ?? session('id') ?? 0);
+        $user   = $userId > 0
+            ? (new \App\Models\UserModel())->asArray()->find($userId)
+            : null;
+
+        if (! $user || ! password_verify($confirmPassword, (string) ($user['password_hash'] ?? ''))) {
+            return redirect()->to(site_url('admin/settings'))
+                ->with('error', 'Reset dibatalkan: password konfirmasi salah.');
+        }
+
+        try {
+            // 1) Bersihkan berkas unggahan (lampiran, foto profil, logo), sisakan
+            //    struktur folder dan berkas pengaman index.html.
+            $this->purgeUploadedFiles(WRITEPATH . 'uploads');
+            $this->purgeUploadedFiles(FCPATH . 'uploads');
+
+            // 2) Isi ulang basis data (kosongkan tabel + data awal + data contoh).
+            //    Output echo seeder ditampung agar tidak bocor ke halaman.
+            ob_start();
+            \Config\Database::seeder()->call(\App\Database\Seeds\DatabaseSeeder::class);
+            ob_end_clean();
+
+            log_message('warning', 'Reset data aplikasi dijalankan oleh user #' . $userId . ' (' . ($user['username'] ?? '-') . ').');
+        } catch (Throwable $e) {
+            if (ob_get_level() > 0) {
+                ob_end_clean();
+            }
+            log_message('error', 'Gagal reset data aplikasi: ' . $e->getMessage());
+
+            return redirect()->to(site_url('admin/settings'))
+                ->with('error', 'Reset gagal: ' . $e->getMessage());
+        }
+
+        // 3) Akun lama sudah diganti akun bawaan -> semua sesi wajib masuk ulang.
+        session()->destroy();
+
+        return redirect()->to(site_url('login'))
+            ->with('success', 'Reset selesai. Data aplikasi kembali ke kondisi awal. Silakan masuk dengan akun bawaan (mis. admin_isman / admin123) lalu segera ganti password.');
+    }
+
+    /**
+     * Hapus semua berkas di dalam $dir secara rekursif, kecuali index.html,
+     * tanpa menghapus struktur foldernya.
+     */
+    private function purgeUploadedFiles(string $dir): void
+    {
+        if (! is_dir($dir)) {
+            return;
+        }
+
+        $items = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($items as $item) {
+            /** @var \SplFileInfo $item */
+            if ($item->isFile() && strtolower($item->getFilename()) !== 'index.html') {
+                @unlink($item->getPathname());
+            }
+        }
+    }
 }

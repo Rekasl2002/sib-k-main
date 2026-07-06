@@ -306,6 +306,7 @@ $routes->group('admin', [
         $routes->group('settings', ['filter' => 'permission:manage_settings'], function ($routes) {
             $routes->get('/', 'SettingController::index', ['as' => 'admin.settings']);
             $routes->post('update', 'SettingController::update', ['as' => 'admin.settings.update']);
+            $routes->post('reset', 'SettingController::reset', ['as' => 'admin.settings.reset']);
         });
 
         // EXPORT (izin: import_export_data)

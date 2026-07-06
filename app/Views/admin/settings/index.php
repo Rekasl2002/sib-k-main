@@ -690,6 +690,45 @@ $checked = static function($value): bool {
   </div>
 </div>
 
+<!-- ===================== RESET DATA APLIKASI (di luar form pengaturan) ===================== -->
+<div class="card border-danger mt-4">
+  <div class="card-body">
+    <div class="d-flex align-items-start gap-3 flex-wrap">
+      <div class="flex-grow-1">
+        <h5 class="text-danger mb-2"><i class="mdi mdi-alert-octagon-outline me-1"></i> Reset Data Aplikasi</h5>
+        <div class="text-dark small mb-2">
+          Mengembalikan aplikasi ke <b>kondisi awal pakai</b>: seluruh data (siswa, layanan BK, konsultasi,
+          asesmen, pesan, notifikasi, penugasan, berkas unggahan) <b>DIHAPUS PERMANEN</b>, lalu diisi ulang
+          dengan akun bawaan, kelas 10 A s.d. 12 C, dan data contoh tiap fitur.
+        </div>
+        <ul class="text-dark small mb-2">
+          <li>Semua akun kembali ke akun bawaan (termasuk password bawaan).</li>
+          <li>Tindakan ini <b>tidak bisa dibatalkan</b>. Unduh laporan/berkas penting terlebih dahulu.</li>
+          <li>Setelah reset, semua pengguna harus masuk ulang.</li>
+        </ul>
+      </div>
+    </div>
+
+    <form method="post" action="<?= site_url('admin/settings/reset') ?>" class="row g-3 align-items-end"
+          onsubmit="return confirm('YAKIN reset seluruh data aplikasi? Semua data akan dihapus permanen dan diganti data awal + contoh.');">
+      <?= csrf_field() ?>
+      <div class="col-md-4">
+        <label class="form-label text-dark">Ketik <code>RESET</code> untuk konfirmasi <span class="text-danger">*</span></label>
+        <input type="text" name="confirm_text" class="form-control" placeholder="RESET" autocomplete="off" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label text-dark">Password akun Anda <span class="text-danger">*</span></label>
+        <input type="password" name="confirm_password" class="form-control" autocomplete="current-password" required>
+      </div>
+      <div class="col-md-4">
+        <button type="submit" class="btn btn-danger w-100">
+          <i class="mdi mdi-restore-alert me-1"></i> Reset Seluruh Data
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
   // Ingat tab terakhir supaya UX lebih enak
   (function () {
