@@ -392,18 +392,6 @@
                         </div>
                     </div>
 
-                    <!-- Remember Me -->
-                    <div class="form-check">
-                        <input class="form-check-input"
-                            type="checkbox"
-                            id="remember"
-                            name="remember"
-                            value="1">
-                        <label class="form-check-label" for="remember">
-                            Ingat Saya
-                        </label>
-                    </div>
-
                     <!-- Login Button -->
                     <button type="submit" class="btn btn-login">
                         <i class="fas fa-sign-in-alt me-2"></i> Masuk

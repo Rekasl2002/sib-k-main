@@ -75,15 +75,9 @@ class AuthController extends BaseController
 
         $username = $this->request->getPost('username');
         $password = $this->request->getPost('password');
-        $remember = $this->request->getPost('remember');
 
         // Attempt login
         if ($this->authLib->login($username, $password)) {
-            // Set remember me cookie if checked
-            if ($remember) {
-                $this->setRememberMeCookie($username);
-            }
-
             // Check for redirect URL
             $redirectUrl = session('redirect_url');
             if ($redirectUrl) {
@@ -111,8 +105,8 @@ class AuthController extends BaseController
     {
         $this->authLib->logout();
 
-        // Remove remember me cookie
-        $this->removeRememberMeCookie();
+        // Hapus cookie "Ingat Saya" lama yang mungkin masih tersisa di browser
+        delete_cookie('sibk_remember');
 
         return redirect()->to('/login')
             ->with('success', 'Anda telah berhasil logout.');
@@ -482,41 +476,6 @@ class AuthController extends BaseController
         }
 
         return in_array(strtolower((string) $value), ['1', 'true', 'yes', 'on'], true);
-    }
-
-    /**
-     * Set remember me cookie
-     * 
-     * @param string $username
-     * @return void
-     */
-    private function setRememberMeCookie($username)
-    {
-        $token = bin2hex(random_bytes(32));
-
-        // Save token to database or session
-        session()->set('remember_token', $token);
-
-        // Set cookie for 30 days
-        set_cookie([
-            'name'     => 'sibk_remember',
-            'value'    => $token,
-            'expire'   => 2592000, // 30 days
-            'secure'   => $this->request->isSecure(),
-            'httponly' => true,
-            'samesite' => 'Lax',
-        ]);
-    }
-
-    /**
-     * Remove remember me cookie
-     * 
-     * @return void
-     */
-    private function removeRememberMeCookie()
-    {
-        delete_cookie('sibk_remember');
-        session()->remove('remember_token');
     }
 
     /**
