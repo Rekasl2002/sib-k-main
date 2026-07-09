@@ -47,9 +47,9 @@ dengan `composer install --no-dev`.
 
 | Peran | Username | Password |
 |---|---|---|
-| Admin | `admin_isman`, `admin_maudy` | `admin123` |
-| Koordinator BK | `koordinator_1`, `koordinator_maudy` | `koordinator123` |
-| Guru BK | `gurubk_1`, `gurubk_2` | `gurubk123` |
+| Admin | `admin_1`, `admin_2` | `admin123` |
+| Koordinator BK | `koordinator_1`, `koordinator_2` | `koordinator123` |
+| Guru BK | `gurubk_1`, `gurubk_2`, `gurubk_3` | `gurubk123` |
 | Wali Kelas 10 - C | `walikelas_1` | `walikelas123` |
 | Siswa (Siswa 1, 10 - C) | `1000000001` | `01012010` |
 | Siswa (Siswa 2, 11 - C) | `1000000002` | `02022009` |

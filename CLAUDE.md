@@ -88,7 +88,7 @@ Aturan kerahasiaan kunci (wawancara + Guru BK 1):
 Skema sesuai + migrasi `up()/down()` jalan · CRUD & alur sesuai Activity Diagram + **Matriks CRUD (§6)** per peran · permission terdaftar & rute terkunci benar · UI hanya tampilkan yang relevan · validasi diterapkan · kerahasiaan terjaga · diuji login per peran (§9) · tanpa error · commit.
 
 ## 9. Pengujian & verifikasi
-Akun seed: `admin_isman`+`admin_maudy/admin123`, `koordinator_1`+`koordinator_maudy/koordinator123`, `gurubk_1`+`gurubk_2/gurubk123`, `walikelas_1/walikelas123` (wali Kelas 10 - C), siswa `1000000001/01012010` (Siswa 1, 10 - C) & `1000000002/02022009` (Siswa 2, 11 - C), ortu `ibu_siswa_1_0001/01012010` & `ibu_siswa_2_0002/02022009`.
+Akun seed: `admin_1`+`admin_2/admin123`, `koordinator_1`+`koordinator_2/koordinator123`, `gurubk_1`+`gurubk_2`+`gurubk_3/gurubk123`, `walikelas_1/walikelas123` (wali Kelas 10 - C), siswa `1000000001/01012010` (Siswa 1, 10 - C) & `1000000002/02022009` (Siswa 2, 11 - C), ortu `ibu_siswa_1_0001/01012010` & `ibu_siswa_2_0002/02022009`.
 - Uji tiap fitur login per peran; pastikan hak akses & kerahasiaan sesuai §6.
 - Uji HTTP via curl: ambil **satu** token CSRF (`grep ... | head -1`, ada juga di meta tag), kirim sebagai field `csrf_token_sibk`.
 - Skripsi: **Black Box Testing (Equivalence Partitioning)**, target 100% fungsi — siapkan data valid & tidak valid per fitur.

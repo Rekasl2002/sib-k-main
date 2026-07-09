@@ -83,12 +83,13 @@ class DatabaseSeeder extends Seeder
 
         echo "\nBasis data SIB-K berhasil diisi ulang (data awal + data contoh).\n";
         echo "Akun bawaan:\n";
-        echo "- admin_isman / admin123 (Admin)\n";
-        echo "- admin_maudy / admin123 (Admin)\n";
+        echo "- admin_1 / admin123 (Admin)\n";
+        echo "- admin_2 / admin123 (Admin)\n";
         echo "- koordinator_1 / koordinator123 (Koordinator BK)\n";
-        echo "- koordinator_maudy / koordinator123 (Koordinator BK)\n";
+        echo "- koordinator_2 / koordinator123 (Koordinator BK)\n";
         echo "- gurubk_1 / gurubk123 (Guru BK)\n";
         echo "- gurubk_2 / gurubk123 (Guru BK)\n";
+        echo "- gurubk_3 / gurubk123 (Guru BK)\n";
         echo "- walikelas_1 / walikelas123 (Wali Kelas 10 - C)\n";
         echo "- 1000000001 / 01012010 (Siswa Siswa 1, Kelas 10 - C)\n";
         echo "- 1000000002 / 02022009 (Siswa Siswa 2, Kelas 11 - C)\n";

@@ -204,7 +204,7 @@ class SettingController extends BaseController
         session()->destroy();
 
         return redirect()->to(site_url('login'))
-            ->with('success', 'Reset selesai. Data aplikasi kembali ke kondisi awal. Silakan masuk dengan akun bawaan (mis. admin_isman / admin123) lalu segera ganti password.');
+            ->with('success', 'Reset selesai. Data aplikasi kembali ke kondisi awal. Silakan masuk dengan akun bawaan (mis. admin_1 / admin123) lalu segera ganti password.');
     }
 
     /**

@@ -177,12 +177,18 @@ class InitialDataSeeder extends BaseDataSeeder
     {
         $rows = [
             // [id, role, username, email, password, nama lengkap, telepon]
-            [1, 1, 'admin_isman', 'admin.isman@sibk.sch.id', 'admin123', 'Admin Koordinator BK 1', '081100000001'],
-            [2, 1, 'admin_maudy', 'admin.maudy@sibk.sch.id', 'admin123', 'Admin Guru BK 3', '081100000002'],
+            // Admin = akun sistem generik (bukan narasumber wawancara).
+            [1, 1, 'admin_1', 'admin1@sibk.sch.id', 'admin123', 'Admin 1', '081100000001'],
+            [2, 1, 'admin_2', 'admin2@sibk.sch.id', 'admin123', 'Admin 2', '081100000002'],
+            // Koordinator BK: Koordinator BK 1 (narasumber) + satu koordinator cadangan generik.
             [3, 2, 'koordinator_1', 'koordinator1@sibk.sch.id', 'koordinator123', 'Koordinator BK 1', '081100000003'],
-            [4, 2, 'koordinator_maudy', 'gurubk3@sibk.sch.id', 'koordinator123', 'Guru BK 3', '081100000004'],
+            [4, 2, 'koordinator_2', 'koordinator2@sibk.sch.id', 'koordinator123', 'Koordinator 2', '081100000004'],
+            // Guru BK: Guru BK 1, Guru BK 2, dan Guru BK 3 (ketiganya narasumber Guru BK).
             [5, 3, 'gurubk_1', 'gurubk1@sibk.sch.id', 'gurubk123', 'Guru BK 1', '081100000005'],
             [6, 3, 'gurubk_2', 'gurubk2@sibk.sch.id', 'gurubk123', 'Guru BK 2', '081100000006'],
+            // Guru BK 3: sesuai wawancara berperan Guru BK (bukan koordinator).
+            // Ditaruh di id 12 agar id 7-11 (dipakai data contoh) tidak bergeser.
+            [12, 3, 'gurubk_3', 'gurubk3@sibk.sch.id', 'gurubk123', 'Guru BK 3', '081100000012'],
             [7, 4, 'walikelas_1', 'walikelas1@sibk.sch.id', 'walikelas123', "Wali Kelas 1", '081100000007'],
             // Siswa: username = NISN, password = tanggal lahir DDMMYYYY (konvensi impor).
             [8, 5, '1000000001', null, '01012010', 'Siswa 1', '081100000008'],
