@@ -158,7 +158,7 @@ $importWarnings = session()->getFlashdata('import_warnings');
         ['label' => 'Siswa Laki-laki', 'value' => $stats['by_gender']['L'] ?? 0,                          'bg' => 'bg-info',      'icon' => 'mdi-gender-male',    'style' => ''],
         ['label' => 'Siswa Perempuan', 'value' => $stats['by_gender']['P'] ?? 0,                          'bg' => '',             'icon' => 'mdi-gender-female',  'style' => 'background-color:#d63384;'],
         ['label' => 'Alumni',          'value' => $stats['alumni'] ?? 0,                                  'bg' => 'bg-secondary', 'icon' => 'mdi-school-outline', 'style' => ''],
-        ['label' => 'Pindah/Keluar',   'value' => ($stats['moved'] ?? 0) + ($stats['dropped'] ?? 0),      'bg' => 'bg-warning',   'icon' => 'mdi-account-off',    'style' => ''],
+        ['label' => 'Pindah / Keluar', 'value' => ($stats['moved'] ?? 0) + ($stats['dropped'] ?? 0),      'bg' => 'bg-warning',   'icon' => 'mdi-account-off',    'style' => ''],
     ];
     ?>
     <?php foreach ($miniCards as $mc): ?>

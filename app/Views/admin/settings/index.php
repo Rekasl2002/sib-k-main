@@ -116,6 +116,9 @@ $checked = static function($value): bool {
         <li class="nav-item" role="presentation">
           <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-notif-matrix" type="button" role="tab">Notifikasi</button>
         </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link text-danger" data-bs-toggle="tab" data-bs-target="#tab-reset" type="button" role="tab">Reset Data Aplikasi</button>
+        </li>
       </ul>
 
       <div class="tab-content">
@@ -676,6 +679,45 @@ $checked = static function($value): bool {
           </div>
         </div>
 
+        <!-- ===================== TAB: RESET DATA APLIKASI ===================== -->
+        <div class="tab-pane fade" id="tab-reset" role="tabpanel" tabindex="0">
+          <div class="border border-danger rounded p-3">
+            <h5 class="text-danger mb-2"><i class="mdi mdi-alert-octagon-outline me-1"></i> Reset Data Aplikasi</h5>
+            <div class="text-dark small mb-2">
+              Mengembalikan aplikasi ke <b>kondisi awal pakai</b>: seluruh data (siswa, layanan BK, konsultasi,
+              asesmen, pesan, notifikasi, penugasan, berkas unggahan) <b>DIHAPUS PERMANEN</b>, lalu diisi ulang
+              dengan akun bawaan, kelas 10 A s.d. 12 C, dan data contoh tiap fitur.
+            </div>
+            <ul class="text-dark small mb-2">
+              <li>Semua akun kembali ke akun bawaan (termasuk password bawaan).</li>
+              <li>Tindakan ini <b>tidak bisa dibatalkan</b>. Unduh laporan/berkas penting terlebih dahulu.</li>
+              <li>Setelah reset, semua pengguna harus masuk ulang.</li>
+            </ul>
+
+            <!--
+              Formulir reset punya action & tujuan berbeda dari form Pengaturan di atas.
+              Field di bawah memakai atribut form="resetDataForm" agar terhubung ke
+              <form id="resetDataForm"> di luar form Pengaturan (menghindari <form> bersarang),
+              walau tab ini tampil di dalam tab-content form Pengaturan.
+            -->
+            <div class="row g-3 align-items-end">
+              <div class="col-md-4">
+                <label class="form-label text-dark">Ketik <code>RESET</code> untuk konfirmasi <span class="text-danger">*</span></label>
+                <input type="text" name="confirm_text" form="resetDataForm" class="form-control" placeholder="RESET" autocomplete="off" required>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label text-dark">Password akun Anda <span class="text-danger">*</span></label>
+                <input type="password" name="confirm_password" form="resetDataForm" class="form-control" autocomplete="current-password" required>
+              </div>
+              <div class="col-md-4">
+                <button type="submit" form="resetDataForm" class="btn btn-danger w-100">
+                  <i class="mdi mdi-restore-alert me-1"></i> Reset Seluruh Data
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <div class="mt-4 d-flex flex-wrap align-items-center justify-content-between gap-2">
@@ -690,44 +732,11 @@ $checked = static function($value): bool {
   </div>
 </div>
 
-<!-- ===================== RESET DATA APLIKASI (di luar form pengaturan) ===================== -->
-<div class="card border-danger mt-4">
-  <div class="card-body">
-    <div class="d-flex align-items-start gap-3 flex-wrap">
-      <div class="flex-grow-1">
-        <h5 class="text-danger mb-2"><i class="mdi mdi-alert-octagon-outline me-1"></i> Reset Data Aplikasi</h5>
-        <div class="text-dark small mb-2">
-          Mengembalikan aplikasi ke <b>kondisi awal pakai</b>: seluruh data (siswa, layanan BK, konsultasi,
-          asesmen, pesan, notifikasi, penugasan, berkas unggahan) <b>DIHAPUS PERMANEN</b>, lalu diisi ulang
-          dengan akun bawaan, kelas 10 A s.d. 12 C, dan data contoh tiap fitur.
-        </div>
-        <ul class="text-dark small mb-2">
-          <li>Semua akun kembali ke akun bawaan (termasuk password bawaan).</li>
-          <li>Tindakan ini <b>tidak bisa dibatalkan</b>. Unduh laporan/berkas penting terlebih dahulu.</li>
-          <li>Setelah reset, semua pengguna harus masuk ulang.</li>
-        </ul>
-      </div>
-    </div>
-
-    <form method="post" action="<?= site_url('admin/settings/reset') ?>" class="row g-3 align-items-end"
-          onsubmit="return confirm('YAKIN reset seluruh data aplikasi? Semua data akan dihapus permanen dan diganti data awal + contoh.');">
-      <?= csrf_field() ?>
-      <div class="col-md-4">
-        <label class="form-label text-dark">Ketik <code>RESET</code> untuk konfirmasi <span class="text-danger">*</span></label>
-        <input type="text" name="confirm_text" class="form-control" placeholder="RESET" autocomplete="off" required>
-      </div>
-      <div class="col-md-4">
-        <label class="form-label text-dark">Password akun Anda <span class="text-danger">*</span></label>
-        <input type="password" name="confirm_password" class="form-control" autocomplete="current-password" required>
-      </div>
-      <div class="col-md-4">
-        <button type="submit" class="btn btn-danger w-100">
-          <i class="mdi mdi-restore-alert me-1"></i> Reset Seluruh Data
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
+<!-- Form tanpa tampilan: menampung submit tab "Reset Data Aplikasi" di atas (lihat atribut form=) -->
+<form id="resetDataForm" method="post" action="<?= site_url('admin/settings/reset') ?>"
+      onsubmit="return confirm('YAKIN reset seluruh data aplikasi? Semua data akan dihapus permanen dan diganti data awal + contoh.');">
+  <?= csrf_field() ?>
+</form>
 
 <script>
   // Ingat tab terakhir supaya UX lebih enak

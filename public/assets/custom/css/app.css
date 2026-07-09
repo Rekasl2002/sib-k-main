@@ -279,13 +279,30 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Mini Cards / Stat Cards */
+.mini-stats-wid {
+  /* semua kartu dalam satu baris disamakan tingginya (setinggi kartu terpanjang),
+     TANPA menambah tinggi kalau semua kartu di baris itu memang sudah sama tingginya */
+  height: 100%;
+}
+
+.mini-stats-wid .card-body {
+  /* saat kartu ini di-stretch lebih tinggi dari kartu sebelah (label lebih pendek),
+     konten (label+ikon+angka) ditengahkan vertikal alih-alih menempel di atas */
+  display: flex;
+  align-items: center;
+}
+
 .mini-stats-wid .mini-stat-icon {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--border-radius-lg);
+}
+
+.mini-stats-wid .mini-stat-icon .font-size-24 {
+  font-size: 1.25rem !important;
 }
 
 .mini-stats-wid h6 {
@@ -294,6 +311,20 @@ h1, h2, h3, h4, h5, h6 {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 0.5rem;
+}
+
+.mini-stats-wid .card-body > .d-flex {
+  width: 100%;
+}
+
+.mini-stats-wid .card-body > .d-flex > .flex-grow-1 {
+  /* flex item default min-width:auto membuat kata tanpa spasi (mis. "Pindah/Keluar")
+     mendorong ikon keluar dari card alih-alih membungkus baris */
+  min-width: 0;
+}
+
+.mini-stats-wid .card-body > .d-flex > .flex-grow-1 > p {
+  overflow-wrap: break-word;
 }
 
 .mini-stats-wid .counter {

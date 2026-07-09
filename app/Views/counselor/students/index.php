@@ -151,7 +151,7 @@ $useShowAlerts = function_exists('show_alerts');
             <div class="card-body">
                 <div class="d-flex">
                     <div class="flex-grow-1">
-                        <p class="text-muted fw-medium">Pindah/Keluar</p>
+                        <p class="text-muted fw-medium">Pindah / Keluar</p>
                         <h4 class="mb-0">
                             <?= number_format((int)(($stats['moved'] ?? 0) + ($stats['dropped'] ?? 0))) ?>
                         </h4>
