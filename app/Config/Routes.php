@@ -609,10 +609,6 @@ $routes->group('counselor', [
             'filter' => 'permission:view_dashboard',
             'as'     => 'counselor.dashboard'
         ]);
-        $routes->get('dashboard/getQuickStats', 'DashboardController::getQuickStats', [
-            'filter' => 'permission:view_dashboard',
-            'as'     => 'counselor.dashboard.stats'
-        ]);
 
         $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
             $routes->get('/', 'NotificationController::index', ['as' => 'counselor.notifications']);
@@ -758,8 +754,6 @@ $routes->group('counselor', [
 
             $routes->post('(:num)/publish', 'AssessmentController::publish/$1', ['as' => 'counselor.assessments.publish']);
             $routes->post('(:num)/unpublish', 'AssessmentController::unpublish/$1', ['as' => 'counselor.assessments.unpublish']);
-            $routes->get('(:num)/publish', 'AssessmentController::publish/$1');
-            $routes->get('(:num)/unpublish', 'AssessmentController::unpublish/$1');
 
             $routes->post('(:num)/duplicate', 'AssessmentController::duplicate/$1', ['as' => 'counselor.assessments.duplicate']);
         });
@@ -837,10 +831,6 @@ $routes->group('homeroom', [
         $routes->get('dashboard', 'DashboardController::index', [
             'filter' => 'permission:view_dashboard',
             'as'     => 'homeroom.dashboard'
-        ]);
-        $routes->get('dashboard/stats', 'DashboardController::getStats', [
-            'filter' => 'permission:view_dashboard',
-            'as'     => 'homeroom.dashboard.stats'
         ]);
 
         $routes->group('notifications', ['filter' => 'permission:view_dashboard'], function ($routes) {
@@ -1306,12 +1296,6 @@ $routes->group('parent', [
         $routes->group('parent-collaborations', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'ParentCollaborationController', 'parent.parent_collaborations'));
         $routes->group('home-visits', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'HomeVisitController', 'parent.home_visits'));
         $routes->group('case-conferences', ['filter' => 'permission:view_bk_services'], static fn($routes) => $bkReadRoutes($routes, 'CaseConferenceController', 'parent.case_conferences'));
-
-        // Komunikasi
-        $routes->group('communication', ['filter' => 'permission:send_messages'], function ($routes) {
-            $routes->get('/', 'CommunicationController::index', ['as' => 'parent.communication']);
-            $routes->post('send-message', 'CommunicationController::sendMessage', ['as' => 'parent.communication.send']);
-        });
 
         // Career (lihat)
         $routes->group('career', ['filter' => 'permission:view_career_info'], function ($routes) {
