@@ -4,6 +4,13 @@
 !.env.example
 env copy
 
+# Bahan penelitian & arsip lokal — tidak dibutuhkan aplikasi di server
+/backupNInformasi/
+/bahan lain/
+
+# File kunci sementara Microsoft Office
+~$*
+
 # Composer dependencies
 /vendor/
 

@@ -11,14 +11,17 @@ Panduan singkat memasang **SIB-K MA Persis 31 Banjaran** di server (hosting/VPS)
 
 ## 2. Berkas yang diunggah ke server
 
-Unggah seluruh isi proyek **KECUALI** folder/berkas berikut (bahan penelitian &
-pengembangan, tidak dibutuhkan aplikasi):
+Repo GitHub kini hanya berisi berkas aplikasi — folder bahan penelitian
+(`backupNInformasi/`, `bahan lain/`) sudah **tidak di-track git** dan hanya ada
+di komputer pengembangan. Bila mengunggah dari komputer lokal (bukan clone
+GitHub), **KECUALIKAN** folder/berkas berikut:
 
 - `backupNInformasi/` — dokumen skripsi, wawancara, diagram, pengujian.
 - `bahan lain/` — arsip dump SQL referensi.
 - `tests/`, `phpunit.xml.dist` — perangkat pengujian.
 - `.git/`, `CLAUDE.md`, `DEPLOYMENT.md`, `README.md` (opsional diunggah).
-- `.env` lokal — **jangan** memakai .env pengembangan; buat baru dari `.env.example`.
+- `.env` / `.env.server` lokal — **jangan** memakai .env pengembangan; buat baru
+  dari template `env` di root proyek.
 
 Folder `vendor/` boleh diunggah langsung dari lokal, atau dipasang di server
 dengan `composer install --no-dev`.
@@ -28,7 +31,7 @@ dengan `composer install --no-dev`.
 1. **Document root** diarahkan ke folder `public/` (bukan root proyek).
    Di shared hosting: letakkan proyek di luar `public_html`, lalu arahkan atau
    symlink `public_html` ke folder `public/`.
-2. Salin `.env.example` menjadi `.env`, lalu isi:
+2. Salin template `env` (root proyek) menjadi `.env`, lalu isi:
    - `app.baseURL` = alamat situs (akhiri dengan `/`).
    - `database.default.*` = kredensial database server.
    - Kunci enkripsi: jalankan `php spark key:generate`.

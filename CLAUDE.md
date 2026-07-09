@@ -11,10 +11,11 @@ Aplikasi BK berbasis web (lanjutan kerja praktik). Arah pengembangan **bergeser 
 - Migrasi: `php spark migrate` (⚠️ `migrate:rollback` men-drop SEMUA tabel — satu migration tunggal; backup dulu). Seed: `php spark db:seed DatabaseSeeder` (reset + data awal + contoh). Rute: `php spark routes`. Log: `writable/logs/`.
 - Reset satu-klik dari web: **Admin → Pengaturan → Reset Data Aplikasi** (ketik RESET + password). Panduan pasang di server: **`DEPLOYMENT.md`**.
 - **OPcache nonaktif** lokal → perubahan PHP langsung berlaku.
-- **Jangan commit `.env`** (kredensial).
+- **Jangan commit `.env`/kredensial apa pun** (repo GitHub PUBLIK). File `env` root = template tanpa kredensial; kredensial server asli di `.env.server` lokal (untracked).
 - Baca PDF via `pdftotext -f <a> -l <b> file.pdf -` (poppler `pdftoppm`/render TIDAK ada). Baca `.docx` via `python` + `zipfile` (`word/document.xml`).
 
 ## 3. Sumber kebenaran (baca sebelum tiap fitur)
+⚠️ `backupNInformasi/` & `bahan lain/` **untracked git sejak 2026-07-09** (berisi data siswa asli & dokumen penelitian; repo publik) — hanya ada di komputer lokal; backup di luar git.
 **Authoritative utama**: file rencana pengembangan + diagram draw.io. Prototipe = patokan sekunder (besar kemungkinan berubah setelah evaluasi/konfirmasi ulang responden). Bab 3 skripsi = authoritative untuk **Black Box Testing**. Semua bisa berubah sesuai bimbingan/keadaan.
 - `backupNInformasi/hasilAnalisis/Rencana_Pengembangan_SIBK_Berdasarkan_Wawancara_dan_Rancangan.docx` — **rencana induk** (fitur, ERD, halaman, hak akses). *(Varian "buatan AI" diabaikan.)*
 - `backupNInformasi/hasilWawancara/Data_Fitur_Diminta_Guru_BK_Revisi_Bu_Guru BK 1.docx` — detail kebutuhan & kerahasiaan per fitur (revisi Guru BK 1).

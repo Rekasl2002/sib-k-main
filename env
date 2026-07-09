@@ -33,10 +33,11 @@ app.CSPEnabled = false
 # DATABASE - UTAMA
 #--------------------------------------------------------------------
 
+# Isi kredensial database milik server — JANGAN commit kredensial asli ke git
 database.default.hostname = 127.0.0.1
 database.default.database = sibk_mapersis31
-database.default.username = sibk_mapersis31	
-database.default.password = XrHS3RTYb83DcKPY
+database.default.username =
+database.default.password =
 database.default.DBDriver = MySQLi
 database.default.DBPrefix =
 database.default.port = 3306
@@ -63,8 +64,7 @@ database.tests.port = 3306
 #--------------------------------------------------------------------
 # Pastikan untuk mengisi kunci enkripsi Anda (bisa didapat dengan `php spark key:generate`)
 
-encryption.key = hex2bin:8b64f3ff37267a8fb75316ddb74de2dd03b168229b7d9366ae36b6d74cf4ce5f
-email.SMTPPass = "********"
+encryption.key =
 encryption.driver = OpenSSL
 encryption.cipher = AES-256-CTR
 encryption.blockSize = 16
@@ -73,7 +73,8 @@ encryption.blockSize = 16
 # SESSION
 #--------------------------------------------------------------------
 session.driver = CodeIgniter\Session\Handlers\FileHandler
-session.savePath = /www/wwwroot/sib-k.mapersis31banjaran.sch.id/writable/session
+# Isi path absolut folder writable/session milik server bila perlu; kosongkan = bawaan (writable/session)
+# session.savePath =
 session.cookieName = sibk_session
 session.expiration = 7200
 session.matchIP = false
