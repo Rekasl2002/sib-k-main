@@ -1401,11 +1401,14 @@ class ReportService
         foreach ($b->get()->getResultArray() as $r) {
             $type = (string) ($r['session_type'] ?? 'Individu');
             $confidential = (int) ($r['is_confidential'] ?? 0) === 1;
-            $topic = $confidential ? 'Konseling (Terbatas)' : ($r['topic'] ?? '-');
+            // Topik sesi rahasia hanya disamarkan untuk peran ber-mask (Wali Kelas);
+            // Koordinator BK & Guru BK berhak melihat topik asli.
+            $topic = ($mask && $confidential) ? 'Konseling (Terbatas)' : ($r['topic'] ?? '-');
             $time  = !empty($r['session_time']) ? date('H:i', strtotime((string) $r['session_time'])) : '-';
-            $target = $type === 'Klasikal'
-                ? ($r['target_class'] ?? '-')
-                : trim((string) ($r['student_name'] ?? '-') . ' (' . (string) ($r['student_class'] ?? '-') . ')');
+            $studentName = trim((string) ($r['student_name'] ?? ''));
+            $target = $studentName !== ''
+                ? $studentName . ' (' . (string) ($r['student_class'] ?? '-') . ')'
+                : (string) (($r['target_class'] ?? '') !== '' ? $r['target_class'] : '-');
 
             if ($mask) {
                 $rows[] = [$r['session_date'] ?? '-', $time, $type, $r['location'] ?? '-', $topic, $r['status'] ?? '-'];
