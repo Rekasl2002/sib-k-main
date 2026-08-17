@@ -386,7 +386,7 @@ $renderChip = static function (string $name, int $id, string $text) {
             <label class="form-label text-dark">Peserta Tambahan (manual)</label>
             <div id="manualParticipants">
               <div class="input-group mb-2 manual-participant-row">
-                <input type="text" name="manual_participants[]" class="form-control" placeholder="Nama - Peran (mis: Wali Kelas 1 - Wali Kelas)">
+                <input type="text" name="manual_participants[]" class="form-control" placeholder="Nama - Peran (mis: Nama Wali Kelas - Wali Kelas)">
                 <button type="button" class="btn btn-outline-danger remove-manual" title="Hapus baris"><i class="mdi mdi-minus"></i></button>
               </div>
             </div>

@@ -5,12 +5,21 @@ namespace App\Database\Seeds;
 /**
  * File Path: app/Database/Seeds/InitialDataSeeder.php
  *
- * DATA AWAL WAJIB aplikasi SIB-K MA Persis 31 Banjaran (kondisi pertama pakai):
- * peran, izin akses, akun pengguna hasil wawancara, tahun ajaran aktif,
- * kelas 10 A s.d. 12 C, dua siswa nyata beserta akun orang tuanya, dan
- * pengaturan aplikasi. Seeder ini mengasumsikan tabel masih kosong
- * (dijalankan setelah `php spark migrate` pada database baru, atau lewat
- * DatabaseSeeder yang mengosongkan tabel terlebih dahulu).
+ * DATA AWAL WAJIB aplikasi SIB-K (kondisi pertama pakai): peran, izin akses,
+ * akun contoh tiap peran, tahun ajaran aktif, kelas 10 A s.d. 12 C, dua siswa
+ * contoh beserta akun orang tuanya, dan pengaturan aplikasi. Seeder ini
+ * mengasumsikan tabel masih kosong (dijalankan setelah `php spark migrate` pada
+ * database baru, atau lewat DatabaseSeeder yang mengosongkan tabel dulu).
+ *
+ * ============================ PENTING ============================
+ * SELURUH DATA DI SINI ADALAH DATA CONTOH FIKTIF (nama, NISN, NIK, alamat,
+ * nomor telepon). JANGAN memasukkan data pribadi asli siswa, orang tua, atau
+ * guru ke berkas ini — repositori bersifat publik.
+ *
+ * Password di sini juga hanya password DEMO agar aplikasi bisa langsung dicoba.
+ * Setelah dipasang untuk pemakaian sungguhan, GANTI SELURUH password bawaan
+ * lewat Admin dan hapus akun contoh yang tidak diperlukan.
+ * =================================================================
  *
  * Akun siswa & orang tua sengaja MENGIKUTI KONVENSI FITUR IMPOR
  * (app/Libraries/ExcelImporter.php) supaya seragam dengan siswa hasil impor:
@@ -170,32 +179,29 @@ class InitialDataSeeder extends BaseDataSeeder
     }
 
     /**
-     * Akun pengguna hasil wawancara. Data siswa & orang tua diambil dari
-     * berkas resmi sekolah (Daftar Siswa 2025/2026 Ganjil kelas 10 & 11).
+     * Akun contoh tiap peran. Semua nama, NISN, dan nomor telepon FIKTIF —
+     * penomoran sengaja dibuat berurutan (Guru BK 1, Guru BK 2, ...) supaya
+     * jelas bahwa ini data demo, bukan data orang sungguhan.
      */
     private function seedUsers(string $now): void
     {
         $rows = [
             // [id, role, username, email, password, nama lengkap, telepon]
-            // Admin = akun sistem generik (bukan narasumber wawancara).
             [1, 1, 'admin_1', 'admin1@sibk.sch.id', 'admin123', 'Admin 1', '081100000001'],
             [2, 1, 'admin_2', 'admin2@sibk.sch.id', 'admin123', 'Admin 2', '081100000002'],
-            // Koordinator BK: Koordinator BK 1 (narasumber) + satu koordinator cadangan generik.
             [3, 2, 'koordinator_1', 'koordinator1@sibk.sch.id', 'koordinator123', 'Koordinator BK 1', '081100000003'],
-            [4, 2, 'koordinator_2', 'koordinator2@sibk.sch.id', 'koordinator123', 'Koordinator 2', '081100000004'],
-            // Guru BK: Guru BK 1, Guru BK 2, dan Guru BK 3 (ketiganya narasumber Guru BK).
+            [4, 2, 'koordinator_2', 'koordinator2@sibk.sch.id', 'koordinator123', 'Koordinator BK 2', '081100000004'],
             [5, 3, 'gurubk_1', 'gurubk1@sibk.sch.id', 'gurubk123', 'Guru BK 1', '081100000005'],
             [6, 3, 'gurubk_2', 'gurubk2@sibk.sch.id', 'gurubk123', 'Guru BK 2', '081100000006'],
-            // Guru BK 3: sesuai wawancara berperan Guru BK (bukan koordinator).
-            // Ditaruh di id 12 agar id 7-11 (dipakai data contoh) tidak bergeser.
+            // Guru BK 3 ditaruh di id 12 agar id 7-11 (dipakai data contoh) tidak bergeser.
             [12, 3, 'gurubk_3', 'gurubk3@sibk.sch.id', 'gurubk123', 'Guru BK 3', '081100000012'],
-            [7, 4, 'walikelas_1', 'walikelas1@sibk.sch.id', 'walikelas123', "Wali Kelas 1", '081100000007'],
+            [7, 4, 'walikelas_1', 'walikelas1@sibk.sch.id', 'walikelas123', 'Wali Kelas 1', '081100000007'],
             // Siswa: username = NISN, password = tanggal lahir DDMMYYYY (konvensi impor).
             [8, 5, '1000000001', null, '01012010', 'Siswa 1', '081100000008'],
             [9, 5, '1000000002', null, '02022009', 'Siswa 2', '081100000009'],
-            // Orang tua (ibu kandung): username = nama + 4 digit akhir NISN anak, password = password anak.
-            [10, 6, 'ibu_siswa_1_0001', null, '01012010', 'Ibu Siswa 1', '081100000008'],
-            [11, 6, 'ibu_siswa_2_0002', null, '02022009', 'Ibu Siswa 2', '081100000009'],
+            // Orang tua: username = nama + 4 digit akhir NISN anak, password = password anak.
+            [10, 6, 'ibu_siswa_1_0001', null, '01012010', 'Ibu Siswa 1', '081100000010'],
+            [11, 6, 'ibu_siswa_2_0002', null, '02022009', 'Ibu Siswa 2', '081100000011'],
         ];
 
         $payload = [];
@@ -226,8 +232,8 @@ class InitialDataSeeder extends BaseDataSeeder
 
         // Kelas lengkap 10 A s.d. 12 C, format nama mengikuti file impor sekolah
         // ("Kelas <tingkat> - <rombel>"). Wali kelas hanya boleh membina SATU kelas:
-        // Wali Kelas 1 -> Kelas 10 - C. Guru BK pembina: tingkat 10 = Guru BK 1,
-        // tingkat 11 = Guru BK 2, tingkat 12 = Koordinator (Koordinator BK 1).
+        // Wali Kelas 1 (id 7) -> Kelas 10 - C. Guru BK pembina: tingkat 10 = Guru BK 1
+        // (id 5), tingkat 11 = Guru BK 2 (id 6), tingkat 12 = Koordinator BK 1 (id 3).
         $classes = [];
         $id = 1;
         $counselorByGrade = [10 => 5, 11 => 6, 12 => 3];
@@ -256,21 +262,21 @@ class InitialDataSeeder extends BaseDataSeeder
         $this->insertRows('students', [
             [
                 'id' => 1, 'user_id' => 8, 'class_id' => 3, 'nisn' => '1000000001', 'nik' => '1000000000000001',
-                'gender' => 'P', 'birth_place' => 'Bandung', 'birth_date' => '2010-02-17', 'religion' => 'Islam',
+                'gender' => 'P', 'birth_place' => 'Kota Contoh', 'birth_date' => '2010-01-01', 'religion' => 'Islam',
                 'address' => 'Jalan Contoh No. 1, RT/RW 001/002, Desa Contoh, Kecamatan Contoh, Kabupaten Contoh, 40000',
                 'special_needs' => 'Tidak Ada', 'disability' => 'Tidak Ada', 'kip_pip_number' => null,
-                'hobi' => 'Menulis dan kaligrafi', 'ekskul_organisasi' => 'PMR, Jurnalistik',
+                'hobi' => 'Menulis dan membaca', 'ekskul_organisasi' => 'PMR, Jurnalistik',
                 'father_name' => 'Ayah Siswa 1', 'mother_name' => 'Ibu Siswa 1', 'guardian_name' => 'Wali Siswa 1',
                 'parent_id' => 10, 'admission_date' => '2025-07-14', 'status' => 'Aktif',
                 'created_at' => $now, 'updated_at' => $now,
             ],
             [
                 'id' => 2, 'user_id' => 9, 'class_id' => 6, 'nisn' => '1000000002', 'nik' => '1000000000000002',
-                'gender' => 'L', 'birth_place' => 'Bandung', 'birth_date' => '2009-06-27', 'religion' => 'Islam',
+                'gender' => 'L', 'birth_place' => 'Kota Contoh', 'birth_date' => '2009-02-02', 'religion' => 'Islam',
                 'address' => 'Jalan Contoh No. 2, RT/RW 003/004, Desa Contoh, Kecamatan Contoh, Kabupaten Contoh, 40000',
                 'special_needs' => 'Tidak Ada', 'disability' => 'Tidak Ada', 'kip_pip_number' => null,
                 'hobi' => 'Sepak bola dan membaca', 'ekskul_organisasi' => 'Pramuka, Rohis',
-                'father_name' => 'Ayah Siswa 2', 'mother_name' => 'Ibu Siswa 2', 'guardian_name' => 'Rahmat',
+                'father_name' => 'Ayah Siswa 2', 'mother_name' => 'Ibu Siswa 2', 'guardian_name' => 'Wali Siswa 2',
                 'parent_id' => 11, 'admission_date' => '2024-07-15', 'status' => 'Aktif',
                 'created_at' => $now, 'updated_at' => $now,
             ],

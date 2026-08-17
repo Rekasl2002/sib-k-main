@@ -112,12 +112,12 @@ logger.threshold = 9
 #--------------------------------------------------------------------
 email.protocol = smtp
 email.SMTPHost = smtp.gmail.com
-email.SMTPUser = ***DIHAPUS***
+email.SMTPUser =
 email.SMTPPass =
 email.SMTPPort = 587
 email.SMTPCrypto = tls
 email.SMTPTimeout = 5
-email.fromEmail = ***DIHAPUS***
+email.fromEmail =
 email.fromName = 'SIB-K MA Persis 31'
 email.mailType = html
 email.charset = UTF-8

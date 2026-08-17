@@ -18,7 +18,7 @@ Aplikasi BK berbasis web (lanjutan kerja praktik). Arah pengembangan **bergeser 
 ⚠️ `backupNInformasi/` & `bahan lain/` **untracked git sejak 2026-07-09** (berisi data siswa asli & dokumen penelitian; repo publik) — hanya ada di komputer lokal; backup di luar git.
 **Authoritative utama**: file rencana pengembangan + diagram draw.io. Prototipe = patokan sekunder (besar kemungkinan berubah setelah evaluasi/konfirmasi ulang responden). Bab 3 skripsi = authoritative untuk **Black Box Testing**. Semua bisa berubah sesuai bimbingan/keadaan.
 - `backupNInformasi/hasilAnalisis/Rencana_Pengembangan_SIBK_Berdasarkan_Wawancara_dan_Rancangan.docx` — **rencana induk** (fitur, ERD, halaman, hak akses). *(Varian "buatan AI" diabaikan.)*
-- `backupNInformasi/hasilWawancara/Data_Fitur_Diminta_Guru_BK_Revisi_Bu_Guru BK 1.docx` — detail kebutuhan & kerahasiaan per fitur (revisi Guru BK 1).
+- `backupNInformasi/hasilWawancara/Data_Fitur_Diminta_Guru_BK_Revisi_*.docx` — detail kebutuhan & kerahasiaan per fitur (revisi Guru BK narasumber).
 - `backupNInformasi/hasilWawancara/transkripRekamanSeluruhWawancara.txt` + `hasilWawancaraTertulis.csv` (atau `Hasil_Wawancara_Tertulis_SIBK_Rapi.docx`).
 - `backupNInformasi/diagram/diagram_prototipe_skripsi.drawio` (+ `.drawio.pdf`) — halaman: 8 Activity, 8 Use Case, 1 **ERD** ("ERD Bubble"), 8 **Wireframe**, 1 **CRUD**. PNG ada di `diagram/gambarDariDrawio/{activityDiagram,useCaseDiagram,CRUD}` (Wireframe & ERD hanya di `.drawio`/`.pdf`).
 - `backupNInformasi/fileHasilKPdanDraftSkripsi/LaporanKPREKASLIF2022008rev.pdf` — baseline fitur lama; `Draft_Skripsi_..._Bab3_...docx` — metode & pengujian.
@@ -37,7 +37,7 @@ Aplikasi BK berbasis web (lanjutan kerja praktik). Arah pengembangan **bergeser 
 - Model `App\Models`, `returnType=array`, `allowedFields` eksplisit, `useTimestamps` bila perlu.
 - **Soft delete** untuk data layanan BK (semua tabel BK punya `deleted_at`) — jangan hard delete; riwayat harus bisa diaudit.
 - CSRF berbasis **session**, field `csrf_token_sibk`, `regenerate=true`, `redirect=true`. Form WAJIB `csrf_field()`. (Token kedaluwarsa saat idle lama = perilaku keamanan yang dipertahankan.)
-- Validasi (Guru BK 2): tolak kolom wajib kosong, format salah, duplikat, tidak logis/relevan.
+- Validasi (hasil wawancara Guru BK): tolak kolom wajib kosong, format salah, duplikat, tidak logis/relevan.
 - Responsif HP/laptop; tombol jelas; bahasa sederhana; langkah ringkas.
 
 ## 6. Matriks CRUD (hak akses — acuan utama)
@@ -57,11 +57,11 @@ Aplikasi BK berbasis web (lanjutan kerja praktik). Arah pengembangan **bergeser 
 | Konferensi Kasus | - | C,R,U,D* | C,R,U* | R* | R* | R* |
 | Penugasan | - | C,R,U,D* | R,U* | - | - | - |
 
-Aturan kerahasiaan kunci (wawancara + Guru BK 1):
+Aturan kerahasiaan kunci (hasil wawancara Guru BK):
 - Detail konseling / catatan rahasia / hasil asesmen individu **hanya** Guru BK terkait & Koordinator BK. Siswa/Orang Tua/Wali Kelas hanya **jadwal/undangan/garis besar aman** (jadwal siswa cukup tanggal–waktu–lokasi, tanpa topik/durasi/deskripsi).
 - Laporan orang tua **tidak otomatis** terlihat siswa.
 - **Guru BK hanya menugaskan dirinya sendiri** sebagai petugas; memilih Guru BK/Petugas lain & penetapan kelas/siswa binaan = wewenang **Koordinator BK**.
-- Pelapor utama Konsultasi/Pengaduan = **Siswa**; akses **Orang Tua/Wali Kelas sebagai pelapor masih perlu dikonfirmasi ulang** (Guru BK 1). Di prototipe sementara: Wali Kelas C,R,U* (boleh lapor & edit miliknya). Pegang Matriks CRUD bila ragu.
+- Pelapor utama Konsultasi/Pengaduan = **Siswa**; akses **Orang Tua/Wali Kelas sebagai pelapor masih perlu dikonfirmasi ulang** (Guru BK narasumber). Di prototipe sementara: Wali Kelas C,R,U* (boleh lapor & edit miliknya). Pegang Matriks CRUD bila ragu.
 
 ## 7. Database (skema final — SATU migration `2026-07-06-100001_CreateSibkSchema`)
 39 tabel aplikasi dalam satu migration (raw SQL kanonis, `down()` men-drop semuanya). Seeder: `InitialDataSeeder` (data awal wajib) + `SampleDataSeeder` (contoh per fitur) + `DatabaseSeeder` (reset + panggil keduanya + geser tanggal jadwal ke sekitar hari ini). Kolom utama:
@@ -89,9 +89,10 @@ Aturan kerahasiaan kunci (wawancara + Guru BK 1):
 Skema sesuai + migrasi `up()/down()` jalan · CRUD & alur sesuai Activity Diagram + **Matriks CRUD (§6)** per peran · permission terdaftar & rute terkunci benar · UI hanya tampilkan yang relevan · validasi diterapkan · kerahasiaan terjaga · diuji login per peran (§9) · tanpa error · commit.
 
 ## 9. Pengujian & verifikasi
-Akun seed: `admin_1`+`admin_2/admin123`, `koordinator_1`+`koordinator_2/koordinator123`, `gurubk_1`+`gurubk_2`+`gurubk_3/gurubk123`, `walikelas_1/walikelas123` (wali Kelas 10 - C), siswa `1000000001/01012010` (Siswa 1, 10 - C) & `1000000002/02022009` (Siswa 2, 11 - C), ortu `ibu_siswa_1_0001/01012010` & `ibu_siswa_2_0002/02022009`.
+⚠️ **SEMUA data seeder = FIKTIF** (Admin 1, Koordinator BK 1, Guru BK 1–3, Wali Kelas 1, Siswa 1–2, Ibu Siswa 1–2; NISN/NIK/alamat/telepon karangan). Repo PUBLIK → **jangan pernah** memasukkan nama, NISN, NIK, alamat, atau kasus siswa/guru sungguhan ke seeder, view, atau dokumen apa pun di repo.
+Akun uji: username `admin_1`, `admin_2`, `koordinator_1`, `koordinator_2`, `gurubk_1`..`gurubk_3`, `walikelas_1` (wali Kelas 10 - C), siswa `1000000001` (Kelas 10 - C) & `1000000002` (Kelas 11 - C), ortu `ibu_siswa_1_0001` & `ibu_siswa_2_0002`. Password demo tercantum di `app/Database/Seeds/InitialDataSeeder.php` (staf = `<peran>123`; siswa/ortu = tanggal lahir DDMMYYYY sesuai konvensi impor) — hanya untuk demo, WAJIB diganti di instalasi sungguhan.
 - Uji tiap fitur login per peran; pastikan hak akses & kerahasiaan sesuai §6.
-- Uji HTTP via curl: ambil **satu** token CSRF (`grep ... | head -1`, ada juga di meta tag), kirim sebagai field `csrf_token_sibk`.
+- Uji HTTP via curl: ambil **satu** token CSRF (`grep ... | head -1`, ada juga di meta tag), kirim sebagai field `csrf_token_sibk`. Login: POST `/login` field `username` + `password`. ⚠️ Port 30 dipakai proyek Laragon lain — untuk uji cepat pakai `php spark serve --port 8899`.
 - Skripsi: **Black Box Testing (Equivalence Partitioning)**, target 100% fungsi — siapkan data valid & tidak valid per fitur.
 
 ## 10. Modul prototipe & evaluasi — SUDAH DIHAPUS (2026-07-06)

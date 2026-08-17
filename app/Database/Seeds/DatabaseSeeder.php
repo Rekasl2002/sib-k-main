@@ -82,7 +82,7 @@ class DatabaseSeeder extends Seeder
         $this->shiftScheduleDatesToTodayWindow();
 
         echo "\nBasis data SIB-K berhasil diisi ulang (data awal + data contoh).\n";
-        echo "Akun bawaan:\n";
+        echo "Akun demo (data fiktif):\n";
         echo "- admin_1 / admin123 (Admin)\n";
         echo "- admin_2 / admin123 (Admin)\n";
         echo "- koordinator_1 / koordinator123 (Koordinator BK)\n";
@@ -91,11 +91,12 @@ class DatabaseSeeder extends Seeder
         echo "- gurubk_2 / gurubk123 (Guru BK)\n";
         echo "- gurubk_3 / gurubk123 (Guru BK)\n";
         echo "- walikelas_1 / walikelas123 (Wali Kelas 10 - C)\n";
-        echo "- 1000000001 / 01012010 (Siswa Siswa 1, Kelas 10 - C)\n";
-        echo "- 1000000002 / 02022009 (Siswa Siswa 2, Kelas 11 - C)\n";
+        echo "- 1000000001 / 01012010 (Siswa 1, Kelas 10 - C)\n";
+        echo "- 1000000002 / 02022009 (Siswa 2, Kelas 11 - C)\n";
         echo "- ibu_siswa_1_0001 / 01012010 (Orang Tua Siswa 1)\n";
         echo "- ibu_siswa_2_0002 / 02022009 (Orang Tua Siswa 2)\n";
-        echo "PENTING: segera ganti password bawaan setelah aplikasi dipakai sungguhan.\n";
+        echo "PENTING: password di atas hanya untuk demo. Segera ganti SELURUH\n";
+        echo "password bawaan dan hapus akun contoh sebelum aplikasi dipakai sungguhan.\n";
     }
 
     private function resetTables(): void

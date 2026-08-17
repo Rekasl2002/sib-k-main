@@ -182,7 +182,7 @@ $value = static function (string $key, $default = '') use ($row, $detail) {
           <h5 class="card-title mb-3">Peserta dan Catatan</h5>
           <div class="mb-3">
             <label class="form-label">Pihak yang Menghadiri/Diundang</label>
-            <textarea name="manual_participants" class="form-control" rows="5" placeholder="Contoh:&#10;Orang Tua Siswa 2 - Orang Tua&#10;Wali Kelas 1 - Wali Kelas"></textarea>
+            <textarea name="manual_participants" class="form-control" rows="5" placeholder="Contoh:&#10;Nama Orang Tua - Orang Tua&#10;Nama Wali Kelas - Wali Kelas"></textarea>
           </div>
           <div class="mb-3">
             <label class="form-label">Catatan Awal</label>

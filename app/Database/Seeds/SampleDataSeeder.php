@@ -14,9 +14,16 @@ namespace App\Database\Seeds;
  * akun/kelas/siswa dari sana). Tanggal ditulis absolut berpusat pada tanggal
  * acuan 2026-07-06; DatabaseSeeder menggesernya agar berpusat di "hari ini".
  *
+ * ============================ PENTING ============================
+ * SELURUH ISI DI SINI ADALAH DATA CONTOH FIKTIF — nama, kasus, alamat, dan
+ * percakapan hanya karangan untuk demo. JANGAN memasukkan catatan layanan BK,
+ * identitas, atau kasus siswa sungguhan ke berkas ini; repositori bersifat
+ * publik dan isi layanan BK bersifat rahasia.
+ * =================================================================
+ *
  * Referensi id dari InitialDataSeeder:
- * - users: 3 Koordinator Koordinator BK 1, 5 Guru BK Guru BK 1, 6 Guru BK Guru BK 2, 7 Wali Kelas
- *   Wali Kelas 1, 8 siswa Siswa 1, 9 siswa Siswa 2, 10 ortu Asri, 11 ortu Rina.
+ * - users: 3 Koordinator BK 1, 5 Guru BK 1, 6 Guru BK 2, 7 Wali Kelas 1,
+ *   8 Siswa 1, 9 Siswa 2, 10 Ibu Siswa 1, 11 Ibu Siswa 2.
  * - students: 1 Siswa 1 (Kelas 10 - C), 2 Siswa 2 (Kelas 11 - C).
  * - classes: 3 = Kelas 10 - C, 6 = Kelas 11 - C.
  */
@@ -39,7 +46,7 @@ class SampleDataSeeder extends BaseDataSeeder
     private function seedBkAssignments(string $now): void
     {
         $this->insertRows('bk_assignments', [
-            ['id' => 1, 'assignment_type' => 'Kelas Binaan', 'title' => 'Binaan Kelas 10 - C', 'instruction' => 'Guru BK 1 menjadi Guru BK pembina Kelas 10 - C pada semester berjalan.', 'assigned_by' => 3, 'assigned_to_user_id' => 5, 'class_id' => 3, 'priority' => 'Sedang', 'status' => 'Ditugaskan', 'due_at' => '2026-12-18 15:00:00', 'assigned_at' => '2026-07-01 08:00:00', 'created_at' => $now, 'updated_at' => $now],
+            ['id' => 1, 'assignment_type' => 'Kelas Binaan', 'title' => 'Binaan Kelas 10 - C', 'instruction' => 'Guru BK 1 menjadi pembina Kelas 10 - C pada semester berjalan.', 'assigned_by' => 3, 'assigned_to_user_id' => 5, 'class_id' => 3, 'priority' => 'Sedang', 'status' => 'Ditugaskan', 'due_at' => '2026-12-18 15:00:00', 'assigned_at' => '2026-07-01 08:00:00', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 2, 'assignment_type' => 'Kelas Binaan', 'title' => 'Binaan Kelas 11 - C', 'instruction' => 'Guru BK 2 mendampingi Kelas 11 - C dan mencatat layanan yang berjalan.', 'assigned_by' => 3, 'assigned_to_user_id' => 6, 'class_id' => 6, 'priority' => 'Sedang', 'status' => 'Berjalan', 'due_at' => '2026-12-18 15:00:00', 'assigned_at' => '2026-07-01 08:15:00', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 3, 'assignment_type' => 'Pelaksanaan Layanan', 'title' => 'Siapkan bimbingan klasikal etika digital', 'instruction' => 'Susun materi singkat, jadwal kelas, dan catatan tindak lanjut siswa yang perlu diperhatikan.', 'assigned_by' => 3, 'assigned_to_user_id' => 5, 'class_id' => 3, 'priority' => 'Tinggi', 'status' => 'Dibaca', 'due_at' => '2026-07-10 07:30:00', 'assigned_at' => '2026-07-02 09:00:00', 'created_at' => $now, 'updated_at' => $now],
             ['id' => 4, 'assignment_type' => 'Tindak Lanjut', 'title' => 'Rencanakan kunjungan rumah Siswa 1', 'instruction' => 'Koordinasikan jadwal dengan orang tua dan catat alamat kunjungan pada layanan kunjungan rumah.', 'assigned_by' => 3, 'assigned_to_user_id' => 5, 'student_id' => 1, 'source_type' => 'consultation_complaints', 'source_id' => 2, 'priority' => 'Tinggi', 'status' => 'Berjalan', 'due_at' => '2026-07-15 14:00:00', 'assigned_at' => '2026-07-03 10:00:00', 'created_at' => $now, 'updated_at' => $now],
@@ -155,23 +162,23 @@ class SampleDataSeeder extends BaseDataSeeder
 
         // Pesan ala chat (percakapan 1-lawan-1); user_one_id selalu <= user_two_id.
         $this->insertRows('conversations', [
-            // Koordinator Koordinator BK 1(3) <-> Guru BK Guru BK 1(5)
+            // Koordinator BK 1 (3) <-> Guru BK 1 (5)
             ['id' => 1, 'user_one_id' => 3, 'user_two_id' => 5, 'last_message_id' => 2, 'last_message_at' => '2026-07-03 10:05:00', 'created_by' => 3, 'created_at' => '2026-07-03 10:00:00', 'updated_at' => $now],
-            // Guru BK Guru BK 1(5) <-> Wali Kelas Wali Kelas 1(7)
+            // Guru BK 1 (5) <-> Wali Kelas 1 (7)
             ['id' => 2, 'user_one_id' => 5, 'user_two_id' => 7, 'last_message_id' => 4, 'last_message_at' => '2026-07-04 09:20:00', 'created_by' => 5, 'created_at' => '2026-07-04 09:00:00', 'updated_at' => $now],
-            // Guru BK Guru BK 1(5) <-> Orang Tua 1(10)
+            // Guru BK 1 (5) <-> Orang Tua 1 (10)
             ['id' => 3, 'user_one_id' => 5, 'user_two_id' => 10, 'last_message_id' => 6, 'last_message_at' => '2026-07-05 14:10:00', 'created_by' => 10, 'created_at' => '2026-07-05 14:00:00', 'updated_at' => $now],
-            // Guru BK Guru BK 1(5) <-> Siswa Siswa 1(8)
+            // Guru BK 1 (5) <-> Siswa 1 (8)
             ['id' => 4, 'user_one_id' => 5, 'user_two_id' => 8, 'last_message_id' => 7, 'last_message_at' => '2026-07-06 08:30:00', 'created_by' => 5, 'created_at' => '2026-07-06 08:30:00', 'updated_at' => $now],
         ]);
 
         $this->insertRows('messages', [
-            ['id' => 1, 'conversation_id' => 1, 'subject' => '', 'body' => 'Guru BK 1, mohon konfirmasi jam bimbingan klasikal Kelas 10 - C pada Jumat ini.', 'created_by' => 3, 'is_draft' => 0, 'created_at' => '2026-07-03 10:00:00', 'updated_at' => $now],
-            ['id' => 2, 'conversation_id' => 1, 'subject' => '', 'body' => 'Baik Pak, jam ke-3 dan ke-4 insyaAllah siap.', 'created_by' => 5, 'is_draft' => 0, 'created_at' => '2026-07-03 10:05:00', 'updated_at' => $now],
-            ['id' => 3, 'conversation_id' => 2, 'subject' => '', 'body' => 'Wali Kelas 1, ada perkembangan baik dari ananda di kelas binaan Ibu.', 'created_by' => 5, 'is_draft' => 0, 'created_at' => '2026-07-04 09:00:00', 'updated_at' => $now],
-            ['id' => 4, 'conversation_id' => 2, 'subject' => '', 'body' => 'Alhamdulillah, terima kasih informasinya Guru BK 1.', 'created_by' => 7, 'is_draft' => 0, 'created_at' => '2026-07-04 09:20:00', 'updated_at' => $now],
-            ['id' => 5, 'conversation_id' => 3, 'subject' => '', 'body' => 'Assalamualaikum Bu, kami ingin memastikan jadwal pendampingan ananda.', 'created_by' => 10, 'is_draft' => 0, 'created_at' => '2026-07-05 14:00:00', 'updated_at' => $now],
-            ['id' => 6, 'conversation_id' => 3, 'subject' => '', 'body' => 'Waalaikumsalam Bu, akan kami atur pekan depan dan kabari kembali.', 'created_by' => 5, 'is_draft' => 0, 'created_at' => '2026-07-05 14:10:00', 'updated_at' => $now],
+            ['id' => 1, 'conversation_id' => 1, 'subject' => '', 'body' => 'Assalamualaikum, mohon konfirmasi jam bimbingan klasikal Kelas 10 - C pada Jumat ini.', 'created_by' => 3, 'is_draft' => 0, 'created_at' => '2026-07-03 10:00:00', 'updated_at' => $now],
+            ['id' => 2, 'conversation_id' => 1, 'subject' => '', 'body' => 'Waalaikumsalam, jam ke-3 dan ke-4 insyaAllah siap.', 'created_by' => 5, 'is_draft' => 0, 'created_at' => '2026-07-03 10:05:00', 'updated_at' => $now],
+            ['id' => 3, 'conversation_id' => 2, 'subject' => '', 'body' => 'Ada perkembangan baik dari ananda di kelas binaan Bapak/Ibu.', 'created_by' => 5, 'is_draft' => 0, 'created_at' => '2026-07-04 09:00:00', 'updated_at' => $now],
+            ['id' => 4, 'conversation_id' => 2, 'subject' => '', 'body' => 'Alhamdulillah, terima kasih informasinya.', 'created_by' => 7, 'is_draft' => 0, 'created_at' => '2026-07-04 09:20:00', 'updated_at' => $now],
+            ['id' => 5, 'conversation_id' => 3, 'subject' => '', 'body' => 'Assalamualaikum, kami ingin memastikan jadwal pendampingan ananda.', 'created_by' => 10, 'is_draft' => 0, 'created_at' => '2026-07-05 14:00:00', 'updated_at' => $now],
+            ['id' => 6, 'conversation_id' => 3, 'subject' => '', 'body' => 'Waalaikumsalam, akan kami atur pekan depan dan kabari kembali.', 'created_by' => 5, 'is_draft' => 0, 'created_at' => '2026-07-05 14:10:00', 'updated_at' => $now],
             ['id' => 7, 'conversation_id' => 4, 'subject' => '', 'body' => 'Nak, jangan lupa mengisi asesmen minat karier ya sebelum tenggat.', 'created_by' => 5, 'is_draft' => 0, 'created_at' => '2026-07-06 08:30:00', 'updated_at' => $now],
         ]);
 
