@@ -1541,12 +1541,12 @@ class ExcelImporter
             '1000000003',                                                 // C NISN
             '1000000000000003',                                           // D NIK
             'BANDUNG',                                                    // E Tempat Lahir
-            '2007-09-19',                                                 // F Tanggal Lahir
+            '2008-01-01',                                                 // F Tanggal Lahir
             'Kelas 12 - A',                                               // G Tingkat - Rombel
             '',                                                           // H Umur (biarkan kosong)
             'Aktif',                                                      // I Status
             'Perempuan',                                                  // J Jenis Kelamin
-            'Kp. Contoh, BANJARAN, KABUPATEN BANDUNG, JAWA BARAT, 40377', // K Alamat
+            'Kp. Contoh, KECAMATAN CONTOH, KABUPATEN CONTOH, 40000', // K Alamat
             '6281234567890',                                              // L No Telepon
             'Tidak Ada',                                                  // M Kebutuhan Khusus
             'Tidak Ada',                                                  // N Disabilitas
@@ -1706,7 +1706,7 @@ class ExcelImporter
             ['A. Kolom yang WAJIB diisi', 'head'],
             ['1. NISN — 10 angka. Contoh: 1000000003 (boleh diawali angka 0).', 'text'],
             ['2. Nama Lengkap — nama lengkap siswa.', 'text'],
-            ['3. Tanggal Lahir — contoh: 19-09-2007 atau 2007-09-19.', 'text'],
+            ['3. Tanggal Lahir — contoh: 01-01-2008 atau 2008-01-01.', 'text'],
             ['4. Jenis Kelamin — pilih Laki-laki atau Perempuan (boleh juga L atau P).', 'text'],
             ['', 'spacer'],
             ['B. Kolom yang BOLEH dikosongkan', 'head'],
@@ -1718,7 +1718,7 @@ class ExcelImporter
             ['- Tingkat - Rombel cukup ditulis seperti "Kelas 12 - A" (tingkat yang diizinkan: Kelas 7 sampai Kelas 12). Jika kelas itu belum ada, aplikasi membuatnya otomatis.', 'text'],
             ['- NIK yang diawali tanda kutip aman, contoh: \'1000000000000003 — tanda kutip diabaikan otomatis.', 'text'],
             ['- No Telepon boleh diawali 08, 62, atau +62. Semua diubah otomatis menjadi 08.', 'text'],
-            ['- Password awal untuk masuk = tanggal lahir 8 angka (hari-bulan-tahun). Contoh lahir 19-09-2007 menjadi 19092007.', 'text'],
+            ['- Password awal untuk masuk = tanggal lahir 8 angka (hari-bulan-tahun). Contoh lahir 01-01-2008 menjadi 01012008.', 'text'],
             ['- Jika nama Wali / Ibu / Ayah diisi, akun orang tua dibuat otomatis (yang dipakai: Wali, lalu Ibu, lalu Ayah).', 'text'],
             ['- File data siswa dari sekolah (EMIS/Dapodik) juga bisa langsung diunggah tanpa template ini, asalkan ada kolom NISN, Nama, Tanggal Lahir, dan Jenis Kelamin.', 'text'],
             ['', 'spacer'],
